@@ -6,72 +6,64 @@ public class Character_Hands : MonoBehaviour
 {
     public GameObject rightFist;
     public GameObject leftFist;
-    public float force;
-    public float punchBrakes;
-    private Vector3 direction;
-    private Rigidbody rightRB;
-    private Rigidbody leftRB;
+
+    private Vector3 rightFistPos;
+    private Vector3 leftFistPos;
+
     private bool rightOut;
     private bool leftOut;
+
+    private enum NextFist {right, left};
+    private NextFist nextFist;
 
     // Start is called before the first frame update
     void Start()
     {
-        direction = new Vector3(1, 0, 0);
-        rightRB = rightFist.GetComponent<Rigidbody>();
-        leftRB = leftFist.GetComponent<Rigidbody>();
         rightOut = false;
         leftOut = false;
+
+        rightFistPos = rightFist.transform.position;
+        leftFistPos = leftFist.transform.position;
+
+        nextFist = NextFist.right;
     }
 
+
     // Update is called once per frame
-    void FixedUpdate()
+    void Update()
     {
         if (Input.GetMouseButtonDown(0))
         {
-            if (!rightOut)
+            if (!rightOut && nextFist == NextFist.right)
             {
-                rightRB.AddForce(direction * force);
                 rightOut = true;
+                nextFist = NextFist.left;
+                rightFist.GetComponent<FistController>().LaunchFist();
             }
-            else if (!leftOut)
+
+            else if (!leftOut && nextFist == NextFist.left)
             {
-                leftRB.AddForce(direction * force);
                 leftOut = true;
+                nextFist = NextFist.right;
+                leftFist.GetComponent<FistController>().LaunchFist();
             }
         }
 
-        if (rightOut)
-        {
-            if (rightRB.velocity.magnitude < punchBrakes)
-            {
-                rightFist.transform.position = Vector3.Lerp(rightFist.transform.position, transform.position, 20f);
-            }
-
-        }
-        else if (leftOut)
-        {
-            if (leftRB.velocity.magnitude < punchBrakes)
-            {
-                leftFist.transform.position = Vector3.Lerp(leftFist.transform.position, transform.position, 20f);
-            }
-        }
-
+        //TODO: Timer between punch throws
     }
 
-    private void OnCollisionEnter(Collision collision)
+
+    private void OnCollisionEnter(Collision col)
     {
-        if (collision.gameObject.tag == "PlayerFist")
-        {
-            if (rightOut)
-            {
-                rightOut = false;
-            }
-            
-            if (leftOut)
-            {
-                leftOut = false;
-            }
-        }
+      if (col.gameObject == rightFist)
+      {
+        //TODO: reset position
+      }
+
+      if (col.gameObject == leftFist)
+      {
+        //TODO: reset position
+      }
     }
+
 }

@@ -701,6 +701,7 @@ GameObject:
   - component: {fileID: 566063248}
   - component: {fileID: 566063247}
   - component: {fileID: 566063246}
+  - component: {fileID: 566063245}
   m_Layer: 0
   m_Name: RightFist
   m_TagString: PlayerFist
@@ -722,6 +723,21 @@ Transform:
   m_Father: {fileID: 1376831132}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &566063245
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 566063243}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 095782ba6aaee824da621c19b8c9149b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 1376831127}
+  punchTime: 0.7
+  punchDist: 4
 --- !u!135 &566063246
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -796,6 +812,7 @@ GameObject:
   - component: {fileID: 789939749}
   - component: {fileID: 789939748}
   - component: {fileID: 789939747}
+  - component: {fileID: 789939746}
   m_Layer: 0
   m_Name: LeftFist
   m_TagString: PlayerFist
@@ -817,6 +834,21 @@ Transform:
   m_Father: {fileID: 1376831132}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &789939746
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 789939744}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 095782ba6aaee824da621c19b8c9149b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 1376831127}
+  punchTime: 0.7
+  punchDist: 4
 --- !u!135 &789939747
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -1194,15 +1226,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1376831127}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8385c9d5ae8ad5b41b6f0dfd0ea2194f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   rightFist: {fileID: 566063243}
   leftFist: {fileID: 789939744}
-  force: 400
-  punchBrakes: 0
 --- !u!114 &1376831134
 MonoBehaviour:
   m_ObjectHideFlags: 0
