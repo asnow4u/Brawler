@@ -53,9 +53,11 @@
     <UnityVersion>2020.3.24f1</UnityVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\Character_Movement.cs" />
+    <Compile Include="Assets\Scripts\FistController.cs" />
     <Compile Include="Assets\Scripts\Platform_Move.cs" />
     <Compile Include="Assets\Scripts\Character_Hands.cs" />
+    <Compile Include="Assets\Scripts\Character_Movement.cs" />
+    <Compile Include="Assets\Scripts\RespawnPlayer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
