@@ -5,25 +5,35 @@ using UnityEngine;
 public class Character_Movement : MonoBehaviour
 {
     // Variables
-    public float speed_x = 2;
-    public float speed_y = 5;
+    public float speed_x;
+    public float speed_y;
+    public int defaultJumpNumber = 1;
     public float ht;
     private bool isGrounded;
+    private int jumpsAvailable;
+    private bool doubleJumpCheck;
     private Rigidbody rb;
 
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        jumpsAvailable = defaultJumpNumber;
     }
 
     // Jump collision with ground
     private void OnCollisionEnter(Collision collision)
     {
-        if(collision.gameObject.tag == "Platforms")
+        
+        if(LayerMask.LayerToName(collision.gameObject.layer) == "Ground")
         {
-            isGrounded = true;
-            //Debug.Log("Van Halen");
+            if (Physics.Raycast(transform.position, Vector3.down, transform.GetComponent<CapsuleCollider>().height/2 + 0.1f, ~LayerMask.NameToLayer("Ground")))
+            {
+                isGrounded = true;
+                Debug.Log("We have collided.");
+            }
+
+            
         }
     }
 
@@ -35,15 +45,38 @@ public class Character_Movement : MonoBehaviour
         Vector3 movement = transform.right * x * speed_x;
 
         // Movement on y-axis
-        if(Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        if(Input.GetKeyDown(KeyCode.Space))
         {
-            //movement += transform.up * speed_y;
-            rb.AddForce(transform.up * speed_y, ForceMode.Impulse);
-            isGrounded = false;
+            if (isGrounded) 
+            {
+                Jump();
+
+                doubleJumpCheck = true;
+            }
+            else if (doubleJumpCheck)
+            {
+                Jump();
+
+                doubleJumpCheck = false;
+            }
         }
         
         
         
         transform.Translate(movement * Time.deltaTime);
+    }
+
+    void Jump()
+    {
+        //movement += transform.up * speed_y;
+        rb.AddForce(transform.up * speed_y, ForceMode.Impulse);
+        isGrounded = false;
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.cyan;
+
+        Gizmos.DrawRay(transform.position, Vector3.down);
     }
 }
