@@ -6,120 +6,124 @@ public class Character_Hands : MonoBehaviour
 {
     public GameObject rightFist;
     public GameObject leftFist;
-    public GameObject rightFistHolder;
-    public GameObject leftFistHolder;
-    
-    private bool rightOut;
-    private bool leftOut;
+    private List<GameObject> fistQueue = new List<GameObject>();
 
-    private enum NextFist {right, left};
-    private NextFist nextFist;
+    public float launchForce;
+    private bool canLaunch;
+
+    private GameObject heldItem;
 
     // Start is called before the first frame update
     void Start()
     {
-        rightOut = false;
-        leftOut = false;
-
-        nextFist = NextFist.right;
+        fistQueue.Add(rightFist);
+        fistQueue.Add(leftFist);
+        canLaunch = true;
+        heldItem = null;
     }
 
 
-    // Update is called once per frame
+    /// <summary>
+    /// Check when a button is clicked
+    /// </summary>
     void Update()
     {
-        //Need to determine if item is being held and have all buttons relate to that instead of doing fistAttack and powerFistAttack
 
+        //Left Mouse Button
         if (Input.GetMouseButtonDown(0))
         {
-            Vector3 mousePos = Vector3.zero;
-            float distance;
-            Plane plane = new Plane(transform.forward, 0);
-            
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (plane.Raycast(ray, out distance))
-            {
-                mousePos = ray.GetPoint(distance).normalized;
-            }
-
-            if (!rightOut && nextFist == NextFist.right)
-            {
-                rightOut = true;
-                nextFist = NextFist.left;
-                rightFist.GetComponent<FistController>().fistAttack(mousePos);
-            }
-
-            else if (!leftOut && nextFist == NextFist.left)
-            {
-                leftOut = true;
-                nextFist = NextFist.right;
-                leftFist.GetComponent<FistController>().fistAttack(mousePos);
-            }
+            LeftMouseClick();
         }
 
+        //Right Click Button
         if (Input.GetMouseButtonDown(1))
         {
-            if (!rightOut && nextFist == NextFist.right)
-            {
-                rightOut = true;
-                nextFist = NextFist.left;
-                rightFist.GetComponent<FistController>().fistPowerAttack(Vector3.right);
-            }
-
-            else if (!leftOut && nextFist == NextFist.left)
-            {
-                leftOut = true;
-                nextFist = NextFist.right;
-                leftFist.GetComponent<FistController>().fistPowerAttack(Vector3.right);
-            }
+            RightMouseClick();
         }
 
         //TODO: Timer between punch throws
     }
 
+
+    /// <summary>
+    /// Left Mouse button clicked
+    /// Use item if item is being held
+    /// Shoot queued fist
+    /// </summary>
+    private void LeftMouseClick()
+    {
+        //TODO: Get the correct mouse pos
+        //Get Mouse Pos
+        Vector3 mousePos = Vector3.zero;
+        float distance;
+        Plane plane = new Plane(transform.forward, 0);
+
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (plane.Raycast(ray, out distance))
+        {
+            mousePos = ray.GetPoint(distance).normalized;
+        }
+
+        //UseItem
+        if (heldItem != null)
+        {
+            if (heldItem.transform.IsChildOf(transform))
+            {
+                heldItem.GetComponent<Item>().UseItem();
+            }
+        }
+
+        //Attack
+        else if (fistQueue.Count > 0)
+        {
+            fistQueue[0].transform.GetComponent<FistController>().FistAttack(mousePos);
+            fistQueue.Remove(fistQueue[0]);
+        }
+    }
+
+    private void RightMouseClick()
+    {
+        //Get Mouse Pos
+        Vector3 mousePos = Vector3.zero;
+        float distance;
+        Plane plane = new Plane(transform.forward, 0);
+
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (plane.Raycast(ray, out distance))
+        {
+            mousePos = ray.GetPoint(distance).normalized;
+        }
+
+        //UseItem
+        if (heldItem != null)
+        {
+            if (heldItem.transform.IsChildOf(transform))
+            {
+                heldItem.GetComponent<Item>().ThrowItem(mousePos);
+            }
+        }
+
+        //Attack
+        else if (fistQueue.Count > 0)
+        {
+            if (canLaunch)
+            {
+                transform.GetComponent<Rigidbody>().AddForce(launchForce * mousePos);
+                canLaunch = false;
+                //TODO: need to reset canLaunch to true when the ground is hit
+            }
+        }
+    }
+
     public void FistReturned(GameObject go)
     {
-        if (go == rightFist)
-        {
-            rightOut = false;
-        }
-
-        if (go == leftFist)
-        {
-            leftOut = false;
-        }
+        fistQueue.Add(go);
     }
 
-    public GameObject GetFistHoldingParent(GameObject go)
+    public GameObject HeldItem
     {
-        if (go == rightFist)
-        {
-            return rightFistHolder;
-        }
-
-        if (go == leftFist)
-        {
-            return leftFistHolder;
-        }
-
-        return null;
+        get { return heldItem; }
+        set { heldItem = value; }
     }
-
-    public Vector3 GetFistStartPosition(GameObject go)
-    {
-        if (go == rightFist)
-        {
-            return rightFistHolder.transform.position;
-        }
-
-        if (go == leftFist)
-        {
-            return leftFistHolder.transform.position;
-        }
-
-        Debug.LogError(go + " does not match one of the fists");
-        return Vector3.zero;
-    }
-
 
 }

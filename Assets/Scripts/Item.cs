@@ -6,15 +6,25 @@ public class Item : MonoBehaviour
 {
     public float throwForce;
 
-    public void UseItem()
+    private void Start()
     {
 
     }
 
+    public void UseItem()
+    {
+        Debug.Log("UseItem");
+    }
+
     public void ThrowItem(Vector3 dir)
     {
+        //TODO: throwing is wonky
         Debug.Log("Throw Item");
-        Rigidbody rb = gameObject.AddComponent<Rigidbody>();
+        transform.parent.GetComponent<Character_Hands>().HeldItem = null;
+        transform.parent = null;
+        GetComponent<Collider>().enabled = true;
+        Rigidbody rb = gameObject.GetComponent<Rigidbody>();
+        rb.isKinematic = false;
         rb.AddForce(dir * throwForce, ForceMode.Impulse);
     }
 }
