@@ -228,7 +228,6 @@ GameObject:
   - component: {fileID: 289757506}
   - component: {fileID: 289757505}
   - component: {fileID: 289757504}
-  - component: {fileID: 289757503}
   - component: {fileID: 289757508}
   m_Layer: 6
   m_Name: Platform (1)
@@ -237,22 +236,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!54 &289757503
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 289757502}
-  serializedVersion: 2
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_UseGravity: 0
-  m_IsKinematic: 1
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
 --- !u!65 &289757504
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -358,7 +341,6 @@ GameObject:
   - component: {fileID: 370139514}
   - component: {fileID: 370139513}
   - component: {fileID: 370139512}
-  - component: {fileID: 370139511}
   - component: {fileID: 370139516}
   m_Layer: 6
   m_Name: Platform (3)
@@ -367,22 +349,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!54 &370139511
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 370139510}
-  serializedVersion: 2
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_UseGravity: 0
-  m_IsKinematic: 1
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
 --- !u!65 &370139512
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -526,7 +492,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 1000
+  far clip plane: 100
   field of view: 60
   orthographic: 0
   orthographic size: 5
@@ -571,7 +537,6 @@ GameObject:
   - component: {fileID: 542222782}
   - component: {fileID: 542222781}
   - component: {fileID: 542222780}
-  - component: {fileID: 542222779}
   - component: {fileID: 542222784}
   m_Layer: 6
   m_Name: Platform (2)
@@ -580,22 +545,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!54 &542222779
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 542222778}
-  serializedVersion: 2
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_UseGravity: 0
-  m_IsKinematic: 1
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
 --- !u!65 &542222780
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -732,6 +681,7 @@ GameObject:
   - component: {fileID: 566063247}
   - component: {fileID: 566063246}
   - component: {fileID: 566063245}
+  - component: {fileID: 566063249}
   m_Layer: 0
   m_Name: RightFist
   m_TagString: PlayerFist
@@ -829,6 +779,22 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 566063243}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!54 &566063249
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 566063243}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 126
+  m_CollisionDetection: 0
 --- !u!1 &670347361
 GameObject:
   m_ObjectHideFlags: 0
@@ -880,6 +846,7 @@ GameObject:
   - component: {fileID: 789939748}
   - component: {fileID: 789939747}
   - component: {fileID: 789939746}
+  - component: {fileID: 789939750}
   m_Layer: 0
   m_Name: LeftFist
   m_TagString: PlayerFist
@@ -977,6 +944,22 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 789939744}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!54 &789939750
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 789939744}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 126
+  m_CollisionDetection: 0
 --- !u!1 &993568450
 GameObject:
   m_ObjectHideFlags: 0
@@ -991,9 +974,9 @@ GameObject:
   - component: {fileID: 993568453}
   - component: {fileID: 993568456}
   - component: {fileID: 993568452}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: testItem
-  m_TagString: Untagged
+  m_TagString: Item
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1116,7 +1099,6 @@ GameObject:
   - component: {fileID: 1042391926}
   - component: {fileID: 1042391925}
   - component: {fileID: 1042391924}
-  - component: {fileID: 1042391923}
   - component: {fileID: 1042391928}
   m_Layer: 6
   m_Name: Platform (4)
@@ -1125,22 +1107,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!54 &1042391923
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1042391922}
-  serializedVersion: 2
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_UseGravity: 0
-  m_IsKinematic: 1
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
 --- !u!65 &1042391924
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1517,6 +1483,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rightFist: {fileID: 566063243}
   leftFist: {fileID: 789939744}
+  fistQueue: []
   launchForce: 300
 --- !u!114 &1376831134
 MonoBehaviour:
@@ -1546,7 +1513,6 @@ GameObject:
   - component: {fileID: 1857691817}
   - component: {fileID: 1857691816}
   - component: {fileID: 1857691815}
-  - component: {fileID: 1857691814}
   m_Layer: 6
   m_Name: Platform
   m_TagString: Platforms
@@ -1554,22 +1520,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!54 &1857691814
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1857691813}
-  serializedVersion: 2
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_UseGravity: 0
-  m_IsKinematic: 1
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
 --- !u!65 &1857691815
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1660,9 +1610,9 @@ GameObject:
   - component: {fileID: 2036768404}
   - component: {fileID: 2036768401}
   - component: {fileID: 2036768400}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: testCube
-  m_TagString: Untagged
+  m_TagString: Item
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

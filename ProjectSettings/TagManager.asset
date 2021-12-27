@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Platforms
   - PlayerFist
+  - Item
   layers:
   - Default
   - TransparentFX
@@ -15,7 +16,7 @@ TagManager:
   - UI
   - Ground
   - Item
-  - PostProcessing
+  - Ignore Collision
   - 
   - 
   - 

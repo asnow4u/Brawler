@@ -6,10 +6,12 @@ public class Character_Hands : MonoBehaviour
 {
     public GameObject rightFist;
     public GameObject leftFist;
-    private List<GameObject> fistQueue = new List<GameObject>();
+    public List<GameObject> fistQueue = new List<GameObject>();
 
     public float launchForce;
     private bool canLaunch;
+
+    private Vector3 mouseDir;
 
     private GameObject heldItem;
 
@@ -40,8 +42,6 @@ public class Character_Hands : MonoBehaviour
         {
             RightMouseClick();
         }
-
-        //TODO: Timer between punch throws
     }
 
 
@@ -52,17 +52,18 @@ public class Character_Hands : MonoBehaviour
     /// </summary>
     private void LeftMouseClick()
     {
-        //TODO: Get the correct mouse pos
+
         //Get Mouse Pos
-        Vector3 mousePos = Vector3.zero;
+        mouseDir = Vector3.zero;
         float distance;
-        Plane plane = new Plane(transform.forward, 0);
+        Plane plane = new Plane(-transform.forward, 0);
 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (plane.Raycast(ray, out distance))
         {
-            mousePos = ray.GetPoint(distance).normalized;
+            mouseDir = (ray.GetPoint(distance) - transform.position).normalized;
         }
+
 
         //UseItem
         if (heldItem != null)
@@ -76,7 +77,7 @@ public class Character_Hands : MonoBehaviour
         //Attack
         else if (fistQueue.Count > 0)
         {
-            fistQueue[0].transform.GetComponent<FistController>().FistAttack(mousePos);
+            fistQueue[0].transform.GetComponent<FistController>().FistAttack(mouseDir);
             fistQueue.Remove(fistQueue[0]);
         }
     }
@@ -84,14 +85,14 @@ public class Character_Hands : MonoBehaviour
     private void RightMouseClick()
     {
         //Get Mouse Pos
-        Vector3 mousePos = Vector3.zero;
+        Vector3 mouseDir = Vector3.zero;
         float distance;
         Plane plane = new Plane(transform.forward, 0);
 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (plane.Raycast(ray, out distance))
         {
-            mousePos = ray.GetPoint(distance).normalized;
+            mouseDir = (ray.GetPoint(distance) - transform.position).normalized;
         }
 
         //UseItem
@@ -99,7 +100,7 @@ public class Character_Hands : MonoBehaviour
         {
             if (heldItem.transform.IsChildOf(transform))
             {
-                heldItem.GetComponent<Item>().ThrowItem(mousePos);
+                heldItem.GetComponent<Item>().ThrowItem(mouseDir);
             }
         }
 
@@ -108,8 +109,9 @@ public class Character_Hands : MonoBehaviour
         {
             if (canLaunch)
             {
-                transform.GetComponent<Rigidbody>().AddForce(launchForce * mousePos);
-                canLaunch = false;
+                transform.GetComponent<Rigidbody>().velocity = Vector3.zero;
+                transform.GetComponent<Rigidbody>().AddForce(launchForce * mouseDir);
+                //canLaunch = false;
                 //TODO: need to reset canLaunch to true when the ground is hit
             }
         }
@@ -117,7 +119,8 @@ public class Character_Hands : MonoBehaviour
 
     public void FistReturned(GameObject go)
     {
-        fistQueue.Add(go);
+        if (!fistQueue.Contains(go))
+            fistQueue.Add(go);
     }
 
     public GameObject HeldItem

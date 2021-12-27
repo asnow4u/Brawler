@@ -8,8 +8,8 @@ public class FistController : MonoBehaviour
     public float punchTime;
     public float punchDist;
 
-    private bool fistLaunch;
-    private bool fistReturn;
+    private bool fistLaunching;
+    private bool fistReturning;
 
     private GameObject parent;
     private Character_Hands characterHands;
@@ -22,8 +22,8 @@ public class FistController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        fistLaunch = false;
-        fistReturn = false;
+        fistLaunching = false;
+        fistReturning = false;
 
         parent = transform.parent.gameObject;
         characterHands = parent.transform.GetComponent<Character_Hands>();
@@ -34,9 +34,8 @@ public class FistController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        DeterminCollision();
 
-        if (fistLaunch)
+        if (fistLaunching)
         {
 
             currentPunchTime += Time.deltaTime;
@@ -44,8 +43,8 @@ public class FistController : MonoBehaviour
             if (currentPunchTime > punchTime)
             {
                 currentPunchTime = punchTime;
-                fistLaunch = false;
-                fistReturn = true;
+                fistLaunching = false;
+                fistReturning = true;
             }
 
             float increment = currentPunchTime / punchTime;
@@ -54,15 +53,59 @@ public class FistController : MonoBehaviour
             transform.LookAt(originalPos + dir * punchDist);
         }
 
-        if (fistReturn)
+        if (fistReturning)
         {
 
             currentPunchTime -= Time.deltaTime;
 
-            if (currentPunchTime < 0f)
+            //if (currentPunchTime < 0f)
+            //{
+            //    currentPunchTime = 0f;
+            //    fistReturn = false;
+            //    transform.parent = parent.transform;
+            //    characterHands.FistReturned(gameObject);
+
+            //    //Transfer the item to the player
+            //    if (characterHands.HeldItem != null && transform.childCount > 0)
+            //    {
+            //        transform.GetChild(0).transform.parent = parent.transform;
+            //    }
+            //}
+
+            float increment = currentPunchTime / punchTime;
+            increment = Mathf.Sin(increment * Mathf.PI * 0.5f); //https://chicounity3d.wordpress.com/2014/05/23/how-to-lerp-like-a-pro/
+            transform.position = Vector3.Lerp(parent.transform.position + parentPositionDif, originalPos + dir * punchDist, increment);
+            transform.LookAt(parent.transform.position + parentPositionDif);
+        }
+    }
+        
+
+    public void FistAttack(Vector3 direction){
+        transform.parent = null;
+        dir = direction;
+        originalPos = transform.position;
+        currentPunchTime = 0f;
+        fistLaunching = true;
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        string layerName = LayerMask.LayerToName(collision.gameObject.layer);
+        string tagName = collision.gameObject.tag;
+
+        //List of available collisions
+        
+        //Collision with a player
+        if (tagName == "Player")
+        {
+            //Determine if parent player
+            if (collision.gameObject == parent)
             {
+
+                //Return the fist to its location
                 currentPunchTime = 0f;
-                fistReturn = false;
+                fistReturning = false;
+                transform.position = parent.transform.position + parentPositionDif;
                 transform.parent = parent.transform;
                 characterHands.FistReturned(gameObject);
 
@@ -73,48 +116,31 @@ public class FistController : MonoBehaviour
                 }
             }
 
-            float increment = currentPunchTime / punchTime;
-            increment = Mathf.Sin(increment * Mathf.PI * 0.5f); //https://chicounity3d.wordpress.com/2014/05/23/how-to-lerp-like-a-pro/
-            transform.position = Vector3.Lerp(parent.transform.position + parentPositionDif, originalPos + dir * punchDist, increment);
-            transform.LookAt(parent.transform.position + parentPositionDif);
+            //Collision with another player
+            else
+            {
+                //TODO: Deall damage and apply force (function should be on the player obj)
+            }
         }
-    }
 
-    private void DeterminCollision()
-    {
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position, transform.forward, out hit, 0.1f))
+        if (layerName == "Ground")
         {
-            string layerName = LayerMask.LayerToName(hit.transform.gameObject.layer);
+            fistLaunching = false;
+            fistReturning = true;
+        }
 
-            //List of available collisions
-            if (layerName == "Ground")
+        if (tagName == "Item")
+        {
+            if (characterHands.HeldItem == null)
             {
-                fistLaunch = false;
-                fistReturn = true;
-            }
+                fistLaunching = false;
+                fistReturning = true;
 
-            else if (layerName == "Item")
-            {
-                if (characterHands.HeldItem == null)
-                {
-                    fistLaunch = false;
-                    fistReturn = true;
-                    characterHands.HeldItem = hit.transform.gameObject;
-
-                    hit.transform.gameObject.GetComponent<Rigidbody>().isKinematic = true;
-                    hit.transform.gameObject.GetComponent<Collider>().enabled = false;
-                    hit.transform.parent = transform;
-                }
+                characterHands.HeldItem = collision.transform.gameObject;
+                collision.gameObject.layer = LayerMask.NameToLayer("Ignore Collision");
+                collision.gameObject.GetComponent<Rigidbody>().isKinematic = true;
+                collision.transform.parent = transform;
             }
         }
-    }
-
-    public void FistAttack(Vector3 direction){
-        transform.parent = null;
-        dir = direction;
-        originalPos = transform.position;
-        currentPunchTime = 0f;
-        fistLaunch = true;
     }
 }
