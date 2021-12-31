@@ -119,7 +119,16 @@ public class FistController : MonoBehaviour
             //Collision with another player
             else
             {
-                //TODO: Deall damage and apply force (function should be on the player obj)
+
+                if (fistLaunching)
+                {
+                    fistLaunching = false;
+                    fistReturning = true;
+
+                    float damage = 5f;
+                    collision.gameObject.GetComponent<PlayerController>().DealDamage(damage, transform.forward);
+                    
+                }
             }
         }
 
