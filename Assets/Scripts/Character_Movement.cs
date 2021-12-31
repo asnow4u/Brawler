@@ -48,16 +48,18 @@ public class Character_Movement : MonoBehaviour
         if(Input.GetKeyDown(KeyCode.Space))
         {
             if (isGrounded) 
-            {
+            {               
                 Jump();
 
                 doubleJumpCheck = true;
             }
             else if (doubleJumpCheck)
             {
-                Jump();
+                rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
 
                 doubleJumpCheck = false;
+                
+                Jump();
             }
         }
         
