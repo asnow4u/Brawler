@@ -7,13 +7,12 @@ public class RespawnPlayer : MonoBehaviour
 {
     [SerializeField] private Transform player;
     [SerializeField] private Transform respawnPoint;
-    private Rigidbody rb;
 
 
     // Start is called before the first frame update
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
+        
     }
 
     private void OnTriggerEnter(Collider other)
@@ -22,9 +21,15 @@ public class RespawnPlayer : MonoBehaviour
         {
             player.transform.position = respawnPoint.transform.position;
             Physics.SyncTransforms();
+            Rigidbody rb = other.GetComponent<Rigidbody>();
+            rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
         }
 
-        rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
+        if (other.CompareTag("Item"))
+        {
+            Destroy(other.gameObject);
+        }
+
     }
 
 }

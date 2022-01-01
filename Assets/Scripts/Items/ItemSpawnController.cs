@@ -1,124 +1,74 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System;
 
-public class ItemController : MonoBehaviour
+public class ItemSpawnController : MonoBehaviour
 {
 
-    public List<GameObject> prefabItems = new List<GameObject>();
-    private Dictionary<int, Item> itemDictionary = new Dictionary<int, Item>();
+    [SerializeField] private List<GameObject> prefabItems = new List<GameObject>();
+    //NOTE: Later might categories the items
+    //Waves would be based on these categories
 
-    delegate void EffectPointer();
+    [Header("Spawn Range")]
+    [SerializeField] private float minTime;
+    [SerializeField] private float maxTime;
     
-    private class Item
-    {
-        public int id;
-        public string name;
-        public GameObject go;
+    private float timer = 0;
 
-        public EffectPointer effect;
+    //TODO: This would need to be grabbed from some sort of level manager (different levels would have different values)
+    private float levelHeight = 10;
+    private float levelLength = 14;
 
-        public Item(int itemId, string itemName, GameObject itemGo)
-        {
-            id = itemId;
-            name = itemName;
-            go = itemGo;
-        }
-    }
-
+    [Header("Debug")]
+    [SerializeField] private bool spawnItems;
+    [SerializeField] private int playerCount;
+    [SerializeField] private bool spawn;
 
     // Start is called before the first frame update
     void Start()
     {
-        int i = 0;
 
-        foreach(GameObject prefab in prefabItems)
-        {
-            Item newItem = new Item(i, prefab.name, prefab);
-            SetUpItemEffect(newItem);
-            itemDictionary.Add(i, newItem);
-
-            i++;
-        }
     }
 
-    // Update is called once per frame
+
     void Update()
     {
-        
-    }
-
-    private void SetUpItemEffect(Item item)
-    {
-        switch (item.id)
+        if (spawnItems)
         {
-            case 0:
-                item.effect += BombEffect;
-                break;
+            timer -= Time.deltaTime;
 
-            case 1:
-                item.effect += HealingEffect;
-                break;
-
-            case 2:
-                item.effect += RakeEffect;
-                break;
-
-            case 3:
-                item.effect += DeckOfCardsEffect;
-                break;
-
-            case 4:
-                item.effect += RunAwayChainsawEffect;
-                break;
-
-            case 5:
-                item.effect += ExplosiveDiceEffect;
-                break;
-
-            case 6:
-                item.effect += MorterEffect;
-                break;
-
-            case 7:
-                item.effect += PropainTankEffect;
-                break;
-
-            default:
-                break;
-        }
-    }
-
-
-    private Item FindItem(GameObject go)
-    {
-        int i = 0;
-
-        foreach (GameObject item in prefabItems) 
-        {
-            if (go == item)
+            if (timer < 0)
             {
-                return itemDictionary[i];
+                SpawnItems();
+                timer = Random.Range(minTime, maxTime);
+                Debug.Log(timer);
             }
-
-            i++;
         }
 
-        return null;
+        //DEBUG
+        if (spawn)
+        {
+            spawn = false;
+            SpawnItems();
+        }
     }
 
-
-    public void UseItem(GameObject go)
+    private void SpawnItems()
     {
-        Item item = FindItem(go);
+        //TODO: Get number of players (probably part of multiplayer integration
 
-        item.effect();
+        int itemCount = Random.Range(playerCount / 2, playerCount * 2);
+
+        
+        for(int i=0; i<itemCount; i++)
+        {
+            GameObject item = prefabItems[Random.Range(0, prefabItems.Count)];
+            Instantiate(item, new Vector3(Random.Range(-levelLength, levelLength), levelHeight, 0), Quaternion.identity);
+        }
+
     }
 
 
-
-    //Healing item (food or hearts)
     //Sword
     //Explosive sheep/turtle (moving animel)
     //Gernade => soda bottle full of mentos
@@ -169,44 +119,4 @@ public class ItemController : MonoBehaviour
     //lead boots - dont get knocked away as easy
     //Sticky boots - go on the underside of platform (like the fire sun item in smash)
     //Poket sand - throw at enemy to stun them
-
-    private void HealingEffect()
-    {
-
-    }
-
-    private void ExplosiveDiceEffect()
-    {
-
-    }
-
-    private void DeckOfCardsEffect()
-    {
-
-    }
-
-    private void RunAwayChainsawEffect()
-    {
-
-    }
-
-    private void PropainTankEffect()
-    {
-
-    }
-
-    private void MorterEffect()
-    {
-
-    }
-
-    private void RakeEffect()
-    {
-
-    }
-    
-    private void BombEffect()
-    {
-
-    }
 }

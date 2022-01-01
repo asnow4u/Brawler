@@ -70,7 +70,7 @@ public class Character_Hands : MonoBehaviour
         {
             if (heldItem.transform.IsChildOf(transform))
             {
-                heldItem.GetComponent<Item>().UseItem();
+                heldItem.GetComponent<IItemInterface>().UseItem();
             }
         }
 

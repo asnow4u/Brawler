@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class Item : MonoBehaviour
 {
     public float throwForce;
@@ -10,13 +11,13 @@ public class Item : MonoBehaviour
 
     private bool isThrown;
 
-    private void Start()
+    protected void Start()
     {
         rb = gameObject.GetComponent<Rigidbody>();
         isThrown = false;
     }
 
-    private void Update()
+    protected void Update()
     {
         //When this object is thrown determin if the object is far enough away to switch to a layer that is collidable
         if (isThrown && gameObject.layer == LayerMask.NameToLayer("Ignore Collision"))
@@ -30,12 +31,6 @@ public class Item : MonoBehaviour
         }
     }
 
-    
-    //Note: This will need to call some singleton to determine the effect of the item
-    public void UseItem()
-    {
-        Debug.Log("UseItem");
-    }
 
     /// <summary>
     /// The current item being held will be thrown in the direction of "dir"
@@ -53,4 +48,10 @@ public class Item : MonoBehaviour
         isThrown = true;
     }
 
+}
+
+
+public interface IItemInterface
+{
+    void UseItem();
 }
