@@ -50,7 +50,8 @@ public class FistController : MonoBehaviour
             float increment = currentPunchTime / punchTime;
             increment = Mathf.Sin(increment * Mathf.PI * 0.5f); //https://chicounity3d.wordpress.com/2014/05/23/how-to-lerp-like-a-pro/
             transform.position = Vector3.Lerp(originalPos, originalPos + dir * punchDist, increment);
-            transform.LookAt(originalPos + dir * punchDist);
+            transform.rotation = Quaternion.LookRotation(dir, Vector3.up) * Quaternion.Euler(new Vector3(0, -90, 0));
+
         }
 
         if (fistReturning)
@@ -75,7 +76,7 @@ public class FistController : MonoBehaviour
             float increment = currentPunchTime / punchTime;
             increment = Mathf.Sin(increment * Mathf.PI * 0.5f); //https://chicounity3d.wordpress.com/2014/05/23/how-to-lerp-like-a-pro/
             transform.position = Vector3.Lerp(parent.transform.position + parentPositionDif, originalPos + dir * punchDist, increment);
-            transform.LookAt(parent.transform.position + parentPositionDif);
+            transform.rotation = Quaternion.LookRotation((transform.position - parent.transform.position).normalized, Vector3.up) * Quaternion.Euler(new Vector3(0, 90, 0));
         }
     }
         
@@ -125,9 +126,53 @@ public class FistController : MonoBehaviour
                     fistLaunching = false;
                     fistReturning = true;
 
-                    float damage = 5f;
-                    collision.gameObject.GetComponent<PlayerController>().DealDamage(damage, transform.forward);
-                    
+                    //TODO determine amount of damage(0-1)
+                    float damage = 1; 
+
+                    Vector3 fistDir = transform.right;
+                    float angle = Vector3.Angle(transform.right, Vector3.right);
+
+                    //Check if player is on the ground (effects fistDir)
+                    RaycastHit hit;
+                    if (Physics.Raycast(collision.transform.position, Vector3.down, out hit, collision.transform.GetComponent<Collider>().bounds.size.y / 2 + 0.1f, ~LayerMask.NameToLayer("Ground"))){
+
+                        //Fist hit at a upward trajectory
+                        if (fistDir.y > 0)
+                        {
+                            //Shot from left side
+                            if (angle < 20)
+                            {
+                                fistDir = Quaternion.AngleAxis(20, Vector3.forward) * transform.right;
+                            }
+
+                            //Shot from right side
+                            if (angle > 160)
+                            {
+                                fistDir = Quaternion.AngleAxis(-20, Vector3.forward) * transform.right;
+                            }
+                        }
+
+                        //Fist hit at a downward trajectory
+                        if (fistDir.y <= 0)
+                        {
+
+                            //Shot from left or right
+                            if (angle < 20 || angle > 160)
+                            {   
+                                fistDir = Vector3.Reflect(fistDir, hit.normal);
+                                damage *= 0.7f;
+                            }
+
+                            //Shot from above
+                            if (angle >= 20 && angle <= 160)
+                            {
+                                fistDir = Vector3.Reflect(fistDir, hit.normal);
+                                damage *= 0.5f;
+                            }
+                        }
+                    }
+
+                    collision.gameObject.GetComponent<PlayerController>().DealDamage(damage, fistDir);
                 }
             }
         }

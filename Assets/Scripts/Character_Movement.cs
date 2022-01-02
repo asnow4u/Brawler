@@ -27,13 +27,10 @@ public class Character_Movement : MonoBehaviour
         
         if(LayerMask.LayerToName(collision.gameObject.layer) == "Ground")
         {
-            if (Physics.Raycast(transform.position, Vector3.down, transform.GetComponent<CapsuleCollider>().height/2 + 0.1f, ~LayerMask.NameToLayer("Ground")))
+            if (Physics.Raycast(transform.position, Vector3.down, transform.GetComponent<Collider>().bounds.size.y / 2 + 0.1f, ~LayerMask.NameToLayer("Ground")))
             {
                 isGrounded = true;
-                Debug.Log("We have collided.");
             }
-
-            
         }
     }
 

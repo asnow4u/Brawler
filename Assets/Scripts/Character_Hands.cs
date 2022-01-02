@@ -109,8 +109,8 @@ public class Character_Hands : MonoBehaviour
         {
             if (canLaunch)
             {
-                transform.GetComponent<Rigidbody>().velocity = Vector3.zero;
-                transform.GetComponent<Rigidbody>().AddForce(launchForce * mouseDir);
+                //transform.GetComponent<Rigidbody>().velocity = Vector3.zero;
+                //transform.GetComponent<Rigidbody>().AddForce(launchForce * mouseDir);
                 //canLaunch = false;
                 //TODO: need to reset canLaunch to true when the ground is hit
             }
