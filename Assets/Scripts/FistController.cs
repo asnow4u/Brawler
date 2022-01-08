@@ -2,14 +2,22 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
+/// <summary>
+/// The controller that opperates each fist independently
+/// </summary>
 public class FistController : MonoBehaviour
 {
-
     public float punchTime;
     public float punchDist;
 
+    public float hangDistance;
+    public float returnSpeed;
+
     private bool fistLaunching;
     private bool fistReturning;
+
+    private bool ledgeGrabPossible;
 
     private GameObject parent;
     private Character_Hands characterHands;
@@ -25,21 +33,24 @@ public class FistController : MonoBehaviour
         fistLaunching = false;
         fistReturning = false;
 
+        ledgeGrabPossible = false;
+
         parent = transform.parent.gameObject;
         characterHands = parent.transform.GetComponent<Character_Hands>();
         parentPositionDif = parent.transform.position - transform.position;
-
     }
 
     // Update is called once per frame
     void Update()
     {
 
+        //Fist is going outward
         if (fistLaunching)
         {
 
             currentPunchTime += Time.deltaTime;
 
+            //Check if the fist needs to return back to the player
             if (currentPunchTime > punchTime)
             {
                 currentPunchTime = punchTime;
@@ -47,40 +58,46 @@ public class FistController : MonoBehaviour
                 fistReturning = true;
             }
 
+            //Lerp the fist outwards
             float increment = currentPunchTime / punchTime;
             increment = Mathf.Sin(increment * Mathf.PI * 0.5f); //https://chicounity3d.wordpress.com/2014/05/23/how-to-lerp-like-a-pro/
             transform.position = Vector3.Lerp(originalPos, originalPos + dir * punchDist, increment);
             transform.rotation = Quaternion.LookRotation(dir, Vector3.up) * Quaternion.Euler(new Vector3(0, -90, 0));
-
         }
 
+        //Fist is returning
         if (fistReturning)
         {
 
             currentPunchTime -= Time.deltaTime;
 
-            //if (currentPunchTime < 0f)
-            //{
-            //    currentPunchTime = 0f;
-            //    fistReturn = false;
-            //    transform.parent = parent.transform;
-            //    characterHands.FistReturned(gameObject);
-
-            //    //Transfer the item to the player
-            //    if (characterHands.HeldItem != null && transform.childCount > 0)
-            //    {
-            //        transform.GetChild(0).transform.parent = parent.transform;
-            //    }
-            //}
-
+            //Lerp the fist back to the player
             float increment = currentPunchTime / punchTime;
             increment = Mathf.Sin(increment * Mathf.PI * 0.5f); //https://chicounity3d.wordpress.com/2014/05/23/how-to-lerp-like-a-pro/
             transform.position = Vector3.Lerp(parent.transform.position + parentPositionDif, originalPos + dir * punchDist, increment);
             transform.rotation = Quaternion.LookRotation((transform.position - parent.transform.position).normalized, Vector3.up) * Quaternion.Euler(new Vector3(0, 90, 0));
         }
-    }
-        
 
+        //Fist has collided with a ledge 
+        if (parent.GetComponent<Character_Hands>().LedgeHangingFist == gameObject)
+        {
+
+            //Determin if player is close enough to fist
+            if (Vector3.Distance(transform.position, parent.transform.position) > hangDistance)
+            {
+                //Bring player to the fist
+                parent.transform.GetComponent<Rigidbody>().isKinematic = true;
+                parent.transform.position = Vector3.MoveTowards(parent.transform.position, transform.position, returnSpeed * Time.deltaTime);
+            }
+
+            else
+            {
+                parent.transform.GetComponent<Character_Movement>().UpdateLedgeFist(gameObject);
+            }
+        }
+    }
+      
+    
     public void FistAttack(Vector3 direction){
         transform.parent = null;
         dir = direction;
@@ -89,12 +106,27 @@ public class FistController : MonoBehaviour
         fistLaunching = true;
     }
 
+
+    //Getters / Setters
+    public bool LedgeGrabPossible
+    {
+        get { return ledgeGrabPossible; }
+        set { ledgeGrabPossible = value; }
+    }
+
+    public void StopHanging()
+    {
+        //TODO: See if fist is already returned
+        fistReturning = true;
+        parent.transform.GetComponent<Rigidbody>().isKinematic = false;
+        parent.GetComponent<Character_Hands>().LedgeHangingFist = null;
+    }
+
+    //Collisions
     private void OnCollisionEnter(Collision collision)
     {
         string layerName = LayerMask.LayerToName(collision.gameObject.layer);
         string tagName = collision.gameObject.tag;
-
-        //List of available collisions
         
         //Collision with a player
         if (tagName == "Player")
@@ -179,8 +211,24 @@ public class FistController : MonoBehaviour
 
         if (layerName == "Ground")
         {
-            fistLaunching = false;
-            fistReturning = true;
+            //Normal collide with the ground
+            if (!LedgeGrabPossible)
+            {
+                fistLaunching = false;
+                fistReturning = true;
+            }
+
+            //Collision looking for hangGrab
+            else
+            {
+                if (parent.GetComponent<Character_Hands>().LedgeHangingFist == null && fistLaunching)
+                {
+                    parent.GetComponent<Character_Hands>().LedgeHangingFist = gameObject;
+                    fistLaunching = false;
+                    fistReturning = false;
+                }
+            }
+
         }
 
         if (tagName == "Item")

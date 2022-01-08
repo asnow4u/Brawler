@@ -11,6 +11,8 @@ public class Character_Hands : MonoBehaviour
     public float launchForce;
     private bool canLaunch;
 
+    private GameObject ledgeHangingFist;
+
     private Vector3 mouseDir;
 
     private GameObject heldItem;
@@ -21,6 +23,7 @@ public class Character_Hands : MonoBehaviour
         fistQueue.Add(rightFist);
         fistQueue.Add(leftFist);
         canLaunch = true;
+        ledgeHangingFist = null;
         heldItem = null;
     }
 
@@ -123,10 +126,18 @@ public class Character_Hands : MonoBehaviour
             fistQueue.Add(go);
     }
 
+
+    //Getter / Setter
     public GameObject HeldItem
     {
         get { return heldItem; }
         set { heldItem = value; }
+    }
+
+    public GameObject LedgeHangingFist
+    {
+        get { return ledgeHangingFist; }
+        set { ledgeHangingFist = value; }
     }
 
 }
