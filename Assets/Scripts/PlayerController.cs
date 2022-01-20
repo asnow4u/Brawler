@@ -66,21 +66,21 @@ public class PlayerController : MonoBehaviour
     }
 
 
-    private void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("Platforms"))
-        {
-            if (stallTimer > 0) 
-            {
+    //private void OnCollisionEnter(Collision collision)
+    //{
+    //    if (collision.gameObject.CompareTag("Platforms"))
+    //    {
+    //        if (stallTimer > 0) 
+    //        {
 
-                //F = m(v/t) || t=1
-                Vector3 bounceForce = Vector3.Reflect(-1 * collision.relativeVelocity, collision.transform.up) * rb.mass;
+    //            //F = m(v/t) || t=1
+    //            Vector3 bounceForce = Vector3.Reflect(-1 * collision.relativeVelocity, collision.transform.up) * rb.mass;
                 
-                //Debug.Log("Bounce");
-                //Debug.Log(bounceForce);
+    //            //Debug.Log("Bounce");
+    //            //Debug.Log(bounceForce);
 
-                rb.AddForce(bounceForce * bounceDampener, ForceMode.Impulse);
-            }
-        }
-    }
+    //            rb.AddForce(bounceForce * bounceDampener, ForceMode.Impulse);
+    //        }
+    //    }
+    //}
 }

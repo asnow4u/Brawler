@@ -13,22 +13,22 @@ public class Item : MonoBehaviour
 
     protected void Start()
     {
-        rb = gameObject.GetComponent<Rigidbody>();
-        isThrown = false;
+        //rb = gameObject.GetComponent<Rigidbody>();
+        //isThrown = false;
     }
 
     protected void Update()
     {
         //When this object is thrown determin if the object is far enough away to switch to a layer that is collidable
-        if (isThrown && gameObject.layer == LayerMask.NameToLayer("Ignore Collision"))
-        {
-            if (Vector3.Distance(transform.position, transform.parent.transform.position) > 1f)
-            {
-                gameObject.layer = LayerMask.NameToLayer("Default");
-                transform.parent.GetComponent<Character_Hands>().HeldItem = null;
-                transform.parent = null;
-            }
-        }
+        //if (isThrown && gameObject.layer == LayerMask.NameToLayer("Ignore Collision"))
+        //{
+        //    if (Vector3.Distance(transform.position, transform.parent.transform.position) > 1f)
+        //    {
+        //        gameObject.layer = LayerMask.NameToLayer("Default");
+        //        transform.parent.GetComponent<PlayerHands>().HeldItem = null;
+        //        transform.parent = null;
+        //    }
+        //}
     }
 
 
@@ -41,11 +41,11 @@ public class Item : MonoBehaviour
     /// <param name="dir"></param>
     public void ThrowItem(Vector3 dir)
     {
-        rb.isKinematic = false;
-        rb.velocity = Vector3.zero;
-        rb.AddForce(dir * throwForce, ForceMode.Impulse);
+        //rb.isKinematic = false;
+        //rb.velocity = Vector3.zero;
+        //rb.AddForce(dir * throwForce, ForceMode.Impulse);
 
-        isThrown = true;
+        //isThrown = true;
     }
 
 }
@@ -53,5 +53,5 @@ public class Item : MonoBehaviour
 
 public interface IItemInterface
 {
-    void UseItem();
+    //void UseItem();
 }

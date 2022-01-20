@@ -4,6 +4,10 @@ using Unity.Netcode;
 using UnityEngine;
 
 [RequireComponent(typeof(NetworkObject))]
+
+//NOTE: Would Authoritative be better???
+//https://www.youtube.com/watch?v=49mnzY-MpLw&ab_channel=DilmerValecillos
+
 public class Character_Movement : NetworkBehaviour
 {
     //Network Variable
@@ -122,16 +126,27 @@ public class Character_Movement : NetworkBehaviour
         }
     }
 
+
+    private void UpdateHorizontalMovement()
+    {
+        if (horizontalMovement.Value != Vector3.zero)
+        {
+            transform.Translate(horizontalMovement.Value * Time.deltaTime);
+        }
+    }
+
+
+
     #region RPC Calls
 
     [ServerRpc]
-    public void UpdateClientPositionServerRpc(Vector3 movement)
+    private void UpdateClientPositionServerRpc(Vector3 movement)
     {
         horizontalMovement.Value = movement;
     }
 
     [ServerRpc]
-    public void UpdateClientJumpServerRpc(Vector3 force)
+    private void UpdateClientJumpServerRpc(Vector3 force)
     {
 
         if (force != Vector3.zero)
@@ -144,16 +159,7 @@ public class Character_Movement : NetworkBehaviour
     #endregion
 
 
-    #region Server Functions
-    private void UpdateHorizontalMovement()
-    {
-        if (horizontalMovement.Value != Vector3.zero)
-        {
-            transform.Translate(horizontalMovement.Value * Time.deltaTime);
-        }
-    }
-
-    #endregion
+   
 
 
     //Get a reference to the fist that is hanging off a wall
