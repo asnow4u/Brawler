@@ -1,9 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
 
-public class Item : MonoBehaviour
+public class Item : NetworkBehaviour
 {
     public float throwForce;
 
