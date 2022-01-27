@@ -4,7 +4,7 @@ using Unity.Netcode;
 using UnityEngine;
 
 
-public class Item : NetworkBehaviour
+public class Item : MonoBehaviour
 {
     public float throwForce;
 
