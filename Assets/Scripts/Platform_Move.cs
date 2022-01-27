@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class Platform_Move : MonoBehaviour
+public class Platform_Move : NetworkBehaviour
 {
     public float speed;
     public bool vertDir;
@@ -16,51 +17,78 @@ public class Platform_Move : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        time = 0;
-        dist = travDist;
+        if (IsServer)
+        {
+            time = 0;
+            dist = travDist;
+        }
     }
 
     // Update is called once per frame
-    void FixedUpdate()
+    void Update()
     {
-        // check the time to make sure 
-        if (time > 0)
+        if (IsServer)
         {
-            time -= Time.fixedDeltaTime;
+
+            // check the time to make sure 
+            if (time > 0)
+            {
+                time -= Time.fixedDeltaTime;
+            }
+            else
+            {
+                // Resets the direction piece for the if statements
+                direction = Vector3.zero;
+
+                // Check horizontal direction
+                if (horDir)
+                {
+                    direction += transform.right;
+                }
+
+                // Check vertical direction
+                if (vertDir)
+                {
+                    direction += transform.up;
+                }
+
+                // Movement time
+                transform.Translate(direction * speed, Space.Self);
+
+                // Lowering that distance
+                dist -= Mathf.Abs(speed);
+
+                // Check the distance and enforce the time stoppage
+                if (dist < 0)
+                {
+                    time = stopTime;
+                    dist = travDist;
+
+                    speed *= -1;
+                }
+            }
         }
-        else
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (IsServer)
         {
-            // Resets the direction piece for the if statements
-            direction = Vector3.zero;
-
-            // Check horizontal direction
-            if (horDir)
+            if (collision.gameObject.tag == "Player")
             {
-                direction += transform.right;
-            }
-
-            // Check vertical direction
-            if (vertDir)
-            {
-                direction += transform.up;
-            }
-
-            // Movement time
-            transform.Translate(direction * speed, Space.Self);
-
-            // Lowering that distance
-            dist -= Mathf.Abs(speed);
-            
-            // Check the distance and enforce the time stoppage
-            if (dist < 0)
-            {
-                time = stopTime;
-                dist = travDist;
-
-                speed *= -1;
+                collision.collider.transform.SetParent(transform);
             }
         }
+    }
 
-
+    private void OnCollisionExit(Collision collision)
+    {
+        if (IsServer)
+        {
+            if (collision.gameObject.tag == "Player")
+            {
+                collision.collider.transform.SetParent(null);
+            }
+        }
     }
 }
