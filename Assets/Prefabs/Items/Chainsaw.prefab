@@ -129,6 +129,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   throwForce: 0
+  isGrounded: 0
+  left: 0
+  right: 1
+  speed: 3
+  timeInterval: 0
 --- !u!1 &1990600315921624842
 GameObject:
   m_ObjectHideFlags: 0
