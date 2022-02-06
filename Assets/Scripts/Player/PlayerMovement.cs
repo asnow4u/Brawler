@@ -3,97 +3,70 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-[RequireComponent(typeof(NetworkObject))]
 
-//NOTE: Would Authoritative be better???
-//https://www.youtube.com/watch?v=49mnzY-MpLw&ab_channel=DilmerValecillos
+//NOTE:
+//https://unity.com/roadmap/unity-platform/multiplayer-networking?_ga=2.11311988.1592772763.1644094688-1905360034.1638849034
+//There is a Client-side Perdiction feature being worked on for unity netcode
+//Currently Unity states that currently that having the phisics run on the server is the best
+//"With future prediction support of Netcode, the latency will no longer be an issue which makes this the best choice of a movement model for a game like this." (https://docs-multiplayer.unity3d.com/docs/learn/bitesize-spaceshooter)
 
-public class Character_Movement : NetworkBehaviour
+public class PlayerMovement : NetworkBehaviour
 {
-    //Network Variable
     private NetworkVariable<Vector3> horizontalMovement = new NetworkVariable<Vector3>();
-
-    // Variables
-    private Vector3 oldMovement;
 
     public float speed_x;
     public float speed_y;
 
     public bool isGrounded;
     public int jumpsAvailable;
-    private int jumpCount;
     private bool doubleJumpCheck;
-    
-    private Rigidbody rb;
 
-    private GameObject ledgeFist;
+    private Rigidbody rb;
 
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-
-        ledgeFist = null;
-
-        //Test
-        isGrounded = true;
     }
-
 
     // Update is called once per frame
     void Update()
     {
-
-        if (IsClient && IsOwner) 
-        {
-            UpdateClient();
-        }
-
         if (IsServer)
-        {
-            UpdateHorizontalMovement();
-        }
+            ServerUpdate();
+        
 
-
-        ////Check if hanging from a ledge
-        //if (ledgeFist != null)
-        //{
-        //    if (Mathf.Abs(x) > 0)
-        //    {
-        //        ledgeFist.GetComponent<FistController>().StopHanging();
-        //        doubleJumpCheck = true;
-        //        ledgeFist = null;
-        //    }
-        //}
-
-        //// Movement on y-axis
-        //
+        if (IsClient && IsOwner)
+            ClientUpdate();
+        
     }
 
 
-    private void UpdateClient()
+    private void ClientUpdate()
     {
         // Movement on X-Axis
         float x = Input.GetAxis("Horizontal");
         Vector3 movement = transform.right * x * speed_x;
 
-        if (oldMovement != movement)
-        {
-            oldMovement = movement;
-            UpdateClientPositionServerRpc(movement);
-        }
+
+        Debug.Log("Movement Update Sent: " + movement);
+        UpdateClientPositionServerRpc(movement);
+
+        if (!IsHost)
+            transform.Translate(movement * Time.deltaTime);
 
 
-        //Check to see if the client is on the ground
+        //TODO: make two rays on each side of the player to prevent landing just on the edge and not getting jump reset
         if (Physics.Raycast(transform.position, Vector3.down, transform.GetComponent<Collider>().bounds.size.y / 2 + 0.1f, ~LayerMask.NameToLayer("Ground")))
         {
             isGrounded = true;
             doubleJumpCheck = true;
-        } 
+        }
         else
         {
             isGrounded = false;
         }
+
 
         //Jump
         if (Input.GetKeyDown(KeyCode.Space))
@@ -113,37 +86,49 @@ public class Character_Movement : NetworkBehaviour
             //    else
             if (isGrounded)
             {
+
                 UpdateClientJumpServerRpc(transform.up * speed_y);
                 isGrounded = false;
-                doubleJumpCheck = true;
+                
+                if (!IsHost) 
+                {
+                    rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
+                    rb.AddForce(transform.up * speed_y, ForceMode.Impulse);
+                }
             }
 
             else if (doubleJumpCheck)
             {
                 UpdateClientJumpServerRpc(transform.up * speed_y);
                 doubleJumpCheck = false;
+                
+                if (!IsHost)
+                {
+                    rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
+                    rb.AddForce(transform.up * speed_y, ForceMode.Impulse);
+                }
             }
         }
     }
 
 
-    private void UpdateHorizontalMovement()
+    private void ServerUpdate()
     {
         if (horizontalMovement.Value != Vector3.zero)
         {
             transform.Translate(horizontalMovement.Value * Time.deltaTime);
+            UpdateClientPostionClientRPC(transform.position);
         }
     }
 
 
-
-    #region RPC Calls
-
     [ServerRpc]
     private void UpdateClientPositionServerRpc(Vector3 movement)
     {
+        Debug.Log("Position Update Recieved: " + movement);
         horizontalMovement.Value = movement;
     }
+
 
     [ServerRpc]
     private void UpdateClientJumpServerRpc(Vector3 force)
@@ -156,16 +141,11 @@ public class Character_Movement : NetworkBehaviour
         }
     }
 
-    #endregion
 
-
-   
-
-
-    //Get a reference to the fist that is hanging off a wall
-    public void UpdateLedgeFist(GameObject fist)
+    [ClientRpc]
+    private void UpdateClientPostionClientRPC(Vector3 pos)
     {
-        ledgeFist = fist;
+        Debug.Log("Reset Client Pos to Server");
+        transform.position = pos;
     }
-
 }
