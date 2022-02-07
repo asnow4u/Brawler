@@ -1,9 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Netcode;
 using UnityEngine;
 
-public class Platform_Move : NetworkBehaviour
+public class Platform_Move : MonoBehaviour
 {
     public float speed;
     public bool vertDir;
@@ -17,18 +16,18 @@ public class Platform_Move : NetworkBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        if (IsServer)
-        {
+        //if (IsServer)
+        //{
             time = 0;
             dist = travDist;
-        }
+        //}
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (IsServer)
-        {
+        //if (IsServer)
+        //{
 
             // check the time to make sure 
             if (time > 0)
@@ -67,28 +66,28 @@ public class Platform_Move : NetworkBehaviour
                     speed *= -1;
                 }
             }
-        }
+        //}
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (IsServer)
-        {
+        //if (IsServer)
+        //{
             if (collision.gameObject.tag == "Player")
             {
                 collision.collider.transform.SetParent(transform);
             }
-        }
+        //}
     }
 
     private void OnCollisionExit(Collision collision)
     {
-        if (IsServer)
-        {
+        //if (IsServer)
+        //{
             if (collision.gameObject.tag == "Player")
             {
                 collision.collider.transform.SetParent(null);
             }
-        }
+        //}
     }
 }

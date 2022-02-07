@@ -2,9 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Unity.Netcode;
 
-public class RespawnPlayer : NetworkBehaviour
+public class RespawnPlayer : MonoBehaviour
 {
     [SerializeField] private Transform player;
     [SerializeField] private Transform respawnPoint;
@@ -32,7 +31,7 @@ public class RespawnPlayer : NetworkBehaviour
 
             if (other.CompareTag("Item"))
             {
-                Destroy(other.gameObject);
+                //Destroy(other.gameObject);
             }
         //}
     }

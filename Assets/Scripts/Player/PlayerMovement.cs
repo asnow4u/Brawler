@@ -1,8 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Netcode;
 using UnityEngine;
-
+using Mirror;
 
 //NOTE:
 //https://unity.com/roadmap/unity-platform/multiplayer-networking?_ga=2.11311988.1592772763.1644094688-1905360034.1638849034
@@ -12,8 +11,6 @@ using UnityEngine;
 
 public class PlayerMovement : NetworkBehaviour
 {
-    private NetworkVariable<Vector3> horizontalMovement = new NetworkVariable<Vector3>();
-
     public float speed_x;
     public float speed_y;
 
@@ -32,120 +29,61 @@ public class PlayerMovement : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (IsServer)
-            ServerUpdate();
-        
 
-        if (IsClient && IsOwner)
-            ClientUpdate();
-        
-    }
+        //Client authoritative for movement
+        if (isLocalPlayer)
+        {
 
+            // Movement on X-Axis
+            float x = Input.GetAxis("Horizontal");
+            Vector3 movement = transform.right * x * speed_x;
 
-    private void ClientUpdate()
-    {
-        // Movement on X-Axis
-        float x = Input.GetAxis("Horizontal");
-        Vector3 movement = transform.right * x * speed_x;
-
-
-        Debug.Log("Movement Update Sent: " + movement);
-        UpdateClientPositionServerRpc(movement);
-
-        if (!IsHost)
             transform.Translate(movement * Time.deltaTime);
 
 
-        //TODO: make two rays on each side of the player to prevent landing just on the edge and not getting jump reset
-        if (Physics.Raycast(transform.position, Vector3.down, transform.GetComponent<Collider>().bounds.size.y / 2 + 0.1f, ~LayerMask.NameToLayer("Ground")))
-        {
-            isGrounded = true;
-            doubleJumpCheck = true;
-        }
-        else
-        {
-            isGrounded = false;
-        }
-
-
-        //Jump
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-
-            //    //Player is hanging from a ledge
-            //    if (ledgeFist != null)
-            //    {
-            //        ledgeFist.GetComponent<FistController>().StopHanging();
-
-            //        Jump();
-
-            //        doubleJumpCheck = true;
-            //        ledgeFist = null;
-            //    }
-
-            //    else
-            if (isGrounded)
+            //TODO: make two rays on each side of the player to prevent landing just on the edge and not getting jump reset
+            if (Physics.Raycast(transform.position, Vector3.down, transform.GetComponent<Collider>().bounds.size.y / 2 + 0.1f, ~LayerMask.NameToLayer("Ground")))
             {
-
-                UpdateClientJumpServerRpc(transform.up * speed_y);
+                isGrounded = true;
+                doubleJumpCheck = true;
+            }
+            else
+            {
                 isGrounded = false;
-                
-                if (!IsHost) 
-                {
-                    rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
-                    rb.AddForce(transform.up * speed_y, ForceMode.Impulse);
-                }
             }
 
-            else if (doubleJumpCheck)
+
+            //Jump
+            if (Input.GetKeyDown(KeyCode.Space))
             {
-                UpdateClientJumpServerRpc(transform.up * speed_y);
-                doubleJumpCheck = false;
-                
-                if (!IsHost)
+
+                //    //Player is hanging from a ledge
+                //    if (ledgeFist != null)
+                //    {
+                //        ledgeFist.GetComponent<FistController>().StopHanging();
+
+                //        Jump();
+
+                //        doubleJumpCheck = true;
+                //        ledgeFist = null;
+                //    }
+
+                //    else
+                if (isGrounded)
+                {
+   
+                    rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
+                    rb.AddForce(transform.up * speed_y, ForceMode.Impulse);
+                    isGrounded = false;
+                }
+
+                else if (doubleJumpCheck)
                 {
                     rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
                     rb.AddForce(transform.up * speed_y, ForceMode.Impulse);
+                    doubleJumpCheck = false;
                 }
             }
         }
-    }
-
-
-    private void ServerUpdate()
-    {
-        if (horizontalMovement.Value != Vector3.zero)
-        {
-            transform.Translate(horizontalMovement.Value * Time.deltaTime);
-            UpdateClientPostionClientRPC(transform.position);
-        }
-    }
-
-
-    [ServerRpc]
-    private void UpdateClientPositionServerRpc(Vector3 movement)
-    {
-        Debug.Log("Position Update Recieved: " + movement);
-        horizontalMovement.Value = movement;
-    }
-
-
-    [ServerRpc]
-    private void UpdateClientJumpServerRpc(Vector3 force)
-    {
-
-        if (force != Vector3.zero)
-        {
-            rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
-            rb.AddForce(force, ForceMode.Impulse);
-        }
-    }
-
-
-    [ClientRpc]
-    private void UpdateClientPostionClientRPC(Vector3 pos)
-    {
-        Debug.Log("Reset Client Pos to Server");
-        transform.position = pos;
     }
 }

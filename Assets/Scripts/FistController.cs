@@ -1,13 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Netcode;
 using UnityEngine;
 
 
 /// <summary>
 /// The controller that opperates each fist independently
 /// </summary>
-public class FistController : NetworkBehaviour
+public class FistController : MonoBehaviour
 {
 
     [SerializeField] private float punchTime;
@@ -32,10 +31,10 @@ public class FistController : NetworkBehaviour
     void Update()
     {
 
-        if (IsServer)
-        {
-            ServerUpdate();
-        }
+        //if (IsServer)
+        //{
+        //    ServerUpdate();
+        //}
         
     }
 
@@ -148,45 +147,45 @@ public class FistController : NetworkBehaviour
     #region Collisions
     private void OnTriggerEnter(Collider col)
     {
-        if (IsServer)
-        {
-            //string layerName = LayerMask.LayerToName(collision.gameObject.layer);
-            string tagName = col.gameObject.tag;
+        //if (IsServer)
+        //{
+        //    //string layerName = LayerMask.LayerToName(collision.gameObject.layer);
+        //    string tagName = col.gameObject.tag;
 
-            //Collision with a player
-            if (tagName == "Player")
-            {
+        //    //Collision with a player
+        //    if (tagName == "Player")
+        //    {
 
-                //Determine if parent player
-                if (col.transform == transform.parent)
-                {
+        //        //Determine if parent player
+        //        if (col.transform == transform.parent)
+        //        {
 
-                    //Upon first trigger, set up original position and rotation
-                    if (originalPos == Vector3.zero)
-                    {
-                        originalPos = transform.parent.transform.position - transform.position;
-                        originalRot = transform.rotation;
-                        FistReturnClientRpc();
-                    }
+        //            //Upon first trigger, set up original position and rotation
+        //            if (originalPos == Vector3.zero)
+        //            {
+        //                originalPos = transform.parent.transform.position - transform.position;
+        //                originalRot = transform.rotation;
+        //                FistReturnClientRpc();
+        //            }
 
-                    isFistLaunching = false;
-                    isFistReturning = false;
+        //            isFistLaunching = false;
+        //            isFistReturning = false;
 
-                    //Set fist to originpoint
-                    transform.position = transform.parent.transform.position + originalPos;
-                    transform.rotation = originalRot;
+        //            //Set fist to originpoint
+        //            transform.position = transform.parent.transform.position + originalPos;
+        //            transform.rotation = originalRot;
 
-                    FistReturnClientRpc();
-                }
-            }
-        }
+        //            FistReturnClientRpc();
+        //        }
+        //    }
+        //}
     }
 
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (IsServer)
-        {
+        //if (IsServer)
+        //{
             //string layerName = LayerMask.LayerToName(collision.gameObject.layer);
             //string tagName = collision.gameObject.tag;
 
@@ -298,7 +297,7 @@ public class FistController : NetworkBehaviour
             //        collision.transform.parent = transform;
             //    }
             //}
-        }
+        //}
     }
 
     #endregion
@@ -308,7 +307,7 @@ public class FistController : NetworkBehaviour
     /// Initiate the punch attack in the direction given
     /// </summary>
     /// <param name="direction"></param>
-    [ServerRpc]
+    //[ServerRpc]
     private void StartFistAttackServerRpc(Vector3 direction)
     {
         isFistLaunching = true;
@@ -321,11 +320,11 @@ public class FistController : NetworkBehaviour
     /// <summary>
     /// Client request to update queued fists
     /// </summary>
-    [ClientRpc]
+    //[ClientRpc]
     private void FistReturnClientRpc()
     {
-        ulong fistID = GetComponent<NetworkObject>().NetworkObjectId;
-        transform.parent.GetComponent<PlayerHands>().FistReturned(fistID);
+        //ulong fistID = GetComponent<NetworkObject>().NetworkObjectId;
+        //transform.parent.GetComponent<PlayerHands>().FistReturned(fistID);
     }
 
 }
