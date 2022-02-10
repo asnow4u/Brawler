@@ -42,7 +42,8 @@ public class PlayerMovement : NetworkBehaviour
 
 
             //TODO: make two rays on each side of the player to prevent landing just on the edge and not getting jump reset
-            if (Physics.Raycast(transform.position, Vector3.down, transform.GetComponent<Collider>().bounds.size.y / 2 + 0.1f, ~LayerMask.NameToLayer("Ground")))
+            if (  Physics.Raycast(transform.position + new Vector3((transform.GetComponent<Collider>().bounds.size.x / 2) * (.7f), 0, 0), Vector3.down, transform.GetComponent<Collider>().bounds.size.y / 2 + 0.1f, ~LayerMask.NameToLayer("Ground"))
+               || Physics.Raycast(transform.position - new Vector3((transform.GetComponent<Collider>().bounds.size.x / 2) * (.7f), 0, 0), Vector3.down, transform.GetComponent<Collider>().bounds.size.y / 2 + 0.1f, ~LayerMask.NameToLayer("Ground")))
             {
                 isGrounded = true;
                 doubleJumpCheck = true;
