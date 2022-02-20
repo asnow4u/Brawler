@@ -1,24 +1,28 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Mirror;
 
 
 /// <summary>
 /// The controller that opperates each fist independently
 /// </summary>
-public class FistController : MonoBehaviour
+public class FistController : NetworkBehaviour
 {
 
     [SerializeField] private float punchTime;
     [SerializeField] private float punchDist;
     
     public float hangDistance;
-    
+
+    [SyncVar(hook = nameof(SetParent))]
+    public Transform parentPlayer; //TODO: change to private
+
     private Vector3 originalPos;
     private Quaternion originalRot;
     
-    private bool isFistLaunching;
-    private bool isFistReturning;
+    public bool isFistLaunching;
+    public bool isFistReturning;
     private Vector3 fistDirection;
     private Vector3 startPos;
     private float currentPunchTime;
@@ -27,91 +31,127 @@ public class FistController : MonoBehaviour
     private bool ledgeGrabPossible;
 
 
-    // Update is called once per frame
-    void Update()
-    {
+    //public override void OnStartClient()
+    //{
 
-        //if (IsServer)
-        //{
-        //    ServerUpdate();
-        //}
+    //    base.OnStartClient();
+
+
+    //    //TODO: We go to fast through the function that the sync var never gets set proparly.
+    //    //Instead we can loop through all the spawned objs and assign fists to the player before
+    //    for (int i=0; i<NetworkServer.spawned.Count; i++)
+    //    {
+    //        //...
+    //    }
+
+    //    //Setup all other fists
+    //    if (parentPlayer != null)
+    //        transform.SetParent(parentPlayer);
+    //}
+
+    
+    private void SetParent(Transform oldParent, Transform newParent)
+    {
+        Debug.Log("Set Parent " + GetComponent<NetworkIdentity>().netId);
         
+        if (newParent != null)
+        {
+            transform.SetParent(newParent);
+            transform.position = new Vector3(newParent.transform.position.x, newParent.transform.position.y, transform.position.z);
+        }
     }
 
 
-    /// <summary>
-    /// Update for the server
-    /// </summary>
-    private void ServerUpdate()
+    // Update is called once per frame
+    void FixedUpdate()
     {
 
-        //Fist has collided with a ledge 
-        //if (parent.GetComponent<PlayerHands>().LedgeHangingFist == gameObject)
-        //{
-
-        //    //Determin if player is close enough to fist
-        //    if (Vector3.Distance(transform.position, parent.transform.position) > hangDistance)
-        //    {
-        //        //Bring player to the fist
-        //        parent.transform.GetComponent<Rigidbody>().isKinematic = true;
-        //        parent.transform.position = Vector3.MoveTowards(parent.transform.position, transform.position, returnSpeed * Time.deltaTime);
-        //    }
-
-        //    else
-        //    {
-        //        parent.transform.GetComponent<Character_Movement>().UpdateLedgeFist(gameObject);
-        //    }
-        //}
-
-        /// <summary>
-        /// Lerps back towards the player
-        /// Update position and rotation
-        /// </summary>
-        if (isFistReturning)
+        if (isServer)
         {
 
-            //Lerp the fist back to the player
-            float increment = currentPunchTime / punchTime;
-            increment = Mathf.Sin(increment * Mathf.PI * 0.5f); //https://chicounity3d.wordpress.com/2014/05/23/how-to-lerp-like-a-pro/
+            //Fist has collided with a ledge 
+            //if (parent.GetComponent<PlayerHands>().LedgeHangingFist == gameObject)
+            //{
 
-            Vector3 parentPos = transform.parent.transform.position + originalPos;
-                
-            //Update position and rotation
-            transform.position = Vector3.Lerp(parentPos, startPos, increment);
-            transform.rotation = Quaternion.LookRotation((transform.parent.transform.position - transform.position).normalized, Vector3.up) * Quaternion.Euler(new Vector3(0, 90, 0));
+            //    //Determin if player is close enough to fist
+            //    if (Vector3.Distance(transform.position, parent.transform.position) > hangDistance)
+            //    {
+            //        //Bring player to the fist
+            //        parent.transform.GetComponent<Rigidbody>().isKinematic = true;
+            //        parent.transform.position = Vector3.MoveTowards(parent.transform.position, transform.position, returnSpeed * Time.deltaTime);
+            //    }
 
-            currentPunchTime -= Time.deltaTime;
-        }
+            //    else
+            //    {
+            //        parent.transform.GetComponent<Character_Movement>().UpdateLedgeFist(gameObject);
+            //    }
+            //}
 
-
-        /// <summary>
-        /// Lerps towards click point
-        /// Update position and rotation
-        /// After punchtime has depleted, have the fist return back to the player
-        /// </summary>
-        else if (isFistLaunching)
-        {
-
-            //Lerp the fist outwards
-            float increment = currentPunchTime / punchTime;
-            increment = Mathf.Sin(increment * Mathf.PI * 0.5f); //https://chicounity3d.wordpress.com/2014/05/23/how-to-lerp-like-a-pro/
-
-            transform.position = Vector3.Lerp(startPos, startPos + fistDirection * punchDist, increment);
-            transform.rotation = Quaternion.LookRotation(fistDirection, Vector3.up) * Quaternion.Euler(new Vector3(0, -90, 0));
-
-            currentPunchTime += Time.deltaTime;
-
-            //Check if the fist needs to return back to the player
-            if (currentPunchTime > punchTime)
+            /// <summary>
+            /// Lerps back towards the player
+            /// Update position and rotation
+            /// </summary>
+            if (isFistReturning)
             {
-                currentPunchTime = punchTime;
-                startPos = transform.position;
-                isFistReturning = true;
-                Debug.Log("Fist Returning");
 
+                //Lerp the fist back to the player
+                float increment = currentPunchTime / punchTime;
+                increment = Mathf.Sin(increment * Mathf.PI * 0.5f); //https://chicounity3d.wordpress.com/2014/05/23/how-to-lerp-like-a-pro/
+
+                Vector3 parentPos = parentPlayer.transform.position + originalPos;
+
+                //Update position and rotation
+                transform.position = Vector3.Lerp(parentPos, startPos, increment);
+                transform.rotation = Quaternion.LookRotation((parentPlayer.transform.position - transform.position).normalized, Vector3.up) * Quaternion.Euler(new Vector3(0, 90, 0));
+
+                currentPunchTime -= Time.deltaTime;
+            }
+
+
+            /// <summary>
+            /// Lerps towards click point
+            /// Update position and rotation
+            /// After punchtime has depleted, have the fist return back to the player
+            /// </summary>
+            else if (isFistLaunching)
+            {
+
+                //Lerp the fist outwards
+                float increment = currentPunchTime / punchTime;
+                increment = Mathf.Sin(increment * Mathf.PI * 0.5f); //https://chicounity3d.wordpress.com/2014/05/23/how-to-lerp-like-a-pro/
+
+                transform.position = Vector3.Lerp(startPos, startPos + fistDirection * punchDist, increment);
+                transform.rotation = Quaternion.LookRotation(fistDirection, Vector3.up) * Quaternion.Euler(new Vector3(0, -90, 0));
+
+                currentPunchTime += Time.deltaTime;
+
+                //Check if the fist needs to return back to the player
+                if (currentPunchTime > punchTime)
+                {
+                    currentPunchTime = punchTime;
+                    startPos = transform.position;
+                    isFistReturning = true;
+                    Debug.Log("Fist Returning");
+
+                }
             }
         }
     }
+
+
+    public void InitFist(Transform parent, uint id)
+    {
+        Debug.Log("Fist Initilized (Server)");
+        parentPlayer = parent;   
+        transform.SetParent(parent);
+        originalPos = parent.transform.position - transform.position;
+        originalRot = transform.rotation;
+
+        Debug.Log(NetworkServer.spawned);
+
+        //RpcFistReturn();
+    }
+
 
 
     /// <summary>
@@ -121,8 +161,12 @@ public class FistController : MonoBehaviour
     /// </summary>
     /// <param name="direction"></param>
     public void StartFistAttack(Vector3 direction)
-    { 
-        StartFistAttackServerRpc(direction);
+    {
+        isFistLaunching = true;
+        startPos = transform.position;
+        fistDirection = direction;
+        currentPunchTime = 0f;
+        transform.parent = null;
     }
 
 
@@ -143,42 +187,38 @@ public class FistController : MonoBehaviour
 
 
 
+    
+
+
 
     #region Collisions
     private void OnTriggerEnter(Collider col)
     {
-        //if (IsServer)
-        //{
-        //    //string layerName = LayerMask.LayerToName(collision.gameObject.layer);
-        //    string tagName = col.gameObject.tag;
+        if (isServer)
+        {
+            //string layerName = LayerMask.LayerToName(collision.gameObject.layer);
+            string tagName = col.gameObject.tag;
 
-        //    //Collision with a player
-        //    if (tagName == "Player")
-        //    {
+            //Collision with a player
+            if (tagName == "Player")
+            {
 
-        //        //Determine if parent player
-        //        if (col.transform == transform.parent)
-        //        {
+                //Determine if parent player
+                if (col.transform == parentPlayer && isFistReturning)
+                {
 
-        //            //Upon first trigger, set up original position and rotation
-        //            if (originalPos == Vector3.zero)
-        //            {
-        //                originalPos = transform.parent.transform.position - transform.position;
-        //                originalRot = transform.rotation;
-        //                FistReturnClientRpc();
-        //            }
+                    isFistLaunching = false;
+                    isFistReturning = false;
 
-        //            isFistLaunching = false;
-        //            isFistReturning = false;
+                    //Set fist to originpoint
+                    transform.position = parentPlayer.transform.position + originalPos;
+                    transform.rotation = originalRot;
+                    transform.parent = parentPlayer;
 
-        //            //Set fist to originpoint
-        //            transform.position = transform.parent.transform.position + originalPos;
-        //            transform.rotation = originalRot;
-
-        //            FistReturnClientRpc();
-        //        }
-        //    }
-        //}
+                    //RpcFistReturn();
+                }
+            }
+        }
     }
 
 
@@ -303,28 +343,12 @@ public class FistController : MonoBehaviour
     #endregion
 
 
-    /// <summary>
-    /// Initiate the punch attack in the direction given
-    /// </summary>
-    /// <param name="direction"></param>
-    //[ServerRpc]
-    private void StartFistAttackServerRpc(Vector3 direction)
+    [ClientRpc]
+    private void RpcFistReturn()
     {
-        isFistLaunching = true;
-        startPos = transform.position;
-        fistDirection = direction;
-        currentPunchTime = 0f;
+        Debug.Log("Fist Return Call (Client) " + netId);
+
+        if (parentPlayer != null)
+            parentPlayer.GetComponent<PlayerHands>().FistReturned(gameObject);
     }
-
-
-    /// <summary>
-    /// Client request to update queued fists
-    /// </summary>
-    //[ClientRpc]
-    private void FistReturnClientRpc()
-    {
-        //ulong fistID = GetComponent<NetworkObject>().NetworkObjectId;
-        //transform.parent.GetComponent<PlayerHands>().FistReturned(fistID);
-    }
-
 }

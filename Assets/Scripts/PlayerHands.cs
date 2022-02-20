@@ -1,14 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Mirror;
 
-public class PlayerHands : MonoBehaviour
+public class PlayerHands : NetworkBehaviour
 {
 
     [SerializeField] private GameObject rightFistPrefab;
     [SerializeField] private GameObject leftFistPrefab;
 
-    //[SerializeField] private List<NetworkObject> fistQueue = new List<NetworkObject>();
+    [SerializeField] private List<GameObject> fistQueue = new List<GameObject>();
 
     private float fistOffset = 0.2f;
     private Vector3 mouseDir;
@@ -18,43 +19,30 @@ public class PlayerHands : MonoBehaviour
 
     public float launchForce;
     private bool canLaunch;
-   
+
+    //Getter / Setter
+    public GameObject HeldItem
+    {
+        get { return heldItem; }
+        set { heldItem = value; }
+    }
+
+    public GameObject LedgeHangingFist
+    {
+        get { return ledgeHangingFist; }
+        set { ledgeHangingFist = value; }
+    }
+
 
     // Start is called before the first frame update
     void Start()
     {
-
-        //TODO: For some reason if we try to spawn the left and right fist in OnNetworkSpawn, there is a second copy of the first fist that is spawned that only appears on the client side and for no one else.
-        //if (IsServer)
-        //{
-        //    ulong clientID = OwnerClientId;
-
-        //    GameObject rightFist = Instantiate(rightFistPrefab, transform.position + new Vector3(0, 0, -fistOffset), Quaternion.identity); ;
-        //    rightFist.GetComponent<NetworkObject>().SpawnWithOwnership(clientID, true);
-
-        //    rightFist.transform.SetParent(transform);
-        //}
+        if (isLocalPlayer)
+        {
+            Debug.Log("Start Player Hand (Client)");
+            CmdSpawnFist();
+        }
     }
-
-    //public override void OnNetworkSpawn()
-    //{
-        //if (IsServer)
-        //{
-
-        //    ulong clientID = OwnerClientId;
-
-        //    //GameObject rightFist = Instantiate(rightFistPrefab, transform.position, Quaternion.identity);
-        //    //rightFist.GetComponent<NetworkObject>().SpawnWithOwnership(clientID, true);
-        //    //ulong rightFistID = rightFist.GetComponent<NetworkObject>().NetworkObjectId;
-
-        //    //Debug.Log("Right Fist Spawned");
-
-        //    GameObject leftFist = Instantiate(leftFistPrefab, transform.position + new Vector3(0, 0, fistOffset), Quaternion.identity);
-        //    leftFist.GetComponent<NetworkObject>().SpawnWithOwnership(clientID, true);
-            
-        //    leftFist.transform.SetParent(transform);
-        //}
-    //}
 
 
     /// <summary>
@@ -63,20 +51,20 @@ public class PlayerHands : MonoBehaviour
     void Update()
     {
 
-        //if (IsClient && IsOwner)
-        //{
-        //    //Left Mouse Button
-        //    if (Input.GetMouseButtonDown(0))
-        //    {
-        //        LeftMouseClick();
-        //    }
+        if (isLocalPlayer)
+        {
+            //Left Mouse Button
+            if (Input.GetMouseButtonDown(0))
+            {
+                LeftMouseClick();
+            }
 
-        //    //Right Click Button
-        //    if (Input.GetMouseButtonDown(1))
-        //    {
-        //        RightMouseClick();
-        //    }
-        //}
+            //Right Click Button
+            if (Input.GetMouseButtonDown(1))
+            {
+                RightMouseClick();
+            }
+        }
     }
 
 
@@ -111,11 +99,11 @@ public class PlayerHands : MonoBehaviour
 
         //Attack
         //else 
-        //if (fistQueue.Count > 0)
-        //{
-        //    fistQueue[0].transform.GetComponent<FistController>().StartFistAttack(mouseDir);
-        //    fistQueue.Remove(fistQueue[0]);
-        //}
+        if (fistQueue.Count > 0)
+        {
+            CmdFistAttack(fistQueue[0], mouseDir);
+            fistQueue.Remove(fistQueue[0]);
+        }
     }
 
     private void RightMouseClick()
@@ -154,26 +142,33 @@ public class PlayerHands : MonoBehaviour
     }
 
 
-    public void FistReturned(ulong fistID)
+    public void FistReturned(GameObject fist)
     {
-        //NetworkObject fist = GetNetworkObject(fistID);
-
-        //if (!fistQueue.Contains(fist))
-        //    fistQueue.Add(fist);
+        Debug.Log("Fist added to queue");
+        if (!fistQueue.Contains(fist))
+            fistQueue.Add(fist);
     }
 
 
-    //Getter / Setter
-    public GameObject HeldItem
+    [Command(requiresAuthority = false)]
+    private void CmdSpawnFist()
     {
-        get { return heldItem; }
-        set { heldItem = value; }
+        Debug.Log(netId);
+        Debug.Log("Spawn Right Fist (Server)");
+        GameObject rightFist = Instantiate(rightFistPrefab, transform.position + new Vector3(0, 0, rightFistPrefab.transform.position.z), Quaternion.identity);
+        NetworkServer.Spawn(rightFist);
+        rightFist.GetComponent<FistController>().InitFist(transform, netId);
+
+        Debug.Log("Spawn Right Fist (Server)");
+        GameObject leftFist = Instantiate(leftFistPrefab, transform.position + new Vector3(0, 0, leftFistPrefab.transform.position.z), Quaternion.identity); ;
+        NetworkServer.Spawn(leftFist);
+        leftFist.GetComponent<FistController>().InitFist(transform, netId);
     }
 
-    public GameObject LedgeHangingFist
+    [Command]
+    private void CmdFistAttack(GameObject fist, Vector3 dir)
     {
-        get { return ledgeHangingFist; }
-        set { ledgeHangingFist = value; }
+        Debug.Log("Fist Attack Setup (Server)");
+        fist.transform.GetComponent<FistController>().StartFistAttack(dir);
     }
-
 }
