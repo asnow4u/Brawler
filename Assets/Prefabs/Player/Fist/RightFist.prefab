@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 6235338658011162997}
   - component: {fileID: -1233414368420455764}
   - component: {fileID: 2832153961836719531}
+  - component: {fileID: -1309727007535112113}
   m_Layer: 0
   m_Name: RightFist
   m_TagString: PlayerFist
@@ -113,10 +114,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0.1
-  punchTime: 0.5
-  punchDist: 2.5
+  punchTime: 1
+  punchDist: 10
   hangDistance: 0
-  parentPlayer: {fileID: 0}
+  curParent: {fileID: 0}
   isFistLaunching: 0
   isFistReturning: 0
   returnSpeed: 0
@@ -167,7 +168,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0.1
-  clientAuthority: 0
+  clientAuthority: 1
   sendInterval: 0.05
   syncPosition: 1
   syncRotation: 1
@@ -187,3 +188,18 @@ MonoBehaviour:
   showGizmos: 0
   showOverlay: 0
   overlayColor: {r: 0, g: 0, b: 0, a: 0.5}
+--- !u!114 &-1309727007535112113
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6235338658011162991}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c856331714f2cac49b615bebef0c0880, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncMode: 1
+  syncInterval: 0.1
+  parentObj: {fileID: 0}

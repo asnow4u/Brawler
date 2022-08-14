@@ -15,8 +15,10 @@ public class FistController : NetworkBehaviour
     
     public float hangDistance;
 
+    private Transform parentPlayer; //TODO: change to private
+
     [SyncVar(hook = nameof(SetParent))]
-    public Transform parentPlayer; //TODO: change to private
+    public Transform curParent;
 
     private Vector3 originalPos;
     private Quaternion originalRot;
@@ -30,34 +32,17 @@ public class FistController : NetworkBehaviour
     public float returnSpeed;
     private bool ledgeGrabPossible;
 
-
-    //public override void OnStartClient()
-    //{
-
-    //    base.OnStartClient();
-
-
-    //    //TODO: We go to fast through the function that the sync var never gets set proparly.
-    //    //Instead we can loop through all the spawned objs and assign fists to the player before
-    //    for (int i=0; i<NetworkServer.spawned.Count; i++)
-    //    {
-    //        //...
-    //    }
-
-    //    //Setup all other fists
-    //    if (parentPlayer != null)
-    //        transform.SetParent(parentPlayer);
-    //}
-
     
     private void SetParent(Transform oldParent, Transform newParent)
     {
         Debug.Log("Set Parent " + GetComponent<NetworkIdentity>().netId);
         
+        //transform.SetParent(newParent);
+        
         if (newParent != null)
         {
-            transform.SetParent(newParent);
             transform.position = new Vector3(newParent.transform.position.x, newParent.transform.position.y, transform.position.z);
+            newParent.GetComponent<PlayerHands>().FistReturned(gameObject);
         }
     }
 
@@ -96,6 +81,7 @@ public class FistController : NetworkBehaviour
 
                 //Lerp the fist back to the player
                 float increment = currentPunchTime / punchTime;
+
                 increment = Mathf.Sin(increment * Mathf.PI * 0.5f); //https://chicounity3d.wordpress.com/2014/05/23/how-to-lerp-like-a-pro/
 
                 Vector3 parentPos = parentPlayer.transform.position + originalPos;
@@ -142,14 +128,15 @@ public class FistController : NetworkBehaviour
     public void InitFist(Transform parent, uint id)
     {
         Debug.Log("Fist Initilized (Server)");
-        parentPlayer = parent;   
-        transform.SetParent(parent);
-        originalPos = parent.transform.position - transform.position;
-        originalRot = transform.rotation;
+        //parentPlayer = parent;
+        //curParent = parent;
+        //transform.SetParent(parent);
+        //originalPos = transform.position - parent.transform.position;
+        //originalRot = transform.rotation;
+        
+        GetComponent<Parent>().parentObj = parent;
 
-        Debug.Log(NetworkServer.spawned);
 
-        //RpcFistReturn();
     }
 
 
@@ -166,7 +153,8 @@ public class FistController : NetworkBehaviour
         startPos = transform.position;
         fistDirection = direction;
         currentPunchTime = 0f;
-        transform.parent = null;
+        //transform.SetParent(null);
+        curParent = null;
     }
 
 
@@ -206,16 +194,15 @@ public class FistController : NetworkBehaviour
                 //Determine if parent player
                 if (col.transform == parentPlayer && isFistReturning)
                 {
-
+                    Debug.Log("Trigger Enter");
                     isFistLaunching = false;
                     isFistReturning = false;
 
                     //Set fist to originpoint
                     transform.position = parentPlayer.transform.position + originalPos;
                     transform.rotation = originalRot;
-                    transform.parent = parentPlayer;
-
-                    //RpcFistReturn();
+                    //transform.SetParent(parentPlayer);
+                    curParent = parentPlayer;
                 }
             }
         }
@@ -341,14 +328,4 @@ public class FistController : NetworkBehaviour
     }
 
     #endregion
-
-
-    [ClientRpc]
-    private void RpcFistReturn()
-    {
-        Debug.Log("Fist Return Call (Client) " + netId);
-
-        if (parentPlayer != null)
-            parentPlayer.GetComponent<PlayerHands>().FistReturned(gameObject);
-    }
 }
