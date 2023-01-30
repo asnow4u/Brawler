@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Netcode;
 using UnityEngine;
 
 
@@ -10,10 +9,8 @@ using UnityEngine;
 //Currently Unity states that currently that having the phisics run on the server is the best
 //"With future prediction support of Netcode, the latency will no longer be an issue which makes this the best choice of a movement model for a game like this." (https://docs-multiplayer.unity3d.com/docs/learn/bitesize-spaceshooter)
 
-public class PlayerMovement : NetworkBehaviour
+public class PlayerMovement : MonoBehaviour
 {
-    private NetworkVariable<Vector3> horizontalMovement = new NetworkVariable<Vector3>();
-
     public float speed_x;
     public float speed_y;
 
@@ -32,28 +29,12 @@ public class PlayerMovement : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (IsServer)
-            ServerUpdate();
-        
-
-        if (IsClient && IsOwner)
-            ClientUpdate();
-        
-    }
-
-
-    private void ClientUpdate()
-    {
         // Movement on X-Axis
         float x = Input.GetAxis("Horizontal");
         Vector3 movement = transform.right * x * speed_x;
 
+        transform.Translate(movement * Time.deltaTime);
 
-        Debug.Log("Movement Update Sent: " + movement);
-        UpdateClientPositionServerRpc(movement);
-
-        if (!IsHost)
-            transform.Translate(movement * Time.deltaTime);
 
 
         //TODO: make two rays on each side of the player to prevent landing just on the edge and not getting jump reset
@@ -66,7 +47,6 @@ public class PlayerMovement : NetworkBehaviour
         {
             isGrounded = false;
         }
-
 
         //Jump
         if (Input.GetKeyDown(KeyCode.Space))
@@ -86,66 +66,20 @@ public class PlayerMovement : NetworkBehaviour
             //    else
             if (isGrounded)
             {
-
-                UpdateClientJumpServerRpc(transform.up * speed_y);
                 isGrounded = false;
-                
-                if (!IsHost) 
-                {
-                    rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
-                    rb.AddForce(transform.up * speed_y, ForceMode.Impulse);
-                }
+
+                rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
+                rb.AddForce(transform.up * speed_y, ForceMode.Impulse);
             }
 
             else if (doubleJumpCheck)
             {
-                UpdateClientJumpServerRpc(transform.up * speed_y);
                 doubleJumpCheck = false;
-                
-                if (!IsHost)
-                {
-                    rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
-                    rb.AddForce(transform.up * speed_y, ForceMode.Impulse);
-                }
+
+                rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
+                rb.AddForce(transform.up * speed_y, ForceMode.Impulse);
             }
         }
-    }
 
-
-    private void ServerUpdate()
-    {
-        if (horizontalMovement.Value != Vector3.zero)
-        {
-            transform.Translate(horizontalMovement.Value * Time.deltaTime);
-            UpdateClientPostionClientRPC(transform.position);
-        }
-    }
-
-
-    [ServerRpc]
-    private void UpdateClientPositionServerRpc(Vector3 movement)
-    {
-        Debug.Log("Position Update Recieved: " + movement);
-        horizontalMovement.Value = movement;
-    }
-
-
-    [ServerRpc]
-    private void UpdateClientJumpServerRpc(Vector3 force)
-    {
-
-        if (force != Vector3.zero)
-        {
-            rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
-            rb.AddForce(force, ForceMode.Impulse);
-        }
-    }
-
-
-    [ClientRpc]
-    private void UpdateClientPostionClientRPC(Vector3 pos)
-    {
-        Debug.Log("Reset Client Pos to Server");
-        transform.position = pos;
     }
 }
