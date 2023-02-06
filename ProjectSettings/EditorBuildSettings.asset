@@ -8,4 +8,5 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/TestFightRing.unity
     guid: 15389ff6858bd894ba39fca5ea0fe9e5
-  m_configObjects: {}
+  m_configObjects:
+    com.unity.input.settings: {fileID: 11400000, guid: 268f51476d0d19c49bfd5aea5ea281fa, type: 2}

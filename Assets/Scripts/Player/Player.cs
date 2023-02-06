@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerController : MonoBehaviour
+public class Player : MonoBehaviour
 {
 
     private float numLives;
@@ -24,48 +24,35 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
     }
 
-    void Update()
+
+    public void AddPercent(float percent)
     {
-        if (stallTimer > 0)
-        {
-            stallTimer -= Time.deltaTime;
-        }    
+        throw new System.NotImplementedException();
     }
 
-    public void DealDamage(float damage, Vector3 dir)
+    public void ApplyForce(float magnitue, Vector3 direction)
     {
-        totalDamage += damage;
+        throw new System.NotImplementedException();
+    }
 
-        //Linar based function to determine amount of force
-        float force = damageMultiplier * totalDamage * rb.mass;
+    public void RemovePercent(float percent)
+    {
+        throw new System.NotImplementedException();
+    }
 
-        RaycastHit hit;
+    public void ResetPercent()
+    {
+        throw new System.NotImplementedException();
+    }
 
-        //if (Physics.Raycast(transform.position, Vector3.down, out hit, transform.GetComponent<Collider>().bounds.size.y / 2 + 0.1f, ~LayerMask.NameToLayer("Ground")))
-        //{
-        //    dir = Vector3.Reflect(dir, hit.normal);
-        //    Debug.Log(dir);
-        //}
-
-        //Debug.Log(force);
-        rb.AddForce(force * dir, ForceMode.Impulse);
-
-        //Stall
-        stallTimer = Mathf.Abs(force / Physics.gravity.y); //v1 = v0 + at => v1 / a = t || v0 is 0
+    public void ApplyForce()
+    {
+        throw new System.NotImplementedException();
     }
 
 
-    public bool IsStalled()
-    {
-        if (stallTimer > 0)
-        {
-            return true;
-        }
 
-        return false;
-    }
-
-
+    //TODO: move this to platforms
     //private void OnCollisionEnter(Collision collision)
     //{
     //    if (collision.gameObject.CompareTag("Platforms"))
@@ -75,7 +62,7 @@ public class PlayerController : MonoBehaviour
 
     //            //F = m(v/t) || t=1
     //            Vector3 bounceForce = Vector3.Reflect(-1 * collision.relativeVelocity, collision.transform.up) * rb.mass;
-                
+
     //            //Debug.Log("Bounce");
     //            //Debug.Log(bounceForce);
 

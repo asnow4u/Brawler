@@ -1,24 +1,32 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 
-//NOTE:
-//https://unity.com/roadmap/unity-platform/multiplayer-networking?_ga=2.11311988.1592772763.1644094688-1905360034.1638849034
-//There is a Client-side Perdiction feature being worked on for unity netcode
-//Currently Unity states that currently that having the phisics run on the server is the best
-//"With future prediction support of Netcode, the latency will no longer be an issue which makes this the best choice of a movement model for a game like this." (https://docs-multiplayer.unity3d.com/docs/learn/bitesize-spaceshooter)
-
 public class PlayerMovement : MonoBehaviour
 {
-    public float speed_x;
-    public float speed_y;
+    [Header("Movement Speed")]
+    [SerializeField] private float speedX;
+    [SerializeField] private float speedY;
+    [Range(0, 20)]
+    [SerializeField] private float maxVelocityX;
+    [Range(0, 20)]
+    [SerializeField] private float maxVelocityY;
+
+    [Header("Jump")]
+    [SerializeField] private float jumpForce;
+    [SerializeField] int jumpsAvailable;
+
 
     public bool isGrounded;
-    public int jumpsAvailable;
-    private bool doubleJumpCheck;
 
     private Rigidbody rb;
+
+    private float xAxis;
+    private float yAxis;
+
+    private int additionalJumpsPerformed;
 
     // Start is called before the first frame update
     void Start()
@@ -26,60 +34,76 @@ public class PlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody>();
     }
 
+
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
-        // Movement on X-Axis
-        float x = Input.GetAxis("Horizontal");
-        Vector3 movement = transform.right * x * speed_x;
-
-        transform.Translate(movement * Time.deltaTime);
-
-
-
-        //TODO: make two rays on each side of the player to prevent landing just on the edge and not getting jump reset
+        ////TODO: make two rays on each side of the player to prevent landing just on the edge and not getting jump reset
         if (Physics.Raycast(transform.position, Vector3.down, transform.GetComponent<Collider>().bounds.size.y / 2 + 0.1f, ~LayerMask.NameToLayer("Ground")))
         {
             isGrounded = true;
-            doubleJumpCheck = true;
+            additionalJumpsPerformed = 0;
         }
         else
         {
             isGrounded = false;
         }
 
-        //Jump
-        if (Input.GetKeyDown(KeyCode.Space))
+
+        if (isGrounded)
         {
-
-            //    //Player is hanging from a ledge
-            //    if (ledgeFist != null)
-            //    {
-            //        ledgeFist.GetComponent<FistController>().StopHanging();
-
-            //        Jump();
-
-            //        doubleJumpCheck = true;
-            //        ledgeFist = null;
-            //    }
-
-            //    else
-            if (isGrounded)
-            {
-                isGrounded = false;
-
-                rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
-                rb.AddForce(transform.up * speed_y, ForceMode.Impulse);
-            }
-
-            else if (doubleJumpCheck)
-            {
-                doubleJumpCheck = false;
-
-                rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
-                rb.AddForce(transform.up * speed_y, ForceMode.Impulse);
-            }
+            UpdateGroundMovement();
         }
 
+        else
+        {
+            UpdateAirMovement();
+        }        
+    }
+
+    private void UpdateGroundMovement()
+    {
+        //Horizontal Movement
+        if (rb.velocity.x < maxVelocityX && rb.velocity.x > -maxVelocityX)
+        {
+            rb.AddForce(transform.right * xAxis * speedX);
+        }
+
+
+        //TODO: note, depending on sign of xAxis and direction character is facing might need to flip around
+    }
+
+    private void UpdateAirMovement()
+    {
+        if (rb.velocity.x < maxVelocityX && rb.velocity.x > -maxVelocityX)
+        {
+            rb.AddForce(transform.right * xAxis * speedX);
+        }
+    }
+
+
+    public void UpdateHorizontalMovementSpeed(float horValue)
+    {
+        xAxis = horValue;
+    }
+
+    public void UpdateVerticalMovementSpeed(float verValue)
+    {
+        yAxis = verValue;
+    }
+
+
+    public void Jump()
+    {
+        if (isGrounded)
+        {
+            rb.AddForce(new Vector3(0, 1, 0) * jumpForce, ForceMode.Impulse);
+        }
+
+        else if (additionalJumpsPerformed < jumpsAvailable)
+        {
+            rb.AddForce(new Vector3(0, 1, 0) * jumpForce, ForceMode.Impulse);
+            additionalJumpsPerformed++;
+        }
     }
 }

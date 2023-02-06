@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 6235338658011162987}
   - component: {fileID: 6235338658011162986}
   - component: {fileID: 6235338658011162997}
+  - component: {fileID: 7455158354784490995}
   m_Layer: 0
   m_Name: RightFist
   m_TagString: PlayerFist
@@ -29,7 +30,7 @@ Transform:
   m_GameObject: {fileID: 6235338658011162991}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.15, y: 0.1, z: 0.09}
+  m_LocalScale: {x: 0.6, y: 0.4, z: 0.36}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -91,8 +92,8 @@ SphereCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6235338658011162991}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
+  m_IsTrigger: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_Radius: 0.3
   m_Center: {x: 0, y: 0, z: 0}
@@ -104,7 +105,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6235338658011162991}
   serializedVersion: 2
-  m_Mass: 1
+  m_Mass: 20
   m_Drag: 0
   m_AngularDrag: 0
   m_UseGravity: 0
@@ -112,3 +113,22 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 126
   m_CollisionDetection: 0
+--- !u!114 &7455158354784490995
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6235338658011162991}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfd141f5261296b459c105be56a0c047, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attackList:
+  - name: UpTilt
+    animationClip: {fileID: 7400000, guid: ffab235e84b2c1b4186060bde8aca927, type: 2}
+    damageOutput: 5
+    basePower: 10
+    forceDirection: {x: 0.2, y: 0.5, z: 0}
+  isRight: 1
