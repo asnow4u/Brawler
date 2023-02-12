@@ -33,7 +33,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "UpTilt",
+                    "name": "UpAttack",
                     "type": "Button",
                     "id": "46a0ab6c-edc6-4302-b4ac-19fb8265044a",
                     "expectedControlType": "Button",
@@ -42,7 +42,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "RightTilt",
+                    "name": "RightAttack",
                     "type": "Button",
                     "id": "999dc728-b5b5-40dc-8b19-4452b589104e",
                     "expectedControlType": "Button",
@@ -51,7 +51,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "DownTilt",
+                    "name": "DownAttack",
                     "type": "Button",
                     "id": "f16494be-e203-4ba8-a6d6-77c1da6473c0",
                     "expectedControlType": "Button",
@@ -60,7 +60,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "LeftTilt",
+                    "name": "LeftAttack",
                     "type": "Button",
                     "id": "b3fa1613-a49a-4417-abb8-23f5c10e563a",
                     "expectedControlType": "Button",
@@ -143,7 +143,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "UpTilt",
+                    "action": "UpAttack",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -165,7 +165,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "RightTilt",
+                    "action": "RightAttack",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -176,7 +176,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "DownTilt",
+                    "action": "DownAttack",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -187,7 +187,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "LeftTilt",
+                    "action": "LeftAttack",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

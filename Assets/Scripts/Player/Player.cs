@@ -1,13 +1,17 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Player : MonoBehaviour
+public partial class Player : MonoBehaviour
 {
+    private PlayerButtonMap input;
+    private AnimatorController animator;
 
     private float numLives;
     private float numDeaths;
     
+
     public float totalDamage;
     public float damageMultiplier;
     public float bounceDampener;
@@ -16,38 +20,26 @@ public class Player : MonoBehaviour
 
     public float stallTimer;
 
-    Rigidbody rb;
 
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        animator = gameObject.AddComponent<AnimatorController>();
     }
 
-
-    public void AddPercent(float percent)
+    private void OnEnable()
     {
-        throw new System.NotImplementedException();
+        input = new PlayerButtonMap();
+        input.Enable();
+
+        SetUpMovementEvents(input);
+        SetUpActionEvents(input);
     }
 
-    public void ApplyForce(float magnitue, Vector3 direction)
+    private void OnDisable()
     {
-        throw new System.NotImplementedException();
-    }
-
-    public void RemovePercent(float percent)
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public void ResetPercent()
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public void ApplyForce()
-    {
-        throw new System.NotImplementedException();
+        input.Disable();
     }
 
 

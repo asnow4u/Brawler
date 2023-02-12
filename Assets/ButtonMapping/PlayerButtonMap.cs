@@ -55,7 +55,7 @@ public partial class @PlayerButtonMap : IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""UpTilt"",
+                    ""name"": ""UpAttack"",
                     ""type"": ""Button"",
                     ""id"": ""46a0ab6c-edc6-4302-b4ac-19fb8265044a"",
                     ""expectedControlType"": ""Button"",
@@ -64,7 +64,7 @@ public partial class @PlayerButtonMap : IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""RightTilt"",
+                    ""name"": ""RightAttack"",
                     ""type"": ""Button"",
                     ""id"": ""999dc728-b5b5-40dc-8b19-4452b589104e"",
                     ""expectedControlType"": ""Button"",
@@ -73,7 +73,7 @@ public partial class @PlayerButtonMap : IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""DownTilt"",
+                    ""name"": ""DownAttack"",
                     ""type"": ""Button"",
                     ""id"": ""f16494be-e203-4ba8-a6d6-77c1da6473c0"",
                     ""expectedControlType"": ""Button"",
@@ -82,7 +82,7 @@ public partial class @PlayerButtonMap : IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""LeftTilt"",
+                    ""name"": ""LeftAttack"",
                     ""type"": ""Button"",
                     ""id"": ""b3fa1613-a49a-4417-abb8-23f5c10e563a"",
                     ""expectedControlType"": ""Button"",
@@ -165,7 +165,7 @@ public partial class @PlayerButtonMap : IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""UpTilt"",
+                    ""action"": ""UpAttack"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -187,7 +187,7 @@ public partial class @PlayerButtonMap : IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""RightTilt"",
+                    ""action"": ""RightAttack"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -198,7 +198,7 @@ public partial class @PlayerButtonMap : IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""DownTilt"",
+                    ""action"": ""DownAttack"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -209,7 +209,7 @@ public partial class @PlayerButtonMap : IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""LeftTilt"",
+                    ""action"": ""LeftAttack"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -223,10 +223,10 @@ public partial class @PlayerButtonMap : IInputActionCollection2, IDisposable
         m_PlayerActions_Movement = m_PlayerActions.FindAction("Movement", throwIfNotFound: true);
         m_PlayerActions_Jump = m_PlayerActions.FindAction("Jump", throwIfNotFound: true);
         m_PlayerActions_Couch = m_PlayerActions.FindAction("Couch", throwIfNotFound: true);
-        m_PlayerActions_UpTilt = m_PlayerActions.FindAction("UpTilt", throwIfNotFound: true);
-        m_PlayerActions_RightTilt = m_PlayerActions.FindAction("RightTilt", throwIfNotFound: true);
-        m_PlayerActions_DownTilt = m_PlayerActions.FindAction("DownTilt", throwIfNotFound: true);
-        m_PlayerActions_LeftTilt = m_PlayerActions.FindAction("LeftTilt", throwIfNotFound: true);
+        m_PlayerActions_UpAttack = m_PlayerActions.FindAction("UpAttack", throwIfNotFound: true);
+        m_PlayerActions_RightAttack = m_PlayerActions.FindAction("RightAttack", throwIfNotFound: true);
+        m_PlayerActions_DownAttack = m_PlayerActions.FindAction("DownAttack", throwIfNotFound: true);
+        m_PlayerActions_LeftAttack = m_PlayerActions.FindAction("LeftAttack", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -289,10 +289,10 @@ public partial class @PlayerButtonMap : IInputActionCollection2, IDisposable
     private readonly InputAction m_PlayerActions_Movement;
     private readonly InputAction m_PlayerActions_Jump;
     private readonly InputAction m_PlayerActions_Couch;
-    private readonly InputAction m_PlayerActions_UpTilt;
-    private readonly InputAction m_PlayerActions_RightTilt;
-    private readonly InputAction m_PlayerActions_DownTilt;
-    private readonly InputAction m_PlayerActions_LeftTilt;
+    private readonly InputAction m_PlayerActions_UpAttack;
+    private readonly InputAction m_PlayerActions_RightAttack;
+    private readonly InputAction m_PlayerActions_DownAttack;
+    private readonly InputAction m_PlayerActions_LeftAttack;
     public struct PlayerActionsActions
     {
         private @PlayerButtonMap m_Wrapper;
@@ -300,10 +300,10 @@ public partial class @PlayerButtonMap : IInputActionCollection2, IDisposable
         public InputAction @Movement => m_Wrapper.m_PlayerActions_Movement;
         public InputAction @Jump => m_Wrapper.m_PlayerActions_Jump;
         public InputAction @Couch => m_Wrapper.m_PlayerActions_Couch;
-        public InputAction @UpTilt => m_Wrapper.m_PlayerActions_UpTilt;
-        public InputAction @RightTilt => m_Wrapper.m_PlayerActions_RightTilt;
-        public InputAction @DownTilt => m_Wrapper.m_PlayerActions_DownTilt;
-        public InputAction @LeftTilt => m_Wrapper.m_PlayerActions_LeftTilt;
+        public InputAction @UpAttack => m_Wrapper.m_PlayerActions_UpAttack;
+        public InputAction @RightAttack => m_Wrapper.m_PlayerActions_RightAttack;
+        public InputAction @DownAttack => m_Wrapper.m_PlayerActions_DownAttack;
+        public InputAction @LeftAttack => m_Wrapper.m_PlayerActions_LeftAttack;
         public InputActionMap Get() { return m_Wrapper.m_PlayerActions; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -322,18 +322,18 @@ public partial class @PlayerButtonMap : IInputActionCollection2, IDisposable
                 @Couch.started -= m_Wrapper.m_PlayerActionsActionsCallbackInterface.OnCouch;
                 @Couch.performed -= m_Wrapper.m_PlayerActionsActionsCallbackInterface.OnCouch;
                 @Couch.canceled -= m_Wrapper.m_PlayerActionsActionsCallbackInterface.OnCouch;
-                @UpTilt.started -= m_Wrapper.m_PlayerActionsActionsCallbackInterface.OnUpTilt;
-                @UpTilt.performed -= m_Wrapper.m_PlayerActionsActionsCallbackInterface.OnUpTilt;
-                @UpTilt.canceled -= m_Wrapper.m_PlayerActionsActionsCallbackInterface.OnUpTilt;
-                @RightTilt.started -= m_Wrapper.m_PlayerActionsActionsCallbackInterface.OnRightTilt;
-                @RightTilt.performed -= m_Wrapper.m_PlayerActionsActionsCallbackInterface.OnRightTilt;
-                @RightTilt.canceled -= m_Wrapper.m_PlayerActionsActionsCallbackInterface.OnRightTilt;
-                @DownTilt.started -= m_Wrapper.m_PlayerActionsActionsCallbackInterface.OnDownTilt;
-                @DownTilt.performed -= m_Wrapper.m_PlayerActionsActionsCallbackInterface.OnDownTilt;
-                @DownTilt.canceled -= m_Wrapper.m_PlayerActionsActionsCallbackInterface.OnDownTilt;
-                @LeftTilt.started -= m_Wrapper.m_PlayerActionsActionsCallbackInterface.OnLeftTilt;
-                @LeftTilt.performed -= m_Wrapper.m_PlayerActionsActionsCallbackInterface.OnLeftTilt;
-                @LeftTilt.canceled -= m_Wrapper.m_PlayerActionsActionsCallbackInterface.OnLeftTilt;
+                @UpAttack.started -= m_Wrapper.m_PlayerActionsActionsCallbackInterface.OnUpAttack;
+                @UpAttack.performed -= m_Wrapper.m_PlayerActionsActionsCallbackInterface.OnUpAttack;
+                @UpAttack.canceled -= m_Wrapper.m_PlayerActionsActionsCallbackInterface.OnUpAttack;
+                @RightAttack.started -= m_Wrapper.m_PlayerActionsActionsCallbackInterface.OnRightAttack;
+                @RightAttack.performed -= m_Wrapper.m_PlayerActionsActionsCallbackInterface.OnRightAttack;
+                @RightAttack.canceled -= m_Wrapper.m_PlayerActionsActionsCallbackInterface.OnRightAttack;
+                @DownAttack.started -= m_Wrapper.m_PlayerActionsActionsCallbackInterface.OnDownAttack;
+                @DownAttack.performed -= m_Wrapper.m_PlayerActionsActionsCallbackInterface.OnDownAttack;
+                @DownAttack.canceled -= m_Wrapper.m_PlayerActionsActionsCallbackInterface.OnDownAttack;
+                @LeftAttack.started -= m_Wrapper.m_PlayerActionsActionsCallbackInterface.OnLeftAttack;
+                @LeftAttack.performed -= m_Wrapper.m_PlayerActionsActionsCallbackInterface.OnLeftAttack;
+                @LeftAttack.canceled -= m_Wrapper.m_PlayerActionsActionsCallbackInterface.OnLeftAttack;
             }
             m_Wrapper.m_PlayerActionsActionsCallbackInterface = instance;
             if (instance != null)
@@ -347,18 +347,18 @@ public partial class @PlayerButtonMap : IInputActionCollection2, IDisposable
                 @Couch.started += instance.OnCouch;
                 @Couch.performed += instance.OnCouch;
                 @Couch.canceled += instance.OnCouch;
-                @UpTilt.started += instance.OnUpTilt;
-                @UpTilt.performed += instance.OnUpTilt;
-                @UpTilt.canceled += instance.OnUpTilt;
-                @RightTilt.started += instance.OnRightTilt;
-                @RightTilt.performed += instance.OnRightTilt;
-                @RightTilt.canceled += instance.OnRightTilt;
-                @DownTilt.started += instance.OnDownTilt;
-                @DownTilt.performed += instance.OnDownTilt;
-                @DownTilt.canceled += instance.OnDownTilt;
-                @LeftTilt.started += instance.OnLeftTilt;
-                @LeftTilt.performed += instance.OnLeftTilt;
-                @LeftTilt.canceled += instance.OnLeftTilt;
+                @UpAttack.started += instance.OnUpAttack;
+                @UpAttack.performed += instance.OnUpAttack;
+                @UpAttack.canceled += instance.OnUpAttack;
+                @RightAttack.started += instance.OnRightAttack;
+                @RightAttack.performed += instance.OnRightAttack;
+                @RightAttack.canceled += instance.OnRightAttack;
+                @DownAttack.started += instance.OnDownAttack;
+                @DownAttack.performed += instance.OnDownAttack;
+                @DownAttack.canceled += instance.OnDownAttack;
+                @LeftAttack.started += instance.OnLeftAttack;
+                @LeftAttack.performed += instance.OnLeftAttack;
+                @LeftAttack.canceled += instance.OnLeftAttack;
             }
         }
     }
@@ -368,9 +368,9 @@ public partial class @PlayerButtonMap : IInputActionCollection2, IDisposable
         void OnMovement(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
         void OnCouch(InputAction.CallbackContext context);
-        void OnUpTilt(InputAction.CallbackContext context);
-        void OnRightTilt(InputAction.CallbackContext context);
-        void OnDownTilt(InputAction.CallbackContext context);
-        void OnLeftTilt(InputAction.CallbackContext context);
+        void OnUpAttack(InputAction.CallbackContext context);
+        void OnRightAttack(InputAction.CallbackContext context);
+        void OnDownAttack(InputAction.CallbackContext context);
+        void OnLeftAttack(InputAction.CallbackContext context);
     }
 }
