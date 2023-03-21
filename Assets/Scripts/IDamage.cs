@@ -2,19 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public interface IDealDamage
+
+
+public interface IDamage 
 {
-    public void HitTarget(DamageCalculator target);
-}
+    public void AddDamage(float percent);
 
+    public void RemoveDamage(float percent);
 
-public interface ITakeDamage 
-{
-    public void AddPercent(float percent);
-
-    public void RemovePercent(float percent);
-
-    public void ResetPercent();
+    public void ResetDamaget();
 
     public void ApplyForce(float mass, float basePower, Vector3 direction);
 }

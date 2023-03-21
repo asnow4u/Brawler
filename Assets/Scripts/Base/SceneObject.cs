@@ -2,32 +2,33 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DamageCalculator : MonoBehaviour, ITakeDamage
+[RequireComponent(typeof(Rigidbody))]
+public abstract class SceneObject : MonoBehaviour, IDamage
 {
-    [SerializeField] private float damageTaken;
+    protected float damageTaken;
 
-    public DamageCalculator()
+    [SerializeField]
+    protected List<Weapon> currentWeapons;
+
+
+    public void ResetDamaget()
     {
         damageTaken = 0;
     }
 
-    public void AddPercent(float percent)
+    public void AddDamage(float percent)
     {
         damageTaken += percent;
-    }
+    }   
 
-    public void RemovePercent(float percent)
+    public void RemoveDamage(float percent)
     {
         damageTaken -= percent;
-    }
-
-    public void ResetPercent()
-    {
-        damageTaken = 0;
-    }
+    }   
 
     public void ApplyForce(float mass, float basePower, Vector3 direction)
     {
+
         //Grab here in case change to mass
         Rigidbody rb = GetComponent<Rigidbody>();
 
