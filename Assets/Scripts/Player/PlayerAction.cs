@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public partial class Player : MonoBehaviour
+public class PlayerAction : Action
 {
-    
 
-    private void SetUpActionEvents(PlayerButtonMap input)
+    public void SetUpActionEvents(PlayerButtonMap input)
     {
         input.PlayerActions.RightAttack.performed += RightAttack_performed;
         input.PlayerActions.LeftAttack.performed += LeftAttack_performed;
@@ -17,49 +16,71 @@ public partial class Player : MonoBehaviour
 
     private void UpAttack_performed(InputAction.CallbackContext obj)
     {
-        if (isGrounded)
-        {
-            animator.ChangeAnimationState("UpTilt", 2, false);
-        }
-        else
-        {
-            animator.ChangeAnimationState("UpAir", 2, false);
-        }
+        PerformUpAttack();
     }
 
     private void DownAttack_performed(InputAction.CallbackContext obj)
     {
-        if (isGrounded)
-        {
-            animator.ChangeAnimationState("PickUp", 2, false);
-        }
-        else
-        {
-            animator.ChangeAnimationState("DownAir", 2, false);
-        }
+        PerformDownAttack();
     }
 
     private void LeftAttack_performed(InputAction.CallbackContext obj)
     {
-        if(isGrounded)
-        {
-            animator.ChangeAnimationState("LeftTilt", 2, false);
-        }
-        else
-        {
-            animator.ChangeAnimationState("LeftAir", 2, false);
-        }
+        PerformLeftAttack();
     }
 
     private void RightAttack_performed(InputAction.CallbackContext obj)
     {
-        if (isGrounded)
-        {
-            animator.ChangeAnimationState("RightTilt", 2, false);
+        PerformRightAttack();
+    }
+
+
+
+    protected override void PerformUpAttack()
+    {
+        if (movement.isGrounded)
+        {            
+            animator.ChangeAnimationState("UpTilt", AnimatorStateMachine.ActionState.Attacking);
         }
         else
         {
-            animator.ChangeAnimationState("RightAir", 2, false);
+            animator.ChangeAnimationState("UpAir", AnimatorStateMachine.ActionState.Attacking);
+        }
+    }
+
+    protected override void PerformDownAttack()
+    {
+        if(movement.isGrounded)
+        {
+            animator.ChangeAnimationState("PickUp", AnimatorStateMachine.ActionState.Attacking);
+        }
+        else
+        {
+            animator.ChangeAnimationState("DownAir", AnimatorStateMachine.ActionState.Attacking);
+        }
+    }
+
+    protected override void PerformLeftAttack()
+    {
+        if (movement.isGrounded)
+        {
+            animator.ChangeAnimationState("LeftTilt", AnimatorStateMachine.ActionState.Attacking);
+        }
+        else
+        {
+            animator.ChangeAnimationState("LeftAir", AnimatorStateMachine.ActionState.Attacking);
+        }
+    }
+
+    protected override void PerformRightAttack()
+    {
+        if (movement.isGrounded)
+        {
+            animator.ChangeAnimationState("RightTilt", AnimatorStateMachine.ActionState.Attacking);
+        }
+        else
+        {
+            animator.ChangeAnimationState("RightAir", AnimatorStateMachine.ActionState.Attacking);
         }
     }
 }

@@ -3,38 +3,31 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public partial class Player : MonoBehaviour
+public class Player : SceneObject
 {
     private PlayerButtonMap input;
-    private AnimatorController animator;
+    private PlayerMovement movement;
+    private PlayerAction action;
 
     private float numLives;
     private float numDeaths;
-    
-
-    public float totalDamage;
-    public float damageMultiplier;
-    public float bounceDampener;
 
     //CurrentEquipment
 
-    public float stallTimer;
 
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        rb = GetComponent<Rigidbody>();
-        animator = gameObject.AddComponent<AnimatorController>();
-    }
 
     private void OnEnable()
     {
         input = new PlayerButtonMap();
         input.Enable();
 
-        SetUpMovementEvents(input);
-        SetUpActionEvents(input);
+        movement = GetComponent<PlayerMovement>();
+        movement.SetUpMovementEvents(input);
+
+        action = GetComponent<PlayerAction>();
+        action.SetUpActionEvents(input);
+
+        action.SetUpAttackAction(currentWeapons);
     }
 
     private void OnDisable()
@@ -42,7 +35,11 @@ public partial class Player : MonoBehaviour
         input.Disable();
     }
 
+   
 
+
+    //public float bounceDampener;
+    //public float stallTimer;
 
     //TODO: move this to platforms
     //private void OnCollisionEnter(Collision collision)
