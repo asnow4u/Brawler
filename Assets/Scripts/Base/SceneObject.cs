@@ -7,10 +7,6 @@ public abstract class SceneObject : MonoBehaviour, IDamage
 {
     protected float damageTaken;
 
-    [SerializeField]
-    protected List<Weapon> currentWeapons;
-
-
     public void ResetDamaget()
     {
         damageTaken = 0;

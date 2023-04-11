@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-
 public interface IDamage 
 {
     public void AddDamage(float percent);

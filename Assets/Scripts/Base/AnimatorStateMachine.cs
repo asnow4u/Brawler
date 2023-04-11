@@ -1,11 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
-
-[RequireComponent(typeof(Animator))]
-[RequireComponent(typeof(Action))]
-[RequireComponent(typeof(Movement))]
 public abstract class AnimatorStateMachine : MonoBehaviour
 {
     public enum ActionState { Idle, Moveing, Jumping, Landing, Attacking, Damaged, Dead };
@@ -14,18 +12,30 @@ public abstract class AnimatorStateMachine : MonoBehaviour
     protected Animator animator;
     protected string curAnimationPlaying;
 
-    protected Action actionManager;
 
-    protected Movement movementManager;
+    public UnityEvent<AnimationClip> AnimationStartedEvent;
+    public UnityEvent<AnimationClip> AnimationEndedEvent;
+    public UnityEvent<AnimationClip> AnimationCollidersEnabledEvent;
+    public UnityEvent<AnimationClip> AnimationCollidersDisabledEvent;
+
 
     private void Start()
     {
         animator = GetComponent<Animator>();
-        actionManager = GetComponent<Action>();
-        movementManager = GetComponent<Movement>();
 
         actionState = ActionState.Idle;
+
+        SetUpEvents();
     }
+
+    private void SetUpEvents()
+    {
+        AnimationStartedEvent = new UnityEvent<AnimationClip>();
+        AnimationEndedEvent = new UnityEvent<AnimationClip>();
+        AnimationCollidersEnabledEvent = new UnityEvent<AnimationClip>();
+        AnimationCollidersDisabledEvent = new UnityEvent<AnimationClip>();
+    }
+
 
 
     private bool CheckAnimationHierachy(ActionState newState)
@@ -53,26 +63,37 @@ public abstract class AnimatorStateMachine : MonoBehaviour
     }
 
 
-    public abstract void OnAnimationStarted();
+    public virtual void OnAnimationStarted(AnimationClip clip)
+    {        
+        AnimationStartedEvent?.Invoke(clip);
+    }
 
-    public abstract void OnAnimationEnableColliders();
-
-    public abstract void OnAnimationDisableColliders();
-
-    public virtual void OnAnimationEnd()
+    public virtual void OnAnimationEnableColliders(AnimationClip clip)
     {
+        AnimationCollidersEnabledEvent?.Invoke(clip);
+    }
+
+    public virtual void OnAnimationDisableColliders(AnimationClip clip)
+    {
+        AnimationCollidersDisabledEvent?.Invoke(clip);
+    }
+
+    public virtual void OnAnimationEnd(AnimationClip clip)
+    {
+        AnimationEndedEvent?.Invoke(clip);
+
         Debug.Log("Animation Ended");
 
         actionState = ActionState.Idle;
 
-        if (movementManager.isGrounded)
-        {
-            animator.Play("Idle");
-        }
-        else
-        {
-            animator.Play("AirIdle");
-        }
+        //if (movementManager.isGrounded)
+        //{
+        //    animator.Play("Idle");
+        //}
+        //else
+        //{
+        //    animator.Play("AirIdle");
+        //}
     }
 }
 

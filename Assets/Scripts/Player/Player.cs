@@ -5,34 +5,31 @@ using UnityEngine;
 
 public class Player : SceneObject
 {
-    private PlayerButtonMap input;
-    private PlayerMovement movement;
-    private PlayerAction action;
-
     private float numLives;
     private float numDeaths;
 
     //CurrentEquipment
 
+    private void Start()
+    {
+        Initialize();
+    }
 
+    private void Initialize()
+    {
+        GetComponent<InputHandler>().SetUpInputEvents();
+    }
 
     private void OnEnable()
     {
-        input = new PlayerButtonMap();
-        input.Enable();
+        //movement = GetComponent<PlayerMovement>();
+        //movement.SetUpMovementEvents(input);
 
-        movement = GetComponent<PlayerMovement>();
-        movement.SetUpMovementEvents(input);
-
-        action = GetComponent<PlayerAction>();
-        action.SetUpActionEvents(input);
-
-        action.SetUpAttackAction(currentWeapons);
     }
 
     private void OnDisable()
     {
-        input.Disable();
+        GetComponent<InputHandler>().DisableInputEvents();
     }
 
    

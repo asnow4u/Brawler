@@ -4,39 +4,33 @@ using UnityEngine;
 
 public class PlayerAnimator : AnimatorStateMachine
 {
-    public override void OnAnimationDisableColliders()
+    public override void OnAnimationDisableColliders(AnimationClip clip)
     {
-        Debug.Log("Animation Disable Colliders");
-        //NOTE: this is only accounting for the attacking actions and nothing else
-        //This will need to account for other movement and defensive actions as well
+        base.OnAnimationDisableColliders(clip);
 
-        actionManager.AttackCollidersDisabled();
+        Debug.Log("PlayerAnimation: Animation Disable Colliders " + clip.name);        
     }
 
-    public override void OnAnimationEnableColliders()
+    public override void OnAnimationEnableColliders(AnimationClip clip)
     {
-        Debug.Log("Animation Enable Colliders");
-        //NOTE: this is only accounting for the attacking actions and nothing else
-        //This will need to account for other movement and defensive actions as well
+        base.OnAnimationEnableColliders(clip);
 
-        actionManager.AttackCollidersEnabled();
+        Debug.Log("PlayerAnimation: Animation Enable Colliders " + clip.name);
     }
 
-    public override void OnAnimationEnd()
+    public override void OnAnimationEnd(AnimationClip clip)
     {
-        base.OnAnimationEnd();
+        base.OnAnimationEnd(clip);
 
+        Debug.Log("PlayerAnimation: Animation Ended " + clip.name);
         //TODO: Switch to idle state based on isgrounded
 
-        actionManager.AttackEnded(curAnimationPlaying);
     }
 
-    public override void OnAnimationStarted()
+    public override void OnAnimationStarted(AnimationClip clip)
     {
-        //NOTE: this is only accounting for the attacking actions and nothing else
-        //This will need to account for other movement and defensive actions as well
+        base.OnAnimationStarted(clip);
 
-        actionManager.AttackStarted(curAnimationPlaying);
-
+        Debug.Log("PlayerAnimation: Animation Started " + clip.name);
     }
 }
