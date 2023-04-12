@@ -4,10 +4,10 @@ using UnityEngine;
 
 namespace Attack
 {
+    [System.Serializable]
     public class AttackCollection : MonoBehaviour
     {
         [SerializeField] private List<Attack> attacks;
-
 
         [System.Serializable]
         public class Attack
@@ -41,6 +41,22 @@ namespace Attack
             foreach (Attack attack in attacks)
             {
                 if (attack.type == attackType)
+                {
+                    requestedAttack = attack;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public bool GetAttackByClip(AnimationClip clip, out Attack requestedAttack)
+        {
+            requestedAttack = null;
+
+            foreach (Attack attack in attacks)
+            {
+                if (attack.animationClip.name == clip.name)
                 {
                     requestedAttack = attack;
                     return true;

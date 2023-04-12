@@ -2,88 +2,117 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Animation;
+using System;
 
 namespace Attack
 {
     public class AttackHandler : MonoBehaviour
     {
-        protected AttackCollection curAttackCollection;
-        protected AnimatorStateMachine animator;
+        private AttackCollection curAttackCollection;
+        private AnimationHandler animator;
 
-        void Start()
+        public void SetUpHandler()
         {
-            animator = GetComponentInChildren<AnimatorStateMachine>();
+            animator = GetComponentInChildren<AnimationHandler>();
+            SetUpAttacks(transform.GetChild(0).gameObject);
         }
 
-        public void SetCollection(AttackCollection collection)
+        public void SetUpAttacks(GameObject weapon)
+        {
+            SetAttackCollection(weapon.GetComponent<AttackCollection>());
+            SetAnimationAttackEvents(weapon.GetComponent<AttackAnimationEventListener>());
+        }
+
+        private void SetAttackCollection(AttackCollection collection)
         {
             curAttackCollection = collection;
         }
 
-        public void PerformUpTiltAttack()
+        private void SetAnimationAttackEvents(AttackAnimationEventListener listener)
         {
- 
-            if (curAttackCollection.GetAttackByType(AttackType.Type.upTilt, out AttackCollection.Attack attack))
+            listener.AttackAnimationStarted += OnAttackAnimationStarted;
+            listener.AttackAnimationEnded += OnAttackAnimationEnded;
+            listener.AttackAnimationCollidersEnabled += OnAttackCollidersEnabled;
+            listener.AttackAnimationCollidersDisabled += OnAttackCollidersDisabled;
+        }
+
+        #region Attack Performed Events
+
+        private void OnAttackAnimationStarted(AnimationClip clip)
+        {
+            
+        }
+
+        private void OnAttackAnimationEnded(AnimationClip clip)
+        {
+            //TODO: Switch to correct idle state
+        }
+
+        private void OnAttackCollidersEnabled(AnimationClip clip)
+        {
+            if (curAttackCollection.GetAttackByClip(clip, out AttackCollection.Attack attack))
             {
-                //animator.ChangeAnimationState("UpTilt", AnimatorStateMachine.ActionState.Attacking);
+                attack.EnableColliders();
             }
+        }
+
+        private void OnAttackCollidersDisabled(AnimationClip clip)
+        {
+            if (curAttackCollection.GetAttackByClip(clip, out AttackCollection.Attack attack))
+            {
+                attack.DisableColliders();
+            }
+        }
+
+        #endregion
+
+        #region Perform Attack
+
+        private void PerformAttack(AttackType.Type attackType)
+        {
+            if (curAttackCollection.GetAttackByType(attackType, out AttackCollection.Attack attack))
+            {
+                animator.ChangeAnimationState(attack.animationClip, AnimationPriorityState.State.Attacking);
+            }
+        }
+
+        public void PerformUpTiltAttack()
+        {            
+            PerformAttack(AttackType.Type.upTilt);
         }
 
         public void PerformDownTiltAttack()
         {
-            //    animator.ChangeAnimationState("DownTilt", AnimatorStateMachine.ActionState.Attacking);
+            PerformAttack(AttackType.Type.downTilt);
         }
 
 
         public void PerformForwardTiltAttack()
         {
-            //animator.ChangeAnimationState("ForwardTilt", AnimatorStateMachine.ActionState.Attacking);
+            PerformAttack(AttackType.Type.forwardTilt);
         }
 
         public void PerformUpAirAttack()
         {
-            if (curAttackCollection.GetAttackByType(AttackType.Type.upAir, out AttackCollection.Attack attack))
-            {
-                //animator.ChangeAnimationState("UpAir", AnimatorStateMachine.ActionState.Attacking);
-            }
+            PerformAttack(AttackType.Type.upAir);
         }
 
         public void PerformDownAirAttack()
         {
-            //    animator.ChangeAnimationState("DownAir", AnimatorStateMachine.ActionState.Attacking);
-
+            PerformAttack(AttackType.Type.downAir);
         }
 
         public void PerformForwardAirAttack()
         {
-            //animator.ChangeAnimationState("ForwardAir", AnimatorStateMachine.ActionState.Attacking);
+            PerformAttack(AttackType.Type.forwardAir);
         }
 
         public void PerformBackAirAttack()
         {
-            //  animator.ChangeAnimationState("BackAir", AnimatorStateMachine.ActionState.Attacking);
+            PerformAttack(AttackType.Type.backAir);
         }
 
-
-        public void AttackStarted(string attackName)
-        {
-
-        }
-
-        public void AttackEnded(string attackName)
-        {
-
-        }
-
-        public void AttackCollidersEnabled()
-        {
-      
-        }
-
-        public void AttackCollidersDisabled()
-        {
- 
-        }
-
+        #endregion
     }
 }

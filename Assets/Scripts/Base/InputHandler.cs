@@ -11,7 +11,7 @@ public class InputHandler : MonoBehaviour
     private AttackHandler attackHandler;
     private MovementHandler movementHandler;
 
-    public void SetUpInputEvents()
+    public void SetUpHandler()
     {
         input = new PlayerButtonMap();
         input.Enable();

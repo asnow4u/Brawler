@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Animation;
 
 namespace Movement
 {
@@ -29,12 +30,14 @@ namespace Movement
         protected float yAxis;
 
         protected Rigidbody rb;
-        protected AnimatorStateMachine animator;
 
-        private void Start()
+        protected AnimationHandler animator;
+
+
+        public void SetUpHandler()
         {
             rb = GetComponent<Rigidbody>();
-            animator = GetComponent<AnimatorStateMachine>();
+            animator = GetComponentInChildren<AnimationHandler>();
         }
 
 
@@ -117,7 +120,6 @@ namespace Movement
             if (isGrounded)
             {
                 rb.velocity = new Vector3(rb.velocity.x, jumpVelocity, rb.velocity.z);
-                //animator.ChangeAnimationState("Jump", 1, true);
             }
         }
 

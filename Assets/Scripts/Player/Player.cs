@@ -2,6 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Movement;
+using Animation;
+using Attack;
 
 public class Player : SceneObject
 {
@@ -17,14 +20,10 @@ public class Player : SceneObject
 
     private void Initialize()
     {
-        GetComponent<InputHandler>().SetUpInputEvents();
-    }
-
-    private void OnEnable()
-    {
-        //movement = GetComponent<PlayerMovement>();
-        //movement.SetUpMovementEvents(input);
-
+        GetComponent<InputHandler>().SetUpHandler();
+        GetComponent<MovementHandler>().SetUpHandler();
+        GetComponentInChildren<AttackHandler>().SetUpHandler();
+        GetComponentInChildren<AnimationHandler>().SetUpHandler();
     }
 
     private void OnDisable()

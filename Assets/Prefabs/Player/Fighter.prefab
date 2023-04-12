@@ -11,10 +11,11 @@ GameObject:
   - component: {fileID: 1516277479459398688}
   - component: {fileID: 1516277479462820708}
   - component: {fileID: 1516277479471119752}
-  - component: {fileID: 6115930941318250541}
   - component: {fileID: 1516277479459633156}
+  - component: {fileID: 6115930941318250541}
   - component: {fileID: 1516277479459633157}
-  - component: {fileID: 3782129346453878187}
+  - component: {fileID: 7410360428397441782}
+  - component: {fileID: 729522973228004726}
   m_Layer: 0
   m_Name: Fighter
   m_TagString: Player
@@ -67,18 +68,6 @@ CapsuleCollider:
   m_Height: 2.5
   m_Direction: 1
   m_Center: {x: 0, y: 1.25, z: 0}
---- !u!114 &6115930941318250541
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1516277479459633152}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 335719a5d16236d4b9fac4a25d2213a8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1516277479459633156
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -89,6 +78,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f5cb1c53a4b35ab44b1e7722756db776, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &6115930941318250541
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1516277479459633152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 335719a5d16236d4b9fac4a25d2213a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &1516277479459633157
@@ -115,7 +116,7 @@ MonoBehaviour:
   isGrounded: 1
   jumpsAvailable: 2
   additionalJumpVelocity: 4
---- !u!114 &3782129346453878187
+--- !u!114 &7410360428397441782
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -125,6 +126,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 323b280502324d249af0cae379a4e74d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &729522973228004726
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1516277479459633152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2dd9e1c0037d8ff4d87c608e210e1f16, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1001 &5054367996062539723
@@ -909,7 +922,7 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
---- !u!114 &2027097114
+--- !u!114 &3224428363620061459
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -918,18 +931,28 @@ MonoBehaviour:
   m_GameObject: {fileID: 5618110259054421350}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f092c3d3337abd14ab4fd76d1de2efbe, type: 3}
+  m_Script: {fileID: 11500000, guid: 856689d8cc720bc458ea0cddafddbc3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  AnimationStartedEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  AnimationEndedEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  AnimationCollidersEnabledEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  AnimationCollidersDisabledEvent:
-    m_PersistentCalls:
-      m_Calls: []
+  attacks:
+  - type: 0
+    animationClip: {fileID: 7400000, guid: 10dec97d44fa89249a7555782b6a2395, type: 2}
+    points: []
+  - type: 1
+    animationClip: {fileID: 7400000, guid: 9cc81af633bb18549916f443ffd57dd9, type: 2}
+    points: []
+  - type: 2
+    animationClip: {fileID: 7400000, guid: a436f1b9a1c115e40a3b332de66782ae, type: 2}
+    points: []
+  - type: 3
+    animationClip: {fileID: 7400000, guid: 744655aee89205347a6990e63358c823, type: 2}
+    points: []
+  - type: 4
+    animationClip: {fileID: 7400000, guid: 0f01bb806d362984b9c4b9d852bc8448, type: 2}
+    points: []
+  - type: 5
+    animationClip: {fileID: 7400000, guid: a589189979b7a8946bfb451880f07d43, type: 2}
+    points: []
+  - type: 6
+    animationClip: {fileID: 7400000, guid: d01f28a19366ace4a8823aeb2c22b256, type: 2}
+    points: []
