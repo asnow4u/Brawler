@@ -2,18 +2,21 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Attack
+namespace SceneObj.Attack
 {
     public class AttackPoint : MonoBehaviour
     {
-        [SerializeField] private List<Collider> colliders;
+        [SerializeField] private string AnimationName;
+        private List<Collider> colliders;       
         [SerializeField] private float damageOutput;
         [SerializeField] private float knockback;
-        [SerializeField] private Vector3 forceDirection;
+        [SerializeField] private Vector2 forceDirection;
 
         public void Start()
         {
             colliders = new List<Collider>(GetComponents<Collider>());
+
+            DisableColliders();
         }
 
 
@@ -37,7 +40,7 @@ namespace Attack
         private void HitTarget(SceneObject target)
         {
             target.AddDamage(damageOutput);
-            target.ApplyForce(GetComponent<Rigidbody>().mass, knockback, forceDirection);
+            target.ApplyForce(knockback, forceDirection);
         }
 
 

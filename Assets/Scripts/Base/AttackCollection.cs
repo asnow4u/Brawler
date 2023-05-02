@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Attack
+namespace SceneObj.Attack
 {
     [System.Serializable]
     public class AttackCollection : MonoBehaviour

@@ -1,20 +1,17 @@
-using System.Collections;
-using System.Collections.Generic;
+using SceneObj.Animation;
+using SceneObj.Router;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using Animation;
-using System;
 
-namespace Attack
+namespace SceneObj.Attack
 {
     public class AttackHandler : MonoBehaviour
     {
-        private AttackCollection curAttackCollection;
-        private AnimationHandler animator;
+        private ActionRouter router;
+        private AttackCollection curAttackCollection; //TODO: Later fetched from equipment handler to grab weapon
 
-        public void SetUpHandler()
+        public void SetUpHandler(ActionRouter actionRouter)
         {
-            animator = GetComponentInChildren<AnimationHandler>();
+            router = actionRouter;
             SetUpAttacks(transform.GetChild(0).gameObject);
         }
 
@@ -45,8 +42,8 @@ namespace Attack
         }
 
         private void OnAttackAnimationEnded(AnimationClip clip)
-        {
-            //TODO: Switch to correct idle state
+        {            
+
         }
 
         private void OnAttackCollidersEnabled(AnimationClip clip)
@@ -69,48 +66,49 @@ namespace Attack
 
         #region Perform Attack
 
-        private void PerformAttack(AttackType.Type attackType)
+        private string GetAttackFrom(AttackType.Type attackType)
         {
             if (curAttackCollection.GetAttackByType(attackType, out AttackCollection.Attack attack))
             {
-                animator.ChangeAnimationState(attack.animationClip, AnimationPriorityState.State.Attacking);
+                return attack.animationClip.name;            
             }
+
+            return null;
         }
 
-        public void PerformUpTiltAttack()
+        public string PerformUpTiltAttack()
         {            
-            PerformAttack(AttackType.Type.upTilt);
+            return GetAttackFrom(AttackType.Type.upTilt);
         }
 
-        public void PerformDownTiltAttack()
+        public string PerformDownTiltAttack()
         {
-            PerformAttack(AttackType.Type.downTilt);
+            return GetAttackFrom(AttackType.Type.downTilt);
         }
 
-
-        public void PerformForwardTiltAttack()
+        public string PerformForwardTiltAttack()
         {
-            PerformAttack(AttackType.Type.forwardTilt);
+            return GetAttackFrom(AttackType.Type.forwardTilt);
         }
 
-        public void PerformUpAirAttack()
+        public string PerformUpAirAttack()
         {
-            PerformAttack(AttackType.Type.upAir);
+            return GetAttackFrom(AttackType.Type.upAir);
         }
 
-        public void PerformDownAirAttack()
+        public string PerformDownAirAttack()
         {
-            PerformAttack(AttackType.Type.downAir);
+            return GetAttackFrom(AttackType.Type.downAir);
         }
 
-        public void PerformForwardAirAttack()
+        public string PerformForwardAirAttack()
         {
-            PerformAttack(AttackType.Type.forwardAir);
+            return GetAttackFrom(AttackType.Type.forwardAir);
         }
 
-        public void PerformBackAirAttack()
+        public string PerformBackAirAttack()
         {
-            PerformAttack(AttackType.Type.backAir);
+            return GetAttackFrom(AttackType.Type.backAir);
         }
 
         #endregion

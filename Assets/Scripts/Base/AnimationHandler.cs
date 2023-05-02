@@ -1,42 +1,96 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
+using SceneObj.Router;
 
-namespace Animation
+namespace SceneObj.Animation
 {
     public class AnimationHandler : MonoBehaviour
     {
-        protected AnimationPriorityState.State state;
-
+        private ActionRouter router;
         protected Animator animator;
 
-        public void SetUpHandler()
-        {
-            animator = GetComponent<Animator>();
+        private Coroutine finishAnimationCheck;
 
-            state = AnimationPriorityState.State.Idle;
+        public void SetUpHandler(ActionRouter actionRouter)
+        {
+            animator = GetComponentInChildren<Animator>();
+            
+            router = actionRouter;         
+        }
+     
+
+        private void PlayAnimation(string animation)
+        {
+            animator.Play("Base Layer." + animation);
+
+            if (finishAnimationCheck != null)
+                StopCoroutine(finishAnimationCheck);
+            
+            finishAnimationCheck = StartCoroutine(CheckIfAnimationFinished(animation));            
         }
 
-        private bool CheckAnimationPriority(AnimationPriorityState.State newState)
+
+        private IEnumerator CheckIfAnimationFinished(string animation)
         {
-            if ((int)newState > (int)state)
+            int animationHash = Animator.StringToHash(animation);
+
+            while (animationHash != animator.GetCurrentAnimatorStateInfo(0).shortNameHash)
             {
-                return true;
+                yield return null;
             }
 
-            return false;
+            if (animator.GetCurrentAnimatorStateInfo(0).loop) yield break;
+
+            while (animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1)
+            {
+                yield return null;
+            }
+
+            Debug.Log("Animation " + animation + " finished");
+
+            router.ResetState();
         }
 
-        public void ChangeAnimationState(AnimationClip clip, AnimationPriorityState.State newState)
+
+        public void PlayIdleAnimation()
         {
-            if (CheckAnimationPriority(newState))
-            {
-                animator.Play(clip.name);                
-                state = newState;
-            }
+            if (router.IsGrounded())
+                PlayAnimation("BaseIdle");
+            else
+                PlayAnimation("BaseAirIdle"); 
         }
+
+
+        public void PlayMovementAnimation(string animation, float velocity)
+        {
+            animator.SetFloat("Velocity", velocity);
+            PlayAnimation(animation);
+        }
+
+
+        //TODO: Should play stopping animation
+        public void PlayMovementStopAnimation(string animation)
+        {            
+            router.ResetState();
+        }
+
+
+        public void PlayJumpAnimation(string animation)
+        {
+            PlayAnimation(animation);
+        }
+
+        public void PlayLandingAnimation(string animation)
+        {
+            router.ResetState();
+        }
+
+
+        public void PlayAttackAnimation(string animation)
+        {
+            PlayAnimation(animation);
+        }        
     }
 }
 

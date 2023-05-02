@@ -11,6 +11,6 @@ public interface IDamage
 
     public void ResetDamaget();
 
-    public void ApplyForce(float mass, float basePower, Vector3 direction);
+    public void ApplyForce(float basePower, Vector2 direction);
 }
 

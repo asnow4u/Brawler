@@ -1,11 +1,34 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Animation
+public class ActionState
 {
-    public class AnimationPriorityState : MonoBehaviour
+    public enum State { Idle, Moving, Attacking, Damaged, Dead };
+    private State curState;
+    public State CurState => curState;
+
+    public bool ChangeState(State state)
     {
-        public enum State { Idle, Moveing, Jumping, Landing, Attacking, Damaged, Dead };
+        if (curState < state)
+        {
+            curState = state;
+            return true;
+        }
+
+        if (curState == state)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+
+    public void ResetState()
+    {
+        curState = State.Idle;
     }
 }
+
