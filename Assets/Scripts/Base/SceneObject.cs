@@ -42,7 +42,20 @@ namespace SceneObj
             {
                 isGrounded = false;
             }
-        }                  
+        }
+
+        public bool IsFacingRightDirection()
+        {
+            float angleRightDiff = Vector3.Angle(transform.right, Vector3.right);
+            float angleLeftDiff = Vector3.Angle(transform.right, Vector3.left);
+
+            if (angleRightDiff < angleLeftDiff)
+            {
+                return true;
+            }
+
+            return false;
+        }      
 
 
         public void ResetDamaget()
@@ -68,7 +81,7 @@ namespace SceneObj
 
             float force = rb.mass * (basePower * damageTaken);
 
-            rb.AddForce(new Vector3(direction.x, direction.y, 0) * force * direction, ForceMode.Impulse);
+            rb.AddForce(new Vector3(direction.x, direction.y, 0) * force, ForceMode.Impulse);
 
             //TODO: Set drag amount to 0.1 ish
             //Drag should reset when ground is touched or immobile is finished

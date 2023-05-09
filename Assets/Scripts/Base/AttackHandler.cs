@@ -50,7 +50,7 @@ namespace SceneObj.Attack
         {
             if (curAttackCollection.GetAttackByClip(clip, out AttackCollection.Attack attack))
             {
-                attack.EnableColliders();
+                attack.EnableColliders(router.IsFacingRightDirection());
             }
         }
 

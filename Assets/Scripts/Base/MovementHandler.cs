@@ -72,7 +72,7 @@ namespace SceneObj.Movement
         private void UpdateGroundMovement()
         {      
             //Turn around
-            if ((IsFacingRightDirection() && horizontalInputValue < 0) || (!IsFacingRightDirection() && horizontalInputValue > 0))
+            if ((router.IsFacingRightDirection() && horizontalInputValue < 0) || (!router.IsFacingRightDirection() && horizontalInputValue > 0))
             {
                 TurnAround();
             }
@@ -90,7 +90,7 @@ namespace SceneObj.Movement
             else
             {
                 rb.velocity -= transform.right * decelerationX * Time.fixedDeltaTime;
-                if (IsFacingRightDirection())
+                if (router.IsFacingRightDirection())
                 {
                     if (rb.velocity.x < 0)
                         rb.velocity = new Vector3(0, rb.velocity.y, rb.velocity.z);            
@@ -165,19 +165,6 @@ namespace SceneObj.Movement
             rb.velocity = Vector3.zero;
 
             return null;
-        }
-
-        public bool IsFacingRightDirection()
-        {
-            float angleRightDiff = Vector3.Angle(transform.right, Vector3.right);
-            float angleLeftDiff = Vector3.Angle(transform.right, Vector3.left);
-
-            if (angleRightDiff < angleLeftDiff)
-            {
-                return true;
-            }
-
-            return false;
         }
 
         public void TurnAround()

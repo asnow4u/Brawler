@@ -12,6 +12,8 @@ namespace SceneObj.Attack
         [SerializeField] private float knockback;
         [SerializeField] private Vector2 forceDirection;
 
+        private bool isRight;
+
         public void Start()
         {
             colliders = new List<Collider>(GetComponents<Collider>());
@@ -20,10 +22,11 @@ namespace SceneObj.Attack
         }
 
 
-        public void EnableColliders()
+        public void EnableColliders(bool isFacingRightDirection)
         {
             foreach (Collider col in colliders)
             {
+                isRight = isFacingRightDirection;
                 col.enabled = true;
             }       
         }
@@ -40,7 +43,10 @@ namespace SceneObj.Attack
         private void HitTarget(SceneObject target)
         {
             target.AddDamage(damageOutput);
-            target.ApplyForce(knockback, forceDirection);
+
+            float xDirection = forceDirection.x * (isRight ? 1 : -1);
+
+            target.ApplyForce(knockback, new Vector2(xDirection, forceDirection.y));
         }
 
 

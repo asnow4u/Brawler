@@ -16,11 +16,11 @@ namespace SceneObj.Attack
             public AnimationClip animationClip;
             public List<AttackPoint> points;
 
-            public void EnableColliders()
+            public void EnableColliders(bool isFacingRightDirection)
             {
                 foreach (AttackPoint point in points)
                 {
-                    point.EnableColliders();
+                    point.EnableColliders(isFacingRightDirection);
                 }
             }
 

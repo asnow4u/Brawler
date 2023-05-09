@@ -48,6 +48,10 @@ namespace SceneObj.Router
             return sceneObject.isGrounded;
         }
 
+        public bool IsFacingRightDirection()
+        {
+            return sceneObject.IsFacingRightDirection();
+        }
 
         public void ResetState()
         {
@@ -94,7 +98,8 @@ namespace SceneObj.Router
         {
             if (actionState.ChangeState(ActionState.State.Moving))
             {
-                animationHandler.PlayLandingAnimation(movementHandler.PerformLand());
+                if (movementHandler != null)
+                    animationHandler.PlayLandingAnimation(movementHandler.PerformLand());                
             }
         }
 
@@ -139,7 +144,7 @@ namespace SceneObj.Router
             {
                 if (sceneObject.isGrounded)
                 {
-                    if (movementHandler.IsFacingRightDirection())
+                    if (sceneObject.IsFacingRightDirection())
                     {
                         animationHandler.PlayAttackAnimation(attackHandler.PerformForwardTiltAttack());
                     }
@@ -152,7 +157,7 @@ namespace SceneObj.Router
                 }
                 else
                 {
-                    if (movementHandler.IsFacingRightDirection())
+                    if (sceneObject.IsFacingRightDirection())
                     {
                         animationHandler.PlayAttackAnimation(attackHandler.PerformForwardAirAttack());
                     }
@@ -172,7 +177,7 @@ namespace SceneObj.Router
             {
                 if (sceneObject.isGrounded)
                 {
-                    if (movementHandler.IsFacingRightDirection())
+                    if (sceneObject.IsFacingRightDirection())
                     {
                         movementHandler.TurnAround();
                         animationHandler.PlayAttackAnimation(attackHandler.PerformForwardTiltAttack());
@@ -185,7 +190,7 @@ namespace SceneObj.Router
                 }
                 else
                 {
-                    if (movementHandler.IsFacingRightDirection())
+                    if (sceneObject.IsFacingRightDirection())
                     {
                         animationHandler.PlayAttackAnimation(attackHandler.PerformBackAirAttack());
                     }
