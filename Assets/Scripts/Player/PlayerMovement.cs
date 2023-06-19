@@ -15,18 +15,17 @@ namespace SceneObj.Movement
         {
             base.FixedUpdate();
 
-            if (IsGrounded())
+            if (isGrounded)
             {
                 additionalJumpsPerformed = 0;
             }
         }
 
 
-
-        protected override string Jump()
+        protected override void Jump()
         {
-            if (IsGrounded())
-                return base.Jump();
+            if (isGrounded)
+                base.Jump();
 
             else
             {
@@ -37,11 +36,9 @@ namespace SceneObj.Movement
                         rb.velocity = new Vector3(rb.velocity.x, airJumpVelocity, rb.velocity.z);
                         additionalJumpsPerformed++;
 
-                        return movement.animationClip.name;
+                        sceneObj.animator.PlayAnimation(movement.animationClip.name);
                     }
                 }
-
-                return null;
             }       
         }
     }

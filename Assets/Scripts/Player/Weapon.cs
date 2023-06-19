@@ -1,17 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using SceneObj.Attack;
 
-namespace Equipment
+
+public class Weapon : MonoBehaviour
 {
-    public class Weapon : MonoBehaviour
-    {
-        private AttackHandler handler;
+    private AttackHandler handler;
 
-        private void Start()
-        {
-            handler = GetComponent<AttackHandler>();
-        }
+    private void Start()
+    {
+        handler = GetComponent<AttackHandler>();
     }
 }
+
