@@ -1,4 +1,6 @@
+using System;
 using System.Collections;
+using UnityEditor;
 using UnityEngine;
 
 public class AnimationHandler : MonoBehaviour, IAnimator
@@ -8,10 +10,14 @@ public class AnimationHandler : MonoBehaviour, IAnimator
 
     private Coroutine finishAnimationCheck;
 
+    public event Action<AnimationClip> OnAnimationStartedEvent;
+    public event Action<AnimationClip> OnAnimationEndedEvent;
+    public event Action<AnimationClip, string> OnAnimationTriggerEvent;
+
     public void SetUp(SceneObject obj)
     {
         sceneObj = obj;
-        animator = GetComponentInChildren<Animator>();
+        animator = GetComponent<Animator>();
     }
 
 
@@ -47,19 +53,55 @@ public class AnimationHandler : MonoBehaviour, IAnimator
 
 
     public void PlayIdleAnimation()
-    {
-        //TODO: Will be based on equipment
+    {        
         if (sceneObj.isGrounded)
             PlayAnimation("BaseIdle");
         else
             PlayAnimation("BaseAirIdle");      
     }
 
-    
+
+    private AnimationClip GetCurrentPlaingAnimation()
+    {
+        AnimatorClipInfo[] clipInfo = animator.GetCurrentAnimatorClipInfo(0);
+        return clipInfo[0].clip;
+    }
+
+
+    #region Animation Perameter Setting
+
     public void SetFloatPerameter(string name, float value)
     {
         animator.SetFloat(name, value);
     }
 
-}
+    #endregion
 
+    #region AnimationEvents
+
+
+    public void OnAnimationStarted()
+    {
+        AnimationClip clip = GetCurrentPlaingAnimation();
+
+        OnAnimationStartedEvent?.Invoke(clip);
+    }
+
+    public void OnAnimationEnded()
+    {
+        AnimationClip clip = GetCurrentPlaingAnimation();
+
+        OnAnimationEndedEvent?.Invoke(clip);
+    }
+
+
+    //TODO: Figure out how to do this
+    public void OnAntimationTrigger(string trigger)
+    {
+        AnimationClip clip = GetCurrentPlaingAnimation();
+        OnAnimationTriggerEvent?.Invoke(clip, trigger);
+    }
+
+    #endregion
+
+}

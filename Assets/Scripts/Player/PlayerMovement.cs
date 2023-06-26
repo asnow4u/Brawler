@@ -5,9 +5,9 @@ namespace SceneObj.Movement
 {
     public class PlayerMovement : MovementHandler
     {
-        [Header("Jump")]
-        [SerializeField] private int jumpsAvailable;
-        [SerializeField] private float airJumpVelocity;
+        [Header("Player Jump")]
+        [SerializeField] private int jumpsAvailable = 2;
+        [SerializeField] private float airJumpVelocity = 7f;
         private int additionalJumpsPerformed;
 
         // Update is called once per frame

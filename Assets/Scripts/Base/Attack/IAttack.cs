@@ -4,7 +4,7 @@ using UnityEngine;
 
 public interface IAttack
 {
-    public void Setup(SceneObject sceneObj);
+    public void Setup(SceneObject obj, EquipmentHandler equipmentHandler);
 
     public void SetWeapon(Weapon weapon);
 

@@ -6,7 +6,7 @@ using UnityEngine;
 [System.Serializable]
 public class AttackCollection : MonoBehaviour
 {
-    [SerializeField] private List<Attack> attacks;
+    public List<Attack> attacks;
 
     [System.Serializable]
     public class Attack
@@ -14,6 +14,7 @@ public class AttackCollection : MonoBehaviour
         public AttackType.Type type;
         public AnimationClip animationClip;
         public List<AttackPoint> points;
+        
 
         public void EnableColliders(bool isFacingRightDirection)
         {

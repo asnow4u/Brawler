@@ -4,9 +4,9 @@ using UnityEngine;
 
 public interface IMovement
 {
-    public void SetUp(SceneObject obj);
+    public void Setup(SceneObject obj, EquipmentHandler equipmentHandler);
 
-    public void SetCollection(MovementCollection collection);
+    public void SetWeapon(Weapon weapon);
 
     public void PerformMovement(Vector2 inputValue);
 

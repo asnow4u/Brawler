@@ -4,13 +4,18 @@ using UnityEngine;
 using System;
 
 [RequireComponent(typeof(Rigidbody))]
-[RequireComponent(typeof(AnimationHandler))]
 public abstract class SceneObject : MonoBehaviour, IActionState, IDamage
 {
     //public ActionRouter router;
     public Rigidbody rb;
-    public IAnimator animator;
     public bool isGrounded;
+
+    public IAnimator animator;
+    
+    protected IMovement movementHandler;
+    protected IAttack attackHandler;
+
+    protected EquipmentHandler equipmentHandler;
 
     protected float damageTaken;
 
@@ -18,16 +23,47 @@ public abstract class SceneObject : MonoBehaviour, IActionState, IDamage
     {
         Initialize();
     }
-
     
 
     protected virtual void Initialize()
     {               
         rb = GetComponent<Rigidbody>();
-        animator = GetComponent<IAnimator>();     
-        
+        equipmentHandler = new EquipmentHandler(this);        
+
+        InitializeAnimator();
+        InitializeMovementHandler();
+        InitializeAttackHandler();
+
+        equipmentHandler.SwapWeapon(0);
+    }
+
+
+    private void InitializeAnimator()
+    {
+        animator = GetComponentInChildren<IAnimator>();
         animator.SetUp(this);
     }
+
+
+    private void InitializeMovementHandler()
+    {
+        if (TryGetComponent(out IMovement handler)) 
+        {
+            movementHandler = handler;
+            movementHandler.Setup(this, equipmentHandler);
+        }
+    }
+
+    private void InitializeAttackHandler()
+    {
+        if (TryGetComponent(out IAttack handler))
+        {
+            attackHandler = handler;
+            attackHandler.Setup(this, equipmentHandler);
+
+        }
+    }
+
 
 
     //TODO: make two rays on each side to prevent landing just on the edge and not getting jump reset

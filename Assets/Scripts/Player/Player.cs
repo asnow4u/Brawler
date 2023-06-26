@@ -1,10 +1,6 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Windows;
-using static UnityEditor.Experimental.AssetDatabaseExperimental.AssetDatabaseCounters;
+
 
 public class Player : SceneObject
 {
@@ -12,21 +8,12 @@ public class Player : SceneObject
     private float numDeaths;
 
     private PlayerInputHandler inputHandler;
-    private IMovement movementHandler;
-    private IAttack attackHandler;
-
-
-    //CurrentEquipment
-
 
     protected override void Initialize()
     {
         base.Initialize();
-            
-        
-        InitializeInput();
-        InitializeMovement();
-        InitializeAttack();
+                    
+        InitializeInput(); 
     }
 
     private void InitializeInput()
@@ -47,24 +34,6 @@ public class Player : SceneObject
         inputHandler.input.PlayerActions.LeftAttack.performed += AttackLeftInput;
         inputHandler.input.PlayerActions.DownAttack.performed += AttackDownwardInput;
         inputHandler.input.PlayerActions.UpAttack.performed += AttackUpwardInput;
-    }
-
-    private void InitializeMovement()
-    {
-        movementHandler = GetComponent<IMovement>();
-        movementHandler.SetUp(this);
-        
-        //TODO: Will need to set the movement collection based on the cur weapon
-        movementHandler.SetCollection(transform.GetChild(0).gameObject.GetComponent<MovementCollection>());
-    }
-
-    private void InitializeAttack()
-    {
-        attackHandler = GetComponent<IAttack>();
-        attackHandler.Setup(this);
-
-        //TODO: SetWeapon with cur weapon
-        
     }
 
 

@@ -165,26 +165,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Fighter
       objectReference: {fileID: 0}
-    - target: {fileID: 6533080229533676565, guid: 2d9eaebf25e69ac4896b5a0412679ec5, type: 3}
-      propertyPath: maxVelocityX
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 6533080229533676565, guid: 2d9eaebf25e69ac4896b5a0412679ec5, type: 3}
-      propertyPath: accelerationX
-      value: 30
-      objectReference: {fileID: 0}
-    - target: {fileID: 6533080229533676565, guid: 2d9eaebf25e69ac4896b5a0412679ec5, type: 3}
-      propertyPath: decelerationX
-      value: 30
-      objectReference: {fileID: 0}
-    - target: {fileID: 6533080229533676565, guid: 2d9eaebf25e69ac4896b5a0412679ec5, type: 3}
-      propertyPath: airAccelerationX
-      value: 15
-      objectReference: {fileID: 0}
-    - target: {fileID: 6533080229533676565, guid: 2d9eaebf25e69ac4896b5a0412679ec5, type: 3}
-      propertyPath: fastFallVelocity
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 6533080229533771824, guid: 2d9eaebf25e69ac4896b5a0412679ec5, type: 3}
       propertyPath: m_RootOrder
       value: 15
@@ -294,7 +274,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 418574942}
   m_LocalRotation: {x: 0.0011999886, y: 0.000000017206021, z: -2.0647045e-11, w: 0.9999993}
-  m_LocalPosition: {x: -0.046917196, y: 2.379052, z: -15.000482}
+  m_LocalPosition: {x: -0.0428708, y: 2.379052, z: -15.000482}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1360,7 +1340,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1951020057}
   m_LocalRotation: {x: 0.0011999886, y: 0.000000017206021, z: -2.0647045e-11, w: 0.9999993}
-  m_LocalPosition: {x: -0.046917196, y: 2.379052, z: -15.000482}
+  m_LocalPosition: {x: -0.0428708, y: 2.379052, z: -15.000482}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

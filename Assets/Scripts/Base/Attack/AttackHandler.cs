@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using UnityEditor;
 using UnityEngine;
 
 public class AttackHandler : MonoBehaviour, IAttack
@@ -10,31 +13,28 @@ public class AttackHandler : MonoBehaviour, IAttack
 
     private AttackCollection curAttackCollection; //TODO: Later fetched from equipment handler to grab weapon
 
-    public void Setup(SceneObject obj)
+
+    public void Setup(SceneObject obj, EquipmentHandler equipmentHandler)
     {
         sceneObj = obj;
+        equipmentHandler.RegisterToWeaponChange(SetWeapon);
+
+        animator.OnAnimationStartedEvent += OnAttackAnimationStarted;
+        animator.OnAnimationEndedEvent += OnAttackAnimationEnded;
+        animator.OnAnimationTriggerEvent += OnAttackTrigger;
     }
 
 
     public void SetWeapon(Weapon weapon)
     {
-        SetAttackCollection(weapon.GetComponent<AttackCollection>());
-        SetAnimationAttackEvents(weapon.GetComponent<AttackAnimationEventListener>());
-    }
+        curAttackCollection = weapon.attackCollection;
 
 
-    private void SetAttackCollection(AttackCollection collection)
-    {
-        curAttackCollection = collection;
-    }
-
-
-    private void SetAnimationAttackEvents(AttackAnimationEventListener listener)
-    {
-        listener.AttackAnimationStarted += OnAttackAnimationStarted;
-        listener.AttackAnimationEnded += OnAttackAnimationEnded;
-        listener.AttackAnimationCollidersEnabled += OnAttackCollidersEnabled;
-        listener.AttackAnimationCollidersDisabled += OnAttackCollidersDisabled;
+        //AttackAnimationEventListener listener = GetComponentInChildren<AttackAnimationEventListener>();
+        //listener.AttackAnimationStarted += OnAttackAnimationStarted;
+        //listener.AttackAnimationEnded += OnAttackAnimationEnded;
+        //listener.AttackAnimationCollidersEnabled += OnAttackCollidersEnabled;
+        //listener.AttackAnimationCollidersDisabled += OnAttackCollidersDisabled;
     }
 
 
@@ -42,18 +42,39 @@ public class AttackHandler : MonoBehaviour, IAttack
 
     private void OnAttackAnimationStarted(AnimationClip clip)
     {
-            
+        //TODO: Determine if the clip exists in the weapon
+
+
+        Debug.Log("Animation " + clip.name + " Started");
     }
 
 
     private void OnAttackAnimationEnded(AnimationClip clip)
-    {            
+    {
+        //TODO: Determine if the clip exists in the weapon
 
+        Debug.Log("Animation " + clip.name + " ended");
     }
 
 
-    private void OnAttackCollidersEnabled(AnimationClip clip)
+    private void OnAttackTrigger(AnimationClip clip, string trigger)
     {
+        switch (trigger)
+        {
+            case "EnableColliders":
+                EnabledAttackColliders(clip);
+                break;
+
+            case "DisableColliders":
+                DisabledAttackColliders(clip);
+                break;
+        }
+    }
+
+
+    private void EnabledAttackColliders(AnimationClip clip)
+    {
+        Debug.Log("Animation " + clip.name + " Colliders Enabled");
         if (curAttackCollection.GetAttackByClip(clip, out AttackCollection.Attack attack))
         {
             attack.EnableColliders(isFacingRightDir);
@@ -61,8 +82,10 @@ public class AttackHandler : MonoBehaviour, IAttack
     }
 
 
-    private void OnAttackCollidersDisabled(AnimationClip clip)
+    private void DisabledAttackColliders(AnimationClip clip)
     {
+        Debug.Log("Animation " + clip.name + " Colliders Disabled");
+
         if (curAttackCollection.GetAttackByClip(clip, out AttackCollection.Attack attack))
         {
             attack.DisableColliders();

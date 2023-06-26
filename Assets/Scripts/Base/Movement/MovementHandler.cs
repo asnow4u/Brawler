@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public abstract class MovementHandler : MonoBehaviour, IMovement
+public class MovementHandler : MonoBehaviour, IMovement
 {
     protected SceneObject sceneObj;
 
@@ -16,30 +16,31 @@ public abstract class MovementHandler : MonoBehaviour, IMovement
     protected MovementCollection curMovementCollection;
 
     [Header("Movement Speed")]
-    [SerializeField] private float accelerationX;
-    [SerializeField] private float decelerationX;
-    [SerializeField] private float airAccelerationX;
-    [Range(0, 20)]
-    [SerializeField] private float maxVelocityX;
-    [Range(0, 20)]
-    [SerializeField] private float maxVelocityY;
+    [SerializeField] private float accelerationX = 30f;
+    [SerializeField] private float decelerationX = 30f;
+    [SerializeField] private float airAccelerationX = 15f;
+    
+    [SerializeField] private float maxVelocityX = 10f;
+    [SerializeField] private float maxVelocityY = 5f;
 
     [Header("Jump")]
-    [SerializeField] protected float jumpVelocity;
-    [SerializeField] protected float fastFallVelocity;
+    [SerializeField] protected float jumpVelocity = 7f;
+    [SerializeField] protected float fastFallVelocity = 1f;
     
     protected float horizontalInputValue;
     protected float verticalInputValue;
 
-    public void SetUp(SceneObject obj)
+ 
+    public void Setup(SceneObject obj, EquipmentHandler equipmentHandler)
     {
         sceneObj = obj;
+        equipmentHandler.RegisterToWeaponChange(SetWeapon);
     }
 
 
-    public void SetCollection(MovementCollection collection)
+    public void SetWeapon(Weapon weapon)
     {
-        curMovementCollection = collection;
+        curMovementCollection = weapon.movementCollection;
     }
 
 
@@ -147,7 +148,6 @@ public abstract class MovementHandler : MonoBehaviour, IMovement
         
         if (verticalInputValue < 0f)
         {
-            Debug.Log(rb.velocity.y);
             rb.velocity += transform.up * verticalInputValue * fastFallVelocity * Time.fixedDeltaTime;
         }
     }

@@ -2,14 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
+[RequireComponent(typeof(MovementCollection), typeof(AttackCollection))]
 public class Weapon : MonoBehaviour
 {
-    private AttackHandler handler;
+    public MovementCollection movementCollection;
+    public AttackCollection attackCollection;
 
-    private void Start()
-    {
-        handler = GetComponent<AttackHandler>();
-    }
 }
 
