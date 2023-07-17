@@ -7,6 +7,10 @@ TagManager:
   - Platforms
   - PlayerFist
   - Item
+  - AttackRightFist
+  - AttackLeftFist
+  - AttackRightFoot
+  - AttackLeftFoot
   layers:
   - Default
   - TransparentFX
@@ -14,10 +18,10 @@ TagManager:
   - 
   - Water
   - UI
-  - Ground
-  - Item
-  - Ignore Collision
-  - 
+  - Environment
+  - SceneObject
+  - AttackHitBox
+  - DamageHitBox
   - 
   - 
   - 
