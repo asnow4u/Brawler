@@ -6,42 +6,48 @@ using UnityEngine;
 public class EquipmentHandler : IEquipment
 {
     private SceneObject sceneObj;
-    private WeaponCollection weaponCollection;
 
-    public event Action<Weapon> OnWeaponChange;
+    private Weapon curWeapon;
+    public IWeapon WeaponCollection { get; private set; }
 
     public EquipmentHandler(SceneObject obj)
     {
         this.sceneObj = obj;
-        weaponCollection = new WeaponCollection(obj.transform.Find("Equipment"));
-    }
 
+        Transform equipment = obj.transform.Find("Equipment");
 
-    public void RegisterToWeaponChange(Action<Weapon> weaponChangeListener)
-    {
-        OnWeaponChange += weaponChangeListener;
-    }
+        if (equipment != null)
+        {
+            WeaponCollection = new WeaponHandler(equipment);
 
-
-    public void AddWeapon(Weapon weapon)
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public void RemoveWeapon(Weapon weapon)
-    {
-        throw new System.NotImplementedException();
+            SwapWeapon(0);
+        }
     }
 
 
     public void SwapWeapon(int index)
     {
-        Weapon weapon = weaponCollection.GetWeaponByIndex(index);
-
-        if (weapon != null) 
+        if (WeaponCollection != null)
         {
-            weaponCollection.curWeapon = weapon;
-            OnWeaponChange?.Invoke(weapon);
+            Weapon weapon = WeaponCollection.GetWeaponByIndex(index);
+
+            if (weapon != null) 
+            {
+                curWeapon = weapon;
+            }        
         }
     }
+
+
+    public MovementCollection GetCurrentWeaponMovementCollection()
+    {
+        return curWeapon.MovementCollection;
+    }
+
+
+    public AttackCollection GetCurrentWeaponAttackCollection()
+    {
+        return curWeapon.AttackCollection;
+    }
+
 }

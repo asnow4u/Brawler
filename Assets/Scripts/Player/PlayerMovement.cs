@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace SceneObj.Movement
 {
-    public class PlayerMovement : MovementHandler
+    public class PlayerMovement : MovementInputHandler
     {
         [Header("Player Jump")]
         [SerializeField] private int jumpsAvailable = 2;

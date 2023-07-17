@@ -4,7 +4,12 @@ using UnityEngine;
 
 public interface IActionState
 {
-    public bool ChangeState(int stateIndex);
+    public void Setup(SceneObject obj);
+
+    public bool CompairState(ActionState.State state);
+
+    public bool ChangeState(ActionState.State state);
 
     public void ResetState();
+
 }

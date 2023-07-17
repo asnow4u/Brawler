@@ -2,22 +2,23 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using UnityEngine.InputSystem.Utilities;
 
-[RequireComponent(typeof(Rigidbody))]
-public abstract class SceneObject : MonoBehaviour, IActionState, IDamage
+public abstract class SceneObject : MonoBehaviour, IDamage
 {
-    //public ActionRouter router;
+    const float minForce = 200f;
+
     public Rigidbody rb;
     public bool isGrounded;
 
-    public IAnimator animator;
-    
+    public IActionState stateHandler;
+    public IAnimator animator;    
+    public EquipmentHandler equipmentHandler;
+
     protected IMovement movementHandler;
     protected IAttack attackHandler;
 
-    protected EquipmentHandler equipmentHandler;
-
-    protected float damageTaken;
+    [SerializeField] protected float damageTaken;
 
     private void Start()
     {
@@ -28,15 +29,19 @@ public abstract class SceneObject : MonoBehaviour, IActionState, IDamage
     protected virtual void Initialize()
     {               
         rb = GetComponent<Rigidbody>();
-        equipmentHandler = new EquipmentHandler(this);        
 
+        InitializeEquipmentHandler();
         InitializeAnimator();
+        InitializeStateHandler();
         InitializeMovementHandler();
         InitializeAttackHandler();
-
-        equipmentHandler.SwapWeapon(0);
     }
 
+
+    private void InitializeEquipmentHandler()
+    {
+        equipmentHandler = new EquipmentHandler(this);
+    }
 
     private void InitializeAnimator()
     {
@@ -45,12 +50,20 @@ public abstract class SceneObject : MonoBehaviour, IActionState, IDamage
     }
 
 
+    private void InitializeStateHandler()
+    {
+        stateHandler = new ActionStateHandler();
+        stateHandler.Setup(this);
+        stateHandler.ResetState();
+    }
+
+
     private void InitializeMovementHandler()
     {
         if (TryGetComponent(out IMovement handler)) 
         {
             movementHandler = handler;
-            movementHandler.Setup(this, equipmentHandler);
+            movementHandler.Setup(this);
         }
     }
 
@@ -59,8 +72,7 @@ public abstract class SceneObject : MonoBehaviour, IActionState, IDamage
         if (TryGetComponent(out IAttack handler))
         {
             attackHandler = handler;
-            attackHandler.Setup(this, equipmentHandler);
-
+            attackHandler.Setup(this);
         }
     }
 
@@ -69,12 +81,11 @@ public abstract class SceneObject : MonoBehaviour, IActionState, IDamage
     //TODO: make two rays on each side to prevent landing just on the edge and not getting jump reset
     protected void FixedUpdate()
     {
-        if (Physics.Raycast(GetComponent<Collider>().bounds.center, Vector3.down, transform.GetComponent<Collider>().bounds.size.y / 2 + 0.1f, ~LayerMask.NameToLayer("Ground")))
+        if (Physics.Raycast(GetComponent<Collider>().bounds.center, Vector3.down, transform.GetComponent<Collider>().bounds.size.y / 2 + 0.1f, ~LayerMask.NameToLayer("Environment")))
         {
             if (rb.velocity.y < 0 && !isGrounded)
             {
                 isGrounded = true;
-                //router.OnLand(rb.velocity.y);
             }
         }
         else
@@ -117,29 +128,42 @@ public abstract class SceneObject : MonoBehaviour, IActionState, IDamage
     public void RemoveDamage(float percent)
     {
         damageTaken -= percent;
-    }   
-
-    public void ApplyForce(float basePower, Vector2 direction)
-    {
-
-        //Grab here in case change to mass
-        Rigidbody rb = GetComponent<Rigidbody>();
-
-        float force = rb.mass * (basePower * damageTaken);
-
-        rb.AddForce(new Vector3(direction.x, direction.y, 0) * force, ForceMode.Impulse);
-
-        //TODO: Set drag amount to 0.1 ish
-        //Drag should reset when ground is touched or immobile is finished
     }
 
-    public bool ChangeState(int stateIndex)
+
+    public Vector2 testDirection;
+    public float testForce;
+
+    [ContextMenu("TestForce")]
+    public void TestForce()
     {
-        throw new NotImplementedException();
+        rb.AddForce(new Vector3(testDirection.x, testDirection.y, 0) * testForce, ForceMode.Impulse);
     }
 
-    public void ResetState()
+
+    /// <summary>
+    /// The equation is used to calculate the force required to knock a target object a certain distance, given its mass and the amount of damage dealt to it. 
+    /// The idea is that the more mass the target has, the more force is required to knock it the same distance compared to an object with less mass. 
+    /// Similarly, the more total damage is dealt to the target, the more force is required to knock it the same distance.
+    /// The equation breaks down into three main parts. 
+    /// The first part, knockbackForce, calculates the scaling factor for knockback based on the target's mass. 
+    /// The second part, damageForce, calculates the scaling factor for damage based on the total damage dealt to the target. The e^(Min(1, damageTaken / 100f) * Ln(10) ensures that the scaling is smooth and gradual, without sudden jumps in force values.
+    /// The third part, totalForce, multiplies the two scaling factors together to get the final force value required to achieve the desired knockback. The 1000 helps get to the proper range of force.
+    /// </summary>
+    /// <param name="baseKnockBack"></param>
+    /// <param name="forceDirection"></param>
+    public void ApplyForceBasedOnDamage(float baseKnockBack, float damageInfluence, Vector2 forceDirection)
     {
-        throw new NotImplementedException();
+        float knockBackForce = (baseKnockBack / rb.mass);
+
+        //TODO: Want to include an influence variable. this would determine how much the damage force would be applied to the total force
+        float damageForce = (Mathf.Exp(Mathf.Min(1, damageTaken / 100f) * Mathf.Log(10)) * Mathf.Sqrt(damageTaken)) * Mathf.Clamp(damageInfluence, 0, 1);        
+        
+        float totalForce = Mathf.Max(minForce, knockBackForce * damageForce * 10f);
+        
+        Debug.Log("Force: " + totalForce);        
+
+        rb.AddForce(new Vector3(forceDirection.x, forceDirection.y, 0) * totalForce, ForceMode.Impulse);
     }
 }
+

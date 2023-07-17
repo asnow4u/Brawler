@@ -1,60 +1,60 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AttackPoint : MonoBehaviour
+public class AttackPoint : MonoBehaviour, IAttackPoint
 {
-    [SerializeField] private string AnimationName;
-    private List<Collider> colliders;       
-    [SerializeField] private float damageOutput;
-    [SerializeField] private float knockback;
-    [SerializeField] private Vector2 forceDirection;
+    private string tag;
+    private Collider collider;
 
-    private bool isRight;
+    private event Action<IDamage> colliderHitEvent;
 
     public void Start()
     {
-        colliders = new List<Collider>(GetComponents<Collider>());
+        tag = gameObject.tag;
+        collider = GetComponent<Collider>();
 
         DisableColliders();
     }
 
-
-    public void EnableColliders(bool isFacingRightDirection)
+    public string GetTag()
     {
-        foreach (Collider col in colliders)
-        {
-            isRight = isFacingRightDirection;
-            col.enabled = true;
-        }       
+        return tag;
+    }
+
+
+    public void RegisterToHitEvent(Action<IDamage> callback)
+    {
+        colliderHitEvent += callback;
+    }
+
+    public void UnRegisterToHitEvent(Action<IDamage> callback)
+    {
+        colliderHitEvent -= callback;
+    }
+
+
+    public void EnableColliders()
+    {           
+        collider.enabled = true;                   
     }
 
 
     public void DisableColliders()
     {
-        foreach (Collider col in colliders)
-        {
-            col.enabled = false;
-        }
-    }
-
-    private void HitTarget(SceneObject target)
-    {
-        target.AddDamage(damageOutput);
-
-        float xDirection = forceDirection.x * (isRight ? 1 : -1);
-
-        target.ApplyForce(knockback, new Vector2(xDirection, forceDirection.y));
+        collider.enabled = false;
     }
 
 
     private void OnTriggerEnter(Collider col)
-    {
-        SceneObject target = col.GetComponent<SceneObject>();
-
-        if (target != null)
+    {        
+        if (col.gameObject.layer == LayerMask.NameToLayer("DamageHitBox"))
         {
-            HitTarget(target);
+            Debug.Log("HIT " + col.gameObject.name);
+
+            IDamage target = col.GetComponentInParent<IDamage>();
+            colliderHitEvent?.Invoke(target);
         }
     }
 }

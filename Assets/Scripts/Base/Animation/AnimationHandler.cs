@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEditor;
 using UnityEngine;
 
+[RequireComponent(typeof(Animator))]
 public class AnimationHandler : MonoBehaviour, IAnimator
 {
     protected SceneObject sceneObj;
@@ -61,7 +62,7 @@ public class AnimationHandler : MonoBehaviour, IAnimator
     }
 
 
-    private AnimationClip GetCurrentPlaingAnimation()
+    private AnimationClip GetCurrentPlayingAnimation()
     {
         AnimatorClipInfo[] clipInfo = animator.GetCurrentAnimatorClipInfo(0);
         return clipInfo[0].clip;
@@ -82,14 +83,14 @@ public class AnimationHandler : MonoBehaviour, IAnimator
 
     public void OnAnimationStarted()
     {
-        AnimationClip clip = GetCurrentPlaingAnimation();
+        AnimationClip clip = GetCurrentPlayingAnimation();
 
         OnAnimationStartedEvent?.Invoke(clip);
     }
 
     public void OnAnimationEnded()
     {
-        AnimationClip clip = GetCurrentPlaingAnimation();
+        AnimationClip clip = GetCurrentPlayingAnimation();
 
         OnAnimationEndedEvent?.Invoke(clip);
     }
@@ -98,7 +99,7 @@ public class AnimationHandler : MonoBehaviour, IAnimator
     //TODO: Figure out how to do this
     public void OnAntimationTrigger(string trigger)
     {
-        AnimationClip clip = GetCurrentPlaingAnimation();
+        AnimationClip clip = GetCurrentPlayingAnimation();
         OnAnimationTriggerEvent?.Invoke(clip, trigger);
     }
 
