@@ -19,7 +19,7 @@ public class AttackCollection : MonoBehaviour
         [Header("Attack Details")]
         [Range(0f, 20f)] 
         public float damageOutput;
-        [Range(0f, 10f)]
+        [Range(200f, 1000f)]
         public float baseKnockback;
         [Range(0f, 1f)]
         public float damageInfluence;
@@ -36,6 +36,8 @@ public class AttackCollection : MonoBehaviour
 
         public void OnHit(IDamage target)
         {
+            Debug.Log("Attack: Hit with " + type.ToString());
+
             target.AddDamage(damageOutput);
             
             target.ApplyForceBasedOnDamage(baseKnockback, damageInfluence, new Vector2(directionalForce.x * (isFacingRightDir ? 1 : -1), directionalForce.y));

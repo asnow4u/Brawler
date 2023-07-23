@@ -142,26 +142,26 @@ public abstract class SceneObject : MonoBehaviour, IDamage
 
 
     /// <summary>
-    /// The equation is used to calculate the force required to knock a target object a certain distance, given its mass and the amount of damage dealt to it. 
+    /// The equation is used to calculate the force that will be applied based on its mass and the amount of damage dealt to it, and the knockback of the attack. 
     /// The idea is that the more mass the target has, the more force is required to knock it the same distance compared to an object with less mass. 
-    /// Similarly, the more total damage is dealt to the target, the more force is required to knock it the same distance.
-    /// The equation breaks down into three main parts. 
-    /// The first part, knockbackForce, calculates the scaling factor for knockback based on the target's mass. 
-    /// The second part, damageForce, calculates the scaling factor for damage based on the total damage dealt to the target. The e^(Min(1, damageTaken / 100f) * Ln(10) ensures that the scaling is smooth and gradual, without sudden jumps in force values.
-    /// The third part, totalForce, multiplies the two scaling factors together to get the final force value required to achieve the desired knockback. The 1000 helps get to the proper range of force.
+    /// Similarly, the more total damage that is dealt to the target, will result in higher force values.
+    /// Similarly, the more baseKnockBack being applied will result in higher force values.
+    /// Lastly the damageInfluence helps determine how much influence the damage will have on the final force value
+    /// The equation breaks down into three main parts.
     /// </summary>
     /// <param name="baseKnockBack"></param>
     /// <param name="forceDirection"></param>
     public void ApplyForceBasedOnDamage(float baseKnockBack, float damageInfluence, Vector2 forceDirection)
     {
-        float knockBackForce = (baseKnockBack / rb.mass);
+        float damageForce = damageInfluence * Mathf.Pow((baseKnockBack * damageTaken) / Mathf.Pow(rb.mass, 1.75f), 2);
 
-        //TODO: Want to include an influence variable. this would determine how much the damage force would be applied to the total force
-        float damageForce = (Mathf.Exp(Mathf.Min(1, damageTaken / 100f) * Mathf.Log(10)) * Mathf.Sqrt(damageTaken)) * Mathf.Clamp(damageInfluence, 0, 1);        
-        
-        float totalForce = Mathf.Max(minForce, knockBackForce * damageForce * 10f);
-        
-        Debug.Log("Force: " + totalForce);        
+        float totalForce = Mathf.Max(minForce, baseKnockBack + damageForce);
+
+        string damageDebug = "Damage: \n";
+        damageDebug += "Knockback Force: " + baseKnockBack + "\n";
+        damageDebug += "DamageForce: " + damageForce + "\n";
+        damageDebug += "Total Force: " + totalForce;
+        Debug.Log(damageDebug);        
 
         rb.AddForce(new Vector3(forceDirection.x, forceDirection.y, 0) * totalForce, ForceMode.Impulse);
     }

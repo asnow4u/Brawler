@@ -19,7 +19,7 @@ public class ActionStateHandler : IActionState
     {
         if (curState < requestedState)
         {
-            Debug.Log("Action State " + curState.ToString() + " Changed to " + requestedState.ToString());
+            //Debug.Log("Action State " + curState.ToString() + " Changed to " + requestedState.ToString());
             curState = requestedState;
             return true;
         }
@@ -35,7 +35,7 @@ public class ActionStateHandler : IActionState
 
     public void ResetState()
     {
-        Debug.Log("Action State " + curState.ToString() + " Changed to " + ActionState.State.Idle.ToString());
+        //Debug.Log("Action State " + curState.ToString() + " Changed to " + ActionState.State.Idle.ToString());
         curState = ActionState.State.Idle;        
         animator.PlayIdleAnimation();
     }
