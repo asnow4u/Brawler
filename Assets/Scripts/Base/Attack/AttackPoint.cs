@@ -51,7 +51,7 @@ public class AttackPoint : MonoBehaviour, IAttackPoint
     {        
         if (col.gameObject.layer == LayerMask.NameToLayer("DamageHitBox"))
         {
-            Debug.Log("HIT " + col.gameObject.name);
+            Debug.Log("HIT " + col.gameObject.name + " " + gameObject.name);
 
             IDamage target = col.GetComponentInParent<IDamage>();
             colliderHitEvent?.Invoke(target);

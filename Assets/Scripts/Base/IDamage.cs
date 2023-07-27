@@ -12,5 +12,7 @@ public interface IDamage
     public void ResetDamaget();
 
     public void ApplyForceBasedOnDamage(float baseKnockBack, float damageInfluence, Vector2 direction);
+
+    public IEnumerator ApplyHitStun(float totalForce);
 }
 

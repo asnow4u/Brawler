@@ -11,6 +11,7 @@ public class MovementInputHandler : MonoBehaviour, IMovement
 
     protected Rigidbody rb { get { return sceneObj.rb; } }
     protected bool isGrounded { get { return sceneObj.isGrounded; } }
+    protected float maxVelocityX { get { return sceneObj.maxVelocity; } }
     protected bool isFacingRightDir { get { return sceneObj.IsFacingRightDirection(); } }
     protected IAnimator animator { get { return sceneObj.animator; } }
     protected IActionState stateHandler { get { return sceneObj.stateHandler; } }
@@ -20,9 +21,6 @@ public class MovementInputHandler : MonoBehaviour, IMovement
     [SerializeField] private float accelerationX = 30f;
     [SerializeField] private float decelerationX = 30f;
     [SerializeField] private float airAccelerationX = 15f;
-    
-    [SerializeField] private float maxVelocityX = 10f;
-    [SerializeField] private float maxVelocityY = 5f;
 
     [Header("Jump")]
     [SerializeField] protected float jumpVelocity = 7f;

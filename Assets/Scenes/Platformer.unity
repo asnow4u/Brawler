@@ -161,25 +161,33 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 272181326, guid: 2d9eaebf25e69ac4896b5a0412679ec5, type: 3}
-      propertyPath: attacks.Array.data[0].damageOutput
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 272181326, guid: 2d9eaebf25e69ac4896b5a0412679ec5, type: 3}
-      propertyPath: attacks.Array.data[0].baseKnockback
-      value: 4.41
-      objectReference: {fileID: 0}
-    - target: {fileID: 272181326, guid: 2d9eaebf25e69ac4896b5a0412679ec5, type: 3}
-      propertyPath: attacks.Array.data[0].damageInfluence
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 272181326, guid: 2d9eaebf25e69ac4896b5a0412679ec5, type: 3}
-      propertyPath: attacks.Array.data[0].directionalForce.y
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 6533080229533676560, guid: 2d9eaebf25e69ac4896b5a0412679ec5, type: 3}
       propertyPath: m_Name
       value: Fighter
+      objectReference: {fileID: 0}
+    - target: {fileID: 6533080229533676564, guid: 2d9eaebf25e69ac4896b5a0412679ec5, type: 3}
+      propertyPath: testForce
+      value: 5000
+      objectReference: {fileID: 0}
+    - target: {fileID: 6533080229533676564, guid: 2d9eaebf25e69ac4896b5a0412679ec5, type: 3}
+      propertyPath: forceScaler
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6533080229533676564, guid: 2d9eaebf25e69ac4896b5a0412679ec5, type: 3}
+      propertyPath: hitStunTime
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6533080229533676564, guid: 2d9eaebf25e69ac4896b5a0412679ec5, type: 3}
+      propertyPath: testDirection.x
+      value: -0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6533080229533676564, guid: 2d9eaebf25e69ac4896b5a0412679ec5, type: 3}
+      propertyPath: testDirection.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6533080229533676564, guid: 2d9eaebf25e69ac4896b5a0412679ec5, type: 3}
+      propertyPath: decelerationRate
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 6533080229533771824, guid: 2d9eaebf25e69ac4896b5a0412679ec5, type: 3}
       propertyPath: m_RootOrder
@@ -290,7 +298,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 418574942}
   m_LocalRotation: {x: 0.0011999886, y: 0.000000017206021, z: -2.0647045e-11, w: 0.9999993}
-  m_LocalPosition: {x: -0.06277503, y: 2.3180692, z: -20.000643}
+  m_LocalPosition: {x: -0.070798345, y: 2.2570865, z: -25.000805}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -365,7 +373,7 @@ MonoBehaviour:
   m_TargetMovementOnly: 1
   m_ScreenX: 0.50272477
   m_ScreenY: 0.47276247
-  m_CameraDistance: 20
+  m_CameraDistance: 25
   m_DeadZoneWidth: 0
   m_DeadZoneHeight: 0
   m_DeadZoneDepth: 0
@@ -1339,7 +1347,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1951020057}
   m_LocalRotation: {x: 0.0011999886, y: 0.000000017206021, z: -2.0647045e-11, w: 0.9999993}
-  m_LocalPosition: {x: -0.06277503, y: 2.3180692, z: -20.000643}
+  m_LocalPosition: {x: -0.070798345, y: 2.2570865, z: -25.000805}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1490,7 +1498,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1805824689445113051, guid: ef9a0dac0f6e2c2448bac8b1af9d7ace, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.3204
+      value: 2.6803
       objectReference: {fileID: 0}
     - target: {fileID: 1805824689445113051, guid: ef9a0dac0f6e2c2448bac8b1af9d7ace, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1531,6 +1539,14 @@ PrefabInstance:
     - target: {fileID: 1805824689445113053, guid: ef9a0dac0f6e2c2448bac8b1af9d7ace, type: 3}
       propertyPath: m_Name
       value: PunchingBag
+      objectReference: {fileID: 0}
+    - target: {fileID: 5419898203756285493, guid: ef9a0dac0f6e2c2448bac8b1af9d7ace, type: 3}
+      propertyPath: damageTaken
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5419898203756285493, guid: ef9a0dac0f6e2c2448bac8b1af9d7ace, type: 3}
+      propertyPath: forceScaler
+      value: 5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ef9a0dac0f6e2c2448bac8b1af9d7ace, type: 3}

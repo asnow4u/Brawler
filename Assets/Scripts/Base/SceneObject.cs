@@ -6,19 +6,31 @@ using UnityEngine.InputSystem.Utilities;
 
 public abstract class SceneObject : MonoBehaviour, IDamage
 {
-    const float minForce = 200f;
-
-    public Rigidbody rb;
-    public bool isGrounded;
-
+    //Handlers
     public IActionState stateHandler;
-    public IAnimator animator;    
+    public IAnimator animator;
     public EquipmentHandler equipmentHandler;
-
     protected IMovement movementHandler;
     protected IAttack attackHandler;
 
+    //Physics
+    public Rigidbody rb;
+    public bool isGrounded;
+    public float maxVelocity = 10f;
+    public float decelerationRate;
+
+    //Damage
+    const float minForce = 200f;
+    [Range(1f, 10f)]
+    public float forceScaler;
     [SerializeField] protected float damageTaken;
+
+    //TODO: Remove
+    public bool inHitStun;
+
+    private Coroutine hitStunTimer;
+
+
 
     private void Start()
     {
@@ -131,16 +143,6 @@ public abstract class SceneObject : MonoBehaviour, IDamage
     }
 
 
-    public Vector2 testDirection;
-    public float testForce;
-
-    [ContextMenu("TestForce")]
-    public void TestForce()
-    {
-        rb.AddForce(new Vector3(testDirection.x, testDirection.y, 0) * testForce, ForceMode.Impulse);
-    }
-
-
     /// <summary>
     /// The equation is used to calculate the force that will be applied based on its mass and the amount of damage dealt to it, and the knockback of the attack. 
     /// The idea is that the more mass the target has, the more force is required to knock it the same distance compared to an object with less mass. 
@@ -153,7 +155,7 @@ public abstract class SceneObject : MonoBehaviour, IDamage
     /// <param name="forceDirection"></param>
     public void ApplyForceBasedOnDamage(float baseKnockBack, float damageInfluence, Vector2 forceDirection)
     {
-        float damageForce = damageInfluence * Mathf.Pow((baseKnockBack * damageTaken) / Mathf.Pow(rb.mass, 1.75f), 2);
+        float damageForce = damageInfluence * forceScaler * Mathf.Pow((baseKnockBack * damageTaken) / Mathf.Pow(rb.mass, 1.75f), 2);
 
         float totalForce = Mathf.Max(minForce, baseKnockBack + damageForce);
 
@@ -164,6 +166,84 @@ public abstract class SceneObject : MonoBehaviour, IDamage
         Debug.Log(damageDebug);        
 
         rb.AddForce(new Vector3(forceDirection.x, forceDirection.y, 0) * totalForce, ForceMode.Impulse);
+
+        //Start hitstun coroutine
+        if (hitStunTimer != null)
+            StopCoroutine(hitStunTimer);
+
+        hitStunTimer = StartCoroutine(ApplyHitStun(totalForce));       
+    }
+
+
+    public IEnumerator ApplyHitStun(float totalForce)
+    {
+        //TODO: Remove
+        inHitStun = true;
+
+        stateHandler.ChangeState(ActionState.State.HitStun);
+        float timer = totalForce / 1000f;
+
+        Debug.Log("HitStun: " + timer);
+
+        while (timer > 0)
+        {
+            timer -= Time.deltaTime;
+            yield return null;
+        }
+
+        stateHandler.ResetState();
+
+        //TODO: Remove
+        inHitStun = false;
+
+        while (Mathf.Abs(rb.velocity.x) > maxVelocity || Mathf.Abs(rb.velocity.y) > maxVelocity)
+        {
+            //Horizontal
+            if (Mathf.Abs(rb.velocity.x) > maxVelocity)
+            {
+                //Right Direction
+                if (rb.velocity.x > maxVelocity)
+                {
+                    rb.velocity -= transform.right * decelerationRate * Time.deltaTime;
+                }
+
+                //Left Direction
+                else
+                {
+                    rb.velocity += transform.right * decelerationRate * Time.deltaTime;
+                }
+            }
+            
+            //Vertical
+            if (Mathf.Abs(rb.velocity.y) > maxVelocity)
+            {
+                //Up
+                if (rb.velocity.y > maxVelocity)
+                {
+                    rb.velocity -= transform.up * decelerationRate * Time.deltaTime;
+                }
+
+                //Down
+                else
+                {
+                    rb.velocity += transform.up * decelerationRate * Time.deltaTime;
+                }
+            }
+
+            yield return null;
+        }
+    }
+
+
+
+    [Header("Force Test")]
+    public float testForce;
+    public Vector2 testDirection;
+
+    [ContextMenu("TestForce")]
+    public void TestForce()
+    {
+        ApplyForceBasedOnDamage(testForce, 0f, testDirection);
     }
 }
 
