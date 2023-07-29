@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 
@@ -24,7 +26,7 @@ public class MovementInputHandler : MonoBehaviour, IMovement
 
     [Header("Jump")]
     [SerializeField] protected float jumpVelocity = 7f;
-    [SerializeField] protected float fastFallVelocity = 1f;
+    [SerializeField] protected float fallVelocity = 1f;
     
     protected float horizontalInputValue;
     protected float verticalInputValue;
@@ -73,97 +75,111 @@ public class MovementInputHandler : MonoBehaviour, IMovement
 
     protected virtual void FixedUpdate()
     {
+        if (isGrounded)
+        {
+            UpdateGroundMovement();                
+        }
+
+        else
+        {
+            UpdateAirMovement();
+        }        
+    }
+
+
+    protected virtual void UpdateGroundMovement()
+    {
+        UpdateGroundMovementByInput();   
+    }
+
+
+    private void UpdateGroundMovementByInput()
+{
         if (stateHandler.CompairState(moveState))
         {
-            if (isGrounded)
+            //Turn around
+            if ((isFacingRightDir && horizontalInputValue < 0) || (!isFacingRightDir && horizontalInputValue > 0))
             {
-                UpdateGroundMovement();                
+                sceneObj.TurnAround();
+                rb.velocity = new Vector3(rb.velocity.x * -1, rb.velocity.y, rb.velocity.z);
             }
 
-            else
+            //Accelerate
+            if (Mathf.Abs(horizontalInputValue) > 0)
             {
-                UpdateAirMovement();
+                if (curMovementCollection.GetMovementByType(MovementType.Type.move, out MovementCollection.Movement movement))
+                {
+                    animator.PlayAnimation(movement.animationClip.name);
+                }
+
+                if (rb.velocity.x < maxVelocityX && rb.velocity.x > -maxVelocityX)
+                {
+                    rb.velocity += transform.right * Mathf.Abs(horizontalInputValue) * accelerationX * Time.fixedDeltaTime;
+                }
             }
+
+            //Decelerate
+            else if (Mathf.Abs(rb.velocity.x) > 0)
+            {
+                rb.velocity -= transform.right * decelerationX * Time.fixedDeltaTime;
+
+                if (isFacingRightDir)
+                {
+                    if (rb.velocity.x < 0f)
+                    {
+                        rb.velocity = new Vector3(0, rb.velocity.y, rb.velocity.z);
+
+                        if (stateHandler.CompairState(moveState))
+                        {
+                            stateHandler.ResetState();
+                        }
+                    }
+                }
+
+                else
+                {
+                    if (rb.velocity.x > 0f)
+                    {
+                        rb.velocity = new Vector3(0, rb.velocity.y, rb.velocity.z);
+
+                        if (stateHandler.CompairState(moveState))
+                        {
+                            stateHandler.ResetState();
+                        }
+                    }
+                }
+            }
+
+            animator.SetFloatPerameter("Velocity", Mathf.Abs(rb.velocity.x) / maxVelocityX);
         }
     }
 
 
-    private void UpdateGroundMovement()
-    {      
-        //Turn around
-        if ((isFacingRightDir && horizontalInputValue < 0) || (!isFacingRightDir && horizontalInputValue > 0))
+    protected virtual void UpdateAirMovement()
+    {
+        UpdateAirMovementByInput();
+
+        if (rb.velocity.y < 0)
         {
-            sceneObj.TurnAround();
-            rb.velocity = new Vector3(rb.velocity.x * -1, rb.velocity.y, rb.velocity.z);
+            rb.velocity += transform.up * -fallVelocity * Time.fixedDeltaTime;
         }
-        
-        //Accelerate
-        if (Mathf.Abs(horizontalInputValue) > 0)
+    }
+
+
+    private void UpdateAirMovementByInput()
+    {
+        if (stateHandler.CompairState(moveState))
         {
-            if (curMovementCollection.GetMovementByType(MovementType.Type.move, out MovementCollection.Movement movement))
-            {
-                animator.PlayAnimation(movement.animationClip.name);
-            }
+            animator.PlayIdleAnimation();
 
             if (rb.velocity.x < maxVelocityX && rb.velocity.x > -maxVelocityX)
             {
-                rb.velocity += transform.right * Mathf.Abs(horizontalInputValue) * accelerationX * Time.fixedDeltaTime;                     
+                if (isFacingRightDir)
+                    rb.velocity += transform.right * horizontalInputValue * airAccelerationX * Time.fixedDeltaTime;
+
+                else
+                    rb.velocity -= transform.right * horizontalInputValue * airAccelerationX * Time.fixedDeltaTime;
             }
-        }
-
-        //Decelerate
-        else if (Mathf.Abs(rb.velocity.x) > 0)
-        {
-            rb.velocity -= transform.right * decelerationX * Time.fixedDeltaTime;            
-
-            if (isFacingRightDir)
-            {
-                if (rb.velocity.x < 0f)
-                {
-                    rb.velocity = new Vector3(0, rb.velocity.y, rb.velocity.z);
-
-                    if (stateHandler.CompairState(moveState))
-                    {
-                        stateHandler.ResetState();
-                    }
-                }
-            } 
-
-            else
-            {                
-                if (rb.velocity.x > 0f)
-                {
-                    rb.velocity = new Vector3(0, rb.velocity.y, rb.velocity.z);
-
-                    if (stateHandler.CompairState(moveState))
-                    {
-                        stateHandler.ResetState();
-                    }
-                }
-            }
-        }
-        
-        animator.SetFloatPerameter("Velocity", Mathf.Abs(rb.velocity.x) / maxVelocityX);
-    }
-
-
-    private void UpdateAirMovement()
-    {
-        animator.PlayIdleAnimation();
-
-        if (rb.velocity.x < maxVelocityX && rb.velocity.x > -maxVelocityX)
-        {
-            if (isFacingRightDir)
-                rb.velocity += transform.right * horizontalInputValue * airAccelerationX * Time.fixedDeltaTime;
-            
-            else
-                rb.velocity -= transform.right * horizontalInputValue * airAccelerationX * Time.fixedDeltaTime;
-        }
-
-        
-        if (verticalInputValue < 0f)
-        {
-            rb.velocity += transform.up * verticalInputValue * fastFallVelocity * Time.fixedDeltaTime;
         }
     }
 }

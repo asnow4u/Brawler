@@ -412,9 +412,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rb: {fileID: 0}
   isGrounded: 1
+  maxVelocity: 10
+  decelerationRate: 2
+  forceScaler: 5
   damageTaken: 0
-  testDirection: {x: 0, y: 0}
-  testForce: 0
+  inHitStun: 0
+  testForce: 5000
+  testDirection: {x: -0.5, y: 0.5}
 --- !u!114 &1096491057
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -430,12 +434,11 @@ MonoBehaviour:
   accelerationX: 30
   decelerationX: 30
   airAccelerationX: 15
-  maxVelocityX: 10
-  maxVelocityY: 5
   jumpVelocity: 7
-  fastFallVelocity: 20
+  fallVelocity: 10
   jumpsAvailable: 2
   airJumpVelocity: 7
+  fastFallVelocity: 20
 --- !u!114 &1096491058
 MonoBehaviour:
   m_ObjectHideFlags: 0

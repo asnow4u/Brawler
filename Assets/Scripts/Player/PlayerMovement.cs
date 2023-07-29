@@ -10,6 +10,9 @@ namespace SceneObj.Movement
         [SerializeField] private float airJumpVelocity = 7f;
         private int additionalJumpsPerformed;
 
+        [Header("FastFall")]
+        [SerializeField] private float fastFallVelocity = 1f;
+
         // Update is called once per frame
         protected override void FixedUpdate()
         {
@@ -40,6 +43,17 @@ namespace SceneObj.Movement
                     }
                 }
             }       
+        }
+
+
+        protected override void UpdateAirMovement()
+        {
+            base.UpdateAirMovement();
+
+            if (verticalInputValue < 0f)
+            {
+                rb.velocity += transform.up * verticalInputValue * fastFallVelocity * Time.fixedDeltaTime;
+            }
         }
     }
 }
