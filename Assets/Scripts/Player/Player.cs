@@ -34,6 +34,16 @@ public class Player : SceneObject
         inputHandler.input.PlayerActions.LeftAttack.performed += AttackLeftInput;
         inputHandler.input.PlayerActions.DownAttack.performed += AttackDownwardInput;
         inputHandler.input.PlayerActions.UpAttack.performed += AttackUpwardInput;
+
+        //Interact
+        inputHandler.input.PlayerActions.Interaction.performed += InteractInput;
+
+        //Weapon Switch
+        inputHandler.input.PlayerActions.WeaponSwitch1.performed += SwitchWeapon1;
+        inputHandler.input.PlayerActions.WeaponSwitch2.performed += SwitchWeapon2;
+        inputHandler.input.PlayerActions.WeaponSwitch3.performed += SwitchWeapon3;
+        inputHandler.input.PlayerActions.WeaponSwitch4.performed += SwitchWeapon4;
+        inputHandler.input.PlayerActions.WeaponSwitch5.performed += SwitchWeapon5;
     }
 
 
@@ -90,7 +100,51 @@ public class Player : SceneObject
 
     #endregion
 
+    #region Interaction Input Events
 
+    private void InteractInput(InputAction.CallbackContext obj)
+    {
+        interactionHandler.ReceiveInput(this);
+    }
+
+    #endregion
+
+    #region Weapon Selection Input
+
+    private void SwitchWeaponTo(int index)
+    {
+        if (stateHandler.VerifyState(ActionState.State.Moving))
+        {
+            equipmentHandler.Weapons.SwapWeaponTo(index);
+        }
+    }
+
+    private void SwitchWeapon1(InputAction.CallbackContext obj)
+    {
+        SwitchWeaponTo(0);
+    }
+
+    private void SwitchWeapon2(InputAction.CallbackContext obj)
+    {
+        SwitchWeaponTo(1);
+    }
+
+    private void SwitchWeapon3(InputAction.CallbackContext obj)
+    {
+        SwitchWeaponTo(2);
+    }
+
+    private void SwitchWeapon4(InputAction.CallbackContext obj)
+    {
+        SwitchWeaponTo(3);
+    }
+
+    private void SwitchWeapon5(InputAction.CallbackContext obj)
+    {
+        SwitchWeaponTo(4);
+    }
+
+    #endregion
 
     //public float bounceDampener;
     //public float stallTimer;
