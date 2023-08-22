@@ -6,7 +6,7 @@ public interface IActionState
 {
     public void Setup(SceneObject obj);
 
-    public bool VerifyState(ActionState.State state);
+    public bool CompairState(ActionState.State state);
 
     public bool ChangeState(ActionState.State state);
 

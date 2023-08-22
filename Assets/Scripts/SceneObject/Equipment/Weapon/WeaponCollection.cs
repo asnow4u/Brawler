@@ -23,7 +23,13 @@ public class WeaponCollection : MonoBehaviour, IWeaponCollection
 
     #region Weapon
 
-    public Weapon GetWeaponByIndex(int index)
+    public Weapon GetCurWeapon()
+    {
+        return curWeapon;
+    }
+
+
+    private Weapon GetWeaponByIndex(int index)
     {
         if (weapons.Count > index)
         {
@@ -96,18 +102,6 @@ public class WeaponCollection : MonoBehaviour, IWeaponCollection
     {
         trans.localPosition = Vector3.zero;
         trans.localRotation = Quaternion.identity;
-    }
-
-
-    public MovementCollection GetMovementCollection()
-    {
-        return curWeapon.MovementCollection;
-    }
-
-
-    public AttackCollection GetAttackCollection()
-    {
-        return curWeapon.AttackCollection;
     }
 
     #endregion

@@ -104,7 +104,7 @@ public abstract class SceneObject : MonoBehaviour, IDamage
         {
             if (rb.velocity.y < 0 && !isGrounded)
             {
-                isGrounded = true;
+                isGrounded = true;                
             }
         }
         else

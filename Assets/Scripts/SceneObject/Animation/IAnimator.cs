@@ -5,8 +5,8 @@ using UnityEngine;
 
 public interface IAnimator
 {
-    public event Action<AnimationClip> OnAnimationStartedEvent;
-    public event Action<AnimationClip> OnAnimationEndedEvent;
+    public event Action<string> OnAnimationStateStartedEvent;
+    public event Action<string> OnAnimationStateEndedEvent;
     public event Action<AnimationClip, string> OnAnimationTriggerEvent;
 
     public void SetUp(SceneObject obj);

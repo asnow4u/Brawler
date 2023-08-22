@@ -1,8 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using static AttackCollection;
 
 
 public class MovementInputHandler : MonoBehaviour, IMovement
@@ -11,13 +13,18 @@ public class MovementInputHandler : MonoBehaviour, IMovement
 
     protected SceneObject sceneObj;
 
+    protected MovementType.Type curMoveState = MovementType.Type.Move;
+    protected string curMoveAnimationState;
+
     protected Rigidbody rb { get { return sceneObj.rb; } }
     protected bool isGrounded { get { return sceneObj.isGrounded; } }
     protected float maxVelocityX { get { return sceneObj.maxVelocity; } }
     protected bool isFacingRightDir { get { return sceneObj.IsFacingRightDirection(); } }
     protected IAnimator animator { get { return sceneObj.animator; } }
     protected IActionState stateHandler { get { return sceneObj.stateHandler; } }
-    protected MovementCollection curMovementCollection { get { return sceneObj.equipmentHandler.Weapons.GetMovementCollection(); } }
+    protected IWeaponCollection weaponCollection { get { return sceneObj.equipmentHandler.Weapons; } }
+    protected Weapon curWeapon { get { return weaponCollection.GetCurWeapon(); } }  
+    protected MovementCollection curMovementCollection { get { return curWeapon.MovementCollection; } }
 
     [Header("Movement Speed")]
     [SerializeField] private float accelerationX = 30f;
@@ -35,6 +42,59 @@ public class MovementInputHandler : MonoBehaviour, IMovement
     public void Setup(SceneObject obj)
     {
         sceneObj = obj;
+
+        animator.OnAnimationStateStartedEvent += OnMovementAnimationStarted;
+        animator.OnAnimationStateEndedEvent += OnMovementAnimationEnded;
+    }
+
+    #region Events
+
+    private void OnMovementAnimationStarted(string animationState)
+    {
+        if (GetMovementTypeFromAnimationState(animationState, out MovementType.Type type))
+        {
+            curMoveAnimationState = animationState;
+        }
+    }
+
+    private void OnMovementAnimationEnded(string animationState) 
+    {        
+        if (curMoveAnimationState == animationState && GetMovementTypeFromAnimationState(animationState, out MovementType.Type type))
+        {
+            curMoveAnimationState = null;
+
+            switch(type)
+            {
+                case MovementType.Type.Move:
+                    break;
+
+                case MovementType.Type.Jump:
+                case MovementType.Type.AirJump:
+                    Debug.Log("MOVE: curMoveState => Fall");
+                    curMoveState = MovementType.Type.Fall;
+                    break;
+
+                case MovementType.Type.Fall:
+                    Debug.Log("MOVE: curMoveState => Land");
+                    curMoveState = MovementType.Type.Land;
+                    break;
+
+                case MovementType.Type.Roll:
+                case MovementType.Type.Land:
+                    Debug.Log("MOVE: curMoveState => Move");
+                    curMoveState = MovementType.Type.Move;
+                    stateHandler.ResetState();
+                    break;
+            }                                                    
+        }
+    }
+
+    #endregion
+
+
+    protected void ChangeMoveState(MovementType.Type moveType)
+    {
+        curMoveState = moveType;
     }
 
 
@@ -56,27 +116,64 @@ public class MovementInputHandler : MonoBehaviour, IMovement
 
     protected virtual void Jump()
     {
-        if (curMovementCollection.GetMovementByType(MovementType.Type.jump, out MovementCollection.Movement movement))
+        if (curMovementCollection.GetMovementByType(MovementType.Type.Jump, out MovementCollection.Movement movement))
         {
+            ChangeMoveState(MovementType.Type.Jump);
             rb.velocity = new Vector3(rb.velocity.x, jumpVelocity, rb.velocity.z);
-            sceneObj.animator.PlayAnimation(movement.animationClip.name);
+            PlayMoveAnimation(movement.type);
         }
     }
 
 
-    private void Update()
+    private void PerformLand()
     {
-        if (Mathf.Abs(horizontalInputValue) > 0)
+        if (curMovementCollection.GetMovementByType(MovementType.Type.Land, out MovementCollection.Movement movement))
         {
-            stateHandler.ChangeState(moveState);
+            ChangeMoveState(MovementType.Type.Land);
+            PlayMoveAnimation(movement.type);
+        }
+    }
+
+
+    private void PerformRoll()
+    {
+        if (curMovementCollection.GetMovementByType(MovementType.Type.Roll, out MovementCollection.Movement movement))
+        {
+            CheckTurnAround();
+            ChangeMoveState(MovementType.Type.Roll);
+            PlayMoveAnimation(movement.type);
+        }
+    }
+
+
+    private void CheckTurnAround()
+    {
+        if ((isFacingRightDir && horizontalInputValue < 0) || (!isFacingRightDir && horizontalInputValue > 0))
+        {
+            sceneObj.TurnAround();
+            rb.velocity = new Vector3(rb.velocity.x * -1, rb.velocity.y, rb.velocity.z);
         }
     }
 
 
     protected virtual void FixedUpdate()
     {
-        if (isGrounded)
+        if (Mathf.Abs(horizontalInputValue) > 0)
         {
+            stateHandler.ChangeState(moveState);
+        }
+
+        if (isGrounded && curMoveState == MovementType.Type.Fall)
+        {
+            if (horizontalInputValue == 0)
+                PerformLand();
+            else
+                PerformRoll();
+        }
+
+        if (isGrounded && curMoveState == MovementType.Type.Move)
+        {
+            Debug.Log("MOVE: Update ground movement");
             UpdateGroundMovement();                
         }
 
@@ -95,21 +192,17 @@ public class MovementInputHandler : MonoBehaviour, IMovement
 
     private void UpdateGroundMovementByInput()
 {
-        if (stateHandler.VerifyState(moveState))
+        if (stateHandler.CompairState(moveState))
         {
             //Turn around
-            if ((isFacingRightDir && horizontalInputValue < 0) || (!isFacingRightDir && horizontalInputValue > 0))
-            {
-                sceneObj.TurnAround();
-                rb.velocity = new Vector3(rb.velocity.x * -1, rb.velocity.y, rb.velocity.z);
-            }
+            CheckTurnAround();
 
             //Accelerate
             if (Mathf.Abs(horizontalInputValue) > 0)
             {
-                if (curMovementCollection.GetMovementByType(MovementType.Type.move, out MovementCollection.Movement movement))
+                if (curMovementCollection.GetMovementByType(MovementType.Type.Move, out MovementCollection.Movement movement))
                 {
-                    animator.PlayAnimation(movement.animationClip.name);
+                    PlayMoveAnimation(movement.type);                    
                 }
 
                 if (rb.velocity.x < maxVelocityX && rb.velocity.x > -maxVelocityX)
@@ -129,7 +222,7 @@ public class MovementInputHandler : MonoBehaviour, IMovement
                     {
                         rb.velocity = new Vector3(0, rb.velocity.y, rb.velocity.z);
 
-                        if (stateHandler.VerifyState(moveState))
+                        if (stateHandler.CompairState(moveState))
                         {
                             stateHandler.ResetState();
                         }
@@ -142,7 +235,7 @@ public class MovementInputHandler : MonoBehaviour, IMovement
                     {
                         rb.velocity = new Vector3(0, rb.velocity.y, rb.velocity.z);
 
-                        if (stateHandler.VerifyState(moveState))
+                        if (stateHandler.CompairState(moveState))
                         {
                             stateHandler.ResetState();
                         }
@@ -168,10 +261,8 @@ public class MovementInputHandler : MonoBehaviour, IMovement
 
     private void UpdateAirMovementByInput()
     {
-        if (stateHandler.VerifyState(moveState))
+        if (stateHandler.CompairState(moveState))
         {
-            animator.PlayIdleAnimation();
-
             if (rb.velocity.x < maxVelocityX && rb.velocity.x > -maxVelocityX)
             {
                 if (isFacingRightDir)
@@ -182,4 +273,33 @@ public class MovementInputHandler : MonoBehaviour, IMovement
             }
         }
     }
+
+
+    #region Animation
+
+    private bool GetMovementTypeFromAnimationState(string animationState, out MovementType.Type type)
+    {
+        string str = animationState;
+        str = str.Replace(gameObject.name, "");
+        str = str.Replace(curWeapon.weaponType.ToString(), "");
+
+        if (Enum.TryParse(str, out type))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+
+    protected void PlayMoveAnimation(MovementType.Type moveType)
+    {
+        string name = gameObject.name;
+        string weaponName = curWeapon.weaponType.ToString();
+        string moveName = moveType.ToString();
+
+        sceneObj.animator.PlayAnimation(name + weaponName + moveName);
+    }
+
+    #endregion
 }

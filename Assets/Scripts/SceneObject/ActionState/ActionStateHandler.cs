@@ -40,11 +40,9 @@ public class ActionStateHandler : IActionState
     }
 
 
-    public bool VerifyState(ActionState.State state)
+    public bool CompairState(ActionState.State state)
     {
-        Debug.Log("VerifyState " + (int)state + " " + (int)curState);
-
-        if ((int)state >= (int)curState) 
+        if (state == curState) 
         {
             return true;
         }

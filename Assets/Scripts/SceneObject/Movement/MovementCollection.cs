@@ -9,8 +9,7 @@ public class MovementCollection : MonoBehaviour
     [System.Serializable]
     public class Movement
     {
-        public MovementType.Type type; 
-        public AnimationClip animationClip;
+        public MovementType.Type type;
     }
 
 

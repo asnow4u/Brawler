@@ -4,10 +4,10 @@ using UnityEngine;
 
 public class AttackType
 {
-    public enum Type { upTilt, downTilt, forwardTilt, upAir, downAir, forwardAir, backAir};
+    public enum Type { UpTilt, DownTilt, ForwardTilt, UpAir, DownAir, ForwardAir, BackAir};
 }
 
 public class MovementType
 {
-    public enum Type { move, jump, airJump, land}
+    public enum Type { Move, Jump, AirJump, Fall, Land, Roll }
 }

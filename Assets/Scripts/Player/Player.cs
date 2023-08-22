@@ -113,7 +113,7 @@ public class Player : SceneObject
 
     private void SwitchWeaponTo(int index)
     {
-        if (stateHandler.VerifyState(ActionState.State.Moving))
+        if (stateHandler.ChangeState(ActionState.State.Moving))
         {
             equipmentHandler.Weapons.SwapWeaponTo(index);
         }
@@ -145,6 +145,7 @@ public class Player : SceneObject
     }
 
     #endregion
+
 
     //public float bounceDampener;
     //public float stallTimer;

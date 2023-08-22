@@ -34,12 +34,13 @@ namespace SceneObj.Movement
             {
                 if (additionalJumpsPerformed < jumpsAvailable)
                 {
-                    if (curMovementCollection.GetMovementByType(MovementType.Type.airJump, out MovementCollection.Movement movement))
+                    if (curMovementCollection.GetMovementByType(MovementType.Type.AirJump, out MovementCollection.Movement movement))
                     {
+                        curMoveState = MovementType.Type.AirJump;
                         rb.velocity = new Vector3(rb.velocity.x, airJumpVelocity, rb.velocity.z);
                         additionalJumpsPerformed++;
 
-                        sceneObj.animator.PlayAnimation(movement.animationClip.name);
+                        PlayMoveAnimation(movement.type);
                     }
                 }
             }       
