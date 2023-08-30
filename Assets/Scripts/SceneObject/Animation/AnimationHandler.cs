@@ -55,7 +55,6 @@ public class AnimationHandler : MonoBehaviour, IAnimator
                 //Check for difference
                 if (curAnimatorState != animationState)
                 {
-                    Debug.Log("end clip: " + curAnimatorState);
                     OnAnimationUpdateEvent?.Invoke(curAnimatorState, AnimationTrigger.Type.End);
 
                     animator.Play("Base Layer." + animationState);
@@ -65,8 +64,6 @@ public class AnimationHandler : MonoBehaviour, IAnimator
 
             else
             {
-                Debug.Log("start clip: " + animationState);
-
                 animator.Play("Base Layer." + animationState);
                 StartCoroutine(WaitForAnimationStart(animationState, animationTriggers));
             }
@@ -83,7 +80,6 @@ public class AnimationHandler : MonoBehaviour, IAnimator
             yield return null;
         }
 
-        Debug.Log("updated clip: " + waitingState);
         curAnimatorState = waitingState;
 
         if (animationEventCorutine != null)
