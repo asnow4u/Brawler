@@ -103,6 +103,11 @@ public class AttackInputHandler : MonoBehaviour, IAttack
     {
         if (curAttackAnimationState == animationState)
         {
+            if (GetAttackTypeFromAnimationState(animationState, out AttackType.Type attackType))
+            {
+                DisabledAttackColliders(attackType);
+            }
+
             curAttackAnimationState = null;
             stateHandler.ResetState();
         }
