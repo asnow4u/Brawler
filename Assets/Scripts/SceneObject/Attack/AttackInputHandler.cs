@@ -25,19 +25,76 @@ public class AttackInputHandler : MonoBehaviour, IAttack
     {
         sceneObj = obj;
 
-        animator.OnAnimationStateStartedEvent += OnAttackAnimationStarted;
-        animator.OnAnimationStateEndedEvent += OnAttackAnimationEnded;
-        animator.OnAnimationTriggerEvent += OnAttackTrigger;
+        animator.OnAnimationUpdateEvent += OnAttackAnimationUpdated;
     }
 
 
     #region Attack Performed Events
 
-    private void OnAttackAnimationStarted(string animationState)
+    private void OnAttackAnimationUpdated(string animationState, AnimationTrigger.Type triggerType)
     {
         if (GetAttackTypeFromAnimationState(animationState, out AttackType.Type type))
         {
-            curAttackAnimationState = animationState;
+            switch(triggerType)
+            {
+                case AnimationTrigger.Type.Start:
+                    OnAttackAnimationStarted(animationState);
+                    break;
+
+                case AnimationTrigger.Type.EnableCollider:
+                    EnabledAttackColliders(type);
+                    break;
+
+                case AnimationTrigger.Type.DisableCollider: 
+                    DisabledAttackColliders(type);
+                    break;
+
+                case AnimationTrigger.Type.End:
+                    OnAttackAnimationEnded(animationState);
+                    break;
+            }
+        }
+    }
+
+
+    private bool GetAttackTypeFromAnimationState(string animationState, out AttackType.Type type)
+    {
+        string str = animationState;
+        str = str.Replace(gameObject.name, "");
+        str = str.Replace(curWeapon.weaponType.ToString(), "");
+
+        if (Enum.TryParse(str, out type))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+
+    private void OnAttackAnimationStarted(string animationState)
+    {
+        curAttackAnimationState = animationState;        
+    }
+
+
+    private void EnabledAttackColliders(AttackType.Type attackType)
+    {
+        Debug.Log("ATTACK: Enable Collider " + attackType.ToString());
+        if (curAttackCollection.GetAttackByType(attackType, out AttackCollection.Attack attack))
+        {
+            attack.SetAttackDirection(sceneObj.IsFacingRightDirection());
+            weaponCollection.EnableAttackColliders(attack.attackPointTags, attack.OnHit);
+        }
+    }
+
+
+    private void DisabledAttackColliders(AttackType.Type attackType)
+    {
+        Debug.Log("ATTACK: Disable Collider " + attackType.ToString());
+        if (curAttackCollection.GetAttackByType(attackType, out AttackCollection.Attack attack))
+        {
+            weaponCollection.DisableAttackColliders(attack.attackPointTags, attack.OnHit);
         }
     }
 
@@ -49,59 +106,7 @@ public class AttackInputHandler : MonoBehaviour, IAttack
             curAttackAnimationState = null;
             stateHandler.ResetState();
         }
-    }
-
-
-    private bool GetAttackTypeFromAnimationState(string animationState, out AttackType.Type type)
-    {
-        string str = animationState;        
-        str = str.Replace(gameObject.name, "");        
-        str = str.Replace(curWeapon.weaponType.ToString(), "");
-
-        if (Enum.TryParse(str, out type))
-        {
-            return true;
-        }
-
-        return false;        
-    }
-
-
-    private void OnAttackTrigger(AnimationClip clip, string trigger)
-    {
-        //if (GetAttackTypeFromAnimationState(clip, out AttackType.Type type))
-        //{
-        //    switch (trigger)
-        //    {
-        //        case "EnableColliders":
-        //            EnabledAttackColliders(type);
-        //            break;
-
-        //        case "DisableColliders":
-        //            DisabledAttackColliders(type);
-        //            break;
-        //    }
-        //}
-    }
-
-
-    private void EnabledAttackColliders(AttackType.Type attackType)
-    {
-        if (curAttackCollection.GetAttackByType(attackType, out AttackCollection.Attack attack))
-        {
-            attack.SetAttackDirection(sceneObj.IsFacingRightDirection());
-            weaponCollection.EnableAttackColliders(attack.attackPointTags, attack.OnHit);
-        }
-    }
-
-
-    private void DisabledAttackColliders(AttackType.Type attackType)
-    {
-        if (curAttackCollection.GetAttackByType(attackType, out AttackCollection.Attack attack))
-        {
-            weaponCollection.DisableAttackColliders(attack.attackPointTags, attack.OnHit);
-        }
-    }
+    }   
 
     #endregion
 
@@ -115,7 +120,7 @@ public class AttackInputHandler : MonoBehaviour, IAttack
             string weaponName = curWeapon.weaponType.ToString();
             string attackName = attack.type.ToString();
 
-            animator.PlayAnimation(name + weaponName + attackName);
+            animator.PlayAnimation(name + weaponName + attackName, attack.triggers.ToArray());
         }
     }
 

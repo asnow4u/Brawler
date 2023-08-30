@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEditor.SceneManagement;
 using UnityEngine;
-using static AttackCollection;
 
 
 public class MovementInputHandler : MonoBehaviour, IMovement
@@ -43,23 +42,36 @@ public class MovementInputHandler : MonoBehaviour, IMovement
     {
         sceneObj = obj;
 
-        animator.OnAnimationStateStartedEvent += OnMovementAnimationStarted;
-        animator.OnAnimationStateEndedEvent += OnMovementAnimationEnded;
+        animator.OnAnimationUpdateEvent += OnMovementAnimationUpdated;
     }
 
     #region Events
 
-    private void OnMovementAnimationStarted(string animationState)
+    private void OnMovementAnimationUpdated(string animationState, AnimationTrigger.Type triggerType)
     {
         if (GetMovementTypeFromAnimationState(animationState, out MovementType.Type type))
         {
-            curMoveAnimationState = animationState;
+            switch (triggerType)
+            {
+                case AnimationTrigger.Type.Start:
+                    OnMovementAnimationStarted(animationState, type);
+                    break;
+
+                case AnimationTrigger.Type.End:
+                    OnMovementAnimationEnded(animationState, type);
+                    break;
+            }
         }
     }
 
-    private void OnMovementAnimationEnded(string animationState) 
+    private void OnMovementAnimationStarted(string animationState, MovementType.Type type)
+    {
+        curMoveAnimationState = animationState;        
+    }
+
+    private void OnMovementAnimationEnded(string animationState, MovementType.Type type) 
     {        
-        if (curMoveAnimationState == animationState && GetMovementTypeFromAnimationState(animationState, out MovementType.Type type))
+        if (curMoveAnimationState == animationState)
         {
             curMoveAnimationState = null;
 
@@ -135,17 +147,6 @@ public class MovementInputHandler : MonoBehaviour, IMovement
     }
 
 
-    private void PerformRoll()
-    {
-        if (curMovementCollection.GetMovementByType(MovementType.Type.Roll, out MovementCollection.Movement movement))
-        {
-            CheckTurnAround();
-            ChangeMoveState(MovementType.Type.Roll);
-            PlayMoveAnimation(movement.type);
-        }
-    }
-
-
     private void CheckTurnAround()
     {
         if ((isFacingRightDir && horizontalInputValue < 0) || (!isFacingRightDir && horizontalInputValue > 0))
@@ -165,15 +166,11 @@ public class MovementInputHandler : MonoBehaviour, IMovement
 
         if (isGrounded && curMoveState == MovementType.Type.Fall)
         {
-            if (horizontalInputValue == 0)
-                PerformLand();
-            else
-                PerformRoll();
+            PerformLand();
         }
 
-        if (isGrounded && curMoveState == MovementType.Type.Move)
+        if (isGrounded && (curMoveState == MovementType.Type.Move || curMoveState == MovementType.Type.Land))
         {
-            Debug.Log("MOVE: Update ground movement");
             UpdateGroundMovement();                
         }
 

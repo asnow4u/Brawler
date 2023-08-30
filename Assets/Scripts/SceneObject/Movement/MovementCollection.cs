@@ -10,6 +10,7 @@ public class MovementCollection : MonoBehaviour
     public class Movement
     {
         public MovementType.Type type;
+        public List<AnimationTrigger> triggers;
     }
 
 

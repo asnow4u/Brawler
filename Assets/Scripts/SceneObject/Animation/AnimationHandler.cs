@@ -12,53 +12,14 @@ public class AnimationHandler : MonoBehaviour, IAnimator
 
     protected string curAnimatorState = string.Empty;
 
-    public event Action<string> OnAnimationStateStartedEvent;
-    public event Action<string> OnAnimationStateEndedEvent;
-    public event Action<AnimationClip, string> OnAnimationTriggerEvent;
+    protected Coroutine animationEventCorutine;
+
+    public event Action<string, AnimationTrigger.Type> OnAnimationUpdateEvent;
 
     public void SetUp(SceneObject obj)
     {
         sceneObj = obj;
         animator = GetComponent<Animator>();
-    }
-
-
-    public void PlayIdleAnimation()
-    {
-        if (sceneObj.isGrounded)
-            PlayAnimation("BaseIdle");
-        else
-            PlayAnimation("BaseAirIdle");
-    }
-
-
-    public void PlayAnimation(string animationState)
-    {        
-        if (animationState != null)
-        {
-            //Check for cur animation playing
-            if (curAnimatorState != string.Empty)
-            {
-                //Check for difference
-                if (curAnimatorState != animationState)
-                {
-                    Debug.Log("end clip: " + curAnimatorState);
-                    OnAnimationStateEndedEvent?.Invoke(curAnimatorState);
-
-                    animator.Play("Base Layer." + animationState);
-                    StartCoroutine(WaitForAnimationStart(animationState));
-
-                }
-            }
-
-            else
-            {
-                Debug.Log("start clip: " + animationState);
-
-                animator.Play("Base Layer." + animationState);
-                StartCoroutine(WaitForAnimationStart(animationState));
-            }
-        }
     }
 
 
@@ -73,7 +34,47 @@ public class AnimationHandler : MonoBehaviour, IAnimator
     }
 
 
-    private IEnumerator WaitForAnimationStart(string waitingState)
+    public void PlayIdleAnimation()
+    {
+        if (sceneObj.isGrounded)
+            PlayAnimation("BaseIdle");
+        else
+            PlayAnimation("BaseAirIdle");
+    }
+
+
+    #region Play Animation
+
+    public void PlayAnimation(string animationState, AnimationTrigger[] animationTriggers = null)
+    {        
+        if (animationState != null)
+        {
+            //Check for cur animation playing
+            if (curAnimatorState != string.Empty)
+            {
+                //Check for difference
+                if (curAnimatorState != animationState)
+                {
+                    Debug.Log("end clip: " + curAnimatorState);
+                    OnAnimationUpdateEvent?.Invoke(curAnimatorState, AnimationTrigger.Type.End);
+
+                    animator.Play("Base Layer." + animationState);
+                    StartCoroutine(WaitForAnimationStart(animationState, animationTriggers));
+                }
+            }
+
+            else
+            {
+                Debug.Log("start clip: " + animationState);
+
+                animator.Play("Base Layer." + animationState);
+                StartCoroutine(WaitForAnimationStart(animationState, animationTriggers));
+            }
+        }
+    }
+
+
+    private IEnumerator WaitForAnimationStart(string waitingState, AnimationTrigger[] animationTriggers)
     {
         int waitingHashID = Animator.StringToHash(waitingState);        
 
@@ -85,8 +86,57 @@ public class AnimationHandler : MonoBehaviour, IAnimator
         Debug.Log("updated clip: " + waitingState);
         curAnimatorState = waitingState;
 
-        OnAnimationStateStartedEvent?.Invoke(waitingState);
+        if (animationEventCorutine != null)
+            StopCoroutine(animationEventCorutine);
+
+        animationEventCorutine = StartCoroutine(CheckAnimationEvents(animationTriggers));
+
+        OnAnimationUpdateEvent?.Invoke(waitingState, AnimationTrigger.Type.Start);
     }
+
+
+    private IEnumerator CheckAnimationEvents(AnimationTrigger[] animationTriggers)
+    {
+        //Get Animation info
+        AnimatorStateInfo animationInfo = animator.GetCurrentAnimatorStateInfo(0);
+        float length = animationInfo.length;
+        float curNormalizedTime = animationInfo.normalizedTime;
+
+        //Reset Triggers
+        if (animationTriggers != null)
+        {
+            foreach(AnimationTrigger trigger in animationTriggers)
+            {
+                trigger.WasTriggered = false;
+            }
+        }
+
+        //Fire Triggers when needed
+        while (curNormalizedTime < 1)
+        {
+            animationInfo = animator.GetCurrentAnimatorStateInfo(0);
+            curNormalizedTime = animationInfo.normalizedTime;
+
+            if (animationTriggers != null)
+            {
+                foreach (var trigger in animationTriggers)
+                {
+                    if (!trigger.WasTriggered && curNormalizedTime >= trigger.NoramlizedTriggerTime)
+                    {
+                        OnAnimationUpdateEvent?.Invoke(curAnimatorState, trigger.TriggerType);
+                        trigger.WasTriggered = true;
+                    }
+                }
+            }
+
+            yield return null;
+        }
+
+        //End Animation
+        OnAnimationUpdateEvent?.Invoke(curAnimatorState, AnimationTrigger.Type.End);
+    }
+
+    #endregion
 
 
 
@@ -99,40 +149,4 @@ public class AnimationHandler : MonoBehaviour, IAnimator
 
     #endregion
 
-
-    #region AnimationEvents
-
-    public void OnAnimationEnded()
-    {
-        OnAnimationStateEndedEvent?.Invoke(curAnimatorState);
-    }
-
-    public void OnAntimationTrigger(string trigger)
-    {
-        AnimationClip clip = GetCurrentPlayingAnimation();
-        OnAnimationTriggerEvent?.Invoke(clip, trigger);
-    }
-
-    #endregion
-
-
-
-    //private IEnumerator WaitForAnimationFinished(string animation)
-    //{
-    //    int animationHash = Animator.StringToHash(animation);
-
-    //    while (animationHash != animator.GetCurrentAnimatorStateInfo(0).shortNameHash)
-    //    {
-    //        yield return null;
-    //    }
-
-    //    if (animator.GetCurrentAnimatorStateInfo(0).loop) yield break;
-
-    //    while (animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1)
-    //    {
-    //        yield return null;
-    //    }
-
-    //    Debug.Log("Animation " + animation + " finished");
-    //}
 }

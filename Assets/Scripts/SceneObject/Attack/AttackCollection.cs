@@ -12,9 +12,9 @@ public class AttackCollection : MonoBehaviour
     [System.Serializable]
     public class Attack
     {
-        public AttackType.Type type;        
-        public AnimationClip animationClip; //TODO: animation clips will later be made up of sceneObjectName + weaponName + attackType
+        public AttackType.Type type;                
         public List<string> attackPointTags;
+        public List<AnimationTrigger> triggers;
 
         [Header("Attack Details")]
         [Range(0f, 20f)] 
@@ -61,20 +61,6 @@ public class AttackCollection : MonoBehaviour
         return false;
     }
 
-    public bool GetAttackByClip(AnimationClip clip, out Attack requestedAttack)
-    {
-        requestedAttack = null;
-
-        foreach (Attack attack in attacks)
-        {
-            if (attack.animationClip.name == clip.name)
-            {
-                requestedAttack = attack;
-                return true;
-            }
-        }
-
-        return false;
-    }
+    
 }
 
