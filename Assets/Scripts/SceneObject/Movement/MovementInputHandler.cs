@@ -147,7 +147,7 @@ public class MovementInputHandler : MonoBehaviour, IMovement
     }
 
 
-    private void CheckTurnAround()
+    protected void CheckTurnAround()
     {
         if ((isFacingRightDir && horizontalInputValue < 0) || (!isFacingRightDir && horizontalInputValue > 0))
         {

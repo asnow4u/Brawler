@@ -132,9 +132,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rb: {fileID: 0}
   isGrounded: 0
+  maxVelocity: 10
+  decelerationRate: 0
+  forceScaler: 5
   damageTaken: 0
-  testDirection: {x: 0, y: 0}
+  inHitStun: 0
   testForce: 0
+  testDirection: {x: 0, y: 0}
 --- !u!95 &1593448204
 Animator:
   serializedVersion: 5
@@ -145,7 +149,7 @@ Animator:
   m_GameObject: {fileID: 1805824689445113053}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: b4c997dee029cf9408b117e7bde40f7a, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0

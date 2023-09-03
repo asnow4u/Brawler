@@ -40,6 +40,8 @@ namespace SceneObj.Movement
                         rb.velocity = new Vector3(rb.velocity.x, airJumpVelocity, rb.velocity.z);
                         additionalJumpsPerformed++;
 
+                        CheckTurnAround();
+
                         PlayMoveAnimation(movement.type);
                     }
                 }
