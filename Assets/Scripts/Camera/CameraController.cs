@@ -3,45 +3,67 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CameraController : MonoBehaviour
+public class CameraController : MonoBehaviour, ICameraTarget
 {
-    public enum CameraState
-    {
-        Follow,
-        Fixed,
-        Group
-    }
-    
-    public CameraTarget target;
+    public enum CameraState { Follow, Fixed }    
+
+    [SerializeField] private Transform player;
+    [SerializeField] private CameraTarget cameraTarget;
 
     private CameraState cameraState;
 
     private void Start()
     {
-        if (target == null)
+        if (cameraTarget == null)
             Debug.LogError("Camera Target must be set");
 
         // Initialize the camera states
-        cameraState = CameraState.Follow;
+        ChangeCameraState(CameraState.Follow, new Transform[] { player });
     }
 
 
-
-    [ContextMenu("SetFollow")]
-    public void SetFollow()
+    public void ChangeCameraState(CameraState state, Transform[] targets = null)
     {
-        cameraState = CameraState.Follow;
+        switch (state)
+        {
+            case CameraState.Follow:
+                cameraState = CameraState.Follow;                
+                break;
+
+            case CameraState.Fixed:
+                cameraState = CameraState.Fixed;                
+                break;
+        }
+
+        if (targets != null && targets.Length > 0)
+        {
+            cameraTarget.Targets.Clear();
+            cameraTarget.Targets.AddRange(targets);
+        }
+            
     }
 
-    [ContextMenu("SetFixed")]
-    public void SetFixed()
+
+    public void ResetTargetFocusToPlayer()
     {
-        cameraState = CameraState.Fixed;
+        if (cameraState == CameraState.Follow)
+        {
+            cameraTarget.Targets.Clear();
+            cameraTarget.Targets.AddRange(new Transform[] { player });
+        }
     }
 
-    [ContextMenu("SetGroup")]
-    public void SetGroup()
+
+    public void AddTargetFocus(Transform target)
     {
-        cameraState = CameraState.Group;
+        if (cameraState == CameraState.Follow)
+            cameraTarget.Targets.Add(target);
+    }
+
+
+    public void RemoveTargetFocus(Transform target)
+    {
+        if (cameraState == CameraState.Follow && cameraTarget.Targets.Contains(target))
+            cameraTarget.Targets.Remove(target);
     }
 }

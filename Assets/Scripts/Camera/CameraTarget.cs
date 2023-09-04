@@ -4,20 +4,20 @@ using UnityEngine;
 
 public class CameraTarget : MonoBehaviour
 {
-    public List<Transform> followTargets;
+    public List<Transform> Targets;
     public float yOffset;
 
 
     void FixedUpdate()
     {
-        if (followTargets.Count > 1)
-            FollowTargets(followTargets);
+        if (Targets.Count > 1)
+            FollowMultipleTargets(Targets);
 
-        else if (followTargets.Count == 1)
-            FollowTarget(followTargets[0]);            
+        else if (Targets.Count == 1)
+            FollowSingleTarget(Targets[0]);            
     }
 
-    private void FollowTarget(Transform transform)
+    private void FollowSingleTarget(Transform transform)
     {
         SetPosition(transform.position.x, transform.position.y);
     }
@@ -28,7 +28,7 @@ public class CameraTarget : MonoBehaviour
     /// Y position is based on first transform
     /// </summary>
     /// <param name="transforms"></param>
-    private void FollowTargets(List<Transform> transforms)
+    private void FollowMultipleTargets(List<Transform> transforms)
     {
         float xPos = 0;
 
@@ -37,7 +37,7 @@ public class CameraTarget : MonoBehaviour
             xPos += t.transform.position.x;
         }
 
-        xPos /= followTargets.Count;
+        xPos /= Targets.Count;
         
 
         SetPosition(xPos, transforms[0].position.y);
@@ -47,16 +47,5 @@ public class CameraTarget : MonoBehaviour
     private void SetPosition(float xPos, float yPos)
     {
         transform.position = new Vector3(xPos, yPos + yOffset, transform.position.z);
-    }
-
-
-    public void AddFollower(Transform transform)
-    {
-
-    }
-
-    public void RemoveFollower(Transform transform)
-    {
-
     }
 }
