@@ -24,7 +24,7 @@ TagManager:
   - AttackHitBox
   - DamageHitBox
   - PickUp
-  - 
+  - PlayerEvent
   - 
   - 
   - 
