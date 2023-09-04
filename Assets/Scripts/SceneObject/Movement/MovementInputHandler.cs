@@ -82,18 +82,15 @@ public class MovementInputHandler : MonoBehaviour, IMovement
 
                 case MovementType.Type.Jump:
                 case MovementType.Type.AirJump:
-                    Debug.Log("MOVE: curMoveState => Fall");
                     curMoveState = MovementType.Type.Fall;
                     break;
 
                 case MovementType.Type.Fall:
-                    Debug.Log("MOVE: curMoveState => Land");
                     curMoveState = MovementType.Type.Land;
                     break;
 
                 case MovementType.Type.Roll:
                 case MovementType.Type.Land:
-                    Debug.Log("MOVE: curMoveState => Move");
                     curMoveState = MovementType.Type.Move;
                     stateHandler.ResetState();
                     break;
