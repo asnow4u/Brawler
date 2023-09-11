@@ -26,6 +26,12 @@ public abstract class SceneObject : MonoBehaviour, IDamage
     public float forceScaler;
     [SerializeField] protected float damageTaken;
 
+    public KillZone killZone;
+    
+
+    //Other
+    public string UniqueId;
+
     //TODO: Remove
     public bool inHitStun;
 
@@ -41,6 +47,8 @@ public abstract class SceneObject : MonoBehaviour, IDamage
 
     protected virtual void Initialize()
     {               
+        UniqueId = Guid.NewGuid().ToString();
+
         rb = GetComponent<Rigidbody>();
 
         InitializeInteractionHandler();
@@ -173,10 +181,18 @@ public abstract class SceneObject : MonoBehaviour, IDamage
         Debug.Log(damageDebug);        
 
         rb.AddForce(new Vector3(forceDirection.x, forceDirection.y, 0) * totalForce, ForceMode.Impulse);
+       
+        //Reset KillZone
+        if (killZone != null)        
+            Destroy(killZone.gameObject);
+
+        killZone = KillZoneFactory.instance.Spawn(forceDirection.x > 0 ? true : false, false, this.UniqueId);
 
         //Start hitstun coroutine
         if (hitStunTimer != null)
+        {
             StopCoroutine(hitStunTimer);
+        }
 
         hitStunTimer = StartCoroutine(ApplyHitStun(totalForce));       
     }
@@ -194,9 +210,11 @@ public abstract class SceneObject : MonoBehaviour, IDamage
 
         while (timer > 0)
         {
-            timer -= Time.deltaTime;
+            timer -= Time.deltaTime;            
             yield return null;
         }
+
+        Destroy(killZone.gameObject);
 
         stateHandler.ResetState();
 
@@ -241,7 +259,11 @@ public abstract class SceneObject : MonoBehaviour, IDamage
         }
     }
 
-
+    private void OnDestroy()
+    {
+        if (killZone != null)
+            Destroy(killZone.gameObject);
+    }
 
     [Header("Force Test")]
     public float testForce;
