@@ -34,6 +34,22 @@ public class AnimationHandler : MonoBehaviour, IAnimator
     }
 
 
+    public bool TryGetCurrentFrameOfAnimation(string animationState, out float curFrame)
+    {
+        if (animationState == curAnimatorState)
+        {
+            AnimatorStateInfo animationInfo = animator.GetCurrentAnimatorStateInfo(0);
+
+            //Current animation frame
+            curFrame = Mathf.RoundToInt(animationInfo.normalizedTime * GetCurrentPlayingAnimation().frameRate);
+            return true;
+        }
+
+        curFrame = 0f;
+        return false;
+    }
+
+
     public void PlayIdleAnimation()
     {
         if (sceneObj.isGrounded)
@@ -71,6 +87,14 @@ public class AnimationHandler : MonoBehaviour, IAnimator
     }
 
 
+    /// <summary>
+    /// Wait till the animation begins playing
+    /// Update curAnimationState
+    /// Send Start AnimationTrigger event
+    /// </summary>
+    /// <param name="waitingState"></param>
+    /// <param name="animationTriggers"></param>
+    /// <returns></returns>
     private IEnumerator WaitForAnimationStart(string waitingState, AnimationTrigger[] animationTriggers)
     {
         int waitingHashID = Animator.StringToHash(waitingState);        
@@ -91,6 +115,11 @@ public class AnimationHandler : MonoBehaviour, IAnimator
     }
 
 
+    /// <summary>
+    /// Check each frame for any animationTrigger events that need to fire
+    /// </summary>
+    /// <param name="animationTriggers"></param>
+    /// <returns></returns>
     private IEnumerator CheckAnimationEvents(AnimationTrigger[] animationTriggers)
     {
         //Get Animation info
@@ -103,21 +132,18 @@ public class AnimationHandler : MonoBehaviour, IAnimator
         {
             foreach(AnimationTrigger trigger in animationTriggers)
             {
-                trigger.WasTriggered = false;
+                trigger.Reset();
             }
         }
 
         //Fire Triggers when needed
         while (curNormalizedTime < 1)
         {
-            animationInfo = animator.GetCurrentAnimatorStateInfo(0);
-            curNormalizedTime = animationInfo.normalizedTime;
-
-            if (animationTriggers != null)
+            if (animationTriggers != null && TryGetCurrentFrameOfAnimation(curAnimatorState, out float curFrame))
             {
                 foreach (var trigger in animationTriggers)
                 {
-                    if (!trigger.WasTriggered && curNormalizedTime >= trigger.NoramlizedTriggerTime)
+                    if (!trigger.WasTriggered && curFrame >= trigger.TriggerFrame)
                     {
                         OnAnimationUpdateEvent?.Invoke(curAnimatorState, trigger.TriggerType);
                         trigger.WasTriggered = true;

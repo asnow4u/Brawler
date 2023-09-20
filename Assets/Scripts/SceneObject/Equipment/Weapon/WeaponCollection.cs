@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.Tilemaps.Tile;
 
 public class WeaponCollection : MonoBehaviour, IWeaponCollection
 {
@@ -109,13 +110,13 @@ public class WeaponCollection : MonoBehaviour, IWeaponCollection
 
     #region Attack Points
 
-    private bool FindAttackPointFrom(string tag, out IAttackPoint attackPoint)
+    private bool FindAttackPointFrom(AttackCollider.Type colliderType, out IAttackPoint attackPoint)
     {
         attackPoint = null;
 
         foreach (IAttackPoint point in curWeapon.AttackPoints)
         {
-            if (point.GetTag()  == tag)
+            if (point.GetColliderType() == colliderType)
             {
                 attackPoint = point;
                 return true;
@@ -126,11 +127,11 @@ public class WeaponCollection : MonoBehaviour, IWeaponCollection
     }
 
 
-    public void EnableAttackColliders(List<string> colliderTags, Action<IDamage> OnHitEvent)
+    public void EnableAttackColliders(List<AttackCollider.Type> colliderTypes, Action<IDamage> OnHitEvent)
     {
-        foreach(string tag in colliderTags)
+        foreach(AttackCollider.Type colliderType in colliderTypes)
         {
-            if (FindAttackPointFrom(tag, out IAttackPoint attackPoint))
+            if (FindAttackPointFrom(colliderType, out IAttackPoint attackPoint))
             {
                 attackPoint.RegisterToHitEvent(OnHitEvent);
                 attackPoint.EnableColliders();
@@ -139,11 +140,11 @@ public class WeaponCollection : MonoBehaviour, IWeaponCollection
     }
 
 
-    public void DisableAttackColliders(List<string> colliderTags, Action<IDamage> OnHitEvent)
+    public void DisableAttackColliders(List<AttackCollider.Type> colliderTypes, Action<IDamage> OnHitEvent)
     {
-        foreach (string tag in colliderTags)
+        foreach (AttackCollider.Type colliderType in colliderTypes)
         {
-            if (FindAttackPointFrom(tag, out IAttackPoint attackPoint))
+            if (FindAttackPointFrom(colliderType, out IAttackPoint attackPoint))
             {
                 attackPoint.UnRegisterToHitEvent(OnHitEvent);
                 attackPoint.DisableColliders();

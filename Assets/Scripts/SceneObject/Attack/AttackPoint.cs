@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class AttackPoint : MonoBehaviour, IAttackPoint
 {
-    private string tag;
+    [SerializeField] private AttackCollider.Type collderType;
     private Collider collider;
 
     private event Action<IDamage> colliderHitEvent;
@@ -18,9 +18,10 @@ public class AttackPoint : MonoBehaviour, IAttackPoint
         DisableColliders();
     }
 
-    public string GetTag()
+
+    public AttackCollider.Type GetColliderType()
     {
-        return tag;
+        return collderType;
     }
 
 
@@ -51,10 +52,9 @@ public class AttackPoint : MonoBehaviour, IAttackPoint
     {        
         if (col.gameObject.layer == LayerMask.NameToLayer("DamageHitBox"))
         {
-            Debug.Log("HIT " + col.gameObject.name + " " + gameObject.name);
-
             IDamage target = col.GetComponentInParent<IDamage>();
             colliderHitEvent?.Invoke(target);
         }
     }
+
 }

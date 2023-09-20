@@ -7,60 +7,102 @@ using UnityEngine;
 [System.Serializable]
 public class AttackCollection : MonoBehaviour
 {
-    public List<Attack> attacks;
+    [Header("Ground Attacks")]
+    public AttackData ForwardTilt;
+    public AttackData UpTilt;
+    public AttackData DownTilt;
 
-    [System.Serializable]
-    public class Attack
+    [Header("Air Attacks")]
+    public AttackData ForwardAir;
+    public AttackData BackAir;
+    public AttackData UpAir;
+    public AttackData DownAir;
+
+
+    public bool GetAttackByType(AttackType.Type attackType, out AttackData attack)
     {
-        public AttackType.Type type;                
-        public List<string> attackPointTags;
-        public List<AnimationTrigger> triggers;
-
-        [Header("Attack Details")]
-        [Range(0f, 20f)] 
-        public float damageOutput;
-        [Range(200f, 1000f)]
-        public float baseKnockback;
-        [Range(0f, 1f)]
-        public float damageInfluence;
-
-        //NOTE: This should always be faced to the right direction
-        public Vector2 directionalForce;
-        private bool isFacingRightDir;
-
-        public void SetAttackDirection(bool isRight)
+        switch (attackType)
         {
-            isFacingRightDir = isRight;
-        }
-
-
-        public void OnHit(IDamage target)
-        {
-            Debug.Log("Attack: Hit with " + type.ToString());
-
-            target.AddDamage(damageOutput);
-            
-            target.ApplyForceBasedOnDamage(baseKnockback, damageInfluence, new Vector2(directionalForce.x * (isFacingRightDir ? 1 : -1), directionalForce.y));
-        }
-    }
-
-
-    public bool GetAttackByType(AttackType.Type attackType, out Attack requestedAttack)
-    {
-        requestedAttack = null;
-
-        foreach (Attack attack in attacks)
-        {
-            if (attack.type == attackType)
-            {
-                requestedAttack = attack;
+            case AttackType.Type.UpTilt:
+                attack = UpTilt;
                 return true;
-            }
+
+            case AttackType.Type.ForwardTilt:
+                attack = ForwardTilt;
+                return true;
+
+            case AttackType.Type.DownTilt:
+                attack = DownTilt;
+                return true;
+
+            case AttackType.Type.UpAir:
+                attack = UpAir;
+                return true;
+
+            case AttackType.Type.ForwardAir:
+                attack = ForwardAir;
+                return true;
+
+            case AttackType.Type.DownAir:
+                attack = DownAir;
+                return true;
+
+            case AttackType.Type.BackAir:
+                attack = BackAir;
+                return true;
         }
 
+        attack = null;
+        return false;
+    }   
+    
+
+    public bool GetAttackByAnimationClipName(string clipName, out AttackData attack)
+    {
+        if (ForwardTilt.AttackAnimation.name == clipName)
+        {
+            attack = ForwardTilt;
+            return true;
+        }
+
+        if (UpTilt.AttackAnimation.name == clipName)
+        {
+            attack = UpTilt;
+            return true;
+        }
+
+        if (DownTilt.AttackAnimation.name == clipName)
+        {
+            attack = DownTilt;
+            return true;
+        }
+
+        if (ForwardAir.AttackAnimation.name == clipName)
+        {
+            attack = ForwardAir;
+            return true;
+        }
+
+        if (UpAir.AttackAnimation.name == clipName)
+        {
+            attack = UpAir;
+            return true;
+        }
+
+        if (DownAir.AttackAnimation.name == clipName)
+        {
+            attack = DownAir;
+            return true;
+        }
+
+        if (BackAir.AttackAnimation.name == clipName)
+        {
+            attack = BackAir;
+            return true;
+        }
+
+        attack = null;
         return false;
     }
-
-    
 }
 

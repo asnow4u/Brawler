@@ -11,3 +11,19 @@ public class MovementType
 {
     public enum Type { Move, Jump, AirJump, Fall, Land, Roll }
 }
+
+
+public class AttackCollider
+{
+    public enum Type 
+    { 
+        //Player
+        PlayerRightFist, PlayerLeftFist, PlayerRightFoot, PlayerLeftFoot, 
+        
+        //Enemy
+
+        //Weapons
+        Sword
+    }
+
+}

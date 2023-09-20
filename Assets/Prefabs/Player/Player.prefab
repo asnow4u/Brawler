@@ -137,6 +137,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7d0b5a3cd5de804892120c03848d209, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  collderType: 1
 --- !u!1 &2253536348902060994
 GameObject:
   m_ObjectHideFlags: 0
@@ -195,6 +196,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7d0b5a3cd5de804892120c03848d209, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  collderType: 0
 --- !u!1 &2481771394715211491
 GameObject:
   m_ObjectHideFlags: 0
@@ -253,6 +255,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7d0b5a3cd5de804892120c03848d209, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  collderType: 3
 --- !u!1 &3263772835120875217
 GameObject:
   m_ObjectHideFlags: 0
@@ -317,109 +320,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 856689d8cc720bc458ea0cddafddbc3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attacks:
-  - type: 0
-    attackPointTags:
-    - AttackRightFist
-    triggers:
-    - NoramlizedTriggerTime: 0.08
-      TriggerType: 2
-      WasTriggered: 0
-    - NoramlizedTriggerTime: 0.17
-      TriggerType: 3
-      WasTriggered: 0
-    - NoramlizedTriggerTime: 0.54
-      TriggerType: 1
-      WasTriggered: 0
-    damageOutput: 5
-    baseKnockback: 550
-    damageInfluence: 0.3
-    directionalForce: {x: 0.17364818, y: 0.9848077}
-  - type: 1
-    attackPointTags:
-    - AttackRightFoot
-    triggers:
-    - NoramlizedTriggerTime: 0.21
-      TriggerType: 2
-      WasTriggered: 0
-    - NoramlizedTriggerTime: 0.58
-      TriggerType: 3
-      WasTriggered: 0
-    damageOutput: 5
-    baseKnockback: 450
-    damageInfluence: 0
-    directionalForce: {x: 0, y: 1}
-  - type: 2
-    attackPointTags:
-    - AttackRightFoot
-    triggers:
-    - NoramlizedTriggerTime: 0.11
-      TriggerType: 2
-      WasTriggered: 0
-    - NoramlizedTriggerTime: 0.38
-      TriggerType: 3
-      WasTriggered: 0
-    damageOutput: 10
-    baseKnockback: 600
-    damageInfluence: 1
-    directionalForce: {x: 0.8660254, y: 0.5}
-  - type: 3
-    attackPointTags:
-    - AttackLeftFoot
-    triggers:
-    - NoramlizedTriggerTime: 0.1
-      TriggerType: 2
-      WasTriggered: 0
-    - NoramlizedTriggerTime: 0.18
-      TriggerType: 3
-      WasTriggered: 0
-    damageOutput: 15
-    baseKnockback: 700
-    damageInfluence: 0.2
-    directionalForce: {x: 0, y: 1}
-  - type: 4
-    attackPointTags:
-    - AttackLeftFist
-    triggers:
-    - NoramlizedTriggerTime: 0.18
-      TriggerType: 2
-      WasTriggered: 0
-    - NoramlizedTriggerTime: 0.34
-      TriggerType: 3
-      WasTriggered: 0
-    damageOutput: 8
-    baseKnockback: 500
-    damageInfluence: 1
-    directionalForce: {x: 0.7880108, y: -0.6156615}
-  - type: 5
-    attackPointTags:
-    - AttackRightFoot
-    - AttackRightFist
-    triggers:
-    - NoramlizedTriggerTime: 0.08
-      TriggerType: 2
-      WasTriggered: 0
-    - NoramlizedTriggerTime: 0.38
-      TriggerType: 3
-      WasTriggered: 0
-    damageOutput: 10
-    baseKnockback: 600
-    damageInfluence: 1
-    directionalForce: {x: 0.9659258, y: 0.25881904}
-  - type: 6
-    attackPointTags:
-    - AttackLeftFoot
-    triggers:
-    - NoramlizedTriggerTime: 0.14
-      TriggerType: 2
-      WasTriggered: 0
-    - NoramlizedTriggerTime: 0.25
-      TriggerType: 3
-      WasTriggered: 0
-    damageOutput: 10
-    baseKnockback: 700
-    damageInfluence: 1
-    directionalForce: {x: -1, y: 0}
+  ForwardTilt: {fileID: 11400000, guid: 540c64e2f33198f409d16180c1d0586f, type: 2}
+  UpTilt: {fileID: 11400000, guid: 57e4b90f1010ea741adf23b3539e025d, type: 2}
+  DownTilt: {fileID: 11400000, guid: 379d522955841e14a8653920764927cb, type: 2}
+  ForwardAir: {fileID: 11400000, guid: 9bf6cf8b1b312e94c8eb0dcfe57f3617, type: 2}
+  BackAir: {fileID: 11400000, guid: ba5f9873afc80594aa5bb5856ed753c7, type: 2}
+  UpAir: {fileID: 11400000, guid: b7ced934e1ed1c04598fb29874fdc0cb, type: 2}
+  DownAir: {fileID: 11400000, guid: 2ded7fc922e4f074b8d758dcef842c78, type: 2}
 --- !u!114 &6948741242768040404
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -547,6 +454,8 @@ MonoBehaviour:
   decelerationRate: 2
   forceScaler: 5
   damageTaken: 0
+  killZone: {fileID: 0}
+  UniqueId: 
   inHitStun: 0
   testForce: 5000
   testDirection: {x: -0.5, y: 0.5}
@@ -687,6 +596,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7d0b5a3cd5de804892120c03848d209, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  collderType: 2
 --- !u!1 &8994808817607460034
 GameObject:
   m_ObjectHideFlags: 0

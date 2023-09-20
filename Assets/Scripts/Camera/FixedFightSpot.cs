@@ -18,8 +18,7 @@ public class FixedFightSpot : MonoBehaviour
 
 
     private void SpawnKillZones()
-    {
-       
+    {       
         killZones.Add(KillZoneFactory.instance.Spawn(true, true, null, OnEnemyDestroyed));
         killZones.Add(KillZoneFactory.instance.Spawn(false, true, null, OnEnemyDestroyed));
     }

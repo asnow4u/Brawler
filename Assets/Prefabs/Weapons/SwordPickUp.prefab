@@ -45,6 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7d0b5a3cd5de804892120c03848d209, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  collderType: 4
 --- !u!136 &3086418982041213330
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -173,11 +174,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   movements:
   - type: 0
-    animationClip: {fileID: 7400000, guid: 3abba4c05091a044d94386d88267bdca, type: 2}
+    triggers: []
   - type: 1
-    animationClip: {fileID: 7400000, guid: c1c5ebb45dc868242b0039589babf2aa, type: 2}
+    triggers: []
   - type: 2
-    animationClip: {fileID: 7400000, guid: 321ce23443f06c544a250836532d3853, type: 2}
+    triggers: []
+  - type: 4
+    triggers: []
+  - type: 5
+    triggers: []
 --- !u!114 &1931352514
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -190,60 +195,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 856689d8cc720bc458ea0cddafddbc3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attacks:
-  - type: 0
-    animationClip: {fileID: 7400000, guid: 67971573e3838fe4d8bf51e7adea590d, type: 2}
-    attackPointTags:
-    - AttackSword
-    damageOutput: 0
-    baseKnockback: 1000
-    damageInfluence: 0
-    directionalForce: {x: 0, y: 1}
-  - type: 1
-    animationClip: {fileID: 7400000, guid: 90e658f96e3b02145866bb54128e50a1, type: 2}
-    attackPointTags:
-    - AttackSword
-    damageOutput: 0
-    baseKnockback: 1000
-    damageInfluence: 0
-    directionalForce: {x: 0, y: 1}
-  - type: 2
-    animationClip: {fileID: 7400000, guid: 71debb9dae3f96e42858062cedccca13, type: 2}
-    attackPointTags:
-    - AttackSword
-    damageOutput: 0
-    baseKnockback: 1000
-    damageInfluence: 0
-    directionalForce: {x: 1, y: 0}
-  - type: 3
-    animationClip: {fileID: 7400000, guid: babe4a30aae91bb41a73b7f48b83dcd1, type: 2}
-    attackPointTags:
-    - AttackSword
-    damageOutput: 0
-    baseKnockback: 1000
-    damageInfluence: 0
-    directionalForce: {x: 0, y: 1}
-  - type: 4
-    animationClip: {fileID: 7400000, guid: 1bdf618769c15234b8b1a07da494dd52, type: 2}
-    attackPointTags:
-    - AttackSword
-    damageOutput: 0
-    baseKnockback: 1000
-    damageInfluence: 0
-    directionalForce: {x: 0, y: -1}
-  - type: 5
-    animationClip: {fileID: 7400000, guid: e98a884ea1a32884a8a4950bf5894218, type: 2}
-    attackPointTags:
-    - AttackSword
-    damageOutput: 0
-    baseKnockback: 1000
-    damageInfluence: 0
-    directionalForce: {x: 1, y: 0}
-  - type: 6
-    animationClip: {fileID: 7400000, guid: 3570a0da8fd6f8c458e80919ed97562b, type: 2}
-    attackPointTags:
-    - AttackSword
-    damageOutput: 0
-    baseKnockback: 1000
-    damageInfluence: 0
-    directionalForce: {x: -1, y: 0}
+  ForwardTilt: {fileID: 0}
+  UpTilt: {fileID: 0}
+  DownTilt: {fileID: 0}
+  ForwardAir: {fileID: 0}
+  BackAir: {fileID: 0}
+  UpAir: {fileID: 0}
+  DownAir: {fileID: 0}

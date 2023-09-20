@@ -9,8 +9,14 @@ public class AnimationTrigger
 {
     public enum Type { Start, End, EnableCollider, DisableCollider }
 
-    [Range(0f, 1f)]
-    public float NoramlizedTriggerTime;
+    public float TriggerFrame;
     public Type TriggerType;
+    [HideInInspector]
     public bool WasTriggered = false;
+
+
+    public void Reset()
+    {
+        WasTriggered = false;
+    }
 }

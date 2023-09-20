@@ -171,14 +171,7 @@ public abstract class SceneObject : MonoBehaviour, IDamage
     public void ApplyForceBasedOnDamage(float baseKnockBack, float damageInfluence, Vector2 forceDirection)
     {
         float damageForce = damageInfluence * forceScaler * Mathf.Pow((baseKnockBack * damageTaken) / Mathf.Pow(rb.mass, 1.75f), 2);
-
         float totalForce = Mathf.Max(minForce, baseKnockBack + damageForce);
-
-        string damageDebug = "Damage: \n";
-        damageDebug += "Knockback Force: " + baseKnockBack + "\n";
-        damageDebug += "DamageForce: " + damageForce + "\n";
-        damageDebug += "Total Force: " + totalForce;
-        Debug.Log(damageDebug);        
 
         rb.AddForce(new Vector3(forceDirection.x, forceDirection.y, 0) * totalForce, ForceMode.Impulse);
        

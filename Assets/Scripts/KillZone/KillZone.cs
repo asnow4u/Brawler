@@ -72,12 +72,12 @@ public class KillZone : MonoBehaviour
 
     private void CollisionWithSceneObject(SceneObject sceneObject)
     {
-        Debug.Log("Velocity: " + sceneObject.rb.velocity.magnitude);
-
         if (uniqueObjID == null || sceneObject.UniqueId == uniqueObjID)
         {
+            Debug.Log("Kill Velocity: " + sceneObject.rb.velocity.magnitude, gameObject);
+            
             if (sceneObject.rb.velocity.magnitude > minVelocity)
-            {
+            {                
                 destroyEvent?.Invoke(sceneObject);
                 Destroy(sceneObject.gameObject);
             }

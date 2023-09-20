@@ -13,7 +13,7 @@ public interface IWeaponCollection
 
     public Weapon GetCurWeapon();
 
-    public void EnableAttackColliders(List<string> colliderTags, Action<IDamage> OnHitEvent);
+    public void EnableAttackColliders(List<AttackCollider.Type> colliderTags, Action<IDamage> OnHitEvent);
 
-    public void DisableAttackColliders(List<string> colliderTags, Action<IDamage> OnHitEvent);
+    public void DisableAttackColliders(List<AttackCollider.Type> colliderTags, Action<IDamage> OnHitEvent);
 }
