@@ -7,48 +7,38 @@ using UnityEngine;
 [System.Serializable]
 public class AttackCollection : MonoBehaviour
 {
-    [Header("Ground Attacks")]
-    public AttackData ForwardTilt;
-    public AttackData UpTilt;
-    public AttackData DownTilt;
-
-    [Header("Air Attacks")]
-    public AttackData ForwardAir;
-    public AttackData BackAir;
-    public AttackData UpAir;
-    public AttackData DownAir;
-
+    public WeaponData WeaponData;
 
     public bool GetAttackByType(AttackType.Type attackType, out AttackData attack)
     {
         switch (attackType)
         {
             case AttackType.Type.UpTilt:
-                attack = UpTilt;
+                attack = WeaponData.UpTilt;
                 return true;
 
             case AttackType.Type.ForwardTilt:
-                attack = ForwardTilt;
+                attack = WeaponData.ForwardTilt;
                 return true;
 
             case AttackType.Type.DownTilt:
-                attack = DownTilt;
+                attack = WeaponData.DownTilt;
                 return true;
 
             case AttackType.Type.UpAir:
-                attack = UpAir;
+                attack = WeaponData.UpAir;
                 return true;
 
             case AttackType.Type.ForwardAir:
-                attack = ForwardAir;
+                attack = WeaponData.ForwardAir;
                 return true;
 
             case AttackType.Type.DownAir:
-                attack = DownAir;
+                attack = WeaponData.DownAir;
                 return true;
 
             case AttackType.Type.BackAir:
-                attack = BackAir;
+                attack = WeaponData.BackAir;
                 return true;
         }
 
@@ -59,45 +49,45 @@ public class AttackCollection : MonoBehaviour
 
     public bool GetAttackByAnimationClipName(string clipName, out AttackData attack)
     {
-        if (ForwardTilt.AttackAnimation.name == clipName)
+        if (WeaponData.ForwardTilt.AttackAnimation.name == clipName)
         {
-            attack = ForwardTilt;
+            attack = WeaponData.ForwardTilt;
             return true;
         }
 
-        if (UpTilt.AttackAnimation.name == clipName)
+        if (WeaponData.UpTilt.AttackAnimation.name == clipName)
         {
-            attack = UpTilt;
+            attack = WeaponData.UpTilt;
             return true;
         }
 
-        if (DownTilt.AttackAnimation.name == clipName)
+        if (WeaponData.DownTilt.AttackAnimation.name == clipName)
         {
-            attack = DownTilt;
+            attack = WeaponData.DownTilt;
             return true;
         }
 
-        if (ForwardAir.AttackAnimation.name == clipName)
+        if (WeaponData.ForwardAir.AttackAnimation.name == clipName)
         {
-            attack = ForwardAir;
+            attack = WeaponData.ForwardAir;
             return true;
         }
 
-        if (UpAir.AttackAnimation.name == clipName)
+        if (WeaponData.UpAir.AttackAnimation.name == clipName)
         {
-            attack = UpAir;
+            attack = WeaponData.UpAir;
             return true;
         }
 
-        if (DownAir.AttackAnimation.name == clipName)
+        if (WeaponData.DownAir.AttackAnimation.name == clipName)
         {
-            attack = DownAir;
+            attack = WeaponData.DownAir;
             return true;
         }
 
-        if (BackAir.AttackAnimation.name == clipName)
+        if (WeaponData.BackAir.AttackAnimation.name == clipName)
         {
-            attack = BackAir;
+            attack = WeaponData.BackAir;
             return true;
         }
 

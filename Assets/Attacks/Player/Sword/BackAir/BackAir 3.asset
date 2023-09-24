@@ -65,8 +65,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 5
-      value: 170
+      time: 14
+      value: 175
       inSlope: 0
       outSlope: 0
       tangentMode: 136
@@ -74,17 +74,8 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 8
-      value: 140
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 10
-      value: 140
+      time: 17
+      value: 175
       inSlope: 0
       outSlope: 0
       tangentMode: 136
@@ -96,15 +87,15 @@ MonoBehaviour:
     m_RotationOrder: 4
   damageInfluence: 1
   enableCollider:
-    TriggerFrame: 5
+    TriggerFrame: 14
     TriggerType: 2
     WasTriggered: 0
   disableCollider:
-    TriggerFrame: 10
+    TriggerFrame: 17
     TriggerType: 3
     WasTriggered: 0
   end:
-    TriggerFrame: 40
+    TriggerFrame: 60
     TriggerType: 1
     WasTriggered: 0
   otherTriggers: []

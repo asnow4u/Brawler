@@ -24,7 +24,10 @@ public class EquipmentHandler : IEquipment
 
     private void SetUpWeaponsContainer(SceneObject obj)
     {
-        Weapons = obj.GetComponentInChildren<WeaponCollection>();        
+        Weapons = obj.GetComponentInChildren<WeaponCollection>();
+
+        if (Weapons != null)
+            Weapons.Initialize(obj);
     }
 
     private void SetUpItemsContainer(SceneObject obj)

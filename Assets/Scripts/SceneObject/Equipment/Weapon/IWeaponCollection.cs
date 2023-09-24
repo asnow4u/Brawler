@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public interface IWeaponCollection
-{    
+{
+    public void Initialize(SceneObject sceneObj);
+
     public void AddWeapon(Weapon weapon);
 
     public void RemoveWeapon(Weapon weapon);

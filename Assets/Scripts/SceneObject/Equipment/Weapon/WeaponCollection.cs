@@ -11,8 +11,12 @@ public class WeaponCollection : MonoBehaviour, IWeaponCollection
 
     [SerializeField] private Transform weaponHolder;
 
-    private void Start()
-    {         
+    private List<IAttackPoint> bodyAttackPoints;
+
+    public void Initialize(SceneObject sceneObj)
+    {
+        bodyAttackPoints = new List<IAttackPoint>(sceneObj.GetComponentsInChildren<IAttackPoint>());
+        
         foreach (Transform child in transform)
         {
             if (child.TryGetComponent(out Weapon weapon))
@@ -48,14 +52,14 @@ public class WeaponCollection : MonoBehaviour, IWeaponCollection
             weapons.Add(weapon);
 
             if (weapon.weaponType != Weapon.Type.Base)
-                SetWeaponToEquipment(weapon);
+                SetWeaponToInventory(weapon);
 
             SwapWeaponTo(weapons.Count -1);            
         }
     }
 
 
-    private void SetWeaponToEquipment(Weapon weapon)
+    private void SetWeaponToInventory(Weapon weapon)
     {
         weapon.transform.SetParent(transform);
         ResetTransform(weapon.transform);
@@ -87,7 +91,7 @@ public class WeaponCollection : MonoBehaviour, IWeaponCollection
         if (weapon != null)
         {
             if (curWeapon != null) 
-                SetWeaponToEquipment(curWeapon);
+                SetWeaponToInventory(curWeapon);
 
             if (weapon.weaponType != Weapon.Type.Base)
             {
@@ -110,10 +114,8 @@ public class WeaponCollection : MonoBehaviour, IWeaponCollection
 
     #region Attack Points
 
-    private bool FindAttackPointFrom(AttackCollider.Type colliderType, out IAttackPoint attackPoint)
+    private bool TryGetAttackPointFromWeapon(AttackCollider.Type colliderType, out IAttackPoint attackPoint)
     {
-        attackPoint = null;
-
         foreach (IAttackPoint point in curWeapon.AttackPoints)
         {
             if (point.GetColliderType() == colliderType)
@@ -122,6 +124,35 @@ public class WeaponCollection : MonoBehaviour, IWeaponCollection
                 return true;
             }
         }
+
+        attackPoint = null;
+        return false;
+    }
+
+
+    private bool TryGetAttackPointFromBody(AttackCollider.Type colliderType, out IAttackPoint attackPoint)
+    {
+        foreach (IAttackPoint point in bodyAttackPoints)
+        {
+            if (point.GetColliderType() == colliderType)
+            {
+                attackPoint = point;
+                return true;
+            }
+        }
+
+        attackPoint = null;
+        return false;
+    }
+
+
+    private bool FindAttackPointFrom(AttackCollider.Type colliderType, out IAttackPoint attackPoint)
+    {
+        if (TryGetAttackPointFromWeapon(colliderType, out attackPoint))
+            return true;
+
+        if (TryGetAttackPointFromBody(colliderType, out attackPoint))
+            return true;
 
         return false;
     }
@@ -151,6 +182,7 @@ public class WeaponCollection : MonoBehaviour, IWeaponCollection
             }
         }
     }
+
 
     #endregion
 }

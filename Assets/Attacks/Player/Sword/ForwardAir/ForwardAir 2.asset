@@ -65,53 +65,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 4
-      value: 435
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 5
-      value: 400
-      inSlope: -32.5
-      outSlope: -32.5
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 6
-      value: 370
-      inSlope: -20
-      outSlope: -20
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 7
-      value: 360
-      inSlope: -10
-      outSlope: -10
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 8
-      value: 350
-      inSlope: -20
-      outSlope: -20
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
       time: 9
-      value: 320
+      value: 105
       inSlope: 0
       outSlope: 0
       tangentMode: 136
@@ -120,7 +75,43 @@ MonoBehaviour:
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 10
-      value: 320
+      value: 85
+      inSlope: -22.5
+      outSlope: -22.5
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 11
+      value: 60
+      inSlope: -27.5
+      outSlope: -27.5
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 12
+      value: 30
+      inSlope: -25
+      outSlope: -25
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 13
+      value: 10
+      inSlope: -10
+      outSlope: -10
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 15
+      value: 0
       inSlope: 0
       outSlope: 0
       tangentMode: 136
@@ -132,15 +123,15 @@ MonoBehaviour:
     m_RotationOrder: 4
   damageInfluence: 1
   enableCollider:
-    TriggerFrame: 4
+    TriggerFrame: 9
     TriggerType: 2
     WasTriggered: 0
   disableCollider:
-    TriggerFrame: 10
+    TriggerFrame: 15
     TriggerType: 3
     WasTriggered: 0
   end:
-    TriggerFrame: 40
+    TriggerFrame: 60
     TriggerType: 1
     WasTriggered: 0
   otherTriggers: []

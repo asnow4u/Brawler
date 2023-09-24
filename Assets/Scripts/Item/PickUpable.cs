@@ -12,5 +12,9 @@ public class PickUpable : Interactable
         {
             sceneObj.equipmentHandler.Weapons.AddWeapon(weapon);
         }
+
+        sceneObj.interactionHandler.UnregisterToInputEvent(InputReceived);
+
+        Destroy(gameObject);
     }
 }

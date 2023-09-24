@@ -117,7 +117,7 @@ public class AttackInputHandler : MonoBehaviour, IAttack
 
     private void PlayAttackAnimation(AttackType.Type attackType)
     {
-        if (curAttackCollection.GetAttackByType(attackType, out AttackData attack))
+        if (curAttackData == null && curAttackCollection.GetAttackByType(attackType, out AttackData attack))
         {
             animator.PlayAnimation(attack.AttackAnimation.name, attack.GetAttackTriggers());
         }

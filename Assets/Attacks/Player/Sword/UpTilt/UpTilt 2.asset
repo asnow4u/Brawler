@@ -65,8 +65,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 5
-      value: 20
+      time: 24
+      value: 10
       inSlope: 0
       outSlope: 0
       tangentMode: 136
@@ -74,8 +74,26 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 6
-      value: 45
+      time: 25
+      value: 60
+      inSlope: 52.5
+      outSlope: 52.5
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 26
+      value: 115
+      inSlope: 45
+      outSlope: 45
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 27
+      value: 150
       inSlope: 30
       outSlope: 30
       tangentMode: 136
@@ -83,35 +101,17 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 7
-      value: 80
-      inSlope: 20
-      outSlope: 20
+      time: 28
+      value: 175
+      inSlope: 9.999999
+      outSlope: 9.999999
       tangentMode: 136
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 8
-      value: 90
-      inSlope: 10
-      outSlope: 10
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 9
-      value: 100
-      inSlope: 15
-      outSlope: 15
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 10
-      value: 120
+      time: 29
+      value: 180
       inSlope: 0
       outSlope: 0
       tangentMode: 136
@@ -123,15 +123,15 @@ MonoBehaviour:
     m_RotationOrder: 4
   damageInfluence: 1
   enableCollider:
-    TriggerFrame: 5
+    TriggerFrame: 24
     TriggerType: 2
     WasTriggered: 1
   disableCollider:
-    TriggerFrame: 10
+    TriggerFrame: 29
     TriggerType: 3
     WasTriggered: 1
   end:
-    TriggerFrame: 50
+    TriggerFrame: 70
     TriggerType: 1
     WasTriggered: 1
   otherTriggers: []

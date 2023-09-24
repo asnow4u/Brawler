@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43e20834a50fe7a42b978c0aaeb95739, type: 3}
   m_Name: ForwardTilt 4
   m_EditorClassIdentifier: 
-  AttackAnimation: {fileID: 7400000, guid: 9ff7c39c00d629347b15a8ffef8f3c0c, type: 2}
+  AttackAnimation: {fileID: 7400000, guid: 80565e2a88a1caf4d89bfc661386947d, type: 2}
   damageCurve:
     serializedVersion: 2
     m_Curve:
@@ -65,8 +65,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 6
-      value: 10
+      time: 23
+      value: 20
       inSlope: 0
       outSlope: 0
       tangentMode: 136
@@ -74,17 +74,8 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 9
-      value: 40
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 12
-      value: 40
+      time: 28
+      value: 50
       inSlope: 0
       outSlope: 0
       tangentMode: 136
@@ -96,15 +87,15 @@ MonoBehaviour:
     m_RotationOrder: 4
   damageInfluence: 1
   enableCollider:
-    TriggerFrame: 6
+    TriggerFrame: 23
     TriggerType: 2
     WasTriggered: 0
   disableCollider:
-    TriggerFrame: 12
+    TriggerFrame: 28
     TriggerType: 3
     WasTriggered: 0
   end:
-    TriggerFrame: 43
+    TriggerFrame: 90
     TriggerType: 1
     WasTriggered: 0
   otherTriggers: []
