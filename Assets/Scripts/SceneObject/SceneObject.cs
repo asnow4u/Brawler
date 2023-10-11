@@ -4,8 +4,25 @@ using UnityEngine;
 using System;
 using UnityEngine.InputSystem.Utilities;
 
+[RequireComponent(typeof(Rigidbody))]
 public abstract class SceneObject : MonoBehaviour, IDamage
 {
+    [Header("SceneObject")]
+    public string UniqueId;
+    public SceneObjectType.Type ObjectType;
+    [SerializeField] protected float damageTaken;
+
+    [Header("Physics")]
+    public Rigidbody rb;
+    public float maxVelocity = 10f;
+    public bool isGrounded;
+    public bool inHitStun;
+    public float DecelerationRate = 2;
+
+    [Header("Componenets")]
+    [SerializeField] private bool ApplyMovement;
+    [SerializeField] private bool ApplyAttacking;
+
     //Handlers
     public IActionState stateHandler;
     public IAnimator animator;
@@ -13,28 +30,12 @@ public abstract class SceneObject : MonoBehaviour, IDamage
     public IInteraction interactionHandler;
     protected IMovement movementHandler;
     protected IAttack attackHandler;
-
-    //Physics
-    public Rigidbody rb;
-    public bool isGrounded;
-    public float maxVelocity = 10f;
-    public float decelerationRate;
-
-    //Damage
-    const float minForce = 200f;
-    [Range(1f, 10f)]
-    public float forceScaler;
-    [SerializeField] protected float damageTaken;
-
-    public KillZone killZone;
     
-
-    //Other
-    public string UniqueId;
-
-    //TODO: Remove
-    public bool inHitStun;
-
+    //Damage Calculation
+   
+    const float minKnockBackForce = 200f;
+    
+    private KillZone killZone;
     private Coroutine hitStunTimer;
 
 
@@ -87,18 +88,18 @@ public abstract class SceneObject : MonoBehaviour, IDamage
 
     private void InitializeMovementHandler()
     {
-        if (TryGetComponent(out IMovement handler)) 
+        if (ApplyMovement) 
         {
-            movementHandler = handler;
+            movementHandler = gameObject.AddComponent<MovementInputHandler>();
             movementHandler.Setup(this);
         }
     }
 
     private void InitializeAttackHandler()
     {
-        if (TryGetComponent(out IAttack handler))
+        if (ApplyAttacking)
         {
-            attackHandler = handler;
+            attackHandler = gameObject.AddComponent<AttackInputHandler>();
             attackHandler.Setup(this);
         }
     }
@@ -106,7 +107,7 @@ public abstract class SceneObject : MonoBehaviour, IDamage
 
 
     //TODO: make two rays on each side to prevent landing just on the edge and not getting jump reset
-    protected void FixedUpdate()
+    protected virtual void FixedUpdate()
     {
         if (Physics.Raycast(GetComponent<Collider>().bounds.center, Vector3.down, transform.GetComponent<Collider>().bounds.size.y / 2 + 0.1f, ~LayerMask.NameToLayer("Environment")))
         {
@@ -170,8 +171,8 @@ public abstract class SceneObject : MonoBehaviour, IDamage
     /// <param name="forceDirection"></param>
     public void ApplyForceBasedOnDamage(float baseKnockBack, float damageInfluence, Vector2 forceDirection)
     {
-        float damageForce = damageInfluence * forceScaler * Mathf.Pow((baseKnockBack * damageTaken) / Mathf.Pow(rb.mass, 1.75f), 2);
-        float totalForce = Mathf.Max(minForce, baseKnockBack + damageForce);
+        float damageForce = damageInfluence * Mathf.Pow((baseKnockBack * damageTaken) / Mathf.Pow(rb.mass, 1.75f), 2);
+        float totalForce = Mathf.Max(minKnockBackForce, baseKnockBack + damageForce);
 
         rb.AddForce(new Vector3(forceDirection.x, forceDirection.y, 0) * totalForce, ForceMode.Impulse);
        
@@ -222,13 +223,13 @@ public abstract class SceneObject : MonoBehaviour, IDamage
                 //Right Direction
                 if (rb.velocity.x > maxVelocity)
                 {
-                    rb.velocity -= transform.right * decelerationRate * Time.deltaTime;
+                    rb.velocity -= transform.right * DecelerationRate * Time.deltaTime;
                 }
 
                 //Left Direction
                 else
                 {
-                    rb.velocity += transform.right * decelerationRate * Time.deltaTime;
+                    rb.velocity += transform.right * DecelerationRate * Time.deltaTime;
                 }
             }
             
@@ -238,13 +239,13 @@ public abstract class SceneObject : MonoBehaviour, IDamage
                 //Up
                 if (rb.velocity.y > maxVelocity)
                 {
-                    rb.velocity -= transform.up * decelerationRate * Time.deltaTime;
+                    rb.velocity -= transform.up * DecelerationRate * Time.deltaTime;
                 }
 
                 //Down
                 else
                 {
-                    rb.velocity += transform.up * decelerationRate * Time.deltaTime;
+                    rb.velocity += transform.up * DecelerationRate * Time.deltaTime;
                 }
             }
 

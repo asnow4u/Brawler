@@ -13,9 +13,9 @@ GameObject:
   - component: {fileID: 1805824689445113049}
   - component: {fileID: 1805824689445113054}
   - component: {fileID: 1805824689445113055}
-  - component: {fileID: 5419898203756285493}
   - component: {fileID: 1593448204}
   - component: {fileID: 1593448197}
+  - component: {fileID: 2972585534415002338}
   m_Layer: 7
   m_Name: PunchingBag
   m_TagString: Untagged
@@ -118,27 +118,6 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &5419898203756285493
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1805824689445113053}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 741a896105b20424c8b698c7156affbe, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  rb: {fileID: 0}
-  isGrounded: 0
-  maxVelocity: 10
-  decelerationRate: 0
-  forceScaler: 5
-  damageTaken: 0
-  inHitStun: 0
-  testForce: 0
-  testDirection: {x: 0, y: 0}
 --- !u!95 &1593448204
 Animator:
   serializedVersion: 5
@@ -172,6 +151,36 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2dd9e1c0037d8ff4d87c608e210e1f16, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &2972585534415002338
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1805824689445113053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c96b96b467519084aabff14c03aa4deb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rb: {fileID: 0}
+  isGrounded: 0
+  maxVelocity: 10
+  decelerationRate: 0
+  forceScaler: 0
+  damageTaken: 0
+  killZone: {fileID: 0}
+  UniqueId: 
+  ObjectType: 1
+  inHitStun: 0
+  testForce: 0
+  testDirection: {x: 0, y: 0}
+  headTransform: {fileID: 0}
+  aggroDistance: 5
+  maxSightDistance: 10
+  maxAngle: 30
+  alertTimerDuration: 1.5
+  lostTargetTimerDuration: 10
 --- !u!1 &6065000322139306468
 GameObject:
   m_ObjectHideFlags: 0

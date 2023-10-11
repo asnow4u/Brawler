@@ -2,6 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public class SceneObjectType
+{
+    public enum Type { Player, Enemy, Object }
+}
+
 public class AttackType
 {
     public enum Type { UpTilt, DownTilt, ForwardTilt, UpAir, DownAir, ForwardAir, BackAir};

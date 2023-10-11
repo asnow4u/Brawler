@@ -7,11 +7,6 @@ TagManager:
   - Platforms
   - PlayerFist
   - Item
-  - AttackRightFist
-  - AttackLeftFist
-  - AttackRightFoot
-  - AttackLeftFoot
-  - AttackSword
   layers:
   - Default
   - TransparentFX

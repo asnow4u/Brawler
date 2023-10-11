@@ -12,6 +12,8 @@ public class Player : SceneObject
     protected override void Initialize()
     {
         base.Initialize();
+
+        ObjectType = SceneObjectType.Type.Player;
                     
         InitializeInput(); 
     }

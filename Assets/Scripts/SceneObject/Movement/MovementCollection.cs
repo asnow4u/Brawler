@@ -4,23 +4,15 @@ using UnityEngine;
 
 public class MovementCollection : MonoBehaviour
 {
-    [SerializeField] private List<Movement> movements;
+    [SerializeField] private List<MovementData> movements;
 
-    [System.Serializable]
-    public class Movement
-    {
-        public MovementType.Type type;
-        public List<AnimationTrigger> triggers;
-    }
-
-
-    public bool GetMovementByType(MovementType.Type movementType, out Movement requestedMovement) 
+    public bool GetMovementByType(MovementType.Type movementType, out MovementData requestedMovement) 
     {
         requestedMovement = null;
 
-        foreach (Movement move in movements)
+        foreach (MovementData move in movements)
         {
-            if (move.type == movementType)
+            if (move.Type == movementType)
             {
                 requestedMovement = move;
                 return true;
@@ -29,4 +21,8 @@ public class MovementCollection : MonoBehaviour
 
         return false;
     }
+
+
+    
+
 }
