@@ -7,11 +7,12 @@ TagManager:
   - Platforms
   - PlayerFist
   - Item
+  - AttackSword
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Debug
   - Water
   - UI
   - Environment
