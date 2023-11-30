@@ -13,7 +13,7 @@ public class Player : SceneObject
     {
         base.Initialize();
 
-        ObjectType = SceneObjectType.Type.Player;
+        ObjectType = SceneObjectType.Player;
                     
         InitializeInput(); 
     }

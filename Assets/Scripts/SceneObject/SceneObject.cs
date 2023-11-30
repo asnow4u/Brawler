@@ -4,12 +4,14 @@ using UnityEngine;
 using System;
 using UnityEngine.InputSystem.Utilities;
 
+public enum SceneObjectType { Player, Enemy, Object }
+
 [RequireComponent(typeof(Rigidbody))]
 public abstract class SceneObject : MonoBehaviour, IDamage
 {
     [Header("SceneObject")]
     public string UniqueId;
-    public SceneObjectType.Type ObjectType;
+    public SceneObjectType ObjectType;
     [SerializeField] protected float damageTaken;
 
     [Header("Physics")]

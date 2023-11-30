@@ -114,7 +114,7 @@ public class WeaponCollection : MonoBehaviour, IWeaponCollection
 
     #region Attack Points
 
-    private bool TryGetAttackPointFromWeapon(AttackCollider.Type colliderType, out IAttackPoint attackPoint)
+    private bool TryGetAttackPointFromWeapon(AttackCollider colliderType, out IAttackPoint attackPoint)
     {
         foreach (IAttackPoint point in curWeapon.AttackPoints)
         {
@@ -130,7 +130,7 @@ public class WeaponCollection : MonoBehaviour, IWeaponCollection
     }
 
 
-    private bool TryGetAttackPointFromBody(AttackCollider.Type colliderType, out IAttackPoint attackPoint)
+    private bool TryGetAttackPointFromBody(AttackCollider colliderType, out IAttackPoint attackPoint)
     {
         foreach (IAttackPoint point in bodyAttackPoints)
         {
@@ -146,7 +146,7 @@ public class WeaponCollection : MonoBehaviour, IWeaponCollection
     }
 
 
-    private bool FindAttackPointFrom(AttackCollider.Type colliderType, out IAttackPoint attackPoint)
+    private bool FindAttackPointFrom(AttackCollider colliderType, out IAttackPoint attackPoint)
     {
         if (TryGetAttackPointFromWeapon(colliderType, out attackPoint))
             return true;
@@ -158,9 +158,9 @@ public class WeaponCollection : MonoBehaviour, IWeaponCollection
     }
 
 
-    public void EnableAttackColliders(List<AttackCollider.Type> colliderTypes, Action<IDamage> OnHitEvent)
+    public void EnableAttackColliders(List<AttackCollider> colliderTypes, Action<IDamage> OnHitEvent)
     {
-        foreach(AttackCollider.Type colliderType in colliderTypes)
+        foreach(AttackCollider colliderType in colliderTypes)
         {
             if (FindAttackPointFrom(colliderType, out IAttackPoint attackPoint))
             {
@@ -171,9 +171,9 @@ public class WeaponCollection : MonoBehaviour, IWeaponCollection
     }
 
 
-    public void DisableAttackColliders(List<AttackCollider.Type> colliderTypes, Action<IDamage> OnHitEvent)
+    public void DisableAttackColliders(List<AttackCollider> colliderTypes, Action<IDamage> OnHitEvent)
     {
-        foreach (AttackCollider.Type colliderType in colliderTypes)
+        foreach (AttackCollider colliderType in colliderTypes)
         {
             if (FindAttackPointFrom(colliderType, out IAttackPoint attackPoint))
             {

@@ -115,7 +115,7 @@ public class AttackInputHandler : MonoBehaviour, IAttack
 
     #region Perform Attack
 
-    private void PlayAttackAnimation(AttackType.Type attackType)
+    private void PlayAttackAnimation(AttackType attackType)
     {
         if (curAttackData == null && curAttackCollection.GetAttackByType(attackType, out AttackData attack))
         {
@@ -130,12 +130,12 @@ public class AttackInputHandler : MonoBehaviour, IAttack
         {
             if (isGrounded)
             {
-                PlayAttackAnimation(AttackType.Type.UpTilt);
+                PlayAttackAnimation(AttackType.UpTilt);
             }
 
             else
             {
-               PlayAttackAnimation(AttackType.Type.UpAir);
+               PlayAttackAnimation(AttackType.UpAir);
             }
         }
     }
@@ -147,12 +147,12 @@ public class AttackInputHandler : MonoBehaviour, IAttack
         {
             if (isGrounded)
             {
-                PlayAttackAnimation(AttackType.Type.DownTilt);                
+                PlayAttackAnimation(AttackType.DownTilt);                
             }
 
             else
             {
-                PlayAttackAnimation(AttackType.Type.DownAir);
+                PlayAttackAnimation(AttackType.DownAir);
             }
         }
     }
@@ -169,16 +169,16 @@ public class AttackInputHandler : MonoBehaviour, IAttack
                     sceneObj.TurnAround();
                 }
 
-                PlayAttackAnimation(AttackType.Type.ForwardTilt);
+                PlayAttackAnimation(AttackType.ForwardTilt);
             }
 
             else
             {
                 if (!isFacingRightDir)
-                    PlayAttackAnimation(AttackType.Type.BackAir);
+                    PlayAttackAnimation(AttackType.BackAir);
 
                 else
-                    PlayAttackAnimation(AttackType.Type.ForwardAir);
+                    PlayAttackAnimation(AttackType.ForwardAir);
             }
         }
     }
@@ -195,16 +195,16 @@ public class AttackInputHandler : MonoBehaviour, IAttack
                     sceneObj.TurnAround();
                 }
 
-                PlayAttackAnimation(AttackType.Type.ForwardTilt);
+                PlayAttackAnimation(AttackType.ForwardTilt);
             }
 
             else
             {
                 if (isFacingRightDir)
-                    PlayAttackAnimation(AttackType.Type.BackAir);
+                    PlayAttackAnimation(AttackType.BackAir);
 
                 else
-                    PlayAttackAnimation(AttackType.Type.ForwardAir);
+                    PlayAttackAnimation(AttackType.ForwardAir);
             }
         }
     }        

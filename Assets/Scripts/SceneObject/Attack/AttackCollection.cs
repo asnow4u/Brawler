@@ -4,40 +4,42 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
+public enum AttackType { UpTilt, DownTilt, ForwardTilt, UpAir, DownAir, ForwardAir, BackAir };
+
 [System.Serializable]
 public class AttackCollection : MonoBehaviour
 {
     public WeaponData WeaponData;
 
-    public bool GetAttackByType(AttackType.Type attackType, out AttackData attack)
+    public bool GetAttackByType(AttackType attackType, out AttackData attack)
     {
         switch (attackType)
         {
-            case AttackType.Type.UpTilt:
+            case AttackType.UpTilt:
                 attack = WeaponData.UpTilt;
                 return true;
 
-            case AttackType.Type.ForwardTilt:
+            case AttackType.ForwardTilt:
                 attack = WeaponData.ForwardTilt;
                 return true;
 
-            case AttackType.Type.DownTilt:
+            case AttackType.DownTilt:
                 attack = WeaponData.DownTilt;
                 return true;
 
-            case AttackType.Type.UpAir:
+            case AttackType.UpAir:
                 attack = WeaponData.UpAir;
                 return true;
 
-            case AttackType.Type.ForwardAir:
+            case AttackType.ForwardAir:
                 attack = WeaponData.ForwardAir;
                 return true;
 
-            case AttackType.Type.DownAir:
+            case AttackType.DownAir:
                 attack = WeaponData.DownAir;
                 return true;
 
-            case AttackType.Type.BackAir:
+            case AttackType.BackAir:
                 attack = WeaponData.BackAir;
                 return true;
         }

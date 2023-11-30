@@ -12,7 +12,7 @@ public class MovementInputHandler : MonoBehaviour, IMovement
     const ActionState.State moveState = ActionState.State.Moving;
 
     //Movement State Data
-    private MovementType.Type curMoveState = MovementType.Type.Move;
+    private MovementType curMoveState = MovementType.Move;
     private string curMoveAnimationState;
 
     //Movement Data
@@ -47,7 +47,7 @@ public class MovementInputHandler : MonoBehaviour, IMovement
 
     private void OnMovementAnimationUpdated(string animationState, AnimationTrigger.Type triggerType)
     {
-        if (GetMovementTypeFromAnimationState(animationState, out MovementType.Type type))
+        if (GetMovementTypeFromAnimationState(animationState, out MovementType type))
         {
             switch (triggerType)
             {
@@ -62,12 +62,12 @@ public class MovementInputHandler : MonoBehaviour, IMovement
         }
     }
 
-    private void OnMovementAnimationStarted(string animationState, MovementType.Type type)
+    private void OnMovementAnimationStarted(string animationState, MovementType type)
     {
         curMoveAnimationState = animationState;        
     }
 
-    private void OnMovementAnimationEnded(string animationState, MovementType.Type type) 
+    private void OnMovementAnimationEnded(string animationState, MovementType type) 
     {        
         if (curMoveAnimationState == animationState)
         {
@@ -75,21 +75,21 @@ public class MovementInputHandler : MonoBehaviour, IMovement
 
             switch(type)
             {
-                case MovementType.Type.Move:
+                case MovementType.Move:
                     break;
 
-                case MovementType.Type.Jump:
-                case MovementType.Type.AirJump:
+                case MovementType.Jump:
+                case MovementType.AirJump:
                     //curMoveState = MovementType.Type.Fall;                    
                     break;
 
-                case MovementType.Type.Fall:
-                    curMoveState = MovementType.Type.Land;
+                case MovementType.Fall:
+                    curMoveState = MovementType.Land;
                     break;
 
-                case MovementType.Type.Roll:
-                case MovementType.Type.Land:
-                    curMoveState = MovementType.Type.Move;
+                case MovementType.Roll:
+                case MovementType.Land:
+                    curMoveState = MovementType.Move;
                     stateHandler.ResetState();
                     break;
             }                                                    
@@ -99,7 +99,7 @@ public class MovementInputHandler : MonoBehaviour, IMovement
     #endregion
 
 
-    private void ChangeMoveState(MovementType.Type moveType)
+    private void ChangeMoveState(MovementType moveType)
     {
         curMoveState = moveType;
     }
@@ -107,7 +107,7 @@ public class MovementInputHandler : MonoBehaviour, IMovement
 
     public void PerformMovement(Vector2 inputValue)
     {
-        if (curMovementCollection.GetMovementByType(MovementType.Type.Move, out MovementData movement))
+        if (curMovementCollection.GetMovementByType(MovementType.Move, out MovementData movement))
         {
             if (stateHandler.ChangeState(moveState))
             {
@@ -124,7 +124,7 @@ public class MovementInputHandler : MonoBehaviour, IMovement
     {
         if (isGrounded)
         {
-            if (curMovementCollection.GetMovementByType(MovementType.Type.Jump, out MovementData jump))
+            if (curMovementCollection.GetMovementByType(MovementType.Jump, out MovementData jump))
             {
                 if (stateHandler.ChangeState(moveState))
                 {
@@ -135,7 +135,7 @@ public class MovementInputHandler : MonoBehaviour, IMovement
         
         else
         {
-            if (curMovementCollection.GetMovementByType(MovementType.Type.AirJump, out MovementData airJump))
+            if (curMovementCollection.GetMovementByType(MovementType.AirJump, out MovementData airJump))
             {
                 if (stateHandler.ChangeState(moveState))
                 {
@@ -176,7 +176,7 @@ public class MovementInputHandler : MonoBehaviour, IMovement
     //TODO: Will work out later
     private void PerformLand()
     {
-        curMoveState = MovementType.Type.Move;
+        curMoveState = MovementType.Move;
         numJumpsPerformed = 0;
 
         stateHandler.ResetState();
@@ -202,7 +202,7 @@ public class MovementInputHandler : MonoBehaviour, IMovement
     private void FixedUpdate()
     {
         //Check for landing
-        if (isGrounded && rb.velocity.y < 0 && (curMoveState == MovementType.Type.Jump || curMoveState == MovementType.Type.AirJump))
+        if (isGrounded && rb.velocity.y < 0 && (curMoveState == MovementType.Jump || curMoveState == MovementType.AirJump))
         {
             PerformLand();
         }
@@ -211,7 +211,7 @@ public class MovementInputHandler : MonoBehaviour, IMovement
         //Check MoveData and Action State
         if (moveData != null && stateHandler.ChangeState(moveState))
         {
-            if (isGrounded && (curMoveState == MovementType.Type.Move || curMoveState == MovementType.Type.Land))
+            if (isGrounded && (curMoveState == MovementType.Move || curMoveState == MovementType.Land))
             {
                 UpdateGroundMovement();
             }
@@ -288,7 +288,7 @@ public class MovementInputHandler : MonoBehaviour, IMovement
 
     #region Animation
 
-    private bool GetMovementTypeFromAnimationState(string animationState, out MovementType.Type type)
+    private bool GetMovementTypeFromAnimationState(string animationState, out MovementType type)
     {
         string str = animationState;
         str = str.Replace(gameObject.name, "");
@@ -303,7 +303,7 @@ public class MovementInputHandler : MonoBehaviour, IMovement
     }
 
 
-    private void PlayMoveAnimation(MovementType.Type moveType)
+    private void PlayMoveAnimation(MovementType moveType)
     {
         string name = gameObject.name;
         string weaponName = curWeapon.weaponType.ToString();

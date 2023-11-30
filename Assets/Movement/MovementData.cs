@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class MovementData : ScriptableObject
 {
-    public MovementType.Type Type;
+    public MovementType Type;
     public List<AnimationTrigger> Triggers;
 }
 

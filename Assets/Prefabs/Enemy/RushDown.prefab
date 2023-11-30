@@ -33,6 +33,7 @@ Transform:
   m_Children:
   - {fileID: 4946371471994291653}
   - {fileID: 2041593871791251440}
+  - {fileID: 721139512758075289}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -82,6 +83,9 @@ MonoBehaviour:
   maxAngle: 30
   alertTimerDuration: 3
   lostTargetTimerDuration: 3
+  patrolSpots: []
+  patrolWaitDuration: 0
+  targetSpot: {x: 0, y: 0}
 --- !u!136 &4421783498763120605
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -144,6 +148,51 @@ MonoBehaviour:
   weapons: []
   curWeapon: {fileID: 0}
   weaponHolder: {fileID: 0}
+--- !u!1 &2181410850901831531
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 721139512758075289}
+  - component: {fileID: 8052151375057762106}
+  m_Layer: 7
+  m_Name: WayPointCollction
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &721139512758075289
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2181410850901831531}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 162542210556236608}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8052151375057762106
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2181410850901831531}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56d73c300f498604a82b3609a197ff17, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  wayPoints: []
 --- !u!1 &2342763258809059903
 GameObject:
   m_ObjectHideFlags: 0

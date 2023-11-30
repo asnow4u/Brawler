@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.InputSystem.HID;
 using UnityEngine.UIElements;
@@ -9,6 +11,8 @@ public abstract class Enemy : SceneObject
 {
     protected enum EnemyState { Idle, Alert, Attack }
     protected EnemyState enemyState;
+
+    protected PlatformPathFinder pathFinder;
 
     [SerializeField] private Transform headTransform;
 
@@ -34,6 +38,9 @@ public abstract class Enemy : SceneObject
     [SerializeField] protected Vector2 targetSpot;
 
 
+    //TEMP
+    public Transform pathObject;
+
     protected override void Initialize()
     {
         base.Initialize();
@@ -41,14 +48,34 @@ public abstract class Enemy : SceneObject
         //Check distances
         if (aggroDistance > maxSightDistance) { Debug.LogError("Aggro distance cant be higher then sight distance", gameObject); }        
 
-        ObjectType = SceneObjectType.Type.Enemy;
+        ObjectType = SceneObjectType.Enemy;
 
         SetState(EnemyState.Idle);
+
+     
+        pathFinder = new PlatformPathFinder(GetComponent<CapsuleCollider>());
+        StartCoroutine(FindPath());
+       
+        
 
         if (patrolSpots.Count > 0 )
         {
             targetSpot = patrolSpots[0];
         }
+    }
+
+
+    //TEMP
+    float moveSpeed = 10;
+    float jumpVelocity = 10f;
+    public IEnumerator FindPath()
+    {          
+
+        //while (true)
+        //{
+        pathFinder.FindPath(transform.position, pathObject.position, moveSpeed, jumpVelocity);
+        yield return new WaitForSeconds(1f);
+        //}
     }
 
 
@@ -87,17 +114,17 @@ public abstract class Enemy : SceneObject
     {        
         switch (enemyState)
         {
-            case EnemyState.Idle:
-                Idle();
-                break;
+            //case EnemyState.Idle:
+            //    Idle();
+            //    break;
 
-            case EnemyState.Alert:
-                Alert(); 
-                break;
+            //case EnemyState.Alert:
+            //    Alert(); 
+            //    break;
 
-            case EnemyState.Attack:
-                Attack();
-                break;
+            //case EnemyState.Attack:
+            //    Attack();
+            //    break;
         }
     }
 
@@ -169,7 +196,7 @@ public abstract class Enemy : SceneObject
         {
             if (objectsInView.Count > 0)
             {
-                SceneObject player = objectsInView.FirstOrDefault(x => x.ObjectType == SceneObjectType.Type.Player);
+                SceneObject player = objectsInView.FirstOrDefault(x => x.ObjectType == SceneObjectType.Player);
 
                 if (player != null)
                     SetAggroTarget(player);
@@ -181,11 +208,11 @@ public abstract class Enemy : SceneObject
         else
         {
             //Prioritize Player
-            if (aggroTarget.ObjectType != SceneObjectType.Type.Player)
+            if (aggroTarget.ObjectType != SceneObjectType.Player)
             {
                 if (objectsInView.Count > 0)
                 {
-                    SceneObject player = objectsInView.FirstOrDefault(x => x.ObjectType == SceneObjectType.Type.Player);
+                    SceneObject player = objectsInView.FirstOrDefault(x => x.ObjectType == SceneObjectType.Player);
 
                     if (player != null)
                     {
@@ -288,7 +315,7 @@ public abstract class Enemy : SceneObject
             }
         }
     }
- 
+
 
     private void OnDrawGizmos()
     {
@@ -301,11 +328,114 @@ public abstract class Enemy : SceneObject
         Gizmos.color = Color.blue;
         Gizmos.DrawLine(new Vector3(headTransform.position.x, headTransform.position.y + 0.3f, headTransform.position.z), new Vector3(headTransform.position.x, headTransform.position.y + 0.3f, headTransform.position.z) + headTransform.right * aggroDistance);
 
-
         Gizmos.color = Color.yellow; // Set the color of the sphere
         Gizmos.DrawWireSphere(new Vector3(headTransform.position.x, headTransform.position.y + maxSightDistance * Mathf.Tan(Mathf.Deg2Rad * maxAngle) - 1, headTransform.position.z), 1);
         Gizmos.DrawWireSphere(new Vector3(headTransform.position.x, headTransform.position.y - maxSightDistance * Mathf.Tan(Mathf.Deg2Rad * maxAngle) + 1, headTransform.position.z), 1);
+
+
+        if (pathFinder != null)
+        {
+            Bounds bounds = GetComponent<CapsuleCollider>().bounds;
+
+            //Draw Nodes
+            foreach (List<TerrainNodeFinder.Node> rowNodes in pathFinder.terrainFinder.TerrainNodes)
+            {
+                foreach (TerrainNodeFinder.Node node in rowNodes)
+                {
+                    if (node.HorizontalInsideTerrainCheck || node.VerticalInsideTerrainCheck)
+                        Gizmos.color = Color.black;
+                    else
+                        Gizmos.color = Color.red;
+
+                    Gizmos.DrawCube(node.Pos, Vector3.one * 0.2f);
+
+                    if (node.UpHit.collider != null)
+                    {
+                        Gizmos.color = Color.cyan;
+                        Gizmos.DrawLine(node.Pos, node.Pos + Vector3.up * bounds.size.y);
+                    }
+
+                    if (node.DownHit.collider != null)
+                    {
+                        Gizmos.color = Color.magenta;
+                        Gizmos.DrawLine(node.Pos, node.Pos - Vector3.up * bounds.size.y);
+                    }
+
+                    if (node.RightHit.collider != null)
+                    {
+                        Gizmos.color = Color.yellow;
+                        Gizmos.DrawLine(node.Pos, node.Pos + Vector3.right * bounds.size.x);
+                    }
+
+                    if (node.LeftHit.collider != null)
+                    {
+                        Gizmos.color = Color.yellow;
+                        Gizmos.DrawLine(node.Pos, node.Pos - Vector3.right * bounds.size.x);
+                    }
+                }
+            }
+
+            Gizmos.color = Color.black;
+            //Draw waypoint connections
+            foreach (Waypoint.TraversalPoint traversalPoint in pathFinder.root.TraversalPoints)
+            {
+                DrawWayPointConnections(traversalPoint.Destination);
+            }            
+        }
     }
+
+
+    private void DrawWayPointConnections(Waypoint waypoint)
+    {        
+        foreach (Waypoint.TraversalPoint nextPoint in waypoint.TraversalPoints )
+        {
+            if (nextPoint.TraversalType == TraversalType.Move)
+            {
+                DrawMoveTrjectory(waypoint, nextPoint);
+            }
+
+            else if (nextPoint.TraversalType == TraversalType.Jump)
+            {
+                DrawJumpTrjectory(waypoint, (Waypoint.JumpTraversalPoint)nextPoint);
+            }
+           
+            DrawWayPointConnections(nextPoint.Destination);            
+        }
+    }
+
+
+    private void DrawMoveTrjectory(Waypoint startPoint, Waypoint.TraversalPoint endPoint)
+    {
+        Gizmos.DrawLine(startPoint.transform.position, endPoint.Destination.transform.position);
+    }
+
+
+    private void DrawJumpTrjectory(Waypoint startPoint, Waypoint.JumpTraversalPoint jumpPoint)
+    {
+        float t = 0f;
+        float maxTime = (jumpPoint.Destination.transform.position.x - startPoint.transform.position.x) / jumpPoint.JumpVelocity.x;       
+
+        float prevX = startPoint.transform.position.x;
+        float prevY = startPoint.transform.position.y;
+        float nextX = 0;
+        float nextY = 0;    
+
+        while (t < 1) 
+        {
+            t += 0.1f; //Increments of 10
+
+            float time = Mathf.Lerp(0, maxTime, t);
+
+            nextX = startPoint.transform.position.x + jumpPoint.JumpVelocity.x * time;
+            nextY = startPoint.transform.position.y + jumpPoint.JumpVelocity.y * time + (Physics.gravity.y * time * time) / 2;
+
+            Gizmos.DrawLine(new Vector3(prevX, prevY, transform.position.z), new Vector3(nextX, nextY, transform.position.z));            
+
+            prevX = nextX;
+            prevY = nextY;
+        }
+    }
+
 
 
     private void OnTriggerEnter(Collider other)
