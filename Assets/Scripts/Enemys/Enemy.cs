@@ -317,6 +317,8 @@ public abstract class Enemy : SceneObject
     }
 
 
+    #region DEBUG DRAW
+
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.green;
@@ -347,7 +349,7 @@ public abstract class Enemy : SceneObject
                     else
                         Gizmos.color = Color.red;
 
-                    Gizmos.DrawCube(node.Pos, Vector3.one * 0.2f);
+                    Gizmos.DrawCube(node.Pos, Vector3.one * 0.1f);
 
                     if (node.UpHit.collider != null)
                     {
@@ -375,9 +377,8 @@ public abstract class Enemy : SceneObject
                 }
             }
 
-            Gizmos.color = Color.black;
             //Draw waypoint connections
-            foreach (Waypoint.TraversalPoint traversalPoint in pathFinder.root.TraversalPoints)
+            foreach (Waypoint.TraversalPoint traversalPoint in pathFinder.startWaypoint.TraversalPoints)
             {
                 DrawWayPointConnections(traversalPoint.Destination);
             }            
@@ -386,7 +387,11 @@ public abstract class Enemy : SceneObject
 
 
     private void DrawWayPointConnections(Waypoint waypoint)
-    {        
+    {
+        Gizmos.color = Color.blue;
+        Gizmos.DrawSphere(waypoint.transform.position, 0.1f);
+
+        Gizmos.color = Color.black;
         foreach (Waypoint.TraversalPoint nextPoint in waypoint.TraversalPoints )
         {
             if (nextPoint.TraversalType == TraversalType.Move)
@@ -459,4 +464,6 @@ public abstract class Enemy : SceneObject
             }
         }
     }
+
+    #endregion
 }

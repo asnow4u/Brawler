@@ -33,8 +33,6 @@ public class Waypoint : MonoBehaviour
     }
 
 
-
-
     public int Column;
     public int Row;
 
