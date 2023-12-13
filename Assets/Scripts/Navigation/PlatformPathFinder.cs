@@ -5,12 +5,14 @@ using System.Linq;
 using System.Net;
 using UnityEngine;
 using UnityEngine.InputSystem.HID;
+using static Waypoint;
 
 public class PlatformPathFinder
 {
     //TODO: Make Private
     public TerrainNodeFinder terrainFinder;
 
+    //NOTE: Do we keep? Upon updating waypoints this will not always be correct (Moving platform)
     private List<Waypoint> waypoints = new List<Waypoint>();
 
 
@@ -19,7 +21,7 @@ public class PlatformPathFinder
     private float yVelocityLimit;
 
     //TEMP
-    public Waypoint startWaypoint;
+    public Waypoint rootWaypoint;
     public Waypoint targetWaypoint;
 
     public PlatformPathFinder(CapsuleCollider collider)
@@ -28,7 +30,7 @@ public class PlatformPathFinder
     }
 
 
-    public void FindPath(Vector3 startPos, Vector3 targetPos, float xVelocity, float jumpVelocity)
+    public List<Waypoint> FindPath(Vector3 startPos, Vector3 targetPos, float xVelocity, float jumpVelocity)
     {
         this.xVelocityLimit = xVelocity;
         this.yVelocityLimit = jumpVelocity;
@@ -36,12 +38,13 @@ public class PlatformPathFinder
         terrainFinder = new TerrainNodeFinder();
         terrainFinder.MapTerrain(startPos, targetPos, objCollider.bounds);
 
-        MapWayPoints(startPos);
+        rootWaypoint = MapWayPoints(startPos);
 
-        startWaypoint = FindWayPointBy(startPos);
-        targetWaypoint = FindWayPointBy(targetPos);
+        targetWaypoint = FindClosestWayPoint(rootWaypoint, targetPos);
 
-        List<Waypoint> pathPoints = DeterminePath(startWaypoint, targetWaypoint);
+        Debug.Log(targetWaypoint.gameObject.name);
+
+        List<Waypoint> pathPoints = DeterminePath(rootWaypoint, targetWaypoint);
 
         //Debug
         string log = "Found Path:";
@@ -50,10 +53,12 @@ public class PlatformPathFinder
             log += "\n\t" + waypoint.gameObject.name;
         }
         Debug.Log(log);
+
+        return pathPoints;
     }
 
 
-    private void MapWayPoints(Vector3 startPos)
+    private Waypoint MapWayPoints(Vector3 startPos)
     {
         //Set up root wayPoint
         Waypoint rootWaypoint = CreateWayPoint(startPos, -1, 0);
@@ -81,6 +86,8 @@ public class PlatformPathFinder
 
             waypoints.AddRange(columnWaypoints);
         }
+
+        return waypoints[0];
     }
 
 
@@ -101,27 +108,34 @@ public class PlatformPathFinder
 
 
     /// <summary>
-    /// Determin the closest waypoint given a position
+    /// Determin the closest waypoint given a position 
+    /// The waypoint will be determined based on connections
     /// </summary>
     /// <param name="pos"></param>
     /// <returns></returns>
-    private Waypoint FindWayPointBy(Vector3 pos)
+    private Waypoint FindClosestWayPoint(Waypoint curWaypoint, Vector3 pos, Waypoint closestWaypoint = null)
     {
-        Waypoint closestWaypoint = null;
-
-        foreach (Waypoint waypoint in waypoints)
+        if (closestWaypoint == null)
+            closestWaypoint = curWaypoint;        
+        else
         {
-            if (closestWaypoint == null)
+            if (Vector3.Distance(pos, closestWaypoint.transform.position) > Vector3.Distance(pos, curWaypoint.transform.position))
             {
-                closestWaypoint = waypoint;
-                continue;
+                closestWaypoint = curWaypoint;
             }
+        }
+
+
+        foreach (Waypoint.TraversalPoint traversalPoint in curWaypoint.TraversalPoints)
+        {
+            Waypoint waypoint = FindClosestWayPoint(traversalPoint.Destination, pos, closestWaypoint);
 
             if (Vector3.Distance(pos, closestWaypoint.transform.position) > Vector3.Distance(pos, waypoint.transform.position))
             {
                 closestWaypoint = waypoint;
             }
         }
+
 
         return closestWaypoint;
     }
@@ -226,6 +240,12 @@ public class PlatformPathFinder
             //Calculate how much xVelocity is needed
             //V = D / T
             float jumpXVelocity = (targetPos.x - startPos.x) / jumpTime;
+
+            if(jumpXVelocity > maxXVelocity) 
+            {
+                jumpVelocity = Vector2.zero;
+                return false;
+            }
 
             jumpVelocity = new Vector2(jumpXVelocity, jumpYVelocity);
 

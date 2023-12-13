@@ -55,8 +55,8 @@ public abstract class Enemy : SceneObject
      
         pathFinder = new PlatformPathFinder(GetComponent<CapsuleCollider>());
         StartCoroutine(FindPath());
-       
-        
+
+
 
         if (patrolSpots.Count > 0 )
         {
@@ -66,14 +66,16 @@ public abstract class Enemy : SceneObject
 
 
     //TEMP
-    float moveSpeed = 10;
-    float jumpVelocity = 10f;
+    public float moveSpeed = 10;
+    public float jumpVelocity = 10f;
+    List<Waypoint> path = new List<Waypoint>();
+
     public IEnumerator FindPath()
     {          
 
         //while (true)
         //{
-        pathFinder.FindPath(transform.position, pathObject.position, moveSpeed, jumpVelocity);
+        path = pathFinder.FindPath(transform.position, pathObject.position, moveSpeed, jumpVelocity);
         yield return new WaitForSeconds(1f);
         //}
     }
@@ -378,35 +380,57 @@ public abstract class Enemy : SceneObject
             }
 
             //Draw waypoint connections
-            foreach (Waypoint.TraversalPoint traversalPoint in pathFinder.startWaypoint.TraversalPoints)
-            {
-                DrawWayPointConnections(traversalPoint.Destination);
-            }            
+            DrawPath();                        
         }
     }
 
 
-    private void DrawWayPointConnections(Waypoint waypoint)
+    private void DrawPath()
     {
-        Gizmos.color = Color.blue;
-        Gizmos.DrawSphere(waypoint.transform.position, 0.1f);
-
-        Gizmos.color = Color.black;
-        foreach (Waypoint.TraversalPoint nextPoint in waypoint.TraversalPoints )
+        for (int i=0; i<path.Count; i++)
         {
-            if (nextPoint.TraversalType == TraversalType.Move)
-            {
-                DrawMoveTrjectory(waypoint, nextPoint);
-            }
+            Gizmos.color = Color.blue;
+            Gizmos.DrawSphere(path[i].transform.position, 0.1f);
 
-            else if (nextPoint.TraversalType == TraversalType.Jump)
+            if (i < path.Count-1)
             {
-                DrawJumpTrjectory(waypoint, (Waypoint.JumpTraversalPoint)nextPoint);
+                Waypoint.TraversalPoint traversalPoint = FindTraversalPoint(path[i], path[i+1]);
+                
+                if (traversalPoint != null)
+                {
+                    Gizmos.color = Color.black;
+
+                    if (traversalPoint.TraversalType == TraversalType.Move)
+                    {
+                        DrawMoveTrjectory(path[i], traversalPoint);
+                    }
+
+                    else if (traversalPoint.TraversalType == TraversalType.Jump)
+                    {
+                        DrawJumpTrjectory(path[i], (Waypoint.JumpTraversalPoint)traversalPoint);
+                    }
+                }
             }
-           
-            DrawWayPointConnections(nextPoint.Destination);            
         }
     }
+
+
+    private Waypoint.TraversalPoint FindTraversalPoint(Waypoint curWaypoint, Waypoint nextWaypoint)
+    {
+        foreach (Waypoint.TraversalPoint traversalPoint in curWaypoint.TraversalPoints )
+        {
+            if (traversalPoint.Destination.Column == nextWaypoint.Column)
+            {
+                if (traversalPoint.Destination.Row == nextWaypoint.Row)
+                {
+                    return traversalPoint;
+                }
+            }
+        }
+
+        return null;
+    }
+
 
 
     private void DrawMoveTrjectory(Waypoint startPoint, Waypoint.TraversalPoint endPoint)
