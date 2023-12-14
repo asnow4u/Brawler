@@ -64,9 +64,10 @@ public class TerrainFactory : MonoBehaviour
     {
         Renderer render = EnvironmentObj.GetComponent<Renderer>();
         Bounds heightBound = render.bounds;
-        
         float envHeight = heightBound.size.y / 2;
-        Vector3 spawnPos = new Vector3(hit.point.x, hit.point.y + envHeight, hit.point.z);
+        float originDiff = EnvironmentObj.transform.position.y - heightBound.center.y;
+        
+        Vector3 spawnPos = new Vector3(hit.point.x, hit.point.y + originDiff + envHeight, hit.point.z);
         
 
 
