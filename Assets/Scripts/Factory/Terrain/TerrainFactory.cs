@@ -48,10 +48,28 @@ public class TerrainFactory : MonoBehaviour
 
         for (int i = 0; i < spawnNum; i++)
         {
-            float randX = Random.Range(0, bound.size.x);
-            float randZ = Random.Range(0, bound.size.z);
+            float randX = Random.Range(-bound.size.x/2, bound.size.x/2);
+            float randZ = Random.Range(-bound.size.z/2, bound.size.z/2);
 
-            Instantiate(EnvironmentObj, new Vector3(randX, 0, randZ), Quaternion.identity);
+            Vector3 rayOrigin = new Vector3(randX, terrainObj.transform.position.y + 20, randZ);
+
+            if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, 100, LayerMask.GetMask("Environment")))
+            {
+                SpawnEnvironmentalObject(hit);
+            }
         }
+    }
+
+    private void SpawnEnvironmentalObject(RaycastHit hit)
+    {
+        Renderer render = EnvironmentObj.GetComponent<Renderer>();
+        Bounds heightBound = render.bounds;
+        
+        float envHeight = heightBound.size.y / 2;
+        Vector3 spawnPos = new Vector3(hit.point.x, hit.point.y + envHeight, hit.point.z);
+        
+
+
+        Instantiate(EnvironmentObj, spawnPos, Quaternion.identity);
     }
 }
