@@ -32,7 +32,7 @@ public class AttackData : ScriptableObject
     [SerializeField] private List<AnimationTrigger> otherTriggers;
 
     [Header("Colliders")]
-    public List<AttackCollider> ColliderType;
+    public List<AttackColliderType> ColliderType;
 
 
     public float GetAttackDamage(float frameNumber)
