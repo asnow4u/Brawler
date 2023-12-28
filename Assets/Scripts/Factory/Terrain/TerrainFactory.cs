@@ -1,16 +1,23 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class TerrainFactory : MonoBehaviour
 {
+    [Serializable]
+    public class EnvironmentObjectData
+    {
+        public GameObject EnvironmentObj;
+
+        public int MinSpawn;
+        public int MaxSpawn;
+    }
+    
     public static TerrainFactory Instance;
+    public List<EnvironmentObjectData> envObjects;
 
-    public GameObject EnvironmentObj;
     public GameObject TerrainObj;
-
-    public int MaxSpawn;
-    public int MinSpawn;
 
     public bool DebugStart;
 
@@ -40,34 +47,39 @@ public class TerrainFactory : MonoBehaviour
 
     public void LoadEnvironment(GameObject terrainObj)
     {
-        int spawnNum = Random.Range(MinSpawn, MaxSpawn);
-
-        MeshCollider collider = terrainObj.GetComponent<MeshCollider>();
-        Bounds bound = collider.bounds;
-
-        for (int i = 0; i < spawnNum; i++)
+        for (int i = 0; i < envObjects.Count; i++)
         {
-            float randX = Random.Range(bound.min.x, bound.max.x);
-            float randZ = Random.Range(bound.min.z, bound.max.z);
+            int spawnNum = UnityEngine.Random.Range(envObjects[i].MinSpawn, envObjects[i].MaxSpawn);
+            MeshCollider collider = terrainObj.GetComponent<MeshCollider>();
+            Bounds bound = collider.bounds;
 
-            Vector3 rayOrigin = new Vector3(randX, terrainObj.transform.position.y + 20, randZ);
-
-            if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, 100, LayerMask.GetMask("Environment")))
+            for (int j = 0; j < spawnNum; j++)
             {
-                SpawnEnvironmentalObject(hit);
+                float randX = UnityEngine.Random.Range(bound.min.x, bound.max.x);
+                float randZ = UnityEngine.Random.Range(bound.min.z, bound.max.z);
+
+                Vector3 rayOrigin = new Vector3(randX, terrainObj.transform.position.y + 20, randZ);
+
+                if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, 100, LayerMask.GetMask("Environment")))
+               {
+                    SpawnEnvironmentalObject(hit, envObjects[i]);
+               }
             }
         }
+            
+
+
     }
 
-    private void SpawnEnvironmentalObject(RaycastHit hit)
+    private void SpawnEnvironmentalObject(RaycastHit hit, EnvironmentObjectData envObject)
     {
-        Renderer render = EnvironmentObj.GetComponent<Renderer>();
+        Renderer render = envObject.EnvironmentObj.GetComponent<Renderer>();
         Bounds heightBound = render.bounds;
         float envHeight = heightBound.size.y / 2;
-        float originDiff = EnvironmentObj.transform.position.y - heightBound.center.y;
+        float originDiff = envObject.EnvironmentObj.transform.position.y - heightBound.center.y;
         
         Vector3 spawnPos = new Vector3(hit.point.x, hit.point.y + originDiff + envHeight, hit.point.z);       
 
-        Instantiate(EnvironmentObj, spawnPos, Quaternion.identity);
+        Instantiate(envObject.EnvironmentObj, spawnPos, Quaternion.identity);
     }
 }
