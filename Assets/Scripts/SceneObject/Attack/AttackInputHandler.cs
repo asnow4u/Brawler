@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using UnityEditor;
 using UnityEngine;
 
-public class AttackInputHandler : MonoBehaviour, IAttack
+public class AttackInputHandler : MonoBehaviour
 {
     const ActionState.State attackState = ActionState.State.Attacking;
 
@@ -12,28 +12,42 @@ public class AttackInputHandler : MonoBehaviour, IAttack
 
     private AttackData curAttackData;
 
+    public AttackCollection BaseAttackCollection;
+    public AttackCollection CurAttackCollection;
+
     private bool isFacingRightDir { get { return sceneObj.IsFacingRightDirection(); } }
-    private bool isGrounded { get { return sceneObj.isGrounded; } }
-    private IAnimator animator { get { return sceneObj.animator; } }
-    private IActionState stateHandler { get { return sceneObj.stateHandler; } }
-    private IWeaponCollection weaponCollection { get { return sceneObj.equipmentHandler.Weapons; } }
-    private Weapon curWeapon { get { return weaponCollection.GetCurWeapon(); } }
-    private AttackCollection curAttackCollection { get { return curWeapon.AttackCollection; } }
+    private bool isGrounded { get { return sceneObj.IsGrounded; } }
+    private IAnimator animator { get { return sceneObj.Animator; } }
+    private IActionState stateHandler { get { return sceneObj.StateHandler; } }
+    private IWeaponCollection weaponCollection { get { return sceneObj.EquipmentHandler.Weapons; } }    
 
 
     public void Setup(SceneObject obj)
     {
         sceneObj = obj;
 
+        weaponCollection.WeaponChangedEvent += OnWeaponChanged;
         animator.OnAnimationUpdateEvent += OnAttackAnimationUpdated;
+
+        OnWeaponChanged(null);
     }
 
+    #region Events
+
+    private void OnWeaponChanged(Weapon weapon)
+    {
+        if (weapon == null)
+            CurAttackCollection = BaseAttackCollection;
+
+        else
+            CurAttackCollection = weapon.AttackCollection;
+    }
 
     #region Attack Performed Events
 
     private void OnAttackAnimationUpdated(string animationState, AnimationTrigger.Type triggerType)
     {
-        if (curAttackCollection.GetAttackByAnimationClipName(animationState, out AttackData attackData))
+        if (CurAttackCollection.GetAttackByAnimationClipName(animationState, out AttackData attackData))
         {
             switch(triggerType)
             {
@@ -65,13 +79,13 @@ public class AttackInputHandler : MonoBehaviour, IAttack
 
     private void EnabledAttackColliders(AttackData attackData)
     {
-        weaponCollection.EnableAttackColliders(attackData.ColliderType, OnAttackConnected);        
+        CurAttackCollection.EnableAttackColliders(attackData.ColliderType, OnAttackConnected);        
     }
 
 
     private void DisabledAttackColliders(AttackData attackData)
-    {    
-        weaponCollection.DisableAttackColliders(attackData.ColliderType, OnAttackConnected);        
+    {
+        CurAttackCollection.DisableAttackColliders(attackData.ColliderType, OnAttackConnected);        
     }
 
 
@@ -113,11 +127,13 @@ public class AttackInputHandler : MonoBehaviour, IAttack
 
     #endregion
 
+    #endregion
+
     #region Perform Attack
 
     private void PlayAttackAnimation(AttackType attackType)
     {
-        if (curAttackData == null && curAttackCollection.GetAttackByType(attackType, out AttackData attack))
+        if (curAttackData == null && CurAttackCollection.GetAttackByType(attackType, out AttackData attack))
         {
             animator.PlayAnimation(attack.AttackAnimation.name, attack.GetAttackTriggers());
         }

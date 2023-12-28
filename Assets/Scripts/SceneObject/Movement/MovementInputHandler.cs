@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 
-public class MovementInputHandler : MonoBehaviour, IMovement
+public class MovementInputHandler : MonoBehaviour
 {
     const ActionState.State moveState = ActionState.State.Moving;
 
@@ -16,23 +16,25 @@ public class MovementInputHandler : MonoBehaviour, IMovement
     private string curMoveAnimationState;
 
     //Movement Data
-    private float horizontalInputValue;
-    private float verticalInputValue;
+    private float horizontalInfluence;
+    private float verticalInfluence;
     private MoveData moveData;
     private int numJumpsPerformed;
+
+    //Movement Collection
+    public MovementCollection BaseMovementCollection;
+    public MovementCollection CurMovementCollection;
+
 
     #region SceneObject Getters
 
     private SceneObject sceneObj;
     private Rigidbody rb { get { return sceneObj.rb; } }
-    private bool isGrounded { get { return sceneObj.isGrounded; } }
-    private float maxVelocityX { get { return sceneObj.maxVelocity; } }
+    private bool isGrounded { get { return sceneObj.IsGrounded; } }
+    private float maxVelocityX { get { return sceneObj.MaxVelocity; } }
     private bool isFacingRightDir { get { return sceneObj.IsFacingRightDirection(); } }
-    private IAnimator animator { get { return sceneObj.animator; } }
-    private IActionState stateHandler { get { return sceneObj.stateHandler; } }
-    private IWeaponCollection weaponCollection { get { return sceneObj.equipmentHandler.Weapons; } }
-    private Weapon curWeapon { get { return weaponCollection.GetCurWeapon(); } }
-    private MovementCollection curMovementCollection { get { return curWeapon.MovementCollection; } }
+    private IAnimator animator { get { return sceneObj.Animator; } }
+    private IActionState stateHandler { get { return sceneObj.StateHandler; } }
 
     #endregion
 
@@ -40,23 +42,35 @@ public class MovementInputHandler : MonoBehaviour, IMovement
     {
         sceneObj = obj;
 
+        sceneObj.EquipmentHandler.Weapons.WeaponChangedEvent += OnWeaponChanged;
         animator.OnAnimationUpdateEvent += OnMovementAnimationUpdated;
+
+        OnWeaponChanged(null);        
     }
 
     #region Events
 
+    private void OnWeaponChanged(Weapon weapon)
+    {
+        if (weapon == null)        
+            CurMovementCollection = BaseMovementCollection;       
+
+        else
+            CurMovementCollection = weapon.MovementCollection;             
+    }
+
     private void OnMovementAnimationUpdated(string animationState, AnimationTrigger.Type triggerType)
     {
-        if (GetMovementTypeFromAnimationState(animationState, out MovementType type))
+        if (CurMovementCollection.TryGetMovementFromAnimationClip(animationState, out MovementData move))
         {
             switch (triggerType)
             {
                 case AnimationTrigger.Type.Start:
-                    OnMovementAnimationStarted(animationState, type);
+                    OnMovementAnimationStarted(animationState, move.Type);
                     break;
 
                 case AnimationTrigger.Type.End:
-                    OnMovementAnimationEnded(animationState, type);
+                    OnMovementAnimationEnded(animationState, move.Type);
                     break;
             }
         }
@@ -105,65 +119,76 @@ public class MovementInputHandler : MonoBehaviour, IMovement
     }
 
 
+    /// <summary>
+    /// Horizontal movement based on input value
+    /// Input value ranges between (-1, 1) 
+    /// Input Value determines how much of the curCollection moveSpeed should be applied
+    /// </summary>
+    /// <param name="inputValue"></param>
     public void PerformMovement(Vector2 inputValue)
     {
-        if (curMovementCollection.GetMovementByType(MovementType.Move, out MovementData movement))
+        if (CurMovementCollection.TryGetMovementByType(MovementType.Move, out MovementData movement))
         {
             if (stateHandler.ChangeState(moveState))
             {
                 inputValue.Normalize();
-                horizontalInputValue = inputValue.x;
-                verticalInputValue = inputValue.y;
+                horizontalInfluence = inputValue.x;
+                verticalInfluence = inputValue.y;
                 moveData = (MoveData)movement;                   
             }
         }                           
     }
 
 
-    public void PerformJump()
+    /// <summary>
+    /// Vertical jump movement based on input value
+    /// Input value ranges between (0, 1) 
+    /// </summary>
+    /// <param name="inputValue"></param>
+    public void PerformJump(float inputValue)
     {
         if (isGrounded)
         {
-            if (curMovementCollection.GetMovementByType(MovementType.Jump, out MovementData jump))
+            if (CurMovementCollection.TryGetMovementByType(MovementType.Jump, out MovementData jump))
             {
                 if (stateHandler.ChangeState(moveState))
                 {
-                    JumpAction((JumpData)jump);
+                    JumpAction((JumpData)jump, inputValue);
                 }
             }
         }
         
         else
         {
-            if (curMovementCollection.GetMovementByType(MovementType.AirJump, out MovementData airJump))
+            if (CurMovementCollection.TryGetMovementByType(MovementType.AirJump, out MovementData airJump))
             {
                 if (stateHandler.ChangeState(moveState))
                 {
-                    AirJumpAction((AirJumpData)airJump);
+                    AirJumpAction((AirJumpData)airJump, inputValue);
                 }
             }
         }        
     }
 
 
-    private void JumpAction(JumpData jumpData)
+    private void JumpAction(JumpData jumpData, float jumpInfluence)
     {
         ChangeMoveState(jumpData.Type);
         
-        rb.velocity = new Vector3(rb.velocity.x, jumpData.JumpVelocity, rb.velocity.z);
+        rb.velocity = new Vector3(rb.velocity.x, jumpData.JumpVelocity * jumpInfluence, rb.velocity.z);
         numJumpsPerformed++;
 
         PlayMoveAnimation(jumpData.Type);        
     }
 
 
-    private void AirJumpAction(AirJumpData airJumpData)
+    private void AirJumpAction(AirJumpData airJumpData, float jumpInfluence)
     {
         if (numJumpsPerformed < airJumpData.JumpsAvailable)
         {
             ChangeMoveState(airJumpData.Type);
          
-            rb.velocity = new Vector3(rb.velocity.x, airJumpData.AirJumpVelocity, rb.velocity.z);
+            rb.velocity = new Vector3(rb.velocity.x, airJumpData.AirJumpVelocity * jumpInfluence, rb.velocity.z);
             numJumpsPerformed++;
 
             CheckTurnAround();
@@ -191,7 +216,7 @@ public class MovementInputHandler : MonoBehaviour, IMovement
 
     private void CheckTurnAround()
     {
-        if ((isFacingRightDir && horizontalInputValue < 0) || (!isFacingRightDir && horizontalInputValue > 0))
+        if ((isFacingRightDir && horizontalInfluence < 0) || (!isFacingRightDir && horizontalInfluence > 0))
         {
             sceneObj.TurnAround();
             rb.velocity = new Vector3(rb.velocity.x * -1, rb.velocity.y, rb.velocity.z);
@@ -230,13 +255,13 @@ public class MovementInputHandler : MonoBehaviour, IMovement
         CheckTurnAround();
 
         //Accelerate
-        if (Mathf.Abs(horizontalInputValue) > 0)
+        if (Mathf.Abs(horizontalInfluence) > 0)
         {
             PlayMoveAnimation(moveData.Type);
             
             if (rb.velocity.x < maxVelocityX && rb.velocity.x > -maxVelocityX)
             {
-                rb.velocity += transform.right * Mathf.Abs(horizontalInputValue) * moveData.AccelerationX * Time.fixedDeltaTime;
+                rb.velocity += transform.right * Mathf.Abs(horizontalInfluence) * moveData.AccelerationX * Time.fixedDeltaTime;
             }
         }
 
@@ -272,45 +297,49 @@ public class MovementInputHandler : MonoBehaviour, IMovement
         if (rb.velocity.x < maxVelocityX && rb.velocity.x > -maxVelocityX)
         {
             if (isFacingRightDir)
-                rb.velocity += transform.right * horizontalInputValue * moveData.AirAccelerationX * Time.fixedDeltaTime;
+                rb.velocity += transform.right * horizontalInfluence * moveData.AirAccelerationX * Time.fixedDeltaTime;
 
             else
-                rb.velocity -= transform.right * horizontalInputValue * moveData.AirAccelerationX * Time.fixedDeltaTime;
+                rb.velocity -= transform.right * horizontalInfluence * moveData.AirAccelerationX * Time.fixedDeltaTime;
         }
 
         //Vertical Movement
-        if (verticalInputValue < 0f)
+        if (verticalInfluence < 0f)
         {
-            rb.velocity += transform.up * verticalInputValue * moveData.FastFallVelocity * Time.fixedDeltaTime;
+            rb.velocity += transform.up * verticalInfluence * moveData.FastFallVelocity * Time.fixedDeltaTime;
         }
     }
 
 
-    #region Animation
-
-    private bool GetMovementTypeFromAnimationState(string animationState, out MovementType type)
-    {
-        string str = animationState;
-        str = str.Replace(gameObject.name, "");
-        str = str.Replace(curWeapon.weaponType.ToString(), "");
-
-        if (Enum.TryParse(str, out type))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-
+    //TODO: Look at how animations are played. 
+    //Move blendtree makes this not work so great...
+    //This is the only place that uses the GetCurWeapon(), would like to remove
+    /// <summary>
+    /// Play move animation based on moveType
+    /// </summary>
+    /// <param name="moveType"></param>
     private void PlayMoveAnimation(MovementType moveType)
     {
-        string name = gameObject.name;
-        string weaponName = curWeapon.weaponType.ToString();
-        string moveName = moveType.ToString();
+        if (CurMovementCollection.TryGetMovementByType(moveType, out MovementData move))
+        {
+            string animationName = move.Animation.name;
 
-        sceneObj.animator.PlayAnimation(name + weaponName + moveName);
+            //Need to call name for blend tree
+            if (move.Type == moveType)
+            {
+                string userName = gameObject.name;
+                string clipName = moveType.ToString();
+                string weaponName;
+
+                if (sceneObj.EquipmentHandler.Weapons.GetCurWeapon() != null)
+                    weaponName = sceneObj.EquipmentHandler.Weapons.GetCurWeapon().name;
+                else
+                    weaponName = "Base";
+
+                animationName = userName + weaponName + clipName;
+            }           
+
+            sceneObj.Animator.PlayAnimation(animationName);            
+        }
     }
-
-    #endregion
 }

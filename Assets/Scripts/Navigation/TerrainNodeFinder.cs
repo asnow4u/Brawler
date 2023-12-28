@@ -49,19 +49,23 @@ public class TerrainNodeFinder
     /// <param name="numColumns"></param>
     /// <param name="isRight"></param>
     /// <param name="isUp"></param>
-    public void MapTerrain(Vector3 startPos, Vector3 targetPos, Bounds bounds)
+    public void MapTerrain(Vector3 startPos, Vector3 targetPos, float minYView, Bounds bounds)
     {
         TerrainNodes.Clear();
 
         bool isRight = (targetPos.x - startPos.x) > 0;
-        bool isUp = (targetPos.y - startPos.y) > 0;
+        bool isUp = (targetPos.y - startPos.y) > -bounds.size.y; //Temp: Eventally y should extend in both up and down directions
 
         //Move to starting point
         Vector3 curPos = startPos + Vector3.right * bounds.size.x * (isRight ? 1 : -1);
 
+        //Columns
         int columnCount = 0;
         int numColumns = Mathf.Abs(Mathf.CeilToInt((targetPos.x - curPos.x) / bounds.size.x));
-        int numRows = Mathf.Abs(Mathf.CeilToInt((targetPos.y - curPos.y) / bounds.size.y));
+
+        //Rows
+        float yDist = Mathf.Max((targetPos.y - curPos.y), minYView);
+        int numRows = Mathf.Abs(Mathf.CeilToInt(yDist / bounds.size.y));
 
 
         while (columnCount <= numColumns)

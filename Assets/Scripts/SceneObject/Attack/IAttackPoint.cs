@@ -5,7 +5,7 @@ using UnityEngine;
 
 public interface IAttackPoint
 {
-    public AttackCollider GetColliderType();
+    public AttackColliderType GetColliderType();
     public void RegisterToHitEvent(Action<IDamage> callback);
     public void UnRegisterToHitEvent(Action<IDamage> callback);
     public void EnableColliders();

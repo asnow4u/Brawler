@@ -59,17 +59,17 @@ public class Player : SceneObject
 
     private void HorizontalMovementInput(InputAction.CallbackContext obj)
     {
-        movementHandler.PerformMovement(obj.ReadValue<Vector2>());
+        movementInputHandler.PerformMovement(obj.ReadValue<Vector2>());
     }
 
     private void MovementCanceled(InputAction.CallbackContext obj)
     {
-        movementHandler.PerformMovement(new Vector2(0, 0));
+        movementInputHandler.PerformMovement(new Vector2(0, 0));
     }
 
     private void JumpInput(InputAction.CallbackContext obj)
     {
-        movementHandler.PerformJump();
+        movementInputHandler.PerformJump(obj.ReadValue<float>());
     }
 
     private void JumpCanceled(InputAction.CallbackContext obj)
@@ -82,22 +82,22 @@ public class Player : SceneObject
 
     private void AttackUpwardInput(InputAction.CallbackContext obj)
     {
-        attackHandler.PerformUpAttack();
+        attackInputHandler.PerformUpAttack();
     }
 
     private void AttackDownwardInput(InputAction.CallbackContext obj)
     {
-        attackHandler.PerformDownAttack();
+        attackInputHandler.PerformDownAttack();
     }
 
     private void AttackLeftInput(InputAction.CallbackContext obj)
     {
-        attackHandler.PerformLeftAttack();
+        attackInputHandler.PerformLeftAttack();
     }
 
     private void AttackRightInput(InputAction.CallbackContext obj)
     {
-        attackHandler.PerformRightAttack();
+        attackInputHandler.PerformRightAttack();
     }
 
     #endregion
@@ -106,7 +106,7 @@ public class Player : SceneObject
 
     private void InteractInput(InputAction.CallbackContext obj)
     {
-        interactionHandler.ReceiveInput(this);
+        InteractionHandler.ReceiveInput(this);
     }
 
     #endregion
@@ -115,9 +115,9 @@ public class Player : SceneObject
 
     private void SwitchWeaponTo(int index)
     {
-        if (stateHandler.ChangeState(ActionState.State.Moving))
+        if (StateHandler.ChangeState(ActionState.State.Moving))
         {
-            equipmentHandler.Weapons.SwapWeaponTo(index);
+            EquipmentHandler.Weapons.SwapWeaponTo(index);
         }
     }
 

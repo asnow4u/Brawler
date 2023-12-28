@@ -6,10 +6,20 @@ using UnityEngine;
 
 public enum AttackType { UpTilt, DownTilt, ForwardTilt, UpAir, DownAir, ForwardAir, BackAir };
 
-[System.Serializable]
-public class AttackCollection : MonoBehaviour
+[Serializable]
+public class AttackCollection
 {
     public WeaponData WeaponData;
+    public AttackPointCollection AttackPointCollection;
+
+    public AttackCollection(WeaponData weaponData, List<GameObject> attackPoints)
+    {
+        this.WeaponData = weaponData;
+        AttackPointCollection = new AttackPointCollection(attackPoints);
+    }
+
+
+    #region Attack Data
 
     public bool GetAttackByType(AttackType attackType, out AttackData attack)
     {
@@ -96,5 +106,23 @@ public class AttackCollection : MonoBehaviour
         attack = null;
         return false;
     }
+
+    #endregion
+
+
+    #region Attack Points
+
+    public void EnableAttackColliders(List<AttackColliderType> colliderTypes, Action<IDamage> OnHitEvent)
+    {
+        AttackPointCollection.EnableAttackColliders(colliderTypes, OnHitEvent);
+    }
+
+
+    public void DisableAttackColliders(List<AttackColliderType> colliderTypes, Action<IDamage> OnHitEvent)
+    {
+        AttackPointCollection.DisableAttackColliders(colliderTypes, OnHitEvent);
+    }
+
+    #endregion
 }
 

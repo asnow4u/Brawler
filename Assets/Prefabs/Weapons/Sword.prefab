@@ -129,7 +129,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8498659391014431574, guid: e8891fbc58fe55c44944bd258163a4cf, type: 3}
       propertyPath: m_Name
-      value: SwordPickUp
+      value: Sword
       objectReference: {fileID: 0}
     - target: {fileID: 8498659391014431574, guid: e8891fbc58fe55c44944bd258163a4cf, type: 3}
       propertyPath: m_Layer
@@ -160,45 +160,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weaponType: 1
---- !u!114 &1931352513
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7766942912086774012}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f56f75752c1d1ec47ab2b7efc90b0fda, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  movements:
-  - type: 0
-    triggers: []
-  - type: 1
-    triggers: []
-  - type: 2
-    triggers: []
-  - type: 4
-    triggers: []
-  - type: 5
-    triggers: []
---- !u!114 &1931352514
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7766942912086774012}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 856689d8cc720bc458ea0cddafddbc3a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ForwardTilt: {fileID: 0}
-  UpTilt: {fileID: 0}
-  DownTilt: {fileID: 0}
-  ForwardAir: {fileID: 0}
-  BackAir: {fileID: 0}
-  UpAir: {fileID: 0}
-  DownAir: {fileID: 0}
+  movementCollection:
+    movements: []

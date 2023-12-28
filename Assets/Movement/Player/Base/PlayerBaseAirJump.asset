@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4180f9c897bb6647a23379f72b3092a, type: 3}
   m_Name: PlayerBaseAirJump
   m_EditorClassIdentifier: 
+  Animation: {fileID: 7400000, guid: 03a9618a54fc2984cb064b70aa23bdeb, type: 2}
   Type: 2
+  Triggers: []
   JumpsAvailable: 2
   AirJumpVelocity: 7

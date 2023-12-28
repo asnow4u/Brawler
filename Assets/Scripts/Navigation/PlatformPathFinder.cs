@@ -5,20 +5,21 @@ using System.Linq;
 using System.Net;
 using UnityEngine;
 using UnityEngine.InputSystem.HID;
+using static UnityEditor.PlayerSettings;
 using static Waypoint;
 
 public class PlatformPathFinder
 {
+    private CapsuleCollider objCollider;
+
+    private float xVelocityLimit;
+    private float yVelocityLimit;
+
     //TODO: Make Private
     public TerrainNodeFinder terrainFinder;
 
     //NOTE: Do we keep? Upon updating waypoints this will not always be correct (Moving platform)
-    private List<Waypoint> waypoints = new List<Waypoint>();
-
-
-    private CapsuleCollider objCollider;
-    private float xVelocityLimit;
-    private float yVelocityLimit;
+    private List<Waypoint> waypoints;
 
     //TEMP
     public Waypoint rootWaypoint;
@@ -30,38 +31,43 @@ public class PlatformPathFinder
     }
 
 
-    public List<Waypoint> FindPath(Vector3 startPos, Vector3 targetPos, float xVelocity, float jumpVelocity)
+    public List<Waypoint> FindPath(Vector3 startPos, Vector3 targetPos, MovementCollection curMovementCollection)
     {
-        this.xVelocityLimit = xVelocity;
-        this.yVelocityLimit = jumpVelocity;
+        waypoints = new List<Waypoint>();
 
-        terrainFinder = new TerrainNodeFinder();
-        terrainFinder.MapTerrain(startPos, targetPos, objCollider.bounds);
-
-        rootWaypoint = MapWayPoints(startPos);
-
-        targetWaypoint = FindClosestWayPoint(rootWaypoint, targetPos);
-
-        Debug.Log(targetWaypoint.gameObject.name);
-
-        List<Waypoint> pathPoints = DeterminePath(rootWaypoint, targetWaypoint);
-
-        //Debug
-        string log = "Found Path:";
-        foreach (Waypoint waypoint in pathPoints)
+        if (curMovementCollection.TryGetMovementByType(MovementType.Move, out MovementData moveData) &&
+            curMovementCollection.TryGetMovementByType(MovementType.Jump, out MovementData jumpData))
         {
-            log += "\n\t" + waypoint.gameObject.name;
-        }
-        Debug.Log(log);
 
-        return pathPoints;
+            this.xVelocityLimit = ((MoveData)moveData).AccelerationX;
+            this.yVelocityLimit = ((JumpData)jumpData).JumpVelocity;
+
+            //Determine maxJump height        
+            float maxJumpHeight = CalculatePeakHeight(startPos.y, ((JumpData)jumpData).JumpVelocity);
+
+            //Map out the terrain
+            terrainFinder = new TerrainNodeFinder();
+            terrainFinder.MapTerrain(startPos, targetPos, maxJumpHeight, objCollider.bounds);
+
+            //Connect possible waypoints
+            rootWaypoint = MapConnections(startPos);
+
+            //Find target waypoint
+            targetWaypoint = FindClosestWayPoint(rootWaypoint, targetPos);
+
+            List<Waypoint> pathPoints = DeterminePath(rootWaypoint, targetWaypoint);
+
+            return pathPoints;
+        }
+        
+        return null;
     }
 
 
-    private Waypoint MapWayPoints(Vector3 startPos)
+    private Waypoint MapConnections(Vector3 startPos)
     {
         //Set up root wayPoint
-        Waypoint rootWaypoint = CreateWayPoint(startPos, -1, 0);
+        Waypoint rootWaypoint = new Waypoint(startPos, -1, 0);
         waypoints.Add(rootWaypoint);
 
         //Loop through columns
@@ -76,7 +82,7 @@ public class PlatformPathFinder
 
                 if (node.DownHit.collider != null)
                 {
-                    Waypoint waypoint = CreateWayPoint(new Vector3(node.DownHit.point.x, node.DownHit.point.y + objCollider.height / 2 + objCollider.radius, node.DownHit.point.z), i, j);
+                    Waypoint waypoint = new Waypoint(new Vector3(node.DownHit.point.x, node.DownHit.point.y + objCollider.height / 2 + objCollider.radius), i, j);
 
                     EstablishConnectionsTo(waypoint);
 
@@ -88,22 +94,6 @@ public class PlatformPathFinder
         }
 
         return waypoints[0];
-    }
-
-
-    private Waypoint CreateWayPoint(Vector3 pos, int columnNum, int rowNum)
-    {
-        //Set up waypoint GO
-        GameObject waypointGO = new GameObject("WayPoint C" + columnNum + "R" + rowNum);
-        waypointGO.transform.position = pos;
-        //Adjust sphere collider to bounds width
-
-        //Set Up wayPoint component
-        Waypoint waypoint = waypointGO.AddComponent<Waypoint>();
-        waypoint.Column = columnNum;
-        waypoint.Row = rowNum;
-
-        return waypoint;
     }
 
 
@@ -119,18 +109,18 @@ public class PlatformPathFinder
             closestWaypoint = curWaypoint;        
         else
         {
-            if (Vector3.Distance(pos, closestWaypoint.transform.position) > Vector3.Distance(pos, curWaypoint.transform.position))
+            if (Vector3.Distance(pos, closestWaypoint.pos) > Vector3.Distance(pos, curWaypoint.pos))
             {
                 closestWaypoint = curWaypoint;
             }
         }
 
 
-        foreach (Waypoint.TraversalPoint traversalPoint in curWaypoint.TraversalPoints)
+        foreach (TraversalPoint traversalPoint in curWaypoint.TraversalPoints)
         {
             Waypoint waypoint = FindClosestWayPoint(traversalPoint.Destination, pos, closestWaypoint);
 
-            if (Vector3.Distance(pos, closestWaypoint.transform.position) > Vector3.Distance(pos, waypoint.transform.position))
+            if (Vector3.Distance(pos, closestWaypoint.pos) > Vector3.Distance(pos, waypoint.pos))
             {
                 closestWaypoint = waypoint;
             }
@@ -147,37 +137,32 @@ public class PlatformPathFinder
     private void EstablishConnectionsTo(Waypoint waypoint)
     {
         //Determine what waypoints can connect to this waypoint
-        //Walk
-        //Jump
-
         foreach (Waypoint prevWaypoint in waypoints)
         {
-            //TODO: Check for start
-
             //Move Connection
             if (waypoint.Row == prevWaypoint.Row && waypoint.Column - 1 == prevWaypoint.Column)
             {
-                if (CheckMovementPath(prevWaypoint.transform.position, waypoint.transform.position))
+                if (CheckMovementPath(prevWaypoint.pos, waypoint.pos))
                 {
-                    prevWaypoint.TraversalPoints.Add(new Waypoint.TraversalPoint(waypoint, TraversalType.Move));
+                    prevWaypoint.TraversalPoints.Add(new TraversalPoint(waypoint, TraversalType.Move));
                 }
             }
 
             //Upward Jump Connection
             else if (prevWaypoint.Row < waypoint.Row)
             {
-                if (DetermineJumpTrajectory(prevWaypoint.transform.position, waypoint.transform.position, xVelocityLimit, yVelocityLimit, out Vector2 jumpVelocity))
+                if (DetermineJumpTrajectory(prevWaypoint.pos, waypoint.pos, xVelocityLimit, yVelocityLimit, out Vector2 jumpVelocity))
                 {
-                    prevWaypoint.TraversalPoints.Add(new Waypoint.JumpTraversalPoint(waypoint, TraversalType.Jump, jumpVelocity));
+                    prevWaypoint.TraversalPoints.Add(new JumpTraversalPoint(waypoint, TraversalType.Jump, jumpVelocity));
                 }
             }
 
             //Downward Jump Connection
             else if (prevWaypoint.Row > waypoint.Row)
             {
-                if (DetermineJumpTrajectory(prevWaypoint.transform.position, waypoint.transform.position, xVelocityLimit, yVelocityLimit, out Vector2 jumpVelocity))
+                if (DetermineJumpTrajectory(prevWaypoint.pos, waypoint.pos, xVelocityLimit, yVelocityLimit, out Vector2 jumpVelocity))
                 {
-                    prevWaypoint.TraversalPoints.Add(new Waypoint.JumpTraversalPoint(waypoint, TraversalType.Jump, jumpVelocity));
+                    prevWaypoint.TraversalPoints.Add(new JumpTraversalPoint(waypoint, TraversalType.Jump, jumpVelocity));
 
                 }
             }
@@ -223,9 +208,8 @@ public class PlatformPathFinder
     private bool DetermineJumpTrajectory(Vector3 startPos, Vector3 targetPos, float maxXVelocity, float maxYVelocity, out Vector2 jumpVelocity)
     {
         //Determine jump height capability and target peak
-        float maxJumpTime = Mathf.Abs(maxYVelocity / Physics.gravity.y); //a = v/t => t = v/a
-        float maxJumpHeight = startPos.y + maxYVelocity * maxJumpTime + (Physics.gravity.y * maxJumpTime * maxJumpTime) / 2;
         float jumpPeak = Mathf.Max(startPos.y + objCollider.bounds.size.y, targetPos.y + objCollider.bounds.size.y);
+        float maxJumpHeight = CalculatePeakHeight(startPos.y, maxYVelocity);
 
         //Determine if jump is possible
         if (maxJumpHeight > jumpPeak)
@@ -411,7 +395,6 @@ public class PlatformPathFinder
     /// </summary>
     private bool CastTrajectoryBranch(Vector3 startPos, Vector3 dir, float dist, out RaycastHit hit)
     {
-        Debug.DrawLine(startPos, startPos + dir * dist, Color.red);
         if (Physics.Raycast(startPos, dir, out hit, dist, LayerMask.GetMask("Environment")))
         {
             return true;
@@ -442,7 +425,7 @@ public class PlatformPathFinder
             curTraversalPath.Add(waypoint);
 
             //Check if target is one of the traversal points
-            foreach (Waypoint.TraversalPoint traversalPoint in waypoint.TraversalPoints)
+            foreach (TraversalPoint traversalPoint in waypoint.TraversalPoints)
             {
                 if (traversalPoint.Destination == target)
                 {
@@ -452,7 +435,7 @@ public class PlatformPathFinder
 
             //Randomly choose a traversal path till one succeeded
             List<Waypoint> traversalPath = null;
-            List<Waypoint.TraversalPoint> availablePaths = new List<Waypoint.TraversalPoint>(waypoint.TraversalPoints);
+            List<TraversalPoint> availablePaths = new List<TraversalPoint>(waypoint.TraversalPoints);
 
             while (traversalPath == null)
             {

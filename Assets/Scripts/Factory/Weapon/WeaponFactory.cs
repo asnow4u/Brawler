@@ -41,18 +41,31 @@ public class WeaponFactory : MonoBehaviour
     }
 
 
-    private void ApplyNewWeaponData(GameObject weapon, WeaponCollectionData weaponData)
+    private void ApplyNewWeaponData(GameObject weaponGO, WeaponCollectionData weaponData)
     {
-        if (weapon.TryGetComponent(out AttackCollection collection))
+        if (weaponGO.TryGetComponent(out Weapon weapon))
         {
-            collection.WeaponData = new WeaponData(
-                weaponData.GetRandomUpTilt(),
-                weaponData.GetRandomUpAir(),
-                weaponData.GetRandomDownTilt(),
-                weaponData.GetRandomDownAir(),
-                weaponData.GetRandomForwardTilt(),
-                weaponData.GetRandomForwardAir(),
-                weaponData.GetRandomBackAir());
+            //Randomize attack data
+            WeaponData attackData = new WeaponData (
+                    weaponData.GetRandomUpTilt(),
+                    weaponData.GetRandomUpAir(),
+                    weaponData.GetRandomDownTilt(),
+                    weaponData.GetRandomDownAir(),
+                    weaponData.GetRandomForwardTilt(),
+                    weaponData.GetRandomForwardAir(),
+                    weaponData.GetRandomBackAir());
+
+            //Get attack points
+            List<GameObject> attackPoints = new List<GameObject>();
+            foreach (AttackPoint attackPoint in weaponGO.GetComponentsInChildren<AttackPoint>())
+            {
+                attackPoints.Add(attackPoint.gameObject);
+            }
+
+            //Create attack collection
+            AttackCollection attackCollection = new AttackCollection(attackData, attackPoints);
+
+            weapon.AttackCollection = attackCollection;
         }
     }
 

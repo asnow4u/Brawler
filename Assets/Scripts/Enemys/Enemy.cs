@@ -37,9 +37,11 @@ public abstract class Enemy : SceneObject
 
     [SerializeField] protected Vector2 targetSpot;
 
+    [SerializeField] protected int curPathIndex;
 
     //TEMP
     public Transform pathObject;
+    public List<Waypoint> path = new List<Waypoint>();
 
     protected override void Initialize()
     {
@@ -52,32 +54,16 @@ public abstract class Enemy : SceneObject
 
         SetState(EnemyState.Idle);
 
-     
+
+        //Test Path
         pathFinder = new PlatformPathFinder(GetComponent<CapsuleCollider>());
-        StartCoroutine(FindPath());
-
-
+        path = pathFinder.FindPath(transform.position, pathObject.position, movementInputHandler.CurMovementCollection);
+        curPathIndex = 0;
 
         if (patrolSpots.Count > 0 )
         {
             targetSpot = patrolSpots[0];
         }
-    }
-
-
-    //TEMP
-    public float moveSpeed = 10;
-    public float jumpVelocity = 10f;
-    List<Waypoint> path = new List<Waypoint>();
-
-    public IEnumerator FindPath()
-    {          
-
-        //while (true)
-        //{
-        path = pathFinder.FindPath(transform.position, pathObject.position, moveSpeed, jumpVelocity);
-        yield return new WaitForSeconds(1f);
-        //}
     }
 
 
@@ -113,7 +99,7 @@ public abstract class Enemy : SceneObject
 
 
     protected void Update()
-    {        
+    {
         switch (enemyState)
         {
             //case EnemyState.Idle:
@@ -129,6 +115,8 @@ public abstract class Enemy : SceneObject
             //    break;
         }
     }
+
+
 
 
     protected abstract void Idle();
@@ -167,14 +155,14 @@ public abstract class Enemy : SceneObject
     {
         Vector2 direction = targetSpot - new Vector2(transform.position.x, transform.position.y);
         Debug.Log(direction);
-        movementHandler.PerformMovement(direction);
+        movementInputHandler.PerformMovement(direction);
     }
 
 
     protected IEnumerator StartPartrolWaitTimer()
     {
         patrolTimer = patrolWaitDuration;
-        movementHandler.PerformMovement(Vector2.zero);
+        movementInputHandler.PerformMovement(Vector2.zero);
 
         while (patrolTimer > 0)
         {
@@ -190,6 +178,11 @@ public abstract class Enemy : SceneObject
     protected override void FixedUpdate()
     {
         base.FixedUpdate();
+
+
+        PathUpdate();
+
+
 
         List<SceneObject> objectsInView = CheckView();
 
@@ -236,6 +229,80 @@ public abstract class Enemy : SceneObject
             UpdateTimers(objectsInView.Contains(aggroTarget));            
         }
     }
+
+
+
+    private void PathUpdate()
+    {
+        if (path != null)
+        {
+            if (Vector3.Distance(transform.position, path[curPathIndex].pos) < GetComponent<CapsuleCollider>().radius * 2)
+            {
+                curPathIndex++;
+
+                //Determine if at end of path
+                if (path.Count == curPathIndex)
+                {
+                    path = null;
+                    movementInputHandler.PerformMovement(Vector2.zero);
+                    return;
+                }
+            }
+
+            //Determin if next waypoint exists
+            if (curPathIndex != path.Count - 1)
+            {
+
+                //Determine how to traverse to next point
+                if (path[curPathIndex].TryGetTraversalPoint(path[curPathIndex +1], out TraversalPoint traversalPoint))
+                {
+                    if (traversalPoint.TraversalType == TraversalType.Move)
+                    {
+                        PathMove(traversalPoint);
+                    }       
+
+                    else if (traversalPoint.TraversalType == TraversalType.Jump)
+                    {
+                        PathJump((JumpTraversalPoint)traversalPoint); 
+                    }
+                }
+            }
+        }
+    }
+
+
+    /// <summary>
+    /// Traverse to the next point in the path by moving
+    /// </summary>
+    private void PathMove(TraversalPoint traversalPoint)
+    {
+        float moveSpeed = 1;
+
+        //Determine Direction For Movement (right => pos | left => neg)
+        if (transform.position.x > path[curPathIndex].pos.x)
+            moveSpeed = -1;
+
+        movementInputHandler.PerformMovement(new Vector2(moveSpeed, 0));
+    }
+
+
+    /// <summary>
+    /// Traverse to the next point in the path by jumping
+    /// </summary>
+    private void PathJump(JumpTraversalPoint traversalPoint)
+    {
+        //Move Speed
+        float moveSpeed = movementInputHandler.CurMovementCollection.GetCurMovementSpeed();
+        movementInputHandler.PerformMovement(new Vector2(traversalPoint.JumpVelocity.x / moveSpeed, 0));
+
+        //Jump
+        if (IsGrounded)
+        {
+            float jumpVelocity = movementInputHandler.CurMovementCollection.GetCurJumpVelocity();
+            movementInputHandler.PerformJump(traversalPoint.JumpVelocity.y / jumpVelocity);
+        }
+    }
+
 
 
     private List<SceneObject> CheckView()
@@ -387,27 +454,30 @@ public abstract class Enemy : SceneObject
 
     private void DrawPath()
     {
-        for (int i=0; i<path.Count; i++)
+        if (path != null)
         {
-            Gizmos.color = Color.blue;
-            Gizmos.DrawSphere(path[i].transform.position, 0.1f);
-
-            if (i < path.Count-1)
+            for (int i=0; i<path.Count; i++)
             {
-                Waypoint.TraversalPoint traversalPoint = FindTraversalPoint(path[i], path[i+1]);
-                
-                if (traversalPoint != null)
+                Gizmos.color = Color.blue;
+                Gizmos.DrawSphere(path[i].pos, 0.1f);
+
+                if (i < path.Count-1)
                 {
-                    Gizmos.color = Color.black;
-
-                    if (traversalPoint.TraversalType == TraversalType.Move)
+                    TraversalPoint traversalPoint = FindTraversalPoint(path[i], path[i+1]);
+                
+                    if (traversalPoint != null)
                     {
-                        DrawMoveTrjectory(path[i], traversalPoint);
-                    }
+                        Gizmos.color = Color.black;
 
-                    else if (traversalPoint.TraversalType == TraversalType.Jump)
-                    {
-                        DrawJumpTrjectory(path[i], (Waypoint.JumpTraversalPoint)traversalPoint);
+                        if (traversalPoint.TraversalType == TraversalType.Move)
+                        {
+                            DrawMoveTrjectory(path[i], traversalPoint);
+                        }
+
+                        else if (traversalPoint.TraversalType == TraversalType.Jump)
+                        {
+                            DrawJumpTrjectory(path[i], (JumpTraversalPoint)traversalPoint);
+                        }
                     }
                 }
             }
@@ -415,9 +485,9 @@ public abstract class Enemy : SceneObject
     }
 
 
-    private Waypoint.TraversalPoint FindTraversalPoint(Waypoint curWaypoint, Waypoint nextWaypoint)
+    private TraversalPoint FindTraversalPoint(Waypoint curWaypoint, Waypoint nextWaypoint)
     {
-        foreach (Waypoint.TraversalPoint traversalPoint in curWaypoint.TraversalPoints )
+        foreach (TraversalPoint traversalPoint in curWaypoint.TraversalPoints )
         {
             if (traversalPoint.Destination.Column == nextWaypoint.Column)
             {
@@ -433,19 +503,19 @@ public abstract class Enemy : SceneObject
 
 
 
-    private void DrawMoveTrjectory(Waypoint startPoint, Waypoint.TraversalPoint endPoint)
+    private void DrawMoveTrjectory(Waypoint startPoint, TraversalPoint endPoint)
     {
-        Gizmos.DrawLine(startPoint.transform.position, endPoint.Destination.transform.position);
+        Gizmos.DrawLine(startPoint.pos, endPoint.Destination.pos);
     }
 
 
-    private void DrawJumpTrjectory(Waypoint startPoint, Waypoint.JumpTraversalPoint jumpPoint)
+    private void DrawJumpTrjectory(Waypoint startPoint, JumpTraversalPoint jumpPoint)
     {
         float t = 0f;
-        float maxTime = (jumpPoint.Destination.transform.position.x - startPoint.transform.position.x) / jumpPoint.JumpVelocity.x;       
+        float maxTime = (jumpPoint.Destination.pos.x - startPoint.pos.x) / jumpPoint.JumpVelocity.x;       
 
-        float prevX = startPoint.transform.position.x;
-        float prevY = startPoint.transform.position.y;
+        float prevX = startPoint.pos.x;
+        float prevY = startPoint.pos.y;
         float nextX = 0;
         float nextY = 0;    
 
@@ -455,8 +525,8 @@ public abstract class Enemy : SceneObject
 
             float time = Mathf.Lerp(0, maxTime, t);
 
-            nextX = startPoint.transform.position.x + jumpPoint.JumpVelocity.x * time;
-            nextY = startPoint.transform.position.y + jumpPoint.JumpVelocity.y * time + (Physics.gravity.y * time * time) / 2;
+            nextX = startPoint.pos.x + jumpPoint.JumpVelocity.x * time;
+            nextY = startPoint.pos.y + jumpPoint.JumpVelocity.y * time + (Physics.gravity.y * time * time) / 2;
 
             Gizmos.DrawLine(new Vector3(prevX, prevY, transform.position.z), new Vector3(nextX, nextY, transform.position.z));            
 

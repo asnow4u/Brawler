@@ -9,13 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e365b02dcde51004da1f1dcd92c6880e, type: 3}
-  m_Name: RushDownMove
+  m_Script: {fileID: 11500000, guid: 4b110e1c728de094e97b8a57099a9527, type: 3}
+  m_Name: RushDownJump
   m_EditorClassIdentifier: 
-  Animation: {fileID: 7400000, guid: 321cfbc3cd600fb48bc8bca7bc059301, type: 2}
-  Type: 0
+  Animation: {fileID: 7400000, guid: 4f71a2d67909b10438ac7beb923df8f6, type: 2}
+  Type: 1
   Triggers: []
-  AccelerationX: 20
-  DecelerationX: 30
-  AirAccelerationX: 15
-  FastFallVelocity: 20
+  JumpVelocity: 7

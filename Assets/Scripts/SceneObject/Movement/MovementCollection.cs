@@ -1,18 +1,18 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public enum MovementType { Move, Jump, AirJump, Fall, Land, Roll }
 
-public class MovementCollection : MonoBehaviour
+[Serializable]
+public class MovementCollection
 {
-    [SerializeField] private List<MovementData> movements;
+    public List<MovementData> Movements;
 
-    public bool GetMovementByType(MovementType movementType, out MovementData requestedMovement) 
+    public bool TryGetMovementByType(MovementType movementType, out MovementData requestedMovement) 
     {
-        requestedMovement = null;
-
-        foreach (MovementData move in movements)
+        foreach (MovementData move in Movements)
         {
             if (move.Type == movementType)
             {
@@ -21,10 +21,67 @@ public class MovementCollection : MonoBehaviour
             }
         }
 
+        requestedMovement = null;
         return false;
     }
 
 
-    
+    public float GetCurMovementSpeed()
+    {
+        foreach (MovementData move in Movements)
+        {
+            if (move.Type == MovementType.Move)
+            {
+                return ((MoveData)move).AccelerationX;
+            }
+        }
+
+        return 0;
+    }
+
+
+    public float GetCurJumpVelocity()
+    {
+        foreach (MovementData move in Movements)
+        {
+            if (move.Type == MovementType.Jump)
+            {
+                return ((JumpData)move).JumpVelocity;
+            }
+        }
+
+        return 0;
+    }
+
+
+    public float GetCurAirJumpVelocity()
+    {
+        foreach (MovementData move in Movements)
+        {
+            if (move.Type == MovementType.AirJump)
+            {
+                return ((AirJumpData)move).AirJumpVelocity;
+            }
+        }
+
+        return 0;
+    }
+
+
+    public bool TryGetMovementFromAnimationClip(string clipName, out MovementData movement)
+    {
+        foreach (MovementData move in Movements)
+        {
+            if (move.Animation.name == clipName)
+            {
+                movement = move;
+                return true;
+            }
+        }
+
+        movement = null;
+        return false;
+    }
+
 
 }

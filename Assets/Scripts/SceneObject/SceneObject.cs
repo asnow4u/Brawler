@@ -16,22 +16,21 @@ public abstract class SceneObject : MonoBehaviour, IDamage
 
     [Header("Physics")]
     public Rigidbody rb;
-    public float maxVelocity = 10f;
-    public bool isGrounded;
-    public bool inHitStun;
+    public float MaxVelocity = 10f;
+    public bool IsGrounded;
+    public bool InHitStun;
     public float DecelerationRate = 2;
 
-    [Header("Componenets")]
-    [SerializeField] private bool ApplyMovement;
-    [SerializeField] private bool ApplyAttacking;
+    //Components
+    public MovementInputHandler movementInputHandler;
+    public AttackInputHandler attackInputHandler;
 
     //Handlers
-    public IActionState stateHandler;
-    public IAnimator animator;
-    public IEquipment equipmentHandler;
-    public IInteraction interactionHandler;
-    protected IMovement movementHandler;
-    protected IAttack attackHandler;
+    public IActionState StateHandler;
+    public IAnimator Animator;
+    public IEquipment EquipmentHandler;
+    public IInteraction InteractionHandler;
+
     
     //Damage Calculation
    
@@ -65,47 +64,44 @@ public abstract class SceneObject : MonoBehaviour, IDamage
 
     private void InitializeInteractionHandler()
     {
-        interactionHandler = new InteractionHandler();
+        InteractionHandler = new InteractionHandler();
     }
 
     private void InitializeEquipmentHandler()
     {
-        equipmentHandler = new EquipmentHandler(this);
+        EquipmentHandler = new EquipmentHandler(this);
     }
 
     private void InitializeAnimator()
     {
-        animator = GetComponentInChildren<IAnimator>();
-        animator.SetUp(this);
+        Animator = GetComponentInChildren<IAnimator>();
+        Animator.SetUp(this);
     }
 
 
     private void InitializeStateHandler()
     {
-        stateHandler = new ActionStateHandler();
-        stateHandler.Setup(this);
-        stateHandler.ResetState();
+        StateHandler = new ActionStateHandler();
+        StateHandler.Setup(this);
+        StateHandler.ResetState();
     }
 
 
     private void InitializeMovementHandler()
     {
-        if (ApplyMovement) 
-        {
-            movementHandler = gameObject.AddComponent<MovementInputHandler>();
-            movementHandler.Setup(this);
-        }
+        if (TryGetComponent(out movementInputHandler))
+        {            
+            movementInputHandler.Setup(this);
+        }        
     }
 
     private void InitializeAttackHandler()
     {
-        if (ApplyAttacking)
+        if (TryGetComponent(out attackInputHandler))
         {
-            attackHandler = gameObject.AddComponent<AttackInputHandler>();
-            attackHandler.Setup(this);
+            attackInputHandler.Setup(this);
         }
     }
-
 
 
     //TODO: make two rays on each side to prevent landing just on the edge and not getting jump reset
@@ -113,14 +109,14 @@ public abstract class SceneObject : MonoBehaviour, IDamage
     {
         if (Physics.Raycast(GetComponent<Collider>().bounds.center, Vector3.down, transform.GetComponent<Collider>().bounds.size.y / 2 + 0.1f, ~LayerMask.NameToLayer("Environment")))
         {
-            if (rb.velocity.y < 0 && !isGrounded)
+            if (rb.velocity.y < 0 && !IsGrounded)
             {
-                isGrounded = true;                
+                IsGrounded = true;                
             }
         }
         else
         {
-            isGrounded = false;
+            IsGrounded = false;
         }
     }
 
@@ -197,9 +193,9 @@ public abstract class SceneObject : MonoBehaviour, IDamage
     public IEnumerator ApplyHitStun(float totalForce)
     {
         //TODO: Remove
-        inHitStun = true;
+        InHitStun = true;
 
-        stateHandler.ChangeState(ActionState.State.HitStun);
+        StateHandler.ChangeState(ActionState.State.HitStun);
         float timer = totalForce / 1000f;
 
         Debug.Log("HitStun: " + timer);
@@ -212,18 +208,18 @@ public abstract class SceneObject : MonoBehaviour, IDamage
 
         Destroy(killZone.gameObject);
 
-        stateHandler.ResetState();
+        StateHandler.ResetState();
 
         //TODO: Remove
-        inHitStun = false;
+        InHitStun = false;
 
-        while (Mathf.Abs(rb.velocity.x) > maxVelocity || Mathf.Abs(rb.velocity.y) > maxVelocity)
+        while (Mathf.Abs(rb.velocity.x) > MaxVelocity || Mathf.Abs(rb.velocity.y) > MaxVelocity)
         {
             //Horizontal
-            if (Mathf.Abs(rb.velocity.x) > maxVelocity)
+            if (Mathf.Abs(rb.velocity.x) > MaxVelocity)
             {
                 //Right Direction
-                if (rb.velocity.x > maxVelocity)
+                if (rb.velocity.x > MaxVelocity)
                 {
                     rb.velocity -= transform.right * DecelerationRate * Time.deltaTime;
                 }
@@ -236,10 +232,10 @@ public abstract class SceneObject : MonoBehaviour, IDamage
             }
             
             //Vertical
-            if (Mathf.Abs(rb.velocity.y) > maxVelocity)
+            if (Mathf.Abs(rb.velocity.y) > MaxVelocity)
             {
                 //Up
-                if (rb.velocity.y > maxVelocity)
+                if (rb.velocity.y > MaxVelocity)
                 {
                     rb.velocity -= transform.up * DecelerationRate * Time.deltaTime;
                 }

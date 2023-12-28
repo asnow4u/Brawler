@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b110e1c728de094e97b8a57099a9527, type: 3}
   m_Name: PlayerBaseJump
   m_EditorClassIdentifier: 
+  Animation: {fileID: 7400000, guid: 859aec2fb18297243888f38438996d95, type: 2}
   Type: 1
+  Triggers: []
   JumpVelocity: 7
-  FallVelocity: 10
-  FastFallVelocity: 20

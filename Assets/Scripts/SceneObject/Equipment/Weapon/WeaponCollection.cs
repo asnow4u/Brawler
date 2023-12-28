@@ -7,11 +7,13 @@ using static UnityEngine.Tilemaps.Tile;
 public class WeaponCollection : MonoBehaviour, IWeaponCollection
 {
     [SerializeField] private List<Weapon> weapons = new List<Weapon>();
-    [SerializeField] private Weapon curWeapon;
+    [SerializeField] private Weapon curWeapon = null;
 
     [SerializeField] private Transform weaponHolder;
 
     private List<IAttackPoint> bodyAttackPoints;
+
+    public event Action<Weapon> WeaponChangedEvent;
 
     public void Initialize(SceneObject sceneObj)
     {
@@ -28,12 +30,6 @@ public class WeaponCollection : MonoBehaviour, IWeaponCollection
 
     #region Weapon
 
-    public Weapon GetCurWeapon()
-    {
-        return curWeapon;
-    }
-
-
     private Weapon GetWeaponByIndex(int index)
     {
         if (weapons.Count > index)
@@ -42,20 +38,6 @@ public class WeaponCollection : MonoBehaviour, IWeaponCollection
         }
 
         return null;
-    }
-
-
-    public void AddWeapon(Weapon weapon)
-    {
-        if (!weapons.Contains(weapon))
-        {
-            weapons.Add(weapon);
-
-            if (weapon.weaponType != Weapon.Type.Base)
-                SetWeaponToInventory(weapon);
-
-            SwapWeaponTo(weapons.Count -1);            
-        }
     }
 
 
@@ -68,10 +50,28 @@ public class WeaponCollection : MonoBehaviour, IWeaponCollection
 
 
     private void SetWeaponToHolder(Weapon weapon)
-    {
+    {        
         weapon.transform.SetParent(weaponHolder);
         ResetTransform(weapon.transform);
         weapon.gameObject.SetActive(true);  
+    }
+
+
+    public Weapon GetCurWeapon()
+    {
+        return curWeapon;
+    }
+
+
+    public void AddWeapon(Weapon weapon)
+    {
+        if (!weapons.Contains(weapon))
+        {
+            weapons.Add(weapon);
+            SetWeaponToInventory(weapon);
+
+            SwapWeaponTo(weapons.Count -1);            
+        }
     }
 
 
@@ -89,17 +89,17 @@ public class WeaponCollection : MonoBehaviour, IWeaponCollection
         Weapon weapon = GetWeaponByIndex(index);
 
         if (weapon != null)
-        {
+        {           
             if (curWeapon != null) 
                 SetWeaponToInventory(curWeapon);
 
-            if (weapon.weaponType != Weapon.Type.Base)
-            {
-                SetWeaponToHolder(weapon);
-            }
+
+            SetWeaponToHolder(weapon);            
 
             curWeapon = weapon;                
-        }      
+        }
+
+        WeaponChangedEvent?.Invoke(weapon);
     }
 
 
@@ -108,81 +108,6 @@ public class WeaponCollection : MonoBehaviour, IWeaponCollection
         trans.localPosition = Vector3.zero;
         trans.localRotation = Quaternion.identity;
     }
-
-    #endregion
-
-
-    #region Attack Points
-
-    private bool TryGetAttackPointFromWeapon(AttackCollider colliderType, out IAttackPoint attackPoint)
-    {
-        foreach (IAttackPoint point in curWeapon.AttackPoints)
-        {
-            if (point.GetColliderType() == colliderType)
-            {
-                attackPoint = point;
-                return true;
-            }
-        }
-
-        attackPoint = null;
-        return false;
-    }
-
-
-    private bool TryGetAttackPointFromBody(AttackCollider colliderType, out IAttackPoint attackPoint)
-    {
-        foreach (IAttackPoint point in bodyAttackPoints)
-        {
-            if (point.GetColliderType() == colliderType)
-            {
-                attackPoint = point;
-                return true;
-            }
-        }
-
-        attackPoint = null;
-        return false;
-    }
-
-
-    private bool FindAttackPointFrom(AttackCollider colliderType, out IAttackPoint attackPoint)
-    {
-        if (TryGetAttackPointFromWeapon(colliderType, out attackPoint))
-            return true;
-
-        if (TryGetAttackPointFromBody(colliderType, out attackPoint))
-            return true;
-
-        return false;
-    }
-
-
-    public void EnableAttackColliders(List<AttackCollider> colliderTypes, Action<IDamage> OnHitEvent)
-    {
-        foreach(AttackCollider colliderType in colliderTypes)
-        {
-            if (FindAttackPointFrom(colliderType, out IAttackPoint attackPoint))
-            {
-                attackPoint.RegisterToHitEvent(OnHitEvent);
-                attackPoint.EnableColliders();
-            }
-        }
-    }
-
-
-    public void DisableAttackColliders(List<AttackCollider> colliderTypes, Action<IDamage> OnHitEvent)
-    {
-        foreach (AttackCollider colliderType in colliderTypes)
-        {
-            if (FindAttackPointFrom(colliderType, out IAttackPoint attackPoint))
-            {
-                attackPoint.UnRegisterToHitEvent(OnHitEvent);
-                attackPoint.DisableColliders();
-            }
-        }
-    }
-
 
     #endregion
 }

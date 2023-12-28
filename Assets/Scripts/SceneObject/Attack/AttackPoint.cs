@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum AttackCollider
+public enum AttackColliderType
 {
     //Player
     PlayerRightFist, PlayerLeftFist, PlayerRightFoot, PlayerLeftFoot,
@@ -14,9 +14,10 @@ public enum AttackCollider
     Sword
 }
 
+[Serializable]
 public class AttackPoint : MonoBehaviour, IAttackPoint
 {
-    [SerializeField] private AttackCollider collderType;
+    [SerializeField] private AttackColliderType collderType;
     private Collider collider;
 
     private event Action<IDamage> colliderHitEvent;
@@ -30,7 +31,7 @@ public class AttackPoint : MonoBehaviour, IAttackPoint
     }
 
 
-    public AttackCollider GetColliderType()
+    public AttackColliderType GetColliderType()
     {
         return collderType;
     }

@@ -52,7 +52,7 @@ public class AnimationHandler : MonoBehaviour, IAnimator
 
     public void PlayIdleAnimation()
     {
-        if (sceneObj.isGrounded)
+        if (sceneObj.IsGrounded)
             PlayAnimation("BaseIdle");
         else
             PlayAnimation("BaseAirIdle");

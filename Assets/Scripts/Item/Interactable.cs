@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Collider))]
-public class Interactable : MonoBehaviour
+public abstract class Interactable : MonoBehaviour
 {
     private void OnTriggerEnter(Collider col)
     {
         if (col.TryGetComponent(out SceneObject sceneObj))
         {
-            sceneObj.interactionHandler.RegisterToInputEvent(InputReceived);
+            sceneObj.InteractionHandler.RegisterToInputEvent(InputReceived);
         }
     }
 
@@ -17,13 +17,10 @@ public class Interactable : MonoBehaviour
     {
         if (col.TryGetComponent(out SceneObject sceneObj))
         {
-            sceneObj.interactionHandler.UnregisterToInputEvent(InputReceived);                       
+            sceneObj.InteractionHandler.UnregisterToInputEvent(InputReceived);                       
         }
     }
 
 
-    protected virtual void InputReceived(SceneObject sceneObj)
-    {
-
-    }
+    protected abstract void InputReceived(SceneObject sceneObj);    
 }

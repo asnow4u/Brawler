@@ -21,14 +21,14 @@ public class RushDown : Enemy
 
         else
         {
-            animator.PlayIdleAnimation();
+            Animator.PlayIdleAnimation();
         }
     }
 
 
     protected override void Alert()
     {
-        animator.PlayAnimation("RushDownBaseAlert");
+        Animator.PlayAnimation("RushDownBaseAlert");
     }
 
     protected override void Attack()

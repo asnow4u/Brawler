@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e365b02dcde51004da1f1dcd92c6880e, type: 3}
   m_Name: PlayerBaseMove
   m_EditorClassIdentifier: 
+  Animation: {fileID: 7400000, guid: 7ecd47016ec470e408c81627beb32086, type: 2}
   Type: 0
   Triggers: []
   AccelerationX: 30

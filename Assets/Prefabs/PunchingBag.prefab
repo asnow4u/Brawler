@@ -163,24 +163,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c96b96b467519084aabff14c03aa4deb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rb: {fileID: 0}
-  isGrounded: 0
-  maxVelocity: 10
-  decelerationRate: 0
-  forceScaler: 0
-  damageTaken: 0
-  killZone: {fileID: 0}
   UniqueId: 
   ObjectType: 1
+  damageTaken: 0
+  rb: {fileID: 0}
+  maxVelocity: 10
+  isGrounded: 0
   inHitStun: 0
+  DecelerationRate: 2
   testForce: 0
   testDirection: {x: 0, y: 0}
-  headTransform: {fileID: 0}
+  headTransform: {fileID: 72317904369388355}
   aggroDistance: 5
   maxSightDistance: 10
   maxAngle: 30
   alertTimerDuration: 1.5
   lostTargetTimerDuration: 10
+  patrolSpots: []
+  patrolWaitDuration: 0
+  targetSpot: {x: 0, y: 0}
+  pathObject: {fileID: 0}
+  moveSpeed: 10
+  jumpVelocity: 10
 --- !u!1 &6065000322139306468
 GameObject:
   m_ObjectHideFlags: 0
