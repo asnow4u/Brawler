@@ -40,7 +40,6 @@ public class TerrainFactory : MonoBehaviour
 
     public void LoadEnvironment(GameObject terrainObj)
     {
-        //TODO: Load environmentObjects randomly around terrainObj
         int spawnNum = Random.Range(MinSpawn, MaxSpawn);
 
         MeshCollider collider = terrainObj.GetComponent<MeshCollider>();
@@ -48,8 +47,8 @@ public class TerrainFactory : MonoBehaviour
 
         for (int i = 0; i < spawnNum; i++)
         {
-            float randX = Random.Range(-bound.size.x/2, bound.size.x/2);
-            float randZ = Random.Range(-bound.size.z/2, bound.size.z/2);
+            float randX = Random.Range(bound.min.x, bound.max.x);
+            float randZ = Random.Range(bound.min.z, bound.max.z);
 
             Vector3 rayOrigin = new Vector3(randX, terrainObj.transform.position.y + 20, randZ);
 
@@ -67,9 +66,7 @@ public class TerrainFactory : MonoBehaviour
         float envHeight = heightBound.size.y / 2;
         float originDiff = EnvironmentObj.transform.position.y - heightBound.center.y;
         
-        Vector3 spawnPos = new Vector3(hit.point.x, hit.point.y + originDiff + envHeight, hit.point.z);
-        
-
+        Vector3 spawnPos = new Vector3(hit.point.x, hit.point.y + originDiff + envHeight, hit.point.z);       
 
         Instantiate(EnvironmentObj, spawnPos, Quaternion.identity);
     }
