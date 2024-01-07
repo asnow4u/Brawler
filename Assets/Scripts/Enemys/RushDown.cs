@@ -4,6 +4,14 @@ using UnityEngine;
 
 public class RushDown : Enemy
 {
+    protected override void Initialize()
+    {
+        base.Initialize();
+
+        pathFinder = gameObject.AddComponent<PlatformPathFinder>();
+    }
+
+
     protected override void Idle()
     {
         if (patrolSpots.Count > 0 && patrolTimer == 0 )  

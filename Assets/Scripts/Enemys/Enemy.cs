@@ -12,7 +12,7 @@ public abstract class Enemy : SceneObject
     protected enum EnemyState { Idle, Alert, Attack }
     protected EnemyState enemyState;
 
-    protected PlatformPathFinder pathFinder;
+    protected PathFinder pathFinder;
 
     [SerializeField] private Transform headTransform;
 
@@ -53,12 +53,6 @@ public abstract class Enemy : SceneObject
         ObjectType = SceneObjectType.Enemy;
 
         SetState(EnemyState.Idle);
-
-
-        //Test Path
-        pathFinder = new PlatformPathFinder(GetComponent<CapsuleCollider>());
-        path = pathFinder.FindPath(transform.position, pathObject.position, movementInputHandler.CurMovementCollection);
-        curPathIndex = 0;
 
         if (patrolSpots.Count > 0 )
         {
@@ -183,7 +177,6 @@ public abstract class Enemy : SceneObject
         PathUpdate();
 
 
-
         List<SceneObject> objectsInView = CheckView();
 
         //Set target to player or first object seen
@@ -234,40 +227,42 @@ public abstract class Enemy : SceneObject
 
     private void PathUpdate()
     {
-        if (path != null)
-        {
-            if (Vector3.Distance(transform.position, path[curPathIndex].pos) < GetComponent<CapsuleCollider>().radius * 2)
-            {
-                curPathIndex++;
+        //if (path != null)
+        //{
+        //    Debug.DrawLine(transform.position, path[curPathIndex].pos, Color.red);
+        //    if (Vector3.Distance(transform.position, path[curPathIndex].pos) < GetComponent<CapsuleCollider>().radius +0.01f)
+        //    {
+        //        curPathIndex++;
 
-                //Determine if at end of path
-                if (path.Count == curPathIndex)
-                {
-                    path = null;
-                    movementInputHandler.PerformMovement(Vector2.zero);
-                    return;
-                }
-            }
+        //        //Debug
+        //        if (path[curPathIndex - 1].TryGetTraversalPoint(path[curPathIndex], out TraversalPoint traversalPoint2))
+        //        {
+        //            Debug.Log("Next Waypoint: \n" + traversalPoint2.TraversalType.ToString());
+        //        }
 
-            //Determin if next waypoint exists
-            if (curPathIndex != path.Count - 1)
-            {
+        //        //Determine if at end of path
+        //        if (path.Count == curPathIndex)
+        //        {
+        //            path = null;
+        //            movementInputHandler.PerformMovement(Vector2.zero);
+        //            return;
+        //        }
+        //    }
 
-                //Determine how to traverse to next point
-                if (path[curPathIndex].TryGetTraversalPoint(path[curPathIndex +1], out TraversalPoint traversalPoint))
-                {
-                    if (traversalPoint.TraversalType == TraversalType.Move)
-                    {
-                        PathMove(traversalPoint);
-                    }       
+        //    //Determine how to traverse to next point
+        //    if (path[curPathIndex -1].TryGetTraversalPoint(path[curPathIndex], out TraversalPoint traversalPoint))
+        //    {
+        //        if (traversalPoint.TraversalType == TraversalType.Move)
+        //        {
+        //            PathMove(traversalPoint);
+        //        }       
 
-                    else if (traversalPoint.TraversalType == TraversalType.Jump)
-                    {
-                        PathJump((JumpTraversalPoint)traversalPoint); 
-                    }
-                }
-            }
-        }
+        //        else if (traversalPoint.TraversalType == TraversalType.Jump)
+        //        {
+        //            PathJump((JumpTraversalPoint)traversalPoint); 
+        //        }
+        //    }            
+        //}
     }
 
 
@@ -404,51 +399,51 @@ public abstract class Enemy : SceneObject
         Gizmos.DrawWireSphere(new Vector3(headTransform.position.x, headTransform.position.y - maxSightDistance * Mathf.Tan(Mathf.Deg2Rad * maxAngle) + 1, headTransform.position.z), 1);
 
 
-        if (pathFinder != null)
-        {
-            Bounds bounds = GetComponent<CapsuleCollider>().bounds;
+        //if (pathFinder != null)
+        //{
+        //    Bounds bounds = GetComponent<CapsuleCollider>().bounds;
 
-            //Draw Nodes
-            foreach (List<TerrainNodeFinder.Node> rowNodes in pathFinder.terrainFinder.TerrainNodes)
-            {
-                foreach (TerrainNodeFinder.Node node in rowNodes)
-                {
-                    if (node.HorizontalInsideTerrainCheck || node.VerticalInsideTerrainCheck)
-                        Gizmos.color = Color.black;
-                    else
-                        Gizmos.color = Color.red;
+        //    //Draw Nodes
+        //    foreach (List<TerrainNodeFinder.Node> rowNodes in pathFinder.terrainFinder.TerrainNodes)
+        //    {
+        //        foreach (TerrainNodeFinder.Node node in rowNodes)
+        //        {
+        //            if (node.InsideTerrain || node.VerticalInsideTerrainCheck)
+        //                Gizmos.color = Color.black;
+        //            else
+        //                Gizmos.color = Color.red;
 
-                    Gizmos.DrawCube(node.Pos, Vector3.one * 0.1f);
+        //            Gizmos.DrawCube(node.Pos, Vector3.one * 0.1f);
 
-                    if (node.UpHit.collider != null)
-                    {
-                        Gizmos.color = Color.cyan;
-                        Gizmos.DrawLine(node.Pos, node.Pos + Vector3.up * bounds.size.y);
-                    }
+        //            if (node.UpHit.collider != null)
+        //            {
+        //                Gizmos.color = Color.cyan;
+        //                Gizmos.DrawLine(node.Pos, node.Pos + Vector3.up * bounds.size.y);
+        //            }
 
-                    if (node.DownHit.collider != null)
-                    {
-                        Gizmos.color = Color.magenta;
-                        Gizmos.DrawLine(node.Pos, node.Pos - Vector3.up * bounds.size.y);
-                    }
+        //            if (node.DownHit.collider != null)
+        //            {
+        //                Gizmos.color = Color.magenta;
+        //                Gizmos.DrawLine(node.Pos, node.Pos - Vector3.up * bounds.size.y);
+        //            }
 
-                    if (node.RightHit.collider != null)
-                    {
-                        Gizmos.color = Color.yellow;
-                        Gizmos.DrawLine(node.Pos, node.Pos + Vector3.right * bounds.size.x);
-                    }
+        //            if (node.RightHit.collider != null)
+        //            {
+        //                Gizmos.color = Color.yellow;
+        //                Gizmos.DrawLine(node.Pos, node.Pos + Vector3.right * bounds.size.x);
+        //            }
 
-                    if (node.LeftHit.collider != null)
-                    {
-                        Gizmos.color = Color.yellow;
-                        Gizmos.DrawLine(node.Pos, node.Pos - Vector3.right * bounds.size.x);
-                    }
-                }
-            }
+        //            if (node.LeftHit.collider != null)
+        //            {
+        //                Gizmos.color = Color.yellow;
+        //                Gizmos.DrawLine(node.Pos, node.Pos - Vector3.right * bounds.size.x);
+        //            }
+        //        }
+        //    }
 
-            //Draw waypoint connections
-            DrawPath();                        
-        }
+        //    //Draw waypoint connections
+        //    DrawPath();                        
+        //}
     }
 
 
@@ -512,7 +507,13 @@ public abstract class Enemy : SceneObject
     private void DrawJumpTrjectory(Waypoint startPoint, JumpTraversalPoint jumpPoint)
     {
         float t = 0f;
-        float maxTime = (jumpPoint.Destination.pos.x - startPoint.pos.x) / jumpPoint.JumpVelocity.x;       
+
+        float jumpTime = -jumpPoint.JumpVelocity.y / Physics.gravity.y;
+
+        float jumpPeak = startPoint.pos.y + ((jumpPoint.JumpVelocity.y * jumpTime) + (0.5f * Physics.gravity.y * jumpTime * jumpTime));
+        float landTime = Mathf.Sqrt(Mathf.Abs((jumpPeak - jumpPoint.Destination.pos.y) / (0.5f * Physics.gravity.y)));
+
+        float maxTime = jumpTime + landTime;
 
         float prevX = startPoint.pos.x;
         float prevY = startPoint.pos.y;
@@ -521,12 +522,14 @@ public abstract class Enemy : SceneObject
 
         while (t < 1) 
         {
-            t += 0.1f; //Increments of 10
+            t += Time.fixedDeltaTime;
 
             float time = Mathf.Lerp(0, maxTime, t);
 
             nextX = startPoint.pos.x + jumpPoint.JumpVelocity.x * time;
-            nextY = startPoint.pos.y + jumpPoint.JumpVelocity.y * time + (Physics.gravity.y * time * time) / 2;
+            nextX = startPoint.pos.x + 10 * time;
+            nextY = startPoint.pos.y + (jumpPoint.JumpVelocity.y * time + (0.5f * Physics.gravity.y * time * time));
+            Debug.Log((jumpPoint.JumpVelocity.y * time + (0.5f * Physics.gravity.y * time * time)));
 
             Gizmos.DrawLine(new Vector3(prevX, prevY, transform.position.z), new Vector3(nextX, nextY, transform.position.z));            
 

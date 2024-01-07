@@ -12,6 +12,7 @@ public class CameraController : MonoBehaviour, ICameraTarget
 
     private CameraState cameraState;
 
+
     private void Start()
     {
         if (cameraTarget == null)

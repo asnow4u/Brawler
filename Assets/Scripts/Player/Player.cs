@@ -64,7 +64,7 @@ public class Player : SceneObject
 
     private void MovementCanceled(InputAction.CallbackContext obj)
     {
-        movementInputHandler.PerformMovement(new Vector2(0, 0));
+        movementInputHandler.PerformMovement(Vector2.zero);
     }
 
     private void JumpInput(InputAction.CallbackContext obj)

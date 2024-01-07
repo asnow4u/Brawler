@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 9096773546309273401}
   - component: {fileID: 3118143016480990640}
+  - component: {fileID: 78117486881367130}
   m_Layer: 0
   m_Name: TerrainFactory
   m_TagString: Untagged
@@ -44,3 +45,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5357f2d67be3a04f9870f3210e5afca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  envObjects:
+  - EnvironmentObj: {fileID: 100000, guid: a0bd7523e1445f147886c60f88830141, type: 3}
+    MinSpawn: 2000
+    MaxSpawn: 4000
+  - EnvironmentObj: {fileID: 100000, guid: 7d6ba04ff2b713248b1fa30cda241ecc, type: 3}
+    MinSpawn: 1000
+    MaxSpawn: 2000
+  TerrainObj: {fileID: 0}
+  DebugStart: 1
+--- !u!114 &78117486881367130
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 534560539744220859}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ade623a1531e3e47a75ac7e2a0a99bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  LevelMesh: {fileID: 0}
+  XViewBuffer: 10
+  YViewBuffer: 10
+  ScaleFactor: 1

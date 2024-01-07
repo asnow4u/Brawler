@@ -1,193 +1,182 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.InputSystem.HID;
 
-public class TerrainNodeFinder
+public class TerrainNodeFinder : MonoBehaviour
 {
-    public struct Node
-    {
-        public Vector3 Pos;
-        public bool HorizontalInsideTerrainCheck;
-        public bool VerticalInsideTerrainCheck;
-        public RaycastHit UpHit;
-        public RaycastHit DownHit;
-        public RaycastHit LeftHit;
-        public RaycastHit RightHit;
+    public static TerrainNodeFinder Instance;
+    public List<List<TerrainNode>> TerrainNodes = new List<List<TerrainNode>>();
 
-        public Node(Vector3 pos)
+    [SerializeField] private MeshCollider LevelMesh;
+    [SerializeField] private float XViewBuffer;
+    [SerializeField] private float YViewBuffer;
+    [SerializeField] private float ScaleFactor;
+
+
+    private void Start()
+    {
+        if (Instance == null)
+            Instance = this;
+        else
+            Destroy(Instance);
+
+        InitializeMapTerrain();
+    }
+
+
+    #region Getter
+
+    public bool TryGetClosetNodeTo(Vector3 pos, out TerrainNode node)
+    {
+        if (TerrainNodes.Count > 0)
         {
-            this.Pos = pos;
-            this.HorizontalInsideTerrainCheck = false;
-            this.VerticalInsideTerrainCheck = false;
-            this.UpHit = new RaycastHit();
-            this.DownHit = new RaycastHit();
-            this.LeftHit = new RaycastHit();
-            this.RightHit = new RaycastHit();
+            int column = Mathf.RoundToInt((pos.x - transform.position.x) / ScaleFactor) + ((TerrainNodes.Count - 1) / 2);
+            
+            if (TerrainNodes.Count > column)
+            {
+                int row = Mathf.RoundToInt((pos.y - transform.position.y) / ScaleFactor) + ((TerrainNodes[column].Count -1) / 2);
+                if (TerrainNodes[column].Count > row)
+                {
+                    node = TerrainNodes[column][row];
+                    return true;
+                }
+            }
         }
+
+        node = null;
+        return false;
     }
 
-    public List<List<Node>> TerrainNodes;
 
-
-    public TerrainNodeFinder()
+    //TODO:
+    public bool TryGetNodesInRegion(Vector3 pos, float height, float width, out List<List<TerrainNode>> nodes)
     {
-        TerrainNodes = new List<List<Node>>();
+        nodes = null;
+        return false;
     }
 
 
-    /// <summary>
-    /// Map out the terrain based on a given start point and target point
-    /// The nodes will be spaced based upon the bounds provided
-    /// Nodes will both be created vertacally as well as horizontally (2D)
-    /// </summary>
-    /// <param name="startPos"></param>
-    /// <param name="targetPos"></param>
-    /// <param name="bounds"></param>
-    /// <param name="numRows"></param>
-    /// <param name="numColumns"></param>
-    /// <param name="isRight"></param>
-    /// <param name="isUp"></param>
-    public void MapTerrain(Vector3 startPos, Vector3 targetPos, float minYView, Bounds bounds)
+    //TODO:
+    public bool TryGetNodesInCameraView(out List<List<TerrainNode>> nodes)
+    {
+        nodes = null;
+        return false;
+    }
+
+    #endregion 
+
+
+    #region Terrain Mapping
+
+    private Vector3 CaluclateNodePos(int curColumn, int curRow)
+    {
+        return transform.position + new Vector3(curColumn * ScaleFactor, curRow * ScaleFactor, 0);
+    }
+
+
+    [ContextMenu("Map Terrain")]
+    private void InitializeMapTerrain()
     {
         TerrainNodes.Clear();
 
-        bool isRight = (targetPos.x - startPos.x) > 0;
-        bool isUp = (targetPos.y - startPos.y) > -bounds.size.y; //Temp: Eventally y should extend in both up and down directions
-
-        //Move to starting point
-        Vector3 curPos = startPos + Vector3.right * bounds.size.x * (isRight ? 1 : -1);
-
-        //Columns
-        int columnCount = 0;
-        int numColumns = Mathf.Abs(Mathf.CeilToInt((targetPos.x - curPos.x) / bounds.size.x));
-
-        //Rows
-        float yDist = Mathf.Max((targetPos.y - curPos.y), minYView);
-        int numRows = Mathf.Abs(Mathf.CeilToInt(yDist / bounds.size.y));
-
-
-        while (columnCount <= numColumns)
+        if (LevelMesh != null)
         {
-            List<Node> rowNodes = MapTerrainRows(curPos, bounds, numRows, isRight, isUp);
+            float height = LevelMesh.bounds.size.y;
+            float width = LevelMesh.bounds.size.x;
 
-            //Add to List
-            TerrainNodes.Add(rowNodes);
+            //Apply Buffer
+            height += 2 * YViewBuffer;
+            width += 2 * XViewBuffer;
 
-            //Update pos
-            curPos += Vector3.right * bounds.size.x * (isRight ? 1 : -1);
+            //Columns
+            int numColumns = Mathf.CeilToInt(width / ScaleFactor);
 
-            //Increment
-            columnCount++;
+            //Rows        
+            int numRows = Mathf.CeilToInt(height / ScaleFactor);
+
+            int curColumn = -numColumns / 2;
+
+            while (curColumn <= numColumns / 2)
+            {
+                List<TerrainNode> rowNodes = MapTerrainRows(numRows, curColumn);
+
+                //Add to List
+                TerrainNodes.Add(rowNodes);
+
+                //Increment
+                curColumn++;
+            }
         }
     }
 
-    /// <summary>
-    /// Map out each node within a given column based on the number of rows calculated before
-    /// If a node from the previous column but same row encountered a wall, skip calculating due to being inside an object
-    /// </summary>
-    /// <param name="startPoint"></param>
-    /// <param name="bound"></param>
-    /// <param name="numRows"></param>
-    /// <param name="isRight"></param>
-    /// <param name="isUp"></param>
-    /// <returns></returns>
-    private List<Node> MapTerrainRows(Vector3 startPoint, Bounds bound, int numRows, bool isRight, bool isUp)
+
+    private List<TerrainNode> MapTerrainRows(int numRows, int curColumn)
     {
-        int rowCount = 0;
-        Vector3 curPos = startPoint;
+        List<TerrainNode> rowNodes = new List<TerrainNode>();
 
-        List<Node> rowNodes = new List<Node>();
+        int curRow = -numRows / 2;
 
-        while (rowCount <= numRows)
+        while (curRow <= numRows / 2)
         {
             //Create new node
-            Node node = new Node(curPos);
+            TerrainNode node = new TerrainNode(CaluclateNodePos(curColumn, curRow));
 
+            //If previous column exists, check if previous row node was inside terrain and check if cur row node is still inside terrain
             if (TerrainNodes.Count > 0)
             {
-                List<Node> lastColumnNodes = TerrainNodes.Last();
-                
-                if (InsideHorizontalTerrainCheck(lastColumnNodes[rowCount], curPos, isRight, bound.size.x))
-                {
-                    node.HorizontalInsideTerrainCheck = true;
-                }
-               
-                //else if (lastColumnNodes[rowCount].VerticalInsideTerrainCheck)
-                //{
-                //    //TODO: Later
-                //}
+                List<TerrainNode> lastColumnNodes = TerrainNodes.Last();
 
-                if (!node.HorizontalInsideTerrainCheck && !node.VerticalInsideTerrainCheck)
+                if (InsideHorizontalTerrainCheck(lastColumnNodes[curRow + numRows / 2], node))
                 {
-                    GetRaycastDataForNode(ref node, curPos, bound.size.x, bound.size.y, isRight);                    
+                    node.InsideTerrain = true;
+                }
+
+                //TODO: InsideVerticalTerrainCheck
+
+                if (!node.InsideTerrain)
+                {
+                    node.PerformRaycastCheck(ScaleFactor);
                 }
             }
 
             else
             {
-                GetRaycastDataForNode(ref node, curPos, bound.size.x, bound.size.y, isRight);
+                node.PerformRaycastCheck(ScaleFactor);                
             }
 
             //Add to List
             rowNodes.Add(node);
 
-            //Update pos
-            curPos += Vector3.up * bound.size.y * (isUp ? 1 : -1);
-
             //Increment
-            rowCount++;
+            curRow++;
         }
 
         return rowNodes;
     }
 
 
-    private void GetRaycastDataForNode(ref Node node, Vector3 curPos, float distanceX, float distanceY, bool isRight)
-    {
-        RaycastHit hit;
-
-        //UpCast
-        if (Physics.Raycast(curPos, Vector3.up, out hit, distanceY, LayerMask.GetMask("Environment")))
+    /// <summary>
+    /// Determine if curNode is also inside the terrain
+    /// Only need to check if previous columns node on the same row was inside the terrain or had collision to the terrain in the direction of the curNode
+    /// CurNode will check to see if in the oposite dir it collides with the terrain to see if its outside 
+    /// </summary>
+    /// <param name="preColumnNode"></param>
+    /// <param name="curNode"></param>
+    /// <returns></returns>
+    private bool InsideHorizontalTerrainCheck(TerrainNode preColumnNode, TerrainNode curNode)
+    {        
+        if (preColumnNode.InsideTerrain 
+            || (preColumnNode.Pos.x < curNode.Pos.x && preColumnNode.RightCollision != null) //Previous Column node hit raycast to the right
+            || (preColumnNode.Pos.x > curNode.Pos.x && preColumnNode.LeftCollision != null)) //Previous Column node hit raycast to the left                                                                                              
         {
-            node.UpHit = hit;
-        }
+            //Determine direction of raycast (left or right)
+            Vector3 dir = Vector3.right;
+            if (preColumnNode.Pos.x < curNode.Pos.x)
+                dir *= -1;
 
-        //DownCast
-        if (Physics.Raycast(curPos, Vector3.down, out hit, distanceY, LayerMask.GetMask("Environment")))
-        {
-            node.DownHit = hit;
-        }
-
-
-        if (isRight)
-        {
-            //RightCast
-            if (Physics.Raycast(curPos, Vector3.right, out hit, distanceX, LayerMask.GetMask("Environment")))
-            {
-                node.RightHit = hit;                
-            }
-        }
-
-        else
-        {
-            //LeftCast
-            if (Physics.Raycast(curPos, Vector3.left, out hit, distanceX, LayerMask.GetMask("Environment")))
-            {
-                node.DownHit = hit;
-            }
-        }
-    }
-
-
-    private bool InsideHorizontalTerrainCheck(Node preRowNode, Vector3 curPos, bool isRight, float dist)
-    {
-        Vector3 dir = Vector3.right * (isRight ? -1 : 1);
-
-        if (preRowNode.HorizontalInsideTerrainCheck || ((isRight) ? preRowNode.RightHit.collider != null : preRowNode.LeftHit.collider != null))
-        {
-            if (Physics.Raycast(curPos, dir, dist, LayerMask.GetMask("Environment")))
+            if (Physics.Raycast(curNode.Pos, dir, ScaleFactor, LayerMask.GetMask("Environment")))
                 return false;
 
             else
@@ -195,5 +184,62 @@ public class TerrainNodeFinder
         }
 
         return false;
+    }
+
+    #endregion
+
+
+    private void OnDrawGizmos()
+    {
+        if (TerrainNodes.Count > 0)
+        {
+            //Draw Nodes
+            foreach (List<TerrainNode> rowNodes in TerrainNodes)
+            {
+                foreach (TerrainNode node in rowNodes)
+                {
+                    if (node.InsideTerrain)
+                        Gizmos.color = Color.black;
+                    else
+                        Gizmos.color = Color.red;
+
+                    Gizmos.DrawCube(node.Pos, Vector3.one * 0.1f);
+
+                    //Draw Collisions
+                    if (node.UpCollision != null)
+                    {
+                        Gizmos.color = Color.yellow;
+                        Gizmos.DrawLine(node.Pos, node.Pos + Vector3.up * ScaleFactor);
+                    }
+
+                    if (node.DownCollision != null)
+                    {
+                        Gizmos.color = Color.yellow;
+                        Gizmos.DrawLine(node.Pos, node.Pos - Vector3.up * ScaleFactor);
+                        
+                        Gizmos.color = Color.Lerp(Color.red, Color.green, node.DownCollision.SlopeGradiant / 90);
+                        Gizmos.DrawSphere(node.DownCollision.CollisionPoint, 0.1f);
+                    }
+
+                    if (node.RightCollision != null)
+                    {
+                        Gizmos.color = Color.yellow;
+                        Gizmos.DrawLine(node.Pos, node.Pos + Vector3.right * ScaleFactor);
+
+                        Gizmos.color = Color.Lerp(Color.red, Color.green, node.RightCollision.SlopeGradiant / 90);
+                        Gizmos.DrawSphere(node.RightCollision.CollisionPoint, 0.1f);
+                    }
+
+                    if (node.LeftCollision != null)
+                    {
+                        Gizmos.color = Color.yellow;
+                        Gizmos.DrawLine(node.Pos, node.Pos - Vector3.right * ScaleFactor);
+
+                        Gizmos.color = Color.Lerp(Color.red, Color.green, node.LeftCollision.SlopeGradiant / 90);
+                        Gizmos.DrawSphere(node.LeftCollision.CollisionPoint, 0.1f);
+                    }
+                }
+            }
+        }
     }
 }

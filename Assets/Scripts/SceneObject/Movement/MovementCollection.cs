@@ -32,7 +32,7 @@ public class MovementCollection
         {
             if (move.Type == MovementType.Move)
             {
-                return ((MoveData)move).AccelerationX;
+                return ((MoveData)move).XVelocityAcceleration;
             }
         }
 

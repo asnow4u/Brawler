@@ -8,12 +8,15 @@ using UnityEngine.InputSystem.HID;
 using static UnityEditor.PlayerSettings;
 using static Waypoint;
 
-public class PlatformPathFinder
+public class PlatformPathFinder : PathFinder
 {
     private CapsuleCollider objCollider;
 
+    //TODO: Save the collection instead
     private float xVelocityLimit;
+    private float xAirVelocityLimit;
     private float yVelocityLimit;
+    private MoveData moveData;
 
     //TODO: Make Private
     public TerrainNodeFinder terrainFinder;
@@ -38,16 +41,17 @@ public class PlatformPathFinder
         if (curMovementCollection.TryGetMovementByType(MovementType.Move, out MovementData moveData) &&
             curMovementCollection.TryGetMovementByType(MovementType.Jump, out MovementData jumpData))
         {
-
-            this.xVelocityLimit = ((MoveData)moveData).AccelerationX;
+            this.moveData = (MoveData)moveData;
+            this.xVelocityLimit = ((MoveData)moveData).XVelocityAcceleration;
+            this.xAirVelocityLimit = ((MoveData)moveData).XAirVelocityAcceleration;
             this.yVelocityLimit = ((JumpData)jumpData).JumpVelocity;
 
             //Determine maxJump height        
             float maxJumpHeight = CalculatePeakHeight(startPos.y, ((JumpData)jumpData).JumpVelocity);
 
             //Map out the terrain
-            terrainFinder = new TerrainNodeFinder();
-            terrainFinder.MapTerrain(startPos, targetPos, maxJumpHeight, objCollider.bounds);
+            //terrainFinder = new TerrainNodeFinder();
+            //terrainFinder.MapTerrain(startPos, targetPos, maxJumpHeight, objCollider.bounds);
 
             //Connect possible waypoints
             rootWaypoint = MapConnections(startPos);
@@ -78,11 +82,11 @@ public class PlatformPathFinder
             //Loop through rows
             for (int j = 0; j < terrainFinder.TerrainNodes[i].Count; j++)
             {
-                TerrainNodeFinder.Node node = terrainFinder.TerrainNodes[i][j];
+                TerrainNode node = terrainFinder.TerrainNodes[i][j];
 
-                if (node.DownHit.collider != null)
+                if (node.DownCollision != null)
                 {
-                    Waypoint waypoint = new Waypoint(new Vector3(node.DownHit.point.x, node.DownHit.point.y + objCollider.height / 2 + objCollider.radius), i, j);
+                    Waypoint waypoint = new Waypoint(new Vector3(node.DownCollision.CollisionPoint.x, node.DownCollision.CollisionPoint.y + objCollider.height / 2 + objCollider.radius), i, j);
 
                     EstablishConnectionsTo(waypoint);
 
@@ -151,7 +155,7 @@ public class PlatformPathFinder
             //Upward Jump Connection
             else if (prevWaypoint.Row < waypoint.Row)
             {
-                if (DetermineJumpTrajectory(prevWaypoint.pos, waypoint.pos, xVelocityLimit, yVelocityLimit, out Vector2 jumpVelocity))
+                if (DetermineJumpTrajectory(prevWaypoint.pos, waypoint.pos, out Vector2 jumpVelocity))
                 {
                     prevWaypoint.TraversalPoints.Add(new JumpTraversalPoint(waypoint, TraversalType.Jump, jumpVelocity));
                 }
@@ -160,7 +164,7 @@ public class PlatformPathFinder
             //Downward Jump Connection
             else if (prevWaypoint.Row > waypoint.Row)
             {
-                if (DetermineJumpTrajectory(prevWaypoint.pos, waypoint.pos, xVelocityLimit, yVelocityLimit, out Vector2 jumpVelocity))
+                if (DetermineJumpTrajectory(prevWaypoint.pos, waypoint.pos, out Vector2 jumpVelocity))
                 {
                     prevWaypoint.TraversalPoints.Add(new JumpTraversalPoint(waypoint, TraversalType.Jump, jumpVelocity));
 
@@ -205,13 +209,13 @@ public class PlatformPathFinder
     /// V = V0 + G(T)
     /// (Y0 - Y) = V0(T) + 1/2 * G * T^2
     /// </summary>
-    private bool DetermineJumpTrajectory(Vector3 startPos, Vector3 targetPos, float maxXVelocity, float maxYVelocity, out Vector2 jumpVelocity)
+    private bool DetermineJumpTrajectory(Vector3 startPos, Vector3 targetPos, out Vector2 jumpVelocity)
     {
         //Determine jump height capability and target peak
+        float maxJumpHeight = CalculatePeakHeight(startPos.y, yVelocityLimit);
         float jumpPeak = Mathf.Max(startPos.y + objCollider.bounds.size.y, targetPos.y + objCollider.bounds.size.y);
-        float maxJumpHeight = CalculatePeakHeight(startPos.y, maxYVelocity);
 
-        //Determine if jump is possible
+        //Determine if jump height is possible
         if (maxJumpHeight > jumpPeak)
         {
             //Calculate yVelocity to reach jumpPeak
@@ -221,22 +225,45 @@ public class PlatformPathFinder
             //Calculate the time it takes to peak and then land on target
             float jumpTime = CalculateJumpTime(startPos.y, targetPos.y, jumpYVelocity);
 
-            //Calculate how much xVelocity is needed
-            //V = D / T
-            float jumpXVelocity = (targetPos.x - startPos.x) / jumpTime;
+            Debug.Log("Start: " + startPos.x + " Target: " + targetPos.x + "\nVelocity: " + jumpYVelocity + "\nTime: " + jumpTime);
 
-            if(jumpXVelocity > maxXVelocity) 
+            //Determine distance of jump
+
+            //Calculate how long acceleration will apply till cap is reached
+            //V = V0 + A * T => T = (V - V0) / A | Note: V0 will start at 0
+            //float accelerationTime = moveData.XVelocityLimit / moveData.XAirVelocityAcceleration;
+
+            //Calculate distance traveled while accelerating
+            //V^2 = V0^2 + 2 * A * D => (V^2 - V0^20) / (2 * A) | Note: V0 will start at 0
+            //float accelerationDist = (moveData.XVelocityLimit * moveData.XVelocityLimit) / (2 * moveData.XAirVelocityAcceleration);
+
+            //float dist = accelerationDist + (moveData.XVelocityLimit * (jumpTime - accelerationTime));
+            float dist = moveData.XVelocityLimit * jumpTime;
+                                             
+            
+            //Determin if jump distance is possible
+            if (dist > Mathf.Abs(targetPos.x - startPos.x)) 
             {
-                jumpVelocity = Vector2.zero;
-                return false;
-            }
+                
+                //TODO: Calculate JumpxVelocity for jump
+                //NOTE: Currently the enemy is traveling at their max limit.
+                //What we set for the x jumpVelocity is sending the acceleration that should be applied. 
+                //What needs to happen is we need to determine what deceleration we need to apply 
+                //Need to implement drag based on rb
+                //This might also need to be calculated just before the jump to have all the accurate data (moveSpeed and rb)
+                //Probably need to increase threshold of CheckJumpTrajectory
 
-            jumpVelocity = new Vector2(jumpXVelocity, jumpYVelocity);
+                float jumpXVelocity = (targetPos.x - startPos.x) / jumpTime;
 
-            //Check for obsticals
-            if (CheckJumpTrajectory(startPos, targetPos, jumpVelocity))
-            {
-                return true;
+                //Create jump Velocity
+                jumpVelocity = new Vector2(jumpXVelocity, jumpYVelocity);
+
+                //Check for obsticals
+                if (CheckJumpTrajectory(startPos, targetPos, jumpVelocity))
+                {
+                    return true;
+                }
+            
             }
         }
 
@@ -267,7 +294,7 @@ public class PlatformPathFinder
         float peakPosY = CalculatePeakHeight(startPos.y, jumpVelocity.y);
 
         //Calculate amount of time to land and Remove time based on objBounds
-        float landTime = CalculateTimeToTargetFromPeak(peakPosY, targetPos.y);
+        float landTime = CalculateTimeToLandFromPeak(peakPosY, targetPos.y);
 
         //Calculate peak X pos
         //V = D/T => D = VT
@@ -292,7 +319,7 @@ public class PlatformPathFinder
     {
         float peakTime = CalculateTimeToPeak(yVelocity);
         float peakHeight = CalculatePeakHeight(startPos, yVelocity);
-        float landTime = CalculateTimeToTargetFromPeak(peakHeight, endPos);
+        float landTime = CalculateTimeToLandFromPeak(peakHeight, endPos);
 
         return peakTime + landTime;
     }
@@ -327,7 +354,7 @@ public class PlatformPathFinder
     /// <param name="startPos"></param>
     /// <param name="endPos"></param>
     /// <returns></returns>
-    private float CalculateTimeToTargetFromPeak(float startPos, float endPos)
+    private float CalculateTimeToLandFromPeak(float startPos, float endPos)
     {
         //Calculate the time it takes to land from peak
         //(Y0 - Y) = V0(T) + 1/2 * G * T^2 => T = Sqrt(2(Y0 - Y) / G)

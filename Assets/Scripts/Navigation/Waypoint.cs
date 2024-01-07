@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public enum TraversalType { Move, Jump, Land }
-
+[Serializable]
 public class TraversalPoint
 {
     public Waypoint Destination;
@@ -17,7 +17,7 @@ public class TraversalPoint
     }
 }
 
-
+[Serializable]
 public class JumpTraversalPoint : TraversalPoint
 {
     public Vector2 JumpVelocity;
@@ -29,6 +29,7 @@ public class JumpTraversalPoint : TraversalPoint
 }
 
 
+[Serializable]
 public class Waypoint
 {
     public Vector2 pos;
@@ -49,9 +50,7 @@ public class Waypoint
     {
         foreach (TraversalPoint point in TraversalPoints)
         {
-            Waypoint waypoint = point.Destination;
-
-            if (waypoint.Column == destination.Column && waypoint.Row == destination.Row)
+            if (point.Destination.Column == destination.Column && point.Destination.Row == destination.Row)
             {
                 traversalPoint = point;
                 return true;

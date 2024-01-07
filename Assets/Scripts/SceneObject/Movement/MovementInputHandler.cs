@@ -31,7 +31,6 @@ public class MovementInputHandler : MonoBehaviour
     private SceneObject sceneObj;
     private Rigidbody rb { get { return sceneObj.rb; } }
     private bool isGrounded { get { return sceneObj.IsGrounded; } }
-    private float maxVelocityX { get { return sceneObj.MaxVelocity; } }
     private bool isFacingRightDir { get { return sceneObj.IsFacingRightDirection(); } }
     private IAnimator animator { get { return sceneObj.Animator; } }
     private IActionState stateHandler { get { return sceneObj.StateHandler; } }
@@ -124,16 +123,16 @@ public class MovementInputHandler : MonoBehaviour
     /// Input value ranges between (-1, 1) 
     /// Input Value determines how much of the curCollection moveSpeed should be applied
     /// </summary>
-    /// <param name="inputValue"></param>
-    public void PerformMovement(Vector2 inputValue)
-    {
+    /// <param name="moveInfluence"></param>
+    public void PerformMovement(Vector2 moveInfluence)
+    {       
         if (CurMovementCollection.TryGetMovementByType(MovementType.Move, out MovementData movement))
         {
             if (stateHandler.ChangeState(moveState))
             {
-                inputValue.Normalize();
-                horizontalInfluence = inputValue.x;
-                verticalInfluence = inputValue.y;
+                moveInfluence.Normalize();
+                horizontalInfluence = Mathf.Clamp(moveInfluence.x, -1, 1);
+                verticalInfluence = Mathf.Clamp(moveInfluence.y, -1, 1);
                 moveData = (MoveData)movement;                   
             }
         }                           
@@ -144,16 +143,19 @@ public class MovementInputHandler : MonoBehaviour
     /// Vertical jump movement based on input value
     /// Input value ranges between (0, 1) 
     /// </summary>
-    /// <param name="inputValue"></param>
-    public void PerformJump(float inputValue)
+    /// <param name="jumpInfluence"></param>
+    public void PerformJump(float jumpInfluence)
     {
+        Debug.Log("Perform Jump\n Influence " + jumpInfluence + "\nPos: " + transform.position.x + "\nVelocity: " + rb.velocity.x + "\nTime: " + Time.time);
+        jumpInfluence = Mathf.Clamp01(jumpInfluence);
+
         if (isGrounded)
         {
             if (CurMovementCollection.TryGetMovementByType(MovementType.Jump, out MovementData jump))
             {
                 if (stateHandler.ChangeState(moveState))
                 {
-                    JumpAction((JumpData)jump, inputValue);
+                    JumpAction((JumpData)jump, jumpInfluence);
                 }
             }
         }
@@ -164,7 +166,7 @@ public class MovementInputHandler : MonoBehaviour
             {
                 if (stateHandler.ChangeState(moveState))
                 {
-                    AirJumpAction((AirJumpData)airJump, inputValue);
+                    AirJumpAction((AirJumpData)airJump, jumpInfluence);
                 }
             }
         }        
@@ -201,6 +203,8 @@ public class MovementInputHandler : MonoBehaviour
     //TODO: Will work out later
     private void PerformLand()
     {
+        Debug.Log("Land: \nPos: " + transform.position.x + "\nVelocity: " + rb.velocity.x + "\nTime: " + Time.time);
+
         curMoveState = MovementType.Move;
         numJumpsPerformed = 0;
 
@@ -259,16 +263,19 @@ public class MovementInputHandler : MonoBehaviour
         {
             PlayMoveAnimation(moveData.Type);
             
-            if (rb.velocity.x < maxVelocityX && rb.velocity.x > -maxVelocityX)
-            {
-                rb.velocity += transform.right * Mathf.Abs(horizontalInfluence) * moveData.AccelerationX * Time.fixedDeltaTime;
-            }
+            rb.velocity += transform.right * Mathf.Abs(horizontalInfluence) * moveData.XVelocityAcceleration * Time.fixedDeltaTime;
+
+            if (rb.velocity.x > moveData.XVelocityLimit)
+                rb.velocity = new Vector3(moveData.XVelocityLimit, rb.velocity.y);
+            
+            if (rb.velocity.x < -moveData.XVelocityLimit)
+                rb.velocity = new Vector3(-moveData.XVelocityLimit, rb.velocity.y);
         }
 
         //Decelerate
         else if (Mathf.Abs(rb.velocity.x) > 0)
         {
-            rb.velocity -= transform.right * moveData.DecelerationX * Time.fixedDeltaTime;
+            rb.velocity -= transform.right * moveData.XVelocityDeceleration * Time.fixedDeltaTime;
 
             //Check for stopping 
             if (isFacingRightDir && rb.velocity.x < 0f)
@@ -286,22 +293,26 @@ public class MovementInputHandler : MonoBehaviour
             }
         }
 
-        animator.SetFloatPerameter("Velocity", Mathf.Abs(rb.velocity.x) / maxVelocityX);
-        
+        animator.SetFloatPerameter("Velocity", moveData != null ? Mathf.Abs(rb.velocity.x) / moveData.XVelocityLimit : 0);                
     }
 
 
     private void UpdateAirMovement()
     {        
         //Horizontal Movement
-        if (rb.velocity.x < maxVelocityX && rb.velocity.x > -maxVelocityX)
-        {
-            if (isFacingRightDir)
-                rb.velocity += transform.right * horizontalInfluence * moveData.AirAccelerationX * Time.fixedDeltaTime;
+        if (isFacingRightDir)
+            rb.velocity += transform.right * horizontalInfluence * moveData.XAirVelocityAcceleration * Time.fixedDeltaTime;
 
-            else
-                rb.velocity -= transform.right * horizontalInfluence * moveData.AirAccelerationX * Time.fixedDeltaTime;
-        }
+        else
+            rb.velocity -= transform.right * horizontalInfluence * moveData.XAirVelocityAcceleration * Time.fixedDeltaTime;
+
+
+        if (rb.velocity.x > moveData.XVelocityLimit)
+            rb.velocity = new Vector3(moveData.XVelocityLimit, rb.velocity.y);
+
+        if (rb.velocity.x < -moveData.XVelocityLimit)
+            rb.velocity = new Vector3(-moveData.XVelocityLimit, rb.velocity.y);
+
 
         //Vertical Movement
         if (verticalInfluence < 0f)
