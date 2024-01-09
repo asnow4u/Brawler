@@ -17,10 +17,16 @@ public class TerrainNode
     {
         this.Pos = pos;
 
+        ResetRaycasts();
+    }
+
+
+    public void ResetRaycasts()
+    {
         UpCollision = null;
         DownCollision = null;
         RightCollision = null;
-        LeftCollision = null;        
+        LeftCollision = null;
     }
 
 
@@ -47,5 +53,4 @@ public class TerrainNode
         if (!LeftCollision.AttemptRaycast(Pos, Vector3.left, castDist))
             LeftCollision = null;
     }
-
 }

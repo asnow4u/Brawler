@@ -33,8 +33,6 @@ public class TerrainCollisionNode
             if (SlopeGradiant > 90)
                 SlopeGradiant = 180 - SlopeGradiant;
 
-            Debug.Log(SlopeGradiant);
-
             return true;
         }
 

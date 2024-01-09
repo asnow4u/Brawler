@@ -75,27 +75,27 @@ public class PlatformPathFinder : PathFinder
         waypoints.Add(rootWaypoint);
 
         //Loop through columns
-        for (int i = 0; i < terrainFinder.TerrainNodes.Count; i++)
-        {
-            List<Waypoint> columnWaypoints = new List<Waypoint>();
+        //for (int i = 0; i < terrainFinder.TerrainNodes.Count; i++)
+        //{
+        //    List<Waypoint> columnWaypoints = new List<Waypoint>();
 
-            //Loop through rows
-            for (int j = 0; j < terrainFinder.TerrainNodes[i].Count; j++)
-            {
-                TerrainNode node = terrainFinder.TerrainNodes[i][j];
+        //    //Loop through rows
+        //    for (int j = 0; j < terrainFinder.TerrainNodes[i].Count; j++)
+        //    {
+        //        TerrainNode node = terrainFinder.TerrainNodes[i][j];
 
-                if (node.DownCollision != null)
-                {
-                    Waypoint waypoint = new Waypoint(new Vector3(node.DownCollision.CollisionPoint.x, node.DownCollision.CollisionPoint.y + objCollider.height / 2 + objCollider.radius), i, j);
+        //        if (node.DownCollision != null)
+        //        {
+        //            Waypoint waypoint = new Waypoint(new Vector3(node.DownCollision.CollisionPoint.x, node.DownCollision.CollisionPoint.y + objCollider.height / 2 + objCollider.radius), i, j);
 
-                    EstablishConnectionsTo(waypoint);
+        //            EstablishConnectionsTo(waypoint);
 
-                    columnWaypoints.Add(waypoint);
-                }
-            }
+        //            columnWaypoints.Add(waypoint);
+        //        }
+        //    }
 
-            waypoints.AddRange(columnWaypoints);
-        }
+        //    waypoints.AddRange(columnWaypoints);
+        //}
 
         return waypoints[0];
     }
