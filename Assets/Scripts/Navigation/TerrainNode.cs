@@ -2,10 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum TerrainNodeType { Air, Surface, Wall, Ceiling, SurfaceWall, CeilngWall, WallLedge, SurfaceLedge, Inside }
+
 public class TerrainNode
 {
+    public TerrainNodeType Type;
     public Vector3 Pos;
-    public bool InsideTerrain;
 
     public TerrainCollisionNode UpCollision;
     public TerrainCollisionNode DownCollision;
@@ -52,5 +54,57 @@ public class TerrainNode
         LeftCollision = new TerrainCollisionNode();    
         if (!LeftCollision.AttemptRaycast(Pos, Vector3.left, castDist))
             LeftCollision = null;
+
+        DetermineType();
+    }
+
+    private void DetermineType()
+    {
+        if (UpCollision == null
+            && DownCollision == null
+            && RightCollision == null
+            && LeftCollision == null)
+        {
+            Type = TerrainNodeType.Air;
+            return;
+        }
+
+        if (UpCollision != null
+            && (DownCollision == null && RightCollision == null && LeftCollision == null))
+        {
+            Type = TerrainNodeType.Ceiling;
+            return;
+        }
+
+        if (DownCollision != null
+            && (UpCollision == null && RightCollision == null && LeftCollision == null))
+        {
+            Type = TerrainNodeType.Surface;
+            return;
+        }
+
+        if ((RightCollision != null || LeftCollision != null)
+            && (UpCollision == null && DownCollision == null))
+        {
+            Type = TerrainNodeType.Wall;
+            return;
+        }
+
+        if ((RightCollision != null || LeftCollision != null)
+            && DownCollision != null
+            && UpCollision == null)
+        {
+            Type = TerrainNodeType.SurfaceWall;
+            return;
+        }
+
+
+        if ((RightCollision != null || LeftCollision != null)
+            && UpCollision != null
+            && DownCollision == null)
+        {
+            Type = TerrainNodeType.CeilngWall;
+            return;
+        }
     }
 }

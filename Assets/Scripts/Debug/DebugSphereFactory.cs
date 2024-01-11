@@ -16,5 +16,6 @@ public static class DebugSphereFactory
         debugSpehre.name = name;
         debugSpehre.transform.position = pos;
         debugSpehre.transform.localScale = Vector3.one * radius;
+
     }
 }

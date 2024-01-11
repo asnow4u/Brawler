@@ -102,7 +102,7 @@ public class TerrainNodeFinder : MonoBehaviour
     #endregion 
 
 
-    #region Terrain Mapping
+    
 
     private Vector3 CaluclateNodePos(int curColumn, int curRow)
     {
@@ -268,23 +268,36 @@ public class TerrainNodeFinder : MonoBehaviour
     /// <param name="curRow"></param>
     private void PerformTerrainCast(TerrainNode node, int curColumn, int curRow)
     {
-        //Set node to default
-        node.InsideTerrain = false;
-
         node.PerformRaycastCheck(ScaleFactor);
 
-        //Horizontal Check
+        CheckInsideTerrain(node, curColumn, curRow);
+
+        CheckForLedge(node, curColumn, curRow);
+    }
+
+
+    #region Inside Terrain Check
+
+    /// <summary>
+    /// Check both horizontal and vertical directions to determine if node is inside the terrain 
+    /// </summary>
+    /// <param name="node"></param>
+    /// <param name="curColumn"></param>
+    /// <param name="curRow"></param>
+    private void CheckInsideTerrain(TerrainNode node, int curColumn, int curRow)
+    {
+        //Inside Horizontal Terrain Check
         if (TerrainNodes.ContainsKey((curColumn - 1, curRow)))
         {
             TerrainNode prevColumnNode = TerrainNodes[(curColumn - 1, curRow)];
             if (InsideHorizontalTerrainCheck(prevColumnNode, node))
             {
-                node.InsideTerrain = true;
+                node.Type = TerrainNodeType.Inside;
                 node.ResetRaycasts();
             }
         }
 
-        //Vertical Check
+        //Inside Vertical Terrain Check
         if (node.DownCollision != null)
         {
             int index = 1;
@@ -295,7 +308,7 @@ public class TerrainNodeFinder : MonoBehaviour
 
                 if (InsideVerticalTerrainCheck(prevRowNode))
                 {
-                    prevRowNode.InsideTerrain = true;
+                    prevRowNode.Type = TerrainNodeType.Inside;
                     prevRowNode.ResetRaycasts();
 
                     index++;
@@ -319,7 +332,7 @@ public class TerrainNodeFinder : MonoBehaviour
     /// <returns></returns>
     private bool InsideHorizontalTerrainCheck(TerrainNode preColumnNode, TerrainNode curNode)
     {        
-        if (preColumnNode.InsideTerrain || 
+        if (preColumnNode.Type == TerrainNodeType.Inside || 
             (preColumnNode.Pos.x < curNode.Pos.x && preColumnNode.RightCollision != null))
         {
             //Determine direction of raycast (left or right)
@@ -351,12 +364,75 @@ public class TerrainNodeFinder : MonoBehaviour
             return true;
         }
         
-
         return false;
     }
 
     #endregion
 
+
+    #region Ledge Check
+
+    private void CheckForLedge(TerrainNode node, int curColumn, int curRow)
+    {
+        if (node.Type != TerrainNodeType.Inside)
+        {
+            if (TerrainNodes.ContainsKey((curColumn, curRow - 1)))
+            {
+                TerrainNode prevRowNode = TerrainNodes[(curColumn, curRow - 1)];
+
+                if (node.RightCollision == null && prevRowNode.RightCollision != null) 
+                { 
+                    if (prevRowNode.RightCollision.SlopeGradiant == 0)
+                    {
+                        if (TryFindLedge(node, prevRowNode, Vector3.right, out Vector3 ledgePos))
+                        {
+                            DebugSphereFactory.SpawnDebugSphere(ledgePos);
+                        }
+                    }
+                }
+
+                if (node.LeftCollision == null && prevRowNode.LeftCollision != null)
+                {
+                    if (prevRowNode.LeftCollision.SlopeGradiant == 0)
+                    {
+                        if (TryFindLedge(node, prevRowNode, Vector3.left, out Vector3 ledgePos))
+                        {
+                            DebugSphereFactory.SpawnDebugSphere(ledgePos);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    private bool TryFindLedge(TerrainNode curNode, TerrainNode prevRowNode, Vector3 dir, out Vector3 ledgePos)
+    {
+        Vector3 topPos = curNode.Pos;
+        Vector3 bottomPos = prevRowNode.Pos;        
+        ledgePos = Vector3.zero;
+
+        for (int i = 0; i < 10; i++)
+        {
+            Vector3 origin = new Vector3(bottomPos.x, (bottomPos.y + topPos.y) / 2, bottomPos.z);
+
+            if (Physics.Raycast(origin, dir, out RaycastHit hit, ScaleFactor, LayerMask.GetMask("Environment")))
+            {
+                ledgePos = hit.point;
+                bottomPos = origin;
+            }
+            else
+                topPos = origin;
+        }
+
+
+        if (ledgePos == Vector3.zero)
+            return false;
+
+        return true;
+    }
+
+    #endregion
 
 
     private void OnDrawGizmos()
@@ -366,10 +442,44 @@ public class TerrainNodeFinder : MonoBehaviour
             //Draw Nodes
             foreach (TerrainNode node in TerrainNodes.Values)
             {
-                if (node.InsideTerrain)
-                    Gizmos.color = Color.black;
-                else
-                    Gizmos.color = Color.red;
+                switch (node.Type)
+                {
+                    case TerrainNodeType.Air:
+                        Gizmos.color = Color.cyan;
+                        break;
+
+                    case TerrainNodeType.Surface:
+                        Gizmos.color = Color.green;
+                        break;
+
+                    case TerrainNodeType.Wall:
+                        Gizmos.color = Color.red;
+                        break;
+
+                    case TerrainNodeType.Ceiling:
+                        Gizmos.color = Color.yellow;
+                        break;
+
+                    case TerrainNodeType.SurfaceWall:
+                        Gizmos.color = Color.magenta;
+                        break;
+
+                    case TerrainNodeType.CeilngWall:
+                        Gizmos.color = Color.magenta;
+                        break;
+
+                    case TerrainNodeType.SurfaceLedge:
+                        Gizmos.color = Color.black;
+                        break;
+
+                    case TerrainNodeType.WallLedge:
+                        Gizmos.color = Color.black;
+                        break;
+
+                    case TerrainNodeType.Inside:
+                        Gizmos.color = Color.black;
+                        break;
+                }
 
                 Gizmos.DrawCube(node.Pos, Vector3.one * 0.1f);
 

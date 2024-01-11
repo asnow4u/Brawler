@@ -53,7 +53,8 @@ MonoBehaviour:
     MinSpawn: 1000
     MaxSpawn: 2000
   TerrainObj: {fileID: 0}
-  DebugStart: 1
+  LedgeNode: {fileID: 3892319480187130592, guid: 85b5145c8e6a9864d861001fc5cef1c0, type: 3}
+  DebugStart: 0
 --- !u!114 &78117486881367130
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -70,3 +71,4 @@ MonoBehaviour:
   XViewBuffer: 10
   YViewBuffer: 10
   ScaleFactor: 1
+  Check: 0
