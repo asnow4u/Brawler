@@ -19,7 +19,7 @@ public class PlatformPathFinder : PathFinder
     private MoveData moveData;
 
     //TODO: Make Private
-    public TerrainNodeFinder terrainFinder;
+    public TerrainNodeMapper terrainFinder;
 
     //NOTE: Do we keep? Upon updating waypoints this will not always be correct (Moving platform)
     private List<Waypoint> waypoints;

@@ -98,7 +98,6 @@ public class TerrainNode
             return;
         }
 
-
         if ((RightCollision != null || LeftCollision != null)
             && UpCollision != null
             && DownCollision == null)

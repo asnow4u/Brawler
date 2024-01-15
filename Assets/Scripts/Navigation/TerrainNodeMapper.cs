@@ -4,11 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using static UnityEditor.PlayerSettings;
 
-public class TerrainNodeFinder : MonoBehaviour
+public class TerrainNodeMapper : MonoBehaviour
 {
-    public static TerrainNodeFinder Instance;
+    public static TerrainNodeMapper Instance;
     public Dictionary<(int, int), TerrainNode> TerrainNodes;
 
     [SerializeField] private MeshCollider LevelMesh;
@@ -66,7 +67,7 @@ public class TerrainNodeFinder : MonoBehaviour
     /// <param name="width"></param>
     /// <param name="nodes"></param>
     /// <returns></returns>
-    public bool TryGetNodesInRegion(Vector3 pos, float height, float width, out List<List<TerrainNode>> nodes)
+    public bool TryGetNodesInRegion(Vector3 pos, float height, float width, out List<List<TerrainNode>> nodes, params TerrainNodeType[] searchTypes)
     {
         if (TryCalculateNodeRegion(pos, height, width, out int maxColumn, out int minColumn, out int maxRow, out int minRow))
         {
@@ -78,7 +79,17 @@ public class TerrainNodeFinder : MonoBehaviour
 
                 for (int j = minRow; j < maxRow; j++)
                 {
-                    rowNodes.Add(TerrainNodes[(i, j)]);    
+                    if (searchTypes.Length > 0)
+                        foreach (TerrainNodeType nodeType in searchTypes)
+                        {
+                            if (nodeType == TerrainNodes[(i, j)].Type)
+                                rowNodes.Add(TerrainNodes[(i, j)]);
+                        }
+
+                    else
+                        rowNodes.Add(TerrainNodes[(i, j)]);    
+
+
                 }
 
                 nodes.Add(rowNodes);
@@ -91,17 +102,7 @@ public class TerrainNodeFinder : MonoBehaviour
         return false;
     }
 
-
-    //TODO:
-    public bool TryGetNodesInCameraView(out List<List<TerrainNode>> nodes)
-    {
-        nodes = null;
-        return false;
-    }
-
     #endregion 
-
-
     
 
     private Vector3 CaluclateNodePos(int curColumn, int curRow)
@@ -384,10 +385,7 @@ public class TerrainNodeFinder : MonoBehaviour
                 { 
                     if (prevRowNode.RightCollision.SlopeGradiant == 0)
                     {
-                        if (TryFindLedge(node, prevRowNode, Vector3.right, out Vector3 ledgePos))
-                        {
-                            DebugSphereFactory.SpawnDebugSphere(ledgePos);
-                        }
+                        prevRowNode.Type = TerrainNodeType.WallLedge;                        
                     }
                 }
 
@@ -395,42 +393,51 @@ public class TerrainNodeFinder : MonoBehaviour
                 {
                     if (prevRowNode.LeftCollision.SlopeGradiant == 0)
                     {
-                        if (TryFindLedge(node, prevRowNode, Vector3.left, out Vector3 ledgePos))
-                        {
-                            DebugSphereFactory.SpawnDebugSphere(ledgePos);
-                        }
+                        prevRowNode.Type = TerrainNodeType.WallLedge;
+                    }
+                }
+            }
+
+            CheckForSurfaceLedge(node, curColumn, curRow);            
+        }
+    }
+  
+
+    private void CheckForSurfaceLedge(TerrainNode node, int curColumn, int curRow)
+    {
+        //Check for surface ledge on left side
+        if (TerrainNodes.ContainsKey((curColumn, curRow - 1)))
+        {
+            //Check that the prev rowNode is inside the terrain
+            if (TerrainNodes[(curColumn, curRow - 1)].Type == TerrainNodeType.Inside)
+            {
+                if (TerrainNodes.ContainsKey((curColumn - 1, curRow - 1)))
+                {
+                    if (TerrainNodes[(curColumn - 1, curRow - 1)].Type == TerrainNodeType.WallLedge)
+                    {
+                        node.Type = TerrainNodeType.SurfaceLedge;
+                    }
+                }
+            }
+        }
+
+        //Check for surface ledge on right side
+        if (TerrainNodes.ContainsKey((curColumn, curRow - 1)))
+        {
+            if (TerrainNodes[(curColumn, curRow - 1)].Type == TerrainNodeType.WallLedge)
+            {
+                if (TerrainNodes.ContainsKey((curColumn - 1, curRow)))
+                {
+                    //Check that the prev rowNode is inside the terrain
+                    if (TerrainNodes[(curColumn - 1, curRow)].DownCollision != null)
+                    {                        
+                        TerrainNodes[(curColumn - 1, curRow)].Type = TerrainNodeType.SurfaceLedge;                        
                     }
                 }
             }
         }
     }
 
-
-    private bool TryFindLedge(TerrainNode curNode, TerrainNode prevRowNode, Vector3 dir, out Vector3 ledgePos)
-    {
-        Vector3 topPos = curNode.Pos;
-        Vector3 bottomPos = prevRowNode.Pos;        
-        ledgePos = Vector3.zero;
-
-        for (int i = 0; i < 10; i++)
-        {
-            Vector3 origin = new Vector3(bottomPos.x, (bottomPos.y + topPos.y) / 2, bottomPos.z);
-
-            if (Physics.Raycast(origin, dir, out RaycastHit hit, ScaleFactor, LayerMask.GetMask("Environment")))
-            {
-                ledgePos = hit.point;
-                bottomPos = origin;
-            }
-            else
-                topPos = origin;
-        }
-
-
-        if (ledgePos == Vector3.zero)
-            return false;
-
-        return true;
-    }
 
     #endregion
 
@@ -469,11 +476,11 @@ public class TerrainNodeFinder : MonoBehaviour
                         break;
 
                     case TerrainNodeType.SurfaceLedge:
-                        Gizmos.color = Color.black;
+                        Gizmos.color = Color.white;
                         break;
 
                     case TerrainNodeType.WallLedge:
-                        Gizmos.color = Color.black;
+                        Gizmos.color = Color.grey;
                         break;
 
                     case TerrainNodeType.Inside:

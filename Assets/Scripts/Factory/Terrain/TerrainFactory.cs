@@ -66,10 +66,8 @@ public class TerrainFactory : MonoBehaviour
                }
             }
         }
-            
-
-
     }
+
 
     private void SpawnEnvironmentalObject(RaycastHit hit, EnvironmentObjectData envObject)
     {
