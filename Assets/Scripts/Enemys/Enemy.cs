@@ -58,6 +58,10 @@ public abstract class Enemy : SceneObject
         {
             targetSpot = patrolSpots[0];
         }
+
+        //TEST PATH
+        pathFinder = gameObject.AddComponent<PlatformPathFinder>();
+        pathFinder.FindPathTo(pathObject.position, movementInputHandler.CurMovementCollection);
     }
 
 
@@ -458,43 +462,43 @@ public abstract class Enemy : SceneObject
 
                 if (i < path.Count-1)
                 {
-                    TraversalPoint traversalPoint = FindTraversalPoint(path[i], path[i+1]);
+                    //TraversalPoint traversalPoint = FindTraversalPoint(path[i], path[i+1]);
                 
-                    if (traversalPoint != null)
-                    {
-                        Gizmos.color = Color.black;
+                    //if (traversalPoint != null)
+                    //{
+                    //    Gizmos.color = Color.black;
 
-                        if (traversalPoint.TraversalType == TraversalType.Move)
-                        {
-                            DrawMoveTrjectory(path[i], traversalPoint);
-                        }
+                    //    if (traversalPoint.TraversalType == TraversalType.Move)
+                    //    {
+                    //        DrawMoveTrjectory(path[i], traversalPoint);
+                    //    }
 
-                        else if (traversalPoint.TraversalType == TraversalType.Jump)
-                        {
-                            DrawJumpTrjectory(path[i], (JumpTraversalPoint)traversalPoint);
-                        }
-                    }
+                    //    else if (traversalPoint.TraversalType == TraversalType.Jump)
+                    //    {
+                    //        DrawJumpTrjectory(path[i], (JumpTraversalPoint)traversalPoint);
+                    //    }
+                    //}
                 }
             }
         }
     }
 
 
-    private TraversalPoint FindTraversalPoint(Waypoint curWaypoint, Waypoint nextWaypoint)
-    {
-        foreach (TraversalPoint traversalPoint in curWaypoint.TraversalPoints )
-        {
-            if (traversalPoint.Destination.Column == nextWaypoint.Column)
-            {
-                if (traversalPoint.Destination.Row == nextWaypoint.Row)
-                {
-                    return traversalPoint;
-                }
-            }
-        }
+    //private TraversalPoint FindTraversalPoint(Waypoint curWaypoint, Waypoint nextWaypoint)
+    //{
+    //    foreach (TraversalPoint traversalPoint in curWaypoint.TraversalPoints )
+    //    {
+    //        if (traversalPoint.Destination.Column == nextWaypoint.Column)
+    //        {
+    //            if (traversalPoint.Destination.Row == nextWaypoint.Row)
+    //            {
+    //                return traversalPoint;
+    //            }
+    //        }
+    //    }
 
-        return null;
-    }
+    //    return null;
+    //}
 
 
 

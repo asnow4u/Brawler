@@ -9,15 +9,20 @@ public class TerrainNode
     public TerrainNodeType Type;
     public Vector3 Pos;
 
+    public int ColumnNum;
+    public int RowNum;
+
     public TerrainCollisionNode UpCollision;
     public TerrainCollisionNode DownCollision;
     public TerrainCollisionNode RightCollision;
     public TerrainCollisionNode LeftCollision;
 
 
-    public TerrainNode(Vector3 pos)
+    public TerrainNode(Vector3 pos, int columnNum, int rowNum)
     {
         this.Pos = pos;
+        ColumnNum = columnNum;
+        RowNum = rowNum;
 
         ResetRaycasts();
     }

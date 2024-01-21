@@ -80,16 +80,16 @@ public class TerrainNodeMapper : MonoBehaviour
                 for (int j = minRow; j < maxRow; j++)
                 {
                     if (searchTypes.Length > 0)
+                    {
                         foreach (TerrainNodeType nodeType in searchTypes)
                         {
                             if (nodeType == TerrainNodes[(i, j)].Type)
                                 rowNodes.Add(TerrainNodes[(i, j)]);
                         }
+                    }
 
                     else
                         rowNodes.Add(TerrainNodes[(i, j)]);    
-
-
                 }
 
                 nodes.Add(rowNodes);
@@ -102,8 +102,57 @@ public class TerrainNodeMapper : MonoBehaviour
         return false;
     }
 
-    #endregion 
-    
+
+    public List<List<TerrainNode>> GetAllNodesBetween(Vector3 pos1, Vector3 pos2, params TerrainNodeType[] searchTypes)
+    {
+        List<List<TerrainNode>> nodes = new List<List<TerrainNode>>();
+
+        int maxColumn;
+        int minColumn;
+
+        if (pos1.x > pos2.x)
+        {
+            maxColumn = GetNodeColumnBy(pos1);
+            minColumn = GetNodeColumnBy(pos2);
+        }
+
+        else
+        {
+            maxColumn = GetNodeColumnBy(pos2);
+            minColumn = GetNodeColumnBy(pos1);
+        }
+
+        //Clamp Columns inside terrain bounds
+        maxColumn = Mathf.Clamp(maxColumn, -columnCount / 2, columnCount / 2);
+        minColumn = Mathf.Clamp(minColumn, -columnCount / 2, columnCount / 2);
+
+        for (int i = minColumn; i < maxColumn; i++)
+        {
+            List<TerrainNode> rowNodes = new List<TerrainNode>();
+
+            for (int j = -rowCount / 2;  j < rowCount / 2; j++)
+            {
+                if (searchTypes.Length > 0)
+                {
+                    foreach (TerrainNodeType nodeType in searchTypes)
+                    {
+                        if (nodeType == TerrainNodes[(i, j)].Type)
+                            rowNodes.Add(TerrainNodes[(i, j)]);
+                    }
+                }
+
+                else
+                    rowNodes.Add(TerrainNodes[(i, j)]);
+            }
+
+            nodes.Add(rowNodes);
+        }
+
+        return nodes;
+    }
+
+    #endregion
+
 
     private Vector3 CaluclateNodePos(int curColumn, int curRow)
     {
@@ -220,7 +269,7 @@ public class TerrainNodeMapper : MonoBehaviour
                 while (curRow <= rowCount / 2)
                 {
                     //Create new node
-                    TerrainNode node = new TerrainNode(CaluclateNodePos(curColumn, curRow));
+                    TerrainNode node = new TerrainNode(CaluclateNodePos(curColumn, curRow), curColumn, curRow);
 
                     PerformTerrainCast(node, curColumn, curRow);
 

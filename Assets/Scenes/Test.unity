@@ -2065,9 +2065,17 @@ PrefabInstance:
     m_TransformParent: {fileID: 1644127251}
     m_Modifications:
     - target: {fileID: 78117486881367130, guid: 20699a05a7035724694195d336a346dc, type: 3}
+      propertyPath: Check
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 78117486881367130, guid: 20699a05a7035724694195d336a346dc, type: 3}
       propertyPath: LevelMesh
       value: 
       objectReference: {fileID: 8702693780811445290}
+    - target: {fileID: 78117486881367130, guid: 20699a05a7035724694195d336a346dc, type: 3}
+      propertyPath: ScaleFactor
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 534560539744220859, guid: 20699a05a7035724694195d336a346dc, type: 3}
       propertyPath: m_Name
       value: TerrainFactory
