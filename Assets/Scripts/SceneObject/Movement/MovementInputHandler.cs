@@ -257,23 +257,41 @@ public class MovementInputHandler : MonoBehaviour
     {
         //Turn around
         CheckTurnAround();
-
-        //Accelerate
+       
+        //Apply Movement based on influence
         if (Mathf.Abs(horizontalInfluence) > 0)
         {
-            PlayMoveAnimation(moveData.Type);
-            
-            rb.velocity += transform.right * Mathf.Abs(horizontalInfluence) * moveData.XVelocityAcceleration * Time.fixedDeltaTime;
+            float targetVelocity = moveData.XVelocityLimit * Mathf.Abs(horizontalInfluence);
 
-            if (rb.velocity.x > moveData.XVelocityLimit)
-                rb.velocity = new Vector3(moveData.XVelocityLimit, rb.velocity.y);
-            
-            if (rb.velocity.x < -moveData.XVelocityLimit)
-                rb.velocity = new Vector3(-moveData.XVelocityLimit, rb.velocity.y);
+            PlayMoveAnimation(moveData.Type);
+        
+            //Accelerate
+            if (Mathf.Abs(rb.velocity.x) < targetVelocity)
+            {
+                rb.velocity += transform.right * Mathf.Abs(horizontalInfluence) * moveData.XVelocityAcceleration * Time.fixedDeltaTime;
+
+                if (rb.velocity.x > targetVelocity)
+                    rb.velocity = new Vector3(targetVelocity, rb.velocity.y);
+
+                if (rb.velocity.x < -targetVelocity)
+                    rb.velocity = new Vector3(-targetVelocity, rb.velocity.y);
+            }
+
+            //Decelerate
+            else if (Mathf.Abs(rb.velocity.x) > targetVelocity)
+            {
+                rb.velocity -= transform.right * Mathf.Abs(horizontalInfluence) * moveData.XVelocityAcceleration * Time.fixedDeltaTime;
+
+                if (rb.velocity.x < targetVelocity)
+                    rb.velocity = new Vector3(targetVelocity, rb.velocity.y);
+
+                if (rb.velocity.x > -targetVelocity)
+                    rb.velocity = new Vector3(-targetVelocity, rb.velocity.y);
+            }
         }
 
-        //Decelerate
-        else if (Mathf.Abs(rb.velocity.x) > 0)
+        //Stopping
+        else
         {
             rb.velocity -= transform.right * moveData.XVelocityDeceleration * Time.fixedDeltaTime;
 
@@ -282,14 +300,14 @@ public class MovementInputHandler : MonoBehaviour
             {
                 rb.velocity = new Vector3(0, rb.velocity.y, rb.velocity.z);
                 moveData = null;
-                stateHandler.ResetState();                                    
+                stateHandler.ResetState();
             }
 
-            else if (!isFacingRightDir && rb.velocity.x > 0f) 
+            else if (!isFacingRightDir && rb.velocity.x > 0f)
             {
                 rb.velocity = new Vector3(0, rb.velocity.y, rb.velocity.z);
                 moveData = null;
-                stateHandler.ResetState();                
+                stateHandler.ResetState();
             }
         }
 
