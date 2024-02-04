@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -50,8 +51,11 @@ public class TerrainNodeMapper : MonoBehaviour
             int column = GetNodeColumnBy(pos);
             int row = GetNodeRowBy(pos);
                         
-            node = TerrainNodes[(column, row)];
-            return true;                          
+            if (TerrainNodes.ContainsKey((column, row)))
+            {
+                node = TerrainNodes[(column, row)];
+                return true;                          
+            }
         }
 
         node = null;
@@ -103,30 +107,30 @@ public class TerrainNodeMapper : MonoBehaviour
     }
 
 
-    public List<List<TerrainNode>> GetAllNodesBetween(Vector3 pos1, Vector3 pos2, params TerrainNodeType[] searchTypes)
+    public List<List<TerrainNode>> GetAllNodesWithin(int column1, int column2, params TerrainNodeType[] searchTypes)
     {
         List<List<TerrainNode>> nodes = new List<List<TerrainNode>>();
 
         int maxColumn;
         int minColumn;
 
-        if (pos1.x > pos2.x)
+        if (column1 > column2)
         {
-            maxColumn = GetNodeColumnBy(pos1);
-            minColumn = GetNodeColumnBy(pos2);
+            maxColumn = column1;
+            minColumn = column2;
         }
 
         else
         {
-            maxColumn = GetNodeColumnBy(pos2);
-            minColumn = GetNodeColumnBy(pos1);
+            maxColumn = column2;
+            minColumn = column1;
         }
 
         //Clamp Columns inside terrain bounds
         maxColumn = Mathf.Clamp(maxColumn, -columnCount / 2, columnCount / 2);
         minColumn = Mathf.Clamp(minColumn, -columnCount / 2, columnCount / 2);
 
-        for (int i = minColumn; i < maxColumn; i++)
+        for (int i = minColumn; i < maxColumn + 1; i++)
         {
             List<TerrainNode> rowNodes = new List<TerrainNode>();
 
@@ -571,7 +575,24 @@ public class TerrainNodeMapper : MonoBehaviour
 
                     Gizmos.color = Color.Lerp(Color.red, Color.green, node.LeftCollision.SlopeGradiant / 90);
                     Gizmos.DrawSphere(node.LeftCollision.CollisionPoint, 0.1f);
-                }                
+                }
+
+                //Lables for column and row
+                //TODO only upate if within scene viw camera
+                Camera sceneViewCamera = SceneView.lastActiveSceneView.camera;
+                
+                if (sceneViewCamera != null)
+                {
+                    Vector3 viewPoint = sceneViewCamera.WorldToViewportPoint(node.Pos);
+
+                    if (viewPoint.x >= 0 && viewPoint.x <= 1 
+                        && viewPoint.y >= 0 && viewPoint.y <= 1
+                        && viewPoint.z > 0
+                        && Mathf.Abs(sceneViewCamera.transform.position.z) < 10)
+                    {
+                        Handles.Label(node.Pos, "(" + node.ColumnNum + ", " + node.RowNum + ")");
+                    }
+                }
             }
         }
     }
