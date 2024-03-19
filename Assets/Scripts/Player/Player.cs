@@ -59,17 +59,17 @@ public class Player : SceneObject
 
     private void HorizontalMovementInput(InputAction.CallbackContext obj)
     {
-        movementInputHandler.PerformMovement(obj.ReadValue<Vector2>());
+        MovementInputHandler.PerformMovement(obj.ReadValue<Vector2>());
     }
 
     private void MovementCanceled(InputAction.CallbackContext obj)
     {
-        movementInputHandler.PerformMovement(Vector2.zero);
+        MovementInputHandler.PerformMovement(Vector2.zero);
     }
 
     private void JumpInput(InputAction.CallbackContext obj)
     {
-        movementInputHandler.PerformJump(obj.ReadValue<float>());
+        MovementInputHandler.PerformJump(obj.ReadValue<float>());
     }
 
     private void JumpCanceled(InputAction.CallbackContext obj)
@@ -82,22 +82,22 @@ public class Player : SceneObject
 
     private void AttackUpwardInput(InputAction.CallbackContext obj)
     {
-        attackInputHandler.PerformUpAttack();
+        AttackInputHandler.PerformUpAttack();
     }
 
     private void AttackDownwardInput(InputAction.CallbackContext obj)
     {
-        attackInputHandler.PerformDownAttack();
+        AttackInputHandler.PerformDownAttack();
     }
 
     private void AttackLeftInput(InputAction.CallbackContext obj)
     {
-        attackInputHandler.PerformLeftAttack();
+        AttackInputHandler.PerformLeftAttack();
     }
 
     private void AttackRightInput(InputAction.CallbackContext obj)
     {
-        attackInputHandler.PerformRightAttack();
+        AttackInputHandler.PerformRightAttack();
     }
 
     #endregion

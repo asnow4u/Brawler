@@ -6,28 +6,22 @@ using UnityEngine;
 
 public class AttackInputHandler : MonoBehaviour
 {
-    const ActionState.State attackState = ActionState.State.Attacking;
+    const ActionState.State ATTACKSTATE = ActionState.State.Attacking;
 
-    private SceneObject sceneObj;
-
+    //Attack Data
     private AttackData curAttackData;
-
     public AttackCollection BaseAttackCollection;
-    public AttackCollection CurAttackCollection;
+    public AttackCollection CurAttackCollection; 
 
-    private bool isFacingRightDir { get { return sceneObj.IsFacingRightDirection(); } }
-    private bool isGrounded { get { return sceneObj.IsGrounded; } }
-    private IAnimator animator { get { return sceneObj.Animator; } }
-    private IActionState stateHandler { get { return sceneObj.StateHandler; } }
-    private IWeaponCollection weaponCollection { get { return sceneObj.EquipmentHandler.Weapons; } }    
+    //SceneObject
+    private SceneObject sceneObj => GetComponent<SceneObject>();
+    
 
 
-    public void Setup(SceneObject obj)
+    public void Setup()
     {
-        sceneObj = obj;
-
-        weaponCollection.WeaponChangedEvent += OnWeaponChanged;
-        animator.OnAnimationUpdateEvent += OnAttackAnimationUpdated;
+        //sceneObj.EquipmentHandler.Weapons.WeaponChangedEvent += OnWeaponChanged;
+        sceneObj.AnimationHandler.OnAnimationUpdateEvent += OnAttackAnimationUpdated;
 
         OnWeaponChanged(null);
     }
@@ -47,7 +41,7 @@ public class AttackInputHandler : MonoBehaviour
 
     private void OnAttackAnimationUpdated(string animationState, AnimationTrigger.Type triggerType)
     {
-        if (CurAttackCollection.GetAttackByAnimationClipName(animationState, out AttackData attackData))
+        if (CurAttackCollection.TryGetAttackByAnimationClipName(animationState, out AttackData attackData))
         {
             switch(triggerType)
             {
@@ -96,14 +90,14 @@ public class AttackInputHandler : MonoBehaviour
             DisabledAttackColliders(attackData);
 
             curAttackData = null;
-            stateHandler.ResetState();
+            sceneObj.StateHandler.ResetState();
         }
     }
 
 
     public void OnAttackConnected(IDamage hitTarget)
     {
-        if (animator.TryGetCurrentFrameOfAnimation(curAttackData.AttackAnimation.name, out float curFrame))
+        if (sceneObj.AnimationHandler.TryGetCurrentFrameOfAnimation(curAttackData.AttackAnimation.name, out float curFrame))
         {            
             float damage = curAttackData.GetAttackDamage(curFrame);            
             float influence = curAttackData.GetAttackInflucence();
@@ -116,12 +110,12 @@ public class AttackInputHandler : MonoBehaviour
             string damageDebug = "Damage: " + damage + "\n";
             damageDebug += "Knockback Force: " + knockBack + "\n";
             damageDebug += "Launch Angle: " + launchAngle + "\n";
-            damageDebug += "Launch Vector: " + xLaunch * (isFacingRightDir ? 1 : -1) + ", " + yLaunch + "\n";
+            damageDebug += "Launch Vector: " + xLaunch * (sceneObj.IsFacingRightDirection() ? 1 : -1) + ", " + yLaunch + "\n";
             Debug.Log(damageDebug);
 
 
             hitTarget.AddDamage(damage);
-            hitTarget.ApplyForceBasedOnDamage(knockBack, influence, new Vector2(xLaunch * (isFacingRightDir ? 1 : -1), yLaunch));
+            hitTarget.ApplyForceBasedOnDamage(knockBack, influence, new Vector2(xLaunch * (sceneObj.IsFacingRightDirection() ? 1 : -1), yLaunch));
         }
     }
 
@@ -135,16 +129,16 @@ public class AttackInputHandler : MonoBehaviour
     {
         if (curAttackData == null && CurAttackCollection.GetAttackByType(attackType, out AttackData attack))
         {
-            animator.PlayAnimation(attack.AttackAnimation.name, attack.GetAttackTriggers());
+            sceneObj.AnimationHandler.PlayAnimation(attack.AttackAnimation.name, attack.GetAttackTriggers());
         }
     }
 
                 
     public void PerformUpAttack()
     {
-        if (stateHandler.ChangeState(attackState))
+        if (sceneObj.StateHandler.ChangeState(ATTACKSTATE))
         {
-            if (isGrounded)
+            if (sceneObj.MovementInputHandler.IsGrounded)
             {
                 PlayAttackAnimation(AttackType.UpTilt);
             }
@@ -159,9 +153,9 @@ public class AttackInputHandler : MonoBehaviour
 
     public void PerformDownAttack()
     {
-        if (stateHandler.ChangeState(attackState))
+        if (sceneObj.StateHandler.ChangeState(ATTACKSTATE))
         {
-            if (isGrounded)
+            if (sceneObj.MovementInputHandler.IsGrounded)
             {
                 PlayAttackAnimation(AttackType.DownTilt);                
             }
@@ -176,11 +170,11 @@ public class AttackInputHandler : MonoBehaviour
 
     public void PerformRightAttack()
     {
-        if (stateHandler.ChangeState(attackState))
+        if (sceneObj.StateHandler.ChangeState(ATTACKSTATE))
         {
-            if (isGrounded)
+            if (sceneObj.MovementInputHandler.IsGrounded)
             {
-                if (!isFacingRightDir)
+                if (!sceneObj.IsFacingRightDirection())
                 {
                     sceneObj.TurnAround();
                 }
@@ -190,7 +184,7 @@ public class AttackInputHandler : MonoBehaviour
 
             else
             {
-                if (!isFacingRightDir)
+                if (!sceneObj.IsFacingRightDirection())
                     PlayAttackAnimation(AttackType.BackAir);
 
                 else
@@ -202,11 +196,11 @@ public class AttackInputHandler : MonoBehaviour
 
     public void PerformLeftAttack()
     {
-        if (stateHandler.ChangeState(attackState))
+        if (sceneObj.StateHandler.ChangeState(ATTACKSTATE))
         {
-            if (isGrounded)
+            if (sceneObj.MovementInputHandler.IsGrounded)
             {
-                if (isFacingRightDir)
+                if (sceneObj.IsFacingRightDirection())
                 {
                     sceneObj.TurnAround();
                 }
@@ -216,7 +210,7 @@ public class AttackInputHandler : MonoBehaviour
 
             else
             {
-                if (isFacingRightDir)
+                if (sceneObj.IsFacingRightDirection())
                     PlayAttackAnimation(AttackType.BackAir);
 
                 else

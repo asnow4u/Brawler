@@ -111,4 +111,10 @@ public class TerrainNode
             return;
         }
     }
+
+
+    public string LogCoordinates()
+    {
+        return "(" + ColumnNum + ", " + RowNum + ")";
+    }
 }

@@ -53,7 +53,6 @@ MonoBehaviour:
     MinSpawn: 1000
     MaxSpawn: 2000
   TerrainObj: {fileID: 0}
-  LedgeNode: {fileID: 3892319480187130592, guid: 85b5145c8e6a9864d861001fc5cef1c0, type: 3}
   DebugStart: 0
 --- !u!114 &78117486881367130
 MonoBehaviour:
@@ -67,8 +66,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ade623a1531e3e47a75ac7e2a0a99bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  LevelMesh: {fileID: 0}
-  XViewBuffer: 10
-  YViewBuffer: 10
-  ScaleFactor: 1
+  levelMesh: {fileID: 0}
+  xViewBuffer: 10
+  yViewBuffer: 10
+  scaleFactor: 1
   Check: 0

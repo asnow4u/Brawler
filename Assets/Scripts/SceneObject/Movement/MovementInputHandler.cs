@@ -9,43 +9,46 @@ using UnityEngine.InputSystem;
 
 public class MovementInputHandler : MonoBehaviour
 {
-    const ActionState.State moveState = ActionState.State.Moving;
+    const ActionState.State MOVESTATE = ActionState.State.Moving;
 
     //Movement State Data
     private MovementType curMoveState = MovementType.Move;
     private string curMoveAnimationState;
 
     //Movement Data
-    private float horizontalInfluence;
-    private float verticalInfluence;
-    private MoveData moveData;
-    private int numJumpsPerformed;
-
-    //Movement Collection
+    public bool IsGrounded = true;    
+    public float gravityScaler = 1;
     public MovementCollection BaseMovementCollection;
     public MovementCollection CurMovementCollection;
 
+    //Infulence
+    private float horizontalInfluence;
+    private float verticalInfluence;
+    private int numJumpsPerformed;
+   
+    //SceneObject
+    private SceneObject sceneObj => GetComponent<SceneObject>();
+    private Rigidbody rb => GetComponent<Rigidbody>();
+    
 
-    #region SceneObject Getters
+    //Events
+    public Action<MovementCollection> MovementCollectionChanged;
 
-    private SceneObject sceneObj;
-    private Rigidbody rb { get { return sceneObj.rb; } }
-    private bool isGrounded { get { return sceneObj.IsGrounded; } }
-    private bool isFacingRightDir { get { return sceneObj.IsFacingRightDirection(); } }
-    private IAnimator animator { get { return sceneObj.Animator; } }
-    private IActionState stateHandler { get { return sceneObj.StateHandler; } }
 
-    #endregion
+    #region Initialize
 
-    public void Setup(SceneObject obj)
+    public void Setup()
     {
-        sceneObj = obj;
+        //NOTE: Uses ApplyGravity instead
+        rb.useGravity = false;
 
-        sceneObj.EquipmentHandler.Weapons.WeaponChangedEvent += OnWeaponChanged;
-        animator.OnAnimationUpdateEvent += OnMovementAnimationUpdated;
+        //sceneObj.EquipmentHandler.Weapons.WeaponChangedEvent += OnWeaponChanged;
+        sceneObj.AnimationHandler.OnAnimationUpdateEvent += OnMovementAnimationUpdated;
 
         OnWeaponChanged(null);        
     }
+
+    #endregion
 
     #region Events
 
@@ -55,7 +58,9 @@ public class MovementInputHandler : MonoBehaviour
             CurMovementCollection = BaseMovementCollection;       
 
         else
-            CurMovementCollection = weapon.MovementCollection;             
+            CurMovementCollection = weapon.MovementCollection;
+
+        MovementCollectionChanged?.Invoke(CurMovementCollection);
     }
 
     private void OnMovementAnimationUpdated(string animationState, AnimationTrigger.Type triggerType)
@@ -103,7 +108,7 @@ public class MovementInputHandler : MonoBehaviour
                 case MovementType.Roll:
                 case MovementType.Land:
                     curMoveState = MovementType.Move;
-                    stateHandler.ResetState();
+                    sceneObj.StateHandler.ResetState();
                     break;
             }                                                    
         }
@@ -126,18 +131,19 @@ public class MovementInputHandler : MonoBehaviour
     /// <param name="moveInfluence"></param>
     public void PerformMovement(Vector2 moveInfluence)
     {       
+        //Check that moveData exists
         if (CurMovementCollection.TryGetMovementByType(MovementType.Move, out MovementData movement))
         {
-            if (stateHandler.ChangeState(moveState))
+            if (sceneObj.StateHandler.ChangeState(MOVESTATE))
             {
-                moveInfluence.Normalize();
                 horizontalInfluence = Mathf.Clamp(moveInfluence.x, -1, 1);
-                verticalInfluence = Mathf.Clamp(moveInfluence.y, -1, 1);
-                moveData = (MoveData)movement;                   
+                verticalInfluence = Mathf.Clamp(moveInfluence.y, -1, 1);                 
             }
         }                           
     }
 
+
+    #region Jump
 
     /// <summary>
     /// Vertical jump movement based on input value
@@ -146,14 +152,13 @@ public class MovementInputHandler : MonoBehaviour
     /// <param name="jumpInfluence"></param>
     public void PerformJump(float jumpInfluence)
     {
-        Debug.Log("Perform Jump\n Influence " + jumpInfluence + "\nPos: " + transform.position.x + "\nVelocity: " + rb.velocity.x + "\nTime: " + Time.time);
         jumpInfluence = Mathf.Clamp01(jumpInfluence);
 
-        if (isGrounded)
+        if (IsGrounded)
         {
             if (CurMovementCollection.TryGetMovementByType(MovementType.Jump, out MovementData jump))
             {
-                if (stateHandler.ChangeState(moveState))
+                if (sceneObj.StateHandler.ChangeState(MOVESTATE))
                 {
                     JumpAction((JumpData)jump, jumpInfluence);
                 }
@@ -164,7 +169,7 @@ public class MovementInputHandler : MonoBehaviour
         {
             if (CurMovementCollection.TryGetMovementByType(MovementType.AirJump, out MovementData airJump))
             {
-                if (stateHandler.ChangeState(moveState))
+                if (sceneObj.StateHandler.ChangeState(MOVESTATE))
                 {
                     AirJumpAction((AirJumpData)airJump, jumpInfluence);
                 }
@@ -208,7 +213,7 @@ public class MovementInputHandler : MonoBehaviour
         curMoveState = MovementType.Move;
         numJumpsPerformed = 0;
 
-        stateHandler.ResetState();
+        sceneObj.StateHandler.ResetState();
 
         //if (curMovementCollection.GetMovementByType(MovementType.Type.Land, out MovementCollection.Movement movement))
         //{
@@ -217,10 +222,13 @@ public class MovementInputHandler : MonoBehaviour
         //}
     }
 
+    #endregion
+
 
     private void CheckTurnAround()
     {
-        if ((isFacingRightDir && horizontalInfluence < 0) || (!isFacingRightDir && horizontalInfluence > 0))
+        if ((sceneObj.IsFacingRightDirection() && horizontalInfluence < 0) 
+            || (!sceneObj.IsFacingRightDirection() && horizontalInfluence > 0))
         {
             sceneObj.TurnAround();
             rb.velocity = new Vector3(rb.velocity.x * -1, rb.velocity.y, rb.velocity.z);
@@ -230,17 +238,23 @@ public class MovementInputHandler : MonoBehaviour
 
     private void FixedUpdate()
     {
+        //IsGrounded
+        CheckGroundedStatus();
+
+        //Gravity Scaler
+        ApplyGravity();
+
         //Check for landing
-        if (isGrounded && rb.velocity.y < 0 && (curMoveState == MovementType.Jump || curMoveState == MovementType.AirJump))
+        if (IsGrounded && rb.velocity.y < 0 && (curMoveState == MovementType.Jump || curMoveState == MovementType.AirJump))
         {
             PerformLand();
         }
-        
-        
-        //Check MoveData and Action State
-        if (moveData != null && stateHandler.ChangeState(moveState))
+
+
+        //Check Action State and Movement data
+        if (sceneObj.StateHandler.ChangeState(MOVESTATE) && CurMovementCollection.ContainsMovementType(MovementType.Move))
         {
-            if (isGrounded && (curMoveState == MovementType.Move || curMoveState == MovementType.Land))
+            if (IsGrounded && (curMoveState == MovementType.Move || curMoveState == MovementType.Land))
             {
                 UpdateGroundMovement();
             }
@@ -249,94 +263,130 @@ public class MovementInputHandler : MonoBehaviour
             {
                 UpdateAirMovement();
             }
-        }         
+        }
     }
 
 
+    /// <summary>
+    /// Check to see if grounded
+    /// </summary>
+    private void CheckGroundedStatus()
+    {
+        //TODO: Store bounds
+        Bounds bounds = GetComponent<Collider>().bounds;
+        
+        if (Physics.Raycast(bounds.center, Vector3.down, out RaycastHit hit, bounds.size.y, ~LayerMask.NameToLayer("Environment")))
+        {
+            if (bounds.min.y <= hit.point.y + 0.001f)
+                IsGrounded = true;
+
+            else
+                IsGrounded = false;
+        }                                
+    }
+
+
+    /// <summary>
+    /// Mimic rb.UseGravity but allows the gravity to be scaled
+    /// </summary>
+    private void ApplyGravity()
+    {
+        if (rb.velocity.y < 0)
+            rb.AddForce(Physics.gravity * rb.mass * gravityScaler);
+        else
+            rb.AddForce(Physics.gravity * rb.mass);
+    }
+
+
+    /// <summary>
+    /// Update velocity while on the ground
+    /// Based on current movement collection and horizontal influence try to speed up, slow down or stop
+    /// </summary>
     private void UpdateGroundMovement()
     {
         //Turn around
         CheckTurnAround();
-       
+
         //Apply Movement based on influence
-        if (Mathf.Abs(horizontalInfluence) > 0)
+        if (horizontalInfluence != 0)
         {
-            float targetVelocity = moveData.XVelocityLimit * Mathf.Abs(horizontalInfluence);
+            //Animation
+            PlayMoveAnimation(MovementType.Move);
 
-            PlayMoveAnimation(moveData.Type);
-        
-            //Accelerate
-            if (Mathf.Abs(rb.velocity.x) < targetVelocity)
+            //Cap Velocity based on horizontal influence
+            float targetVelocity = CurMovementCollection.GetMaxXVelocity() * horizontalInfluence;
+
+            //Update velocity based on horizontal influence
+            rb.velocity += Vector3.right * horizontalInfluence * CurMovementCollection.GetXAcceleration() * Time.fixedDeltaTime;
+
+            //Cant exceed target velocity
+            if ((horizontalInfluence > 0 && rb.velocity.x > targetVelocity) ||
+                (horizontalInfluence < 0 && rb.velocity.x < targetVelocity))
             {
-                rb.velocity += transform.right * Mathf.Abs(horizontalInfluence) * moveData.XVelocityAcceleration * Time.fixedDeltaTime;
-
-                if (rb.velocity.x > targetVelocity)
-                    rb.velocity = new Vector3(targetVelocity, rb.velocity.y);
-
-                if (rb.velocity.x < -targetVelocity)
-                    rb.velocity = new Vector3(-targetVelocity, rb.velocity.y);
-            }
-
-            //Decelerate
-            else if (Mathf.Abs(rb.velocity.x) > targetVelocity)
-            {
-                rb.velocity -= transform.right * Mathf.Abs(horizontalInfluence) * moveData.XVelocityAcceleration * Time.fixedDeltaTime;
-
-                if (rb.velocity.x < targetVelocity)
-                    rb.velocity = new Vector3(targetVelocity, rb.velocity.y);
-
-                if (rb.velocity.x > -targetVelocity)
-                    rb.velocity = new Vector3(-targetVelocity, rb.velocity.y);
+                rb.velocity = new Vector3(targetVelocity, rb.velocity.y);
             }
         }
 
         //Stopping
-        else
+        else if (rb.velocity.x != 0)
         {
-            rb.velocity -= transform.right * moveData.XVelocityDeceleration * Time.fixedDeltaTime;
-
-            //Check for stopping 
-            if (isFacingRightDir && rb.velocity.x < 0f)
+            //Stop pos movement
+            if (rb.velocity.x > 0f)
             {
-                rb.velocity = new Vector3(0, rb.velocity.y, rb.velocity.z);
-                moveData = null;
-                stateHandler.ResetState();
+                rb.velocity -= Vector3.right * CurMovementCollection.GetXDeceleration() * Time.fixedDeltaTime;
+
+                if (rb.velocity.x < 0f)
+                {
+                    rb.velocity = new Vector3(0, rb.velocity.y, rb.velocity.z);
+                    sceneObj.StateHandler.ResetState();
+                }
             }
 
-            else if (!isFacingRightDir && rb.velocity.x > 0f)
+            //Stop neg movement
+            else
             {
-                rb.velocity = new Vector3(0, rb.velocity.y, rb.velocity.z);
-                moveData = null;
-                stateHandler.ResetState();
+                rb.velocity += Vector3.right * CurMovementCollection.GetXDeceleration() * Time.fixedDeltaTime;
+
+                if (rb.velocity.x > 0f)
+                {
+                    rb.velocity = new Vector3(0, rb.velocity.y, rb.velocity.z);
+                    sceneObj.StateHandler.ResetState();
+                }
             }
         }
 
-        animator.SetFloatPerameter("Velocity", moveData != null ? Mathf.Abs(rb.velocity.x) / moveData.XVelocityLimit : 0);                
+        sceneObj.AnimationHandler.SetFloatPerameter("Velocity", Mathf.Abs(rb.velocity.x) / CurMovementCollection.GetMaxXVelocity());             
     }
 
 
+    /// <summary>
+    /// Update velocity while in the air
+    /// </summary>
     private void UpdateAirMovement()
-    {        
-        //Horizontal Movement
-        if (isFacingRightDir)
-            rb.velocity += transform.right * horizontalInfluence * moveData.XAirVelocityAcceleration * Time.fixedDeltaTime;
+    {
+        //Apply Movement based on influence
+        if (horizontalInfluence != 0)
+        {
+            //Cap Velocity based on horizontal influence
+            float targetVelocity = CurMovementCollection.GetMaxXVelocity() * horizontalInfluence;
 
-        else
-            rb.velocity -= transform.right * horizontalInfluence * moveData.XAirVelocityAcceleration * Time.fixedDeltaTime;
+            //Update velocity based on horizontal influence
+            rb.velocity += Vector3.right * horizontalInfluence * CurMovementCollection.GetXAcceleration() * Time.fixedDeltaTime;
 
-
-        if (rb.velocity.x > moveData.XVelocityLimit)
-            rb.velocity = new Vector3(moveData.XVelocityLimit, rb.velocity.y);
-
-        if (rb.velocity.x < -moveData.XVelocityLimit)
-            rb.velocity = new Vector3(-moveData.XVelocityLimit, rb.velocity.y);
+            //Cant exceed target velocity
+            if ((horizontalInfluence > 0 && rb.velocity.x > targetVelocity) ||
+                (horizontalInfluence < 0 && rb.velocity.x < targetVelocity))
+            {
+                rb.velocity = new Vector3(targetVelocity, rb.velocity.y);
+            }
+        }
 
 
         //Vertical Movement
-        if (verticalInfluence < 0f)
-        {
-            rb.velocity += transform.up * verticalInfluence * moveData.FastFallVelocity * Time.fixedDeltaTime;
-        }
+        //if (verticalInfluence < 0f)
+        //{
+            //rb.velocity += transform.up * verticalInfluence * curMoveData.FastFallVelocity * Time.fixedDeltaTime;
+        //}
     }
 
 
@@ -360,15 +410,16 @@ public class MovementInputHandler : MonoBehaviour
                 string clipName = moveType.ToString();
                 string weaponName;
 
-                if (sceneObj.EquipmentHandler.Weapons.GetCurWeapon() != null)
-                    weaponName = sceneObj.EquipmentHandler.Weapons.GetCurWeapon().name;
-                else
+                //TODO: Need to fix with EquipmentHandler
+                //if (sceneObj.EquipmentHandler.Weapons.GetCurWeapon() != null)
+                //    weaponName = sceneObj.EquipmentHandler.Weapons.GetCurWeapon().name;
+                //else
                     weaponName = "Base";
 
                 animationName = userName + weaponName + clipName;
             }           
 
-            sceneObj.Animator.PlayAnimation(animationName);            
+            sceneObj.AnimationHandler.PlayAnimation(animationName);            
         }
     }
 }

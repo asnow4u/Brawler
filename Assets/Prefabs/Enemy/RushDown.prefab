@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 4421783498763120605}
   - component: {fileID: 3606919788912362873}
   - component: {fileID: 857581707373331514}
+  - component: {fileID: 8752136622161124601}
   m_Layer: 7
   m_Name: RushDown
   m_TagString: Untagged
@@ -47,7 +48,7 @@ Rigidbody:
   serializedVersion: 2
   m_Mass: 100
   m_Drag: 0
-  m_AngularDrag: 0.05
+  m_AngularDrag: 0
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
@@ -60,7 +61,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 162542210556236614}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 1bab10a202025564c87deea07902e666, type: 2}
   m_IsTrigger: 0
   m_Enabled: 1
   m_Radius: 0.5
@@ -81,28 +82,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   UniqueId: 
   ObjectType: 1
+  InHitStun: 0
   damageTaken: 0
-  rb: {fileID: 0}
-  maxVelocity: 10
-  isGrounded: 0
-  inHitStun: 0
-  DecelerationRate: 2
-  movementInputHandler: {fileID: 0}
-  attackInputHandler: {fileID: 0}
   testForce: 0
   testDirection: {x: 0, y: 0}
-  headTransform: {fileID: 1525150623024946033}
-  aggroDistance: 5
-  maxSightDistance: 10
-  maxAngle: 30
-  alertTimerDuration: 3
-  lostTargetTimerDuration: 3
-  patrolSpots:
-  - {x: -26.81, y: 1}
-  - {x: -70.7, y: 1}
-  patrolWaitDuration: 2
-  targetSpot: {x: 0, y: 0}
-  pathObject: {fileID: 0}
+  pathTarget: {fileID: 0}
 --- !u!114 &857581707373331514
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -115,12 +99,49 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 99e0a44c129ecbe4cb1fbf883587990b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  IsGrounded: 1
+  gravityScaler: 1
   BaseMovementCollection:
     Movements:
     - {fileID: 11400000, guid: 0357c9c67a146d94b8d4de688bf3891a, type: 2}
     - {fileID: 11400000, guid: e0f27305a9687e74e871bc1b8c81f5fd, type: 2}
   CurMovementCollection:
     Movements: []
+  prevXVelocity: 0
+--- !u!114 &8752136622161124601
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 162542210556236614}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 323b280502324d249af0cae379a4e74d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  BaseAttackCollection:
+    WeaponData:
+      UpTilt: {fileID: 0}
+      UpAir: {fileID: 0}
+      DownTilt: {fileID: 0}
+      DownAir: {fileID: 0}
+      ForwardTilt: {fileID: 0}
+      ForwardAir: {fileID: 0}
+      BackAir: {fileID: 0}
+    AttackPointCollection:
+      AttackPoints: []
+  CurAttackCollection:
+    WeaponData:
+      UpTilt: {fileID: 0}
+      UpAir: {fileID: 0}
+      DownTilt: {fileID: 0}
+      DownAir: {fileID: 0}
+      ForwardTilt: {fileID: 0}
+      ForwardAir: {fileID: 0}
+      BackAir: {fileID: 0}
+    AttackPointCollection:
+      AttackPoints: []
 --- !u!1 &1704295450893306069
 GameObject:
   m_ObjectHideFlags: 0

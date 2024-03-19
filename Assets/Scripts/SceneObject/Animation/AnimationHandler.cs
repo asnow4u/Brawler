@@ -8,7 +8,7 @@ using UnityEngine;
 public class AnimationHandler : MonoBehaviour, IAnimator
 {
     protected SceneObject sceneObj;
-    protected Animator animator;
+    protected Animator animator => GetComponent<Animator>();
 
     protected string curAnimatorState = string.Empty;
 
@@ -19,7 +19,6 @@ public class AnimationHandler : MonoBehaviour, IAnimator
     public void SetUp(SceneObject obj)
     {
         sceneObj = obj;
-        animator = GetComponent<Animator>();
     }
 
 
@@ -52,7 +51,7 @@ public class AnimationHandler : MonoBehaviour, IAnimator
 
     public void PlayIdleAnimation()
     {
-        if (sceneObj.IsGrounded)
+        if (sceneObj.MovementInputHandler.IsGrounded)
             PlayAnimation("BaseIdle");
         else
             PlayAnimation("BaseAirIdle");

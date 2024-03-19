@@ -8,7 +8,7 @@ public class ActionStateHandler : IActionState
     private ActionState.State curState;
 
     private SceneObject sceneObj;
-    private IAnimator animator { get { return sceneObj.Animator; } }
+    private IAnimator animator { get { return sceneObj.AnimationHandler; } }
 
     public void Setup(SceneObject obj)
     {

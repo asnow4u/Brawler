@@ -2,14 +2,29 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.UI.ScrollRect;
 
 public enum MovementType { Move, Jump, AirJump, Fall, Land, Roll }
 
 [Serializable]
 public class MovementCollection
 {
-    public List<MovementData> Movements;
+    [SerializeField] private List<MovementData> Movements;
 
+
+    public bool ContainsMovementType(MovementType type)
+    {
+        foreach (MovementData move in Movements)
+        {
+            if (move.Type == type)
+                return true;
+        }
+
+        return false;
+    }
+
+
+    //TODO: Might remove
     public bool TryGetMovementByType(MovementType movementType, out MovementData requestedMovement) 
     {
         foreach (MovementData move in Movements)
@@ -26,13 +41,13 @@ public class MovementCollection
     }
 
 
-    public float GetCurMovementSpeed()
+    public float GetMaxXVelocity()
     {
         foreach (MovementData move in Movements)
         {
             if (move.Type == MovementType.Move)
             {
-                return ((MoveData)move).XVelocityAcceleration;
+                return ((MoveData)move).MaxXVelocity;
             }
         }
 
@@ -40,27 +55,41 @@ public class MovementCollection
     }
 
 
-    public float GetCurJumpVelocity()
+    public float GetXAcceleration()
+    {
+        foreach (MovementData move in Movements)
+        {
+            if (move.Type == MovementType.Move)
+            {
+                return ((MoveData)move).XAcceleration;
+            }
+        }
+
+        return 0;
+    }
+
+
+    public float GetXDeceleration()
+    {
+        foreach (MovementData move in Movements)
+        {
+            if (move.Type == MovementType.Move)
+            {
+                return ((MoveData)move).XDeceleration;
+            }
+        }
+
+        return 0;
+    }
+
+
+    public float GetJumpVelocity()
     {
         foreach (MovementData move in Movements)
         {
             if (move.Type == MovementType.Jump)
             {
                 return ((JumpData)move).JumpVelocity;
-            }
-        }
-
-        return 0;
-    }
-
-
-    public float GetCurAirJumpVelocity()
-    {
-        foreach (MovementData move in Movements)
-        {
-            if (move.Type == MovementType.AirJump)
-            {
-                return ((AirJumpData)move).AirJumpVelocity;
             }
         }
 

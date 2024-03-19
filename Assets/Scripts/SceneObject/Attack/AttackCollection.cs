@@ -59,45 +59,45 @@ public class AttackCollection
     }   
     
 
-    public bool GetAttackByAnimationClipName(string clipName, out AttackData attack)
+    public bool TryGetAttackByAnimationClipName(string clipName, out AttackData attack)
     {
-        if (WeaponData.ForwardTilt.AttackAnimation.name == clipName)
+        if (WeaponData.ForwardTilt != null && WeaponData.ForwardTilt.AttackAnimation.name == clipName)
         {
             attack = WeaponData.ForwardTilt;
             return true;
         }
 
-        if (WeaponData.UpTilt.AttackAnimation.name == clipName)
+        if (WeaponData.UpTilt != null && WeaponData.UpTilt.AttackAnimation.name == clipName)
         {
             attack = WeaponData.UpTilt;
             return true;
         }
 
-        if (WeaponData.DownTilt.AttackAnimation.name == clipName)
+        if (WeaponData.DownTilt != null && WeaponData.DownTilt.AttackAnimation.name == clipName)
         {
             attack = WeaponData.DownTilt;
             return true;
         }
 
-        if (WeaponData.ForwardAir.AttackAnimation.name == clipName)
+        if (WeaponData.ForwardAir != null && WeaponData.ForwardAir.AttackAnimation.name == clipName)
         {
             attack = WeaponData.ForwardAir;
             return true;
         }
 
-        if (WeaponData.UpAir.AttackAnimation.name == clipName)
+        if (WeaponData.UpAir != null && WeaponData.UpAir.AttackAnimation.name == clipName)
         {
             attack = WeaponData.UpAir;
             return true;
         }
 
-        if (WeaponData.DownAir.AttackAnimation.name == clipName)
+        if (WeaponData.DownAir != null && WeaponData.DownAir.AttackAnimation.name == clipName)
         {
             attack = WeaponData.DownAir;
             return true;
         }
 
-        if (WeaponData.BackAir.AttackAnimation.name == clipName)
+        if (WeaponData.BackAir != null && WeaponData.BackAir.AttackAnimation.name == clipName)
         {
             attack = WeaponData.BackAir;
             return true;

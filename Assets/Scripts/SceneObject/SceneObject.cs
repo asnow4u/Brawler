@@ -7,39 +7,35 @@ using UnityEngine.InputSystem.Utilities;
 public enum SceneObjectType { Player, Enemy, Object }
 
 [RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(MovementInputHandler))]
+[RequireComponent(typeof(AttackInputHandler))]
 public abstract class SceneObject : MonoBehaviour, IDamage
 {
     [Header("SceneObject")]
     public string UniqueId;
     public SceneObjectType ObjectType;
-    [SerializeField] protected float damageTaken;
 
-    [Header("Physics")]
-    public Rigidbody rb;
-    public float MaxVelocity = 10f;
-    public bool IsGrounded;
+    //Physics
+    public Rigidbody rb => GetComponent<Rigidbody>();
+
+    [Header("Hit/Damage")]
     public bool InHitStun;
-    public float DecelerationRate = 2;
-
-    //Components
-    public MovementInputHandler movementInputHandler;
-    public AttackInputHandler attackInputHandler;
-
-    //Handlers
-    public IActionState StateHandler;
-    public IAnimator Animator;
-    public IEquipment EquipmentHandler;
-    public IInteraction InteractionHandler;
-
-    
-    //Damage Calculation
-   
+    [SerializeField] protected float damageTaken;
+    private float maxHitVelocity = 10f;    
+    private float hitDecelerationRate = 2;
     const float minKnockBackForce = 200f;
-    
     private KillZone killZone;
     private Coroutine hitStunTimer;
 
+    //Handlers
+    public IActionState StateHandler;
+    public IEquipment EquipmentHandler;
+    public IInteraction InteractionHandler;
+    public MovementInputHandler MovementInputHandler => GetComponent<MovementInputHandler>();
+    public AttackInputHandler AttackInputHandler => GetComponent<AttackInputHandler>();
+    public IAnimator AnimationHandler => GetComponentInChildren<IAnimator>();
 
+    #region Initialize
 
     private void Start()
     {
@@ -49,13 +45,11 @@ public abstract class SceneObject : MonoBehaviour, IDamage
 
     protected virtual void Initialize()
     {               
-        UniqueId = Guid.NewGuid().ToString();
-
-        rb = GetComponent<Rigidbody>();
+        UniqueId = Guid.NewGuid().ToString();        
 
         InitializeInteractionHandler();
         InitializeEquipmentHandler();
-        InitializeAnimator();
+        InitializeAnimationHandler();
         InitializeStateHandler();
         InitializeMovementHandler();
         InitializeAttackHandler();
@@ -69,13 +63,13 @@ public abstract class SceneObject : MonoBehaviour, IDamage
 
     private void InitializeEquipmentHandler()
     {
-        EquipmentHandler = new EquipmentHandler(this);
+        //TODO: Rework
+        //EquipmentHandler = new EquipmentHandler(this);
     }
 
-    private void InitializeAnimator()
+    private void InitializeAnimationHandler()
     {
-        Animator = GetComponentInChildren<IAnimator>();
-        Animator.SetUp(this);
+        AnimationHandler.SetUp(this);
     }
 
 
@@ -88,38 +82,26 @@ public abstract class SceneObject : MonoBehaviour, IDamage
 
 
     private void InitializeMovementHandler()
-    {
-        if (TryGetComponent(out movementInputHandler))
-        {            
-            movementInputHandler.Setup(this);
-        }        
+    {         
+        MovementInputHandler.Setup();        
     }
 
+
     private void InitializeAttackHandler()
-    {
-        if (TryGetComponent(out attackInputHandler))
-        {
-            attackInputHandler.Setup(this);
-        }
+    {        
+        AttackInputHandler.Setup();        
     }
+
+    #endregion
 
 
     //TODO: make two rays on each side to prevent landing just on the edge and not getting jump reset
     protected virtual void FixedUpdate()
     {
-        if (Physics.Raycast(GetComponent<Collider>().bounds.center, Vector3.down, transform.GetComponent<Collider>().bounds.size.y / 2 + 0.1f, ~LayerMask.NameToLayer("Environment")))
-        {
-            if (rb.velocity.y < 0 && !IsGrounded)
-            {
-                IsGrounded = true;                
-            }
-        }
-        else
-        {
-            IsGrounded = false;
-        }
+        
     }
 
+    #region Direction
 
     public void TurnAround()
     {
@@ -138,10 +120,26 @@ public abstract class SceneObject : MonoBehaviour, IDamage
         }
 
         return false;
-    }      
+    }
+
+    #endregion
 
 
-    public void ResetDamaget()
+    #region Damage
+
+
+    [Header("Force Test")]
+    public float testForce;
+    public Vector2 testDirection;
+
+    [ContextMenu("TestForce")]
+    public void TestForce()
+    {
+        ApplyForceBasedOnDamage(testForce, 0f, testDirection);
+    }
+
+
+    public void ResetDamage()
     {
         damageTaken = 0;
     }
@@ -192,79 +190,71 @@ public abstract class SceneObject : MonoBehaviour, IDamage
 
     public IEnumerator ApplyHitStun(float totalForce)
     {
-        //TODO: Remove
-        InHitStun = true;
+        ////TODO: Remove
+        //InHitStun = true;
 
-        StateHandler.ChangeState(ActionState.State.HitStun);
-        float timer = totalForce / 1000f;
+        //StateHandler.ChangeState(ActionState.State.HitStun);
+        //float timer = totalForce / 1000f;
 
-        Debug.Log("HitStun: " + timer);
+        //Debug.Log("HitStun: " + timer);
 
-        while (timer > 0)
-        {
-            timer -= Time.deltaTime;            
+        //while (timer > 0)
+        //{
+        //    timer -= Time.deltaTime;
+        //    yield return null;
+        //}
+
+        //Destroy(killZone.gameObject);
+
+        //StateHandler.ResetState();
+
+        ////TODO: Remove
+        //InHitStun = false;
+
+        //while (Mathf.Abs(rb.velocity.x) > maxHitVelocity || Mathf.Abs(rb.velocity.y) > maxHitVelocity)
+        //{
+        //    //Horizontal
+        //    if (Mathf.Abs(rb.velocity.x) > maxHitVelocity)
+        //    {
+        //        //Right Direction
+        //        if (rb.velocity.x > maxHitVelocity)
+        //        {
+        //            rb.velocity -= transform.right * hitDecelerationRate * Time.deltaTime;
+        //        }
+
+        //        //Left Direction
+        //        else
+        //        {
+        //            rb.velocity += transform.right * hitDecelerationRate * Time.deltaTime;
+        //        }
+        //    }
+
+        //    //Vertical
+        //    if (Mathf.Abs(rb.velocity.y) > maxHitVelocity)
+        //    {
+        //        //Up
+        //        if (rb.velocity.y > maxHitVelocity)
+        //        {
+        //            rb.velocity -= transform.up * hitDecelerationRate * Time.deltaTime;
+        //        }
+
+        //        //Down
+        //        else
+        //        {
+        //            rb.velocity += transform.up * hitDecelerationRate * Time.deltaTime;
+        //        }
+        //    }
+
             yield return null;
-        }
-
-        Destroy(killZone.gameObject);
-
-        StateHandler.ResetState();
-
-        //TODO: Remove
-        InHitStun = false;
-
-        while (Mathf.Abs(rb.velocity.x) > MaxVelocity || Mathf.Abs(rb.velocity.y) > MaxVelocity)
-        {
-            //Horizontal
-            if (Mathf.Abs(rb.velocity.x) > MaxVelocity)
-            {
-                //Right Direction
-                if (rb.velocity.x > MaxVelocity)
-                {
-                    rb.velocity -= transform.right * DecelerationRate * Time.deltaTime;
-                }
-
-                //Left Direction
-                else
-                {
-                    rb.velocity += transform.right * DecelerationRate * Time.deltaTime;
-                }
-            }
-            
-            //Vertical
-            if (Mathf.Abs(rb.velocity.y) > MaxVelocity)
-            {
-                //Up
-                if (rb.velocity.y > MaxVelocity)
-                {
-                    rb.velocity -= transform.up * DecelerationRate * Time.deltaTime;
-                }
-
-                //Down
-                else
-                {
-                    rb.velocity += transform.up * DecelerationRate * Time.deltaTime;
-                }
-            }
-
-            yield return null;
-        }
+        //}
     }
+
+    #endregion
 
     private void OnDestroy()
     {
         if (killZone != null)
             Destroy(killZone.gameObject);
-    }
-
-    [Header("Force Test")]
-    public float testForce;
-    public Vector2 testDirection;
-
-    [ContextMenu("TestForce")]
-    public void TestForce()
-    {
-        ApplyForceBasedOnDamage(testForce, 0f, testDirection);
     }
 }
 

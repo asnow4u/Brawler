@@ -15,8 +15,7 @@ MonoBehaviour:
   Animation: {fileID: 7400000, guid: 7ecd47016ec470e408c81627beb32086, type: 2}
   Type: 0
   Triggers: []
-  XVelocityLimit: 10
-  XVelocityAcceleration: 30
-  XVelocityDeceleration: 20
-  XAirVelocityAcceleration: 30
+  MaxXVelocity: 10
+  XAcceleration: 10
+  XDeceleration: 15
   FastFallVelocity: 20

@@ -9,9 +9,9 @@ public class WeaponPickUp : Interactable
         if (transform.GetChild(0).TryGetComponent(out Weapon weapon))
         {
             //Setup add sceneObject attackpoints to weapon
-            if (sceneObj.attackInputHandler != null)
+            if (sceneObj.AttackInputHandler != null)
             {
-                foreach (GameObject attackPointObj in sceneObj.attackInputHandler.BaseAttackCollection.AttackPointCollection.AttackPoints)
+                foreach (GameObject attackPointObj in sceneObj.AttackInputHandler.BaseAttackCollection.AttackPointCollection.AttackPoints)
                 {
                     weapon.AttackCollection.AttackPointCollection.AttackPoints.Add(attackPointObj);
                 }

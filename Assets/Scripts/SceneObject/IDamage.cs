@@ -9,7 +9,7 @@ public interface IDamage
 
     public void RemoveDamage(float percent);
 
-    public void ResetDamaget();
+    public void ResetDamage();
 
     public void ApplyForceBasedOnDamage(float baseKnockBack, float damageInfluence, Vector2 direction);
 

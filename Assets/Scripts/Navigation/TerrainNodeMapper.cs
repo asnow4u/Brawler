@@ -13,13 +13,15 @@ public class TerrainNodeMapper : MonoBehaviour
     public static TerrainNodeMapper Instance;
     public Dictionary<(int, int), TerrainNode> TerrainNodes;
 
-    [SerializeField] private MeshCollider LevelMesh;
-    [SerializeField] private float XViewBuffer;
-    [SerializeField] private float YViewBuffer;
-    [SerializeField] private float ScaleFactor;
+    [SerializeField] private MeshCollider levelMesh;
+    [SerializeField] private float xViewBuffer;
+    [SerializeField] private float yViewBuffer;
+    [SerializeField] private float scaleFactor;
 
     private int columnCount;
     private int rowCount;
+
+    public float ScaleFactor => scaleFactor;
 
 
     private void Start()
@@ -160,7 +162,7 @@ public class TerrainNodeMapper : MonoBehaviour
 
     private Vector3 CaluclateNodePos(int curColumn, int curRow)
     {
-        return transform.position + new Vector3(curColumn * ScaleFactor, curRow * ScaleFactor, 0);
+        return transform.position + new Vector3(curColumn * scaleFactor, curRow * scaleFactor, 0);
     }
 
     
@@ -171,7 +173,7 @@ public class TerrainNodeMapper : MonoBehaviour
     /// <returns></returns>
     private int GetNodeColumnBy(Vector3 pos)
     {
-        return Mathf.RoundToInt((pos.x - transform.position.x) / ScaleFactor);
+        return Mathf.RoundToInt((pos.x - transform.position.x) / scaleFactor);
     }
 
 
@@ -184,7 +186,7 @@ public class TerrainNodeMapper : MonoBehaviour
     {
         int column = GetNodeColumnBy(pos);
 
-        return Mathf.RoundToInt((pos.y - transform.position.y) / ScaleFactor);
+        return Mathf.RoundToInt((pos.y - transform.position.y) / scaleFactor);
     }
 
 
@@ -212,8 +214,8 @@ public class TerrainNodeMapper : MonoBehaviour
 
         if (TerrainNodes.ContainsKey((column, row)))
         {
-            int numColumns = Mathf.CeilToInt(width / ScaleFactor);
-            int numRows = Mathf.CeilToInt(height / ScaleFactor);
+            int numColumns = Mathf.CeilToInt(width / scaleFactor);
+            int numRows = Mathf.CeilToInt(height / scaleFactor);
 
             //Determin maxColumn
             maxColumn = column + Mathf.CeilToInt(numColumns / 2);
@@ -247,22 +249,22 @@ public class TerrainNodeMapper : MonoBehaviour
     /// </summary>
     private void InitializeMapTerrain()
     {
-        if (LevelMesh != null)
+        if (levelMesh != null)
         {
             TerrainNodes = new Dictionary<(int, int), TerrainNode>();
 
-            float height = LevelMesh.bounds.size.y;
-            float width = LevelMesh.bounds.size.x;
+            float height = levelMesh.bounds.size.y;
+            float width = levelMesh.bounds.size.x;
 
             //Apply Buffer
-            height += 2 * YViewBuffer;
-            width += 2 * XViewBuffer;
+            height += 2 * yViewBuffer;
+            width += 2 * xViewBuffer;
 
             //Columns
-            columnCount = Mathf.CeilToInt(width / ScaleFactor);
+            columnCount = Mathf.CeilToInt(width / scaleFactor);
 
             //Rows        
-            rowCount = Mathf.CeilToInt(height / ScaleFactor);
+            rowCount = Mathf.CeilToInt(height / scaleFactor);
 
             int curColumn = -columnCount / 2;
 
@@ -322,7 +324,7 @@ public class TerrainNodeMapper : MonoBehaviour
     /// <param name="curRow"></param>
     private void PerformTerrainCast(TerrainNode node, int curColumn, int curRow)
     {
-        node.PerformRaycastCheck(ScaleFactor);
+        node.PerformRaycastCheck(scaleFactor);
 
         CheckInsideTerrain(node, curColumn, curRow);
 
@@ -392,7 +394,7 @@ public class TerrainNodeMapper : MonoBehaviour
             //Determine direction of raycast (left or right)
             Vector3 dir = Vector3.left;
 
-            if (Physics.Raycast(curNode.Pos, dir, ScaleFactor, LayerMask.GetMask("Environment")))
+            if (Physics.Raycast(curNode.Pos, dir, scaleFactor, LayerMask.GetMask("Environment")))
                 return false;
 
             else
@@ -499,6 +501,8 @@ public class TerrainNodeMapper : MonoBehaviour
     {
         if (TerrainNodes != null && TerrainNodes.Count > 0)
         {
+            List<TerrainNode> lableList = new List<TerrainNode>();
+
             //Draw Nodes
             foreach (TerrainNode node in TerrainNodes.Values)
             {
@@ -533,7 +537,7 @@ public class TerrainNodeMapper : MonoBehaviour
                         break;
 
                     case TerrainNodeType.WallLedge:
-                        Gizmos.color = Color.grey;
+                        Gizmos.color = Color.gray;
                         break;
 
                     case TerrainNodeType.Inside:
@@ -547,13 +551,13 @@ public class TerrainNodeMapper : MonoBehaviour
                 if (node.UpCollision != null)
                 {
                     Gizmos.color = Color.yellow;
-                    Gizmos.DrawLine(node.Pos, node.Pos + Vector3.up * ScaleFactor);
+                    Gizmos.DrawLine(node.Pos, node.Pos + Vector3.up * scaleFactor);
                 }
 
                 if (node.DownCollision != null)
                 {
                     Gizmos.color = Color.yellow;
-                    Gizmos.DrawLine(node.Pos, node.Pos - Vector3.up * ScaleFactor);
+                    Gizmos.DrawLine(node.Pos, node.Pos - Vector3.up * scaleFactor);
                         
                     Gizmos.color = Color.Lerp(Color.red, Color.green, node.DownCollision.SlopeGradiant / 90);
                     Gizmos.DrawSphere(node.DownCollision.CollisionPoint, 0.1f);
@@ -562,7 +566,7 @@ public class TerrainNodeMapper : MonoBehaviour
                 if (node.RightCollision != null)
                 {
                     Gizmos.color = Color.yellow;
-                    Gizmos.DrawLine(node.Pos, node.Pos + Vector3.right * ScaleFactor);
+                    Gizmos.DrawLine(node.Pos, node.Pos + Vector3.right * scaleFactor);
 
                     Gizmos.color = Color.Lerp(Color.red, Color.green, node.RightCollision.SlopeGradiant / 90);
                     Gizmos.DrawSphere(node.RightCollision.CollisionPoint, 0.1f);
@@ -571,7 +575,7 @@ public class TerrainNodeMapper : MonoBehaviour
                 if (node.LeftCollision != null)
                 {
                     Gizmos.color = Color.yellow;
-                    Gizmos.DrawLine(node.Pos, node.Pos - Vector3.right * ScaleFactor);
+                    Gizmos.DrawLine(node.Pos, node.Pos - Vector3.right * scaleFactor);
 
                     Gizmos.color = Color.Lerp(Color.red, Color.green, node.LeftCollision.SlopeGradiant / 90);
                     Gizmos.DrawSphere(node.LeftCollision.CollisionPoint, 0.1f);
@@ -587,26 +591,39 @@ public class TerrainNodeMapper : MonoBehaviour
 
                     if (viewPoint.x >= 0 && viewPoint.x <= 1 
                         && viewPoint.y >= 0 && viewPoint.y <= 1
-                        && viewPoint.z > 0
-                        && Mathf.Abs(sceneViewCamera.transform.position.z) < 10)
+                        && viewPoint.z > 0)
+                        //&& Mathf.Abs(sceneViewCamera.transform.position.z) < 10)
                     {
-                        Handles.Label(node.Pos, "(" + node.ColumnNum + ", " + node.RowNum + ")");
+                        lableList.Add(node);                        
                     }
                 }
+            }
+
+            DisplayLables(lableList);
+        }
+    }
+
+
+    private void DisplayLables(List<TerrainNode> nodes)
+    {        
+        if (nodes.Count < 500)
+        {
+            foreach (TerrainNode node in nodes)
+            {
+                Handles.Label(node.Pos, "(" + node.ColumnNum + ", " + node.RowNum + ")");            
             }
         }
     }
 
 
-
-
     //TEMP
-    public bool Check;
+    //This a testing on recalculating what terrain gets adjusted
+    public bool Recalculate;
     private void Update()
     {
-        if (Check)
+        if (Recalculate)
         {
-            Check = false;
+            Recalculate = false;
             RecalculateTerrainRegion(new Vector3(0, 200, 0), 50, 50);
         }
     }
