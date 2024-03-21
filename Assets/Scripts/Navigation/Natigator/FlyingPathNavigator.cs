@@ -5,11 +5,8 @@ using UnityEngine;
 
 public class FlyingPathNavigator : PathNavigator
 {
-
-    public override void Initialize(Action<TraversalType, float> actionCallback)
+    protected override void SetupPathFinder()
     {
-        base.Initialize(actionCallback);
-
         pathFinder = new FlyingPathFinder(gameObject);
     }
 

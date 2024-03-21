@@ -6,7 +6,7 @@ using UnityEngine;
 public abstract class PathFinder
 {
     protected GameObject go;
-    protected List<PathPoint> pathPoints;
+    protected List<Node> visitedNodes = new List<Node>();
 
     protected Graph curGraph;
     protected Node startNode;
@@ -65,8 +65,7 @@ public abstract class PathFinder
 
 
 
-
-
+    //TODO:
     protected abstract List<TraversalNode> BuildPath(PathNode startNode, float curVelocity, PathNode endNode, List<(int, int)> visitedNodes);
 
     ///// <summary>

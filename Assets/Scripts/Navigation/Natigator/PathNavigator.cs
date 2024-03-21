@@ -8,41 +8,24 @@ using UnityEngine.UIElements;
 
 public abstract class PathNavigator : MonoBehaviour
 {
-    protected bool isInitialized;
     protected Graph curGraph;    
     protected PathFinder pathFinder;
 
+    //PathPoints
     protected PathPoint curPathPoint;
     protected PathPoint nextPathPoint;
 
-    protected Action<TraversalType, float> movementCallback;
-    
+    //Events
+    public event Action<TraversalType, float> PathMovementEvent;
+
     //Getters
     protected Bounds bounds => GetComponent<CapsuleCollider>().bounds;
     protected MovementInputHandler moveHandler => GetComponent<MovementInputHandler>();
     protected Rigidbody rb => GetComponent<Rigidbody>();
 
     //Debug
-    public bool DisplayGraph = true;
-    public bool DisplayPathPoints = true;
-
-
-    /// <summary>
-    /// Initialize
-    /// Set up callback for movement
-    /// </summary>
-    /// <param name="actionCallback"></param>
-    public virtual void Initialize(Action<TraversalType, float> actionCallback)
-    {
-        if (actionCallback == null)
-        {
-            Debug.LogError("Path Navigator Requires Callback");
-            return;
-        }     
-
-        movementCallback = actionCallback;
-        isInitialized = true;
-    }
+    public bool DisplayGraph = false;
+    public bool DisplayPathPoints = false;   
 
 
     /// <summary>
@@ -54,23 +37,25 @@ public abstract class PathNavigator : MonoBehaviour
     /// <returns></returns>
     public async Task SetDestination(Vector3 target)
     {
-        if (isInitialized)
-        {
-            if (TerrainNodeMapper.Instance.TryGetClosetNodeTo(transform.position, out TerrainNode startNode)
-                && TerrainNodeMapper.Instance.TryGetClosetNodeTo(target, out TerrainNode endNode))
-            {                
-                //Graph
-                curGraph = CreateGraph(startNode, endNode);
+        SetupPathFinder();
 
-                //Pathfinder
-                pathFinder.Setup(curGraph, moveHandler.CurMovementCollection);
-                curPathPoint = pathFinder.CreateStartPathPoint(transform.position);
+        if (TerrainNodeMapper.Instance.TryGetClosetNodeTo(transform.position, out TerrainNode startNode)
+            && TerrainNodeMapper.Instance.TryGetClosetNodeTo(target, out TerrainNode endNode))
+        {                
+            //Graph
+            curGraph = CreateGraph(startNode, endNode);
 
-                //Next PathPoint
-                SetNextPathPoint();
-            }
-        }
+            //Pathfinder
+            pathFinder.Setup(curGraph, moveHandler.CurMovementCollection);
+            curPathPoint = pathFinder.CreateStartPathPoint(transform.position);
+
+            //Next PathPoint
+            SetNextPathPoint();
+        }               
     }
+
+
+    protected abstract void SetupPathFinder();
 
 
     /// <summary>
@@ -117,8 +102,8 @@ public abstract class PathNavigator : MonoBehaviour
     private bool CheckForDestination()
     {
         Bounds bounds = GetComponent<Collider>().bounds;
-
-        if (MathF.Abs(transform.position.x - curPathPoint.Pos.x) < bounds.extents.x / 2)
+        
+        if (bounds.Contains(curPathPoint.Pos))
         {
             return true;        
         }
@@ -156,7 +141,7 @@ public abstract class PathNavigator : MonoBehaviour
     private async Task SetNextPathPoint()
     {
         if (curPathPoint != null)
-        {            
+        {
             nextPathPoint = await pathFinder.GetNextPathPoint(curPathPoint);
         }
     }
@@ -169,6 +154,15 @@ public abstract class PathNavigator : MonoBehaviour
     protected abstract void PerformMovement();
 
 
+    /// <summary>
+    /// Used to trigger the PathMovementEvent
+    /// </summary>
+    /// <param name="traversalType"></param>
+    /// <param name="influence"></param>
+    protected void TriggerMovementEvent(TraversalType traversalType, float influence)
+    {
+        PathMovementEvent?.Invoke(traversalType, influence);
+    }
 
 
     private void OnDrawGizmos()

@@ -5,7 +5,6 @@ using UnityEngine;
 public class RushDown : Enemy
 {
     private PlatformPathNavigator navigator;
-    //private FlyingPathNavigator navigator;
 
     //TEMP
     public Transform pathTarget;
@@ -14,13 +13,10 @@ public class RushDown : Enemy
     {
         base.Initialize();
 
-        navigator = gameObject.AddComponent<PlatformPathNavigator>();
-        //navigator = gameObject.AddComponent<FlyingPathNavigator>();
-
-
-        //TEST PATH
-        navigator.Initialize(NavigatorMovement);
+        navigator = GetComponent<PlatformPathNavigator>();                
         navigator.SetDestination(pathTarget.position);
+
+        navigator.PathMovementEvent += NavigatorMovement;
     }
 
 
@@ -28,7 +24,7 @@ public class RushDown : Enemy
     /// Traverse to the next point in the path by moving
     /// </summary>
     private void NavigatorMovement(TraversalType type, float movementInfluence)
-    {        
+    {   
         switch (type)
         {
             case TraversalType.Move:                
@@ -41,6 +37,5 @@ public class RushDown : Enemy
 
                 break;
         }
-
     } 
 }

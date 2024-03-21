@@ -41,7 +41,10 @@ public class PlatformPathFinder : PathFinder
 
         //One path point found
         else if (availablePathPoints.Count == 1)
+        {
+            visitedNodes.Add(availablePathPoints[0].GraphNode);
             return availablePathPoints[0];
+        }
 
         //Multiple path points found
         else
@@ -54,6 +57,7 @@ public class PlatformPathFinder : PathFinder
             //If not, discard option and randomly pick again
             //If no options are valid, choose closest option
 
+            visitedNodes.Add(availablePathPoints[rand].GraphNode);
             return availablePathPoints[rand];
         }
     }
@@ -96,11 +100,15 @@ public class PlatformPathFinder : PathFinder
         {            
             Node connectingNode = edge.GetConnectingNode(pathPoint.GraphNode);
             
-            //Determine if movement is possible
-            if (CheckMovementConnection(pathPoint, connectingNode, out PathPoint connectingPoint))
+            //Check if already visited
+            if (!visitedNodes.Contains(connectingNode))
             {
-                movePathPoints.Add(connectingPoint);
-            }      
+                //Determine if movement is possible
+                if (CheckMovementConnection(pathPoint, connectingNode, out PathPoint connectingPoint))
+                {
+                    movePathPoints.Add(connectingPoint);
+                }      
+            }
         }
 
         return movePathPoints;
@@ -175,18 +183,21 @@ public class PlatformPathFinder : PathFinder
             {
                 Node connectingNode = edge.GetConnectingNode(pathPoint.GraphNode);
 
-                //Determine if node can be reached by ground connections
-                if (!curGraph.CheckForConnection(pathPoint.GraphNode, connectingNode, new List<EdgeType>() { EdgeType.Ground }))
+                if (!visitedNodes.Contains(connectingNode))
                 {
-                    if (CheckJumpConnection(pathPoint, edge, out float initVelocity))
+                    //Determine if node can be reached by ground connections
+                    if (!curGraph.CheckForConnection(pathPoint.GraphNode, connectingNode, new List<EdgeType>() { EdgeType.Ground }))
                     {
-                        PathPoint endPoint = new PathPoint(connectingNode, TraversalType.Jump, CalculatePathPointPos(connectingNode));
-
-                        //Calculate jump trajectory(Determine if jump is possible and get x / y influence values
-                        if (DetermineJumpTrajectory(initVelocity, edge, out float jumpXInfluence, out float jumpYInfluence))
+                        if (CheckJumpConnection(pathPoint, edge, out float initVelocity))
                         {
-                            //Create jumpPathPoint
-                            jumpPathPoints.Add(new JumpPathPoint(endPoint, initVelocity, jumpXInfluence, jumpYInfluence));
+                            PathPoint endPoint = new PathPoint(connectingNode, TraversalType.Jump, CalculatePathPointPos(connectingNode));
+
+                            //Calculate jump trajectory(Determine if jump is possible and get x / y influence values
+                            if (DetermineJumpTrajectory(initVelocity, edge, out float jumpXInfluence, out float jumpYInfluence))
+                            {
+                                //Create jumpPathPoint
+                                jumpPathPoints.Add(new JumpPathPoint(endPoint, initVelocity, jumpXInfluence, jumpYInfluence));
+                            }
                         }
                     }
                 }
@@ -200,21 +211,24 @@ public class PlatformPathFinder : PathFinder
             {
                 Node connectingNode = edge.GetConnectingNode(pathPoint.GraphNode);                
 
-                //Determine if connecting node is an edge node
-                if (connectingNode.GetEdgesOfType(EdgeType.Ground).Count == 1)
-                {                    
-                    //Determine if node can be reached by ground connections
-                    if (!curGraph.CheckForConnection(pathPoint.GraphNode, connectingNode, new List<EdgeType>() { EdgeType.Ground }))
-                    {
-                        if (CheckJumpConnection(pathPoint, edge, out float initVelocity))
+                if (!visitedNodes.Contains(connectingNode))
+                {
+                    //Determine if connecting node is an edge node
+                    if (connectingNode.GetEdgesOfType(EdgeType.Ground).Count == 1)
+                    {                    
+                        //Determine if node can be reached by ground connections
+                        if (!curGraph.CheckForConnection(pathPoint.GraphNode, connectingNode, new List<EdgeType>() { EdgeType.Ground }))
                         {
-                            PathPoint endPoint = new PathPoint(connectingNode, TraversalType.Jump, CalculatePathPointPos(connectingNode));
-
-                            //Calculate jump trajectory (Determine if jump is possible and get x/y values
-                            if (DetermineJumpTrajectory(initVelocity, edge, out float jumpXInfluence, out float jumpYInfluence))
+                            if (CheckJumpConnection(pathPoint, edge, out float initVelocity))
                             {
-                                //Create jumpPathPoint
-                                jumpPathPoints.Add(new JumpPathPoint(endPoint, initVelocity, jumpXInfluence, jumpYInfluence));
+                                PathPoint endPoint = new PathPoint(connectingNode, TraversalType.Jump, CalculatePathPointPos(connectingNode));
+
+                                //Calculate jump trajectory (Determine if jump is possible and get x/y values
+                                if (DetermineJumpTrajectory(initVelocity, edge, out float jumpXInfluence, out float jumpYInfluence))
+                                {
+                                    //Create jumpPathPoint
+                                    jumpPathPoints.Add(new JumpPathPoint(endPoint, initVelocity, jumpXInfluence, jumpYInfluence));
+                                }
                             }
                         }
                     }

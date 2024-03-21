@@ -7,10 +7,8 @@ public class PlatformPathNavigator : PathNavigator
 {
     private PlatformPathFinder platformPathFinder => (PlatformPathFinder)pathFinder;
 
-    public override void Initialize(Action<TraversalType, float> actionCallback)
+    protected override void SetupPathFinder()
     {
-        base.Initialize(actionCallback);
-
         pathFinder = new PlatformPathFinder(gameObject);
     }
 
@@ -36,13 +34,13 @@ public class PlatformPathNavigator : PathNavigator
             //To The Right
             if (transform.position.x < curPathPoint.Pos.x)
             {
-                movementCallback(TraversalType.Move, 1f);
+                TriggerMovementEvent(TraversalType.Move, 1f);
             }
 
             //To The Left
             else
             {
-                movementCallback(TraversalType.Move, -1f);
+                TriggerMovementEvent(TraversalType.Move, -1f);
             }
         }
 
@@ -57,14 +55,20 @@ public class PlatformPathNavigator : PathNavigator
             "\nInitialVelocity: " + jumpPoint.InitialVelocity);
 
             //Move
-            movementCallback(TraversalType.Move, 0);
+            TriggerMovementEvent(TraversalType.Move, 0);
             
-            //Must be moving towards the point before jumpoint
-            if ((rb.velocity.x > 0 && (jumpPoint.Pos.x - transform.position.x) > 0) ||
-                rb.velocity.x < 0 && (jumpPoint.Pos.x - transform.position.x) < 0)
+            //Face the direction of the jump
+            if (TryGetComponent(out SceneObject sceneObject))
             {
-                movementCallback(TraversalType.Jump, jumpPoint.JumpYInfluence);
+                if ((sceneObject.IsFacingRightDirection() && jumpPoint.InitialVelocity < 0f) ||
+                    !sceneObject.IsFacingRightDirection() && jumpPoint.InitialVelocity > 0f) 
+                {
+                    sceneObject.TurnAround();
+                }
             }
+
+
+            TriggerMovementEvent(TraversalType.Jump, jumpPoint.JumpYInfluence);            
         }
     }
 
