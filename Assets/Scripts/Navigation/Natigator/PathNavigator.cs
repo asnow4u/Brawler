@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UIElements;
+using UnityEngine.XR;
 
 public abstract class PathNavigator : MonoBehaviour
 {
@@ -143,6 +144,9 @@ public abstract class PathNavigator : MonoBehaviour
         if (curPathPoint != null)
         {
             nextPathPoint = await pathFinder.GetNextPathPoint(curPathPoint);
+
+            Debug.Log(nextPathPoint.GraphNode.TerrainNode.LogCoordinates());
+            Debug.Break();
         }
     }
 
@@ -171,7 +175,7 @@ public abstract class PathNavigator : MonoBehaviour
         {
             if (DisplayGraph && curGraph != null)
             {
-                foreach (Node node in curGraph.NodeList)
+                foreach (GraphNode node in curGraph.NodeList)
                 {
                     Gizmos.color = Color.blue;
                     Gizmos.DrawCube(node.TerrainNode.Pos, Vector3.one * 0.2f);

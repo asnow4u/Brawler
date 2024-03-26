@@ -4,6 +4,6 @@ using UnityEngine;
 
 public class FlyingPathPoint : PathPoint
 {
-    public FlyingPathPoint(Node graphNode, Vector3 pos) : base(graphNode, TraversalType.Fly, pos)
+    public FlyingPathPoint(GraphNode graphNode, Vector3 pos) : base(graphNode, TraversalType.Fly, pos)
     { }
 }

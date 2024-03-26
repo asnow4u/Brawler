@@ -2,21 +2,26 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Node
+
+public class GraphNode
 {
+    protected Vector3 pos;
+
     public List<Edge> EdgeList;
 
-    public TerrainNode TerrainNode;
+    protected TerrainNode terrainNode;
 
     //Getters
-    public int ColumnNum => TerrainNode.ColumnNum;
-    public int RowNum => TerrainNode.RowNum;
-    public Vector3 Pos => TerrainNode.Pos;  
+    public Vector3 Pos => terrainNode.Pos;  
+    public int ColumnNum => terrainNode.ColumnNum;
+    public int RowNum => terrainNode.RowNum;
 
-    public Node(TerrainNode terrainNode)
+
+    public GraphNode(Vector3 pos, TerrainNode terrainNode)
     {
+        this.pos = pos;
+        this.terrainNode = terrainNode;
         EdgeList = new List<Edge>();
-        TerrainNode = terrainNode;
     }
 
 
@@ -30,7 +35,7 @@ public class Node
         List<Edge> edges = new List<Edge>();
         foreach (Edge edge in EdgeList)
         {
-            if (edge.Type == type)
+            if (edge.EdgeType == type)
                 edges.Add(edge);
         }
 
@@ -39,12 +44,16 @@ public class Node
 
 
 
-
-    public bool IsConnectedNode(Node node)
+    /// <summary>
+    /// Return if graphNode is connected by an edge
+    /// </summary>
+    /// <param name="node"></param>
+    /// <returns></returns>
+    public bool IsConnectedByEdge(GraphNode node)
     {
         foreach (Edge edge in EdgeList)
         {
-            if (node == edge.GetConnectingNode(this))
+            if (edge.EndNode == node)
                 return true;
         }
 

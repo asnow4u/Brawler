@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 3606919788912362873}
   - component: {fileID: 857581707373331514}
   - component: {fileID: 8752136622161124601}
+  - component: {fileID: 2705007949541630561}
   m_Layer: 7
   m_Name: RushDown
   m_TagString: Untagged
@@ -107,7 +108,6 @@ MonoBehaviour:
     - {fileID: 11400000, guid: e0f27305a9687e74e871bc1b8c81f5fd, type: 2}
   CurMovementCollection:
     Movements: []
-  prevXVelocity: 0
 --- !u!114 &8752136622161124601
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -142,6 +142,20 @@ MonoBehaviour:
       BackAir: {fileID: 0}
     AttackPointCollection:
       AttackPoints: []
+--- !u!114 &2705007949541630561
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 162542210556236614}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0178209458e5bd4c9dcb2e6d9bb906b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DisplayGraph: 1
+  DisplayPathPoints: 1
 --- !u!1 &1704295450893306069
 GameObject:
   m_ObjectHideFlags: 0

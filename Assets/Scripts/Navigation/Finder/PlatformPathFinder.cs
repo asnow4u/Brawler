@@ -15,7 +15,7 @@ public class PlatformPathFinder : PathFinder
     { }   
 
 
-    private Vector3 CalculatePathPointPos(Node node)
+    private Vector3 CalculatePathPointPos(GraphNode node)
     {
         Vector3 surface = node.TerrainNode.DownCollision.CollisionPoint;
         return surface + Vector3.up * bounds.extents.y;
@@ -49,13 +49,22 @@ public class PlatformPathFinder : PathFinder
         //Multiple path points found
         else
         {
+            Debug.Log("Available Paths: " + availablePathPoints.Count);
             int rand = UnityEngine.Random.Range(0, availablePathPoints.Count);
 
-            //TODO: PLAN:
-            //Determine if its possible to make it to the target using recursion
-            //If possible return
-            //If not, discard option and randomly pick again
-            //If no options are valid, choose closest option
+            //TODO:
+            ////Check that path can lead to destination
+            //while (!curGraph.CheckForConnection(availablePathPoints[rand].GraphNode, endNode, null, visitedNodes))
+            //{
+            //    Debug.Log("Reroll " + availablePathPoints[rand].GraphNode.TerrainNode.LogCoordinates()); 
+            //    //Remove option and roll again
+            //    availablePathPoints.RemoveAt(rand);
+                
+            //    if (availablePathPoints.Count > 0)
+            //        rand = UnityEngine.Random.Range(0, availablePathPoints.Count);
+            //    else
+            //        return null;
+            //}
 
             visitedNodes.Add(availablePathPoints[rand].GraphNode);
             return availablePathPoints[rand];
@@ -98,7 +107,7 @@ public class PlatformPathFinder : PathFinder
 
         foreach (Edge edge in pathPoint.GraphNode.GetEdgesOfType(EdgeType.Ground))
         {            
-            Node connectingNode = edge.GetConnectingNode(pathPoint.GraphNode);
+            GraphNode connectingNode = edge.GetConnectingNode(pathPoint.GraphNode);
             
             //Check if already visited
             if (!visitedNodes.Contains(connectingNode))
@@ -125,10 +134,9 @@ public class PlatformPathFinder : PathFinder
     /// <param name="node"></param>
     /// <param name="endPoint"></param>
     /// <returns></returns>
-    private bool CheckMovementConnection(PathPoint startPoint, Node node, out PathPoint endPoint)
+    private bool CheckMovementConnection(PathPoint startPoint, GraphNode node, out PathPoint endPoint)
     {
-        //TODO: Determine if slope is to much
-        //TODO: Need to determine step height (Whats the lowest the raycast should check for environmental objects in the way)        
+              
 
         //Position
         Vector3 endPointPos = CalculatePathPointPos(node);
@@ -181,7 +189,7 @@ public class PlatformPathFinder : PathFinder
         {
             foreach (JumpEdge edge in pathPoint.GraphNode.GetEdgesOfType(EdgeType.Jump))
             {
-                Node connectingNode = edge.GetConnectingNode(pathPoint.GraphNode);
+                GraphNode connectingNode = edge.GetConnectingNode(pathPoint.GraphNode);
 
                 if (!visitedNodes.Contains(connectingNode))
                 {
@@ -209,7 +217,7 @@ public class PlatformPathFinder : PathFinder
         {
             foreach (JumpEdge edge in pathPoint.GraphNode.GetEdgesOfType(EdgeType.Jump))
             {
-                Node connectingNode = edge.GetConnectingNode(pathPoint.GraphNode);                
+                GraphNode connectingNode = edge.GetConnectingNode(pathPoint.GraphNode);                
 
                 if (!visitedNodes.Contains(connectingNode))
                 {
@@ -601,144 +609,6 @@ public class PlatformPathFinder : PathFinder
     }
 
     #endregion
-
-
-
-
-
-
-
-
-
-
-    
-
-
- 
-
-    
-
-
-   
-
-
-
- 
-
-
-    #region TODO: Check Jump Trajectory
-
-    /// <summary>
-    /// Check if jump trajectory hits any other environment objects
-    /// </summary>
-    /// <param name="startPos"></param>
-    /// <param name="jumpTime"></param>
-    /// <param name="jumpXVelocity"></param>
-    /// <param name="jumpYVelocity"></param>
-    /// <returns></returns>
-    //private bool CheckJumpTrajectory(Vector3 startPos, Vector3 targetPos, Vector2 jumpVelocity)
-    //{
-    //    float peakJumpTime = CalculateTimeToPeak(jumpVelocity.y);
-
-    //    //Check jump to peak
-    //    if (CastAlongTrajectory(startPos, jumpVelocity, peakJumpTime, out RaycastHit hit))
-    //    {
-    //        return false;
-    //    }
-
-    //    //Calculate peak height
-    //    float peakPosY = CalculatePeakHeight(startPos.y, jumpVelocity.y);
-
-    //    //Calculate amount of time to land and Remove time based on objBounds
-    //    float landTime = CalculateTimeToLandFromPeak(peakPosY, targetPos.y);
-
-    //    //Calculate peak X pos
-    //    //V = D/T => D = VT
-    //    float peakPosX = startPos.x + jumpVelocity.x * peakJumpTime;
-
-    //    //Check jump from peak to landing
-    //    if (CastAlongTrajectory(new Vector3(peakPosX, peakPosY, startPos.z), new Vector2(jumpVelocity.x, 0), landTime, out hit))
-    //    {
-    //        return false;
-    //    }
-
-    //    return true;
-    //}
-
-
-
-    /// <summary>
-    /// Use raycasts to determine if jump trajectory is good
-    /// NOTE: We dont use a capsule cast due to its inconsistancy of not hitting because its already inside collider at start
-    /// </summary>
-    /// <param name="startPos"></param>
-    /// <param name="trajectoryVelocity"></param>
-    /// <param name="trajectoryTime"></param>
-    /// <param name="hit"></param>
-    /// <returns></returns>
-    //private bool CastAlongTrajectory(Vector3 startPos, Vector2 trajectoryVelocity, float trajectoryTime, out RaycastHit hit)
-    //{
-    //    float t = 0;
-    //    Vector3 prevPos = startPos;
-    //    Vector3 nextPos = Vector3.zero;
-
-    //    hit = new RaycastHit();
-
-    //    while (t < 1)
-    //    {
-    //        //Increments of 10
-    //        t += 0.1f;
-
-    //        float time = Mathf.Lerp(0, trajectoryTime, t);
-
-    //        float nextX = startPos.x + trajectoryVelocity.x * time;
-    //        float nextY = startPos.y + trajectoryVelocity.y * time + (Physics.gravity.y * time * time) / 2;
-    //        nextPos = new Vector3(nextX, nextY, startPos.z);
-
-    //        Vector3 dir = (nextPos - prevPos).normalized;
-    //        float dist = (nextPos - prevPos).magnitude;
-
-    //        if (Physics.Raycast(prevPos, dir, out hit, dist, LayerMask.GetMask("Environment")))
-    //        {
-    //            return true;
-    //        }
-
-    //        //Cast to the left
-    //        if (CastTrajectoryBranch(nextPos, Vector3.left, objCollider.radius, out hit))
-    //        {
-    //            return true;
-    //        }
-
-    //        //Cast to the right
-    //        if (CastTrajectoryBranch(nextPos, Vector3.right, objCollider.radius, out hit))
-    //        {
-    //            return true;
-    //        }
-
-    //        prevPos = nextPos;
-    //    }
-
-    //    return false;
-    //}
-
-
-    /// <summary>
-    /// Use raycasts to cast out from the main raycast to determin if any objects are within the width of the object
-    /// </summary>
-    //private bool CastTrajectoryBranch(Vector3 startPos, Vector3 dir, float dist, out RaycastHit hit)
-    //{
-    //    if (Physics.Raycast(startPos, dir, out hit, dist, LayerMask.GetMask("Environment")))
-    //    {
-    //        return true;
-    //    }
-
-    //    return false;
-    //}
-
-    #endregion
-
-
-
 
 
 

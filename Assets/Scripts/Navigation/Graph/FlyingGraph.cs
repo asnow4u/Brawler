@@ -32,7 +32,7 @@ public class FlyingGraph : Graph
 
 
     //TODO:
-    protected override Node CalculateNearestGraphNode(TerrainNode node)
+    protected override GraphNode CalculateNearestGraphNode(TerrainNode node)
     {
         return null;
     }
@@ -45,14 +45,14 @@ public class FlyingGraph : Graph
     /// The connecting node has to be 1 column and/or 1 row away
     /// </summary>
     /// <param name="node"></param>
-    protected override void MapNodeConnections(Node node)
+    protected override void MapNodeConnections(GraphNode node)
     {
-        foreach (Node connectingNode in nodeList)
+        foreach (GraphNode connectingNode in nodeList)
         {
             //Cant connect to self
             if (connectingNode != node)
             {
-                if (!node.IsConnectedNode(connectingNode))
+                if (!node.IsConnectedByEdge(connectingNode))
                 {
                     //Check no more then one column away
                     if (Mathf.Abs(node.ColumnNum - connectingNode.ColumnNum) <= 1)

@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Net;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.InputSystem.HID;
+using static UnityEngine.UI.Image;
 
 public class PlatformGraph : Graph
 {
@@ -28,16 +30,23 @@ public class PlatformGraph : Graph
         {
             foreach (TerrainNode terrainNode in columnNodeList)
             {
-                nodeList.Add(new Node(terrainNode));
+                Vector3 collisionSurface = terrainNode.DownCollision.CollisionPoint;
+                Vector3 pos = collisionSurface + Vector3.up * bounds.extents.y;
+                nodeList.Add(new GraphNode(pos, terrainNode));
             }
         }
     }
 
-    protected override Node CalculateNearestGraphNode(TerrainNode terrainNode)
+    /// <summary>
+    /// Determine which graphNode is the closest to the terrainNode
+    /// </summary>
+    /// <param name="terrainNode"></param>
+    /// <returns></returns>
+    protected override GraphNode CalculateNearestGraphNode(TerrainNode terrainNode)
     {
-        Node nearestNode = null;
+        GraphNode nearestNode = null;
 
-        foreach (Node node in nodeList)
+        foreach (GraphNode node in nodeList)
         {
             if (nearestNode == null)
                 nearestNode = node;
@@ -45,9 +54,7 @@ public class PlatformGraph : Graph
             else
             {
                 if (Vector3.Distance(node.Pos, terrainNode.Pos) < Vector3.Distance(nearestNode.Pos, terrainNode.Pos))
-                {
                     nearestNode = node;
-                }
             }               
         }
         
@@ -59,15 +66,15 @@ public class PlatformGraph : Graph
     /// Map node based on platforms and other graph nodes
     /// </summary>
     /// <param name="node"></param>
-    protected override void MapNodeConnections(Node node)
+    protected override void MapNodeConnections(GraphNode node)
     {
-        foreach (Node connectingNode in nodeList)
+        foreach (GraphNode connectingNode in nodeList)
         {
             //Cant connect to self
             if (connectingNode != node)
             {
                 //Cant connect if already connected
-                if (!node.IsConnectedNode(connectingNode))
+                if (!node.IsConnectedByEdge(connectingNode))
                 {
                     //Movement
                     MapMovementConnections(node, connectingNode);
@@ -84,21 +91,20 @@ public class PlatformGraph : Graph
     /// Map nodes based on movement
     /// </summary>
     /// <param name="node"></param>
-    private void MapMovementConnections(Node node, Node connectingNode)
+    private void MapMovementConnections(GraphNode node, GraphNode connectingNode)
     {  
         if (CheckMovementConnection(node, connectingNode))
         {
-            node.EdgeList.Add(new Edge(EdgeType.Ground, node, connectingNode));
-            connectingNode.EdgeList.Add(new Edge(EdgeType.Ground, connectingNode, node));
+            node.EdgeList.Add(new GroundEdge(node, connectingNode));
         }        
     }
 
 
-    private void MapJumpConnections(Node node, Node connectingNode)
+    private void MapJumpConnections(GraphNode node, GraphNode connectingNode)
     {
-        if (CheckJumpConnection(node, connectingNode, out float xVelocity, out float jumpVelocity, out float jumpTime, out float jumpDist))
+        if (CheckJumpConnection(node, connectingNode, out float initialXVelocity, out float jumpXInfluence, out float jumpYInfluence))
         {
-            node.EdgeList.Add(new JumpEdge(EdgeType.Jump, node, connectingNode, jumpVelocity, xVelocity, jumpTime, jumpDist));
+            node.EdgeList.Add(new JumpEdge(node, connectingNode, initialXVelocity, jumpXInfluence, jumpYInfluence));
         }
     }
 
@@ -109,34 +115,87 @@ public class PlatformGraph : Graph
     /// <summary>
     /// Check if two nodes can be connected by movement
     /// Both nodes have to be next to each other (one column diffrence)
-    /// Uses raycasts to check that environment is in between
+    /// Check between nodes that no gaps exist
+    /// Determine that no environment is in between
     /// </summary>
-    /// <param name="startNode"></param>
-    /// <param name="endNode"></param>
+    /// <param name="node"></param>
+    /// <param name="connectingNode"></param>
     /// <returns></returns>
     //NOTE: UNSURE WHY BUT REMOVING THE RAYCASTHIT IN THE RAYCAST WILL OCCASIONALLY HAVE WRONG RESULTS 
-    private bool CheckMovementConnection(Node startNode, Node endNode)
+    private bool CheckMovementConnection(GraphNode node, GraphNode connectingNode)
     {
         //Determine if next to each other
-        if (startNode.ColumnNum + 1 == endNode.ColumnNum || startNode.ColumnNum - 1 == endNode.ColumnNum)
+        if (node.ColumnNum + 1 == connectingNode.ColumnNum || node.ColumnNum - 1 == connectingNode.ColumnNum)
         {           
-            Vector3 dir = (endNode.TerrainNode.Pos - startNode.TerrainNode.Pos).normalized;
-            float dist = (endNode.TerrainNode.Pos - startNode.TerrainNode.Pos).magnitude;
+            Vector3 dir = (connectingNode.Pos - node.Pos).normalized;
+            float dist = (connectingNode.Pos - node.Pos).magnitude;
 
-            for (int i = 0; i < 10; i++)
+            if (CheckBetweenForGaps(node.Pos, dir, dist) &&
+                CheckForBlockingEnvironment(node.Pos, dir, dist) &&
+                CheckForClimbableSlope())
             {
-                Vector3 origin = startNode.TerrainNode.Pos + dir * i * (dist / 10);
-
-                if (!Physics.Raycast(origin, Vector3.down, out RaycastHit hit, TerrainNodeMapper.Instance.ScaleFactor, LayerMask.GetMask("Environment")))
-                {
-                    return false;
-                }
+                return true;                
             }
-
-            return true;
         }
 
         return false;
+    }
+
+
+    /// <summary>
+    /// Use downward raycasts to determine that walkable environment exists
+    /// Checks from a starting pos to some end pos that is a dist in a dir
+    /// </summary>
+    /// <param name="startPos"></param>
+    /// <param name="dir"></param>
+    /// <param name="dist"></param>
+    /// <returns></returns>
+    private bool CheckBetweenForGaps(Vector3 startPos, Vector3 dir, float dist)
+    {
+        for (int i = 0; i < 10; i++)
+        {
+            Vector3 origin = startPos + dir * i * (dist / 10);
+
+            if (!Physics.Raycast(origin, Vector3.down, out RaycastHit hit, TerrainNodeMapper.Instance.ScaleFactor, LayerMask.GetMask("Environment")))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+
+    /// <summary>
+    /// Use raycasts to determine from some start pos, if environment exists
+    /// </summary>
+    /// <param name="startPos"></param>
+    /// <param name="dir"></param>
+    /// <param name="dist"></param>
+    /// <returns></returns>
+    private bool CheckForBlockingEnvironment(Vector3 startPos, Vector3 dir, float dist)
+    {
+        //Center Raycast
+        if (Physics.Raycast(startPos, dir, dist, LayerMask.GetMask("Environment")))
+        {
+            return false;
+        }
+
+        //Top Raycast
+        if (Physics.Raycast(startPos + Vector3.up * bounds.extents.y, dir, dist, LayerMask.GetMask("Environment")))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+
+    //TODO: Determine if slope is to much
+    //TODO: Need to determine step height (Whats the lowest the raycast should check for environmental objects in the way)  
+    private bool CheckForClimbableSlope()
+    {
+        return true;
     }
 
     #endregion
@@ -144,47 +203,50 @@ public class PlatformGraph : Graph
 
     #region Jump Connections
 
-    private bool CheckJumpConnection(Node startNode, Node endNode, out float xVelocity, out float jumpYVelocity, out float jumpTime, out float jumpDist)
+    private bool CheckJumpConnection(GraphNode node, GraphNode connectingNode, out float jumpXVelocity, out float jumpXInfluence, out float jumpYInfluence)
     {
-        xVelocity = 0;
-        jumpYVelocity = 0;
-        jumpTime = 0;
-        jumpDist = 0;
-
         //Cant jump to same column
-        if (startNode.ColumnNum != endNode.ColumnNum)
+        if (node.ColumnNum != connectingNode.ColumnNum)
         {
-            //Position on ground with respect to bounds
-            Vector3 startPos = startNode.TerrainNode.DownCollision.CollisionPoint + Vector3.up * bounds.extents.y;
-            Vector3 endPos = endNode.TerrainNode.DownCollision.CollisionPoint + Vector3.up * bounds.extents.y;
-
             //Determine if jump height can be reached
-            if (IsJumpHeightPossible(startPos, endPos, out jumpYVelocity))
+            if (IsJumpHeightPossible(node.Pos, connectingNode.Pos, out float jumpYVelocity))
             {
                 //Calculate the time it takes to peak and then land
-                jumpTime = CalculateJumpTime(startPos.y, endPos.y, jumpYVelocity);
+                float jumpTime = CalculateJumpTime(node.Pos.y, connectingNode.Pos.y, jumpYVelocity);
 
-                if (IsJumpDistancePossible(startPos, endPos, jumpTime, out xVelocity, out jumpDist))
+                if (IsJumpDistancePossible(node.Pos, connectingNode.Pos, jumpTime, out jumpXVelocity))
                 {
-                    return true;
+                    if (CheckJumpTrajectory(node.Pos, jumpXVelocity, jumpYVelocity, jumpTime))
+                    {
+                        //NOTE: No acceleration used at this time
+                        jumpXInfluence = 0f;
+                        jumpYInfluence = jumpYVelocity / moveCollection.GetJumpVelocity();
+
+                        return true;
+                    }
                 }
             }                        
         }
         
+        jumpXVelocity = 0f;
+        jumpXInfluence = 0f;
+        jumpYInfluence = 0f;
+
         return false;
     }
 
 
     /// <summary>
     /// Calculate both jump peaks from startPos and endPos
-    /// Calculate what jump velocity can reach the heightest peak from both points 
-    /// Return false if not possible
+    /// Calculate what jump velocity can reach the heightest peak from starting pos 
+    /// Return false if not possible    
     /// </summary>
     /// <param name="startPos"></param>
     /// <param name="endPos"></param>
     /// <param name="maxJumpVelocity"></param>
     /// <param name="jumpYVelocity"></param>
     /// <returns></returns>
+    //TODO: Determine a better peak measurement (In this case a big enemy would have to jump really high for a jump to be allowed)
     private bool IsJumpHeightPossible(Vector3 startPos, Vector3 endPos, out float jumpYVelocity)
     {
         float maxJumpVelocity = moveCollection.GetJumpVelocity();
@@ -215,10 +277,10 @@ public class PlatformGraph : Graph
     /// <param name="minXVelocity"></param>
     /// <param name="maxXVelocity"></param>
     /// <returns></returns>
-    private bool IsJumpDistancePossible(Vector3 startPos, Vector3 endPos, float jumpTime, out float xVelocity, out float jumpDist)
+    private bool IsJumpDistancePossible(Vector3 startPos, Vector3 endPos, float jumpTime, out float xVelocity)
     {
         float xVelocityLimit = moveCollection.GetMaxXVelocity();
-        jumpDist = endPos.x - startPos.x;
+        float jumpDist = endPos.x - startPos.x;
 
         //At what velocity can the jump be made with no acceleration
         xVelocity = jumpDist / jumpTime;
@@ -230,6 +292,54 @@ public class PlatformGraph : Graph
         return false;
     }
 
+
+    /// <summary>
+    /// Use raycasts to determine if trajectory arc will collide with any environment
+    /// </summary>
+    /// <param name="startPos"></param>
+    /// <param name="jumpXVelocity"></param>
+    /// <param name="jumpYVelocity"></param>
+    /// <param name="jumpTime"></param>
+    /// <returns></returns>
+    private bool CheckJumpTrajectory(Vector3 startPos, float jumpXVelocity, float jumpYVelocity, float jumpTime)
+    {
+        float t = 0f;        
+
+        Vector3 prevPos = startPos;
+        Vector3 nextPos = Vector3.zero;
+
+        while (t < 1)
+        {
+            //Increment of 10
+            t += 0.1f;
+
+            float time = Mathf.Lerp(0, jumpTime, t);
+
+            //Calculate next point
+            float nextX = startPos.x + jumpXVelocity * time;
+            float nextY = startPos.y + jumpYVelocity * time + (Physics.gravity.y * time * time) / 2;
+            nextPos = new Vector3(nextX, nextY, startPos.z);
+
+            Vector3 dir = (nextPos - prevPos).normalized;
+            float dist = (nextPos - prevPos).magnitude;
+
+            //Check between
+            if (Physics.Raycast(prevPos, dir, dist, LayerMask.GetMask("Environment")))
+                return false;
+
+            //Check left buffer
+            if (Physics.Raycast(nextPos, Vector3.left, bounds.extents.x, LayerMask.GetMask("Environment")))
+                return false;
+
+            //Check right buffer
+            if (Physics.Raycast(nextPos, Vector3.right, bounds.extents.x, LayerMask.GetMask("Environment")))
+                return false;
+
+            prevPos = nextPos;
+        }
+
+        return true;
+    }
 
 
     #region Jump Time Calculation

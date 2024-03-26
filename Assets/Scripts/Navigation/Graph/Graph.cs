@@ -5,18 +5,18 @@ using UnityEngine;
 public abstract class Graph
 {
     protected GraphType type;
-    protected Node startNode;
-    protected Node endNode;
-    protected List<Node> nodeList = new List<Node>();
+    protected GraphNode startNode;
+    protected GraphNode endNode;
+    protected List<GraphNode> nodeList = new List<GraphNode>();
 
     protected Bounds bounds;
     protected MovementCollection moveCollection;
 
     //Getters
     public GraphType Type => type;
-    public Node StartNode => startNode;
-    public Node EndNode => endNode;
-    public List<Node> NodeList => nodeList;
+    public GraphNode StartNode => startNode;
+    public GraphNode EndNode => endNode;
+    public List<GraphNode> NodeList => nodeList;
 
 
     public Graph(TerrainNode startNode, TerrainNode endNode, Bounds bounds, MovementCollection collection)
@@ -29,7 +29,7 @@ public abstract class Graph
         this.startNode = CalculateNearestGraphNode(startNode);        
         this.endNode = CalculateNearestGraphNode(endNode);
 
-        foreach (Node node in nodeList)
+        foreach (GraphNode node in nodeList)
             MapNodeConnections(node);
     }
   
@@ -40,8 +40,8 @@ public abstract class Graph
     /// <param name="startNode"></param>
     /// <param name="endNode"></param>
     protected abstract void CreateNodes(TerrainNode startNode, TerrainNode endNode);
-    protected abstract Node CalculateNearestGraphNode(TerrainNode node);    
-    protected abstract void MapNodeConnections(Node node);
+    protected abstract GraphNode CalculateNearestGraphNode(TerrainNode node);    
+    protected abstract void MapNodeConnections(GraphNode node);
 
 
     /// <summary>
@@ -50,10 +50,10 @@ public abstract class Graph
     /// <param name="startNode"></param>
     /// <param name="endNode"></param>
     /// <returns></returns>
-    public bool CheckForConnection(Node startNode, Node endNode, List<EdgeType> typeMask = null, List<Node> visitedNodes = null)
+    public bool CheckForConnection(GraphNode startNode, GraphNode endNode, List<EdgeType> typeMask = null, List<GraphNode> visitedNodes = null)
     {
         if (visitedNodes == null)
-            visitedNodes = new List<Node>();
+            visitedNodes = new List<GraphNode>();
 
         if (!visitedNodes.Contains(startNode))
         {
@@ -63,10 +63,18 @@ public abstract class Graph
             {
                 if (typeMask == null || typeMask.Contains(edge.Type))
                 {
-                    Node connectingNode = edge.GetConnectingNode(startNode);
+                    GraphNode connectingNode = edge.GetConnectingNode(startNode);
 
                     if (connectingNode == endNode)
+                    {
+                        string log = "EndNode Found: " + endNode.TerrainNode.LogCoordinates();
+
+                        foreach (GraphNode node in visitedNodes)
+                            log += "\n" + node.TerrainNode.LogCoordinates();
+
+                        Debug.Log(log);
                         return true;
+                    }
 
                     else if (CheckForConnection(connectingNode, endNode, typeMask, visitedNodes))
                         return true;

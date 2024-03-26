@@ -6,11 +6,11 @@ using UnityEngine;
 public abstract class PathFinder
 {
     protected GameObject go;
-    protected List<Node> visitedNodes = new List<Node>();
+    protected List<GraphNode> visitedNodes = new List<GraphNode>();
 
     protected Graph curGraph;
-    protected Node startNode;
-    protected Node endNode;
+    protected GraphNode startNode;
+    protected GraphNode endNode;
     protected MovementCollection moveCollection;
 
     //Getters
@@ -54,11 +54,7 @@ public abstract class PathFinder
 
     public abstract Task<PathPoint> GetNextPathPoint(PathPoint pathPoint);    
 
-
     protected abstract List<PathPoint> GetAvailablePathPoints(PathPoint pathPoint);
-
-
-
 
 
 
