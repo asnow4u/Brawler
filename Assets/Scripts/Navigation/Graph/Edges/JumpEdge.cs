@@ -19,5 +19,8 @@ public class JumpEdge : Edge
     public JumpEdge(GraphNode startNode, GraphNode endNode, float initialVelocity, float jumpXInfluence, float jumpYInfluence) : base(startNode, endNode)
     {
         edgeType = EdgeType.Jump;
+        this.initialVelocity = initialVelocity;
+        this.jumpXInfluence = jumpXInfluence;
+        this.jumpYInfluence = jumpYInfluence;  
     }
 }

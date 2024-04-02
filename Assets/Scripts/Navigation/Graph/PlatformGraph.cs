@@ -8,7 +8,7 @@ using UnityEngine.InputSystem.HID;
 using static UnityEngine.UI.Image;
 
 public class PlatformGraph : Graph
-{
+{  
     public PlatformGraph(TerrainNode startNode, TerrainNode endNode, Bounds bounds, MovementCollection collection) : base(startNode, endNode, bounds, collection)
     {
         type = GraphType.Platform;
@@ -63,24 +63,47 @@ public class PlatformGraph : Graph
 
 
     /// <summary>
-    /// Map node based on platforms and other graph nodes
+    /// Map node based on platforms
+    /// Maps all ground movement based nodes first
+    /// Maps all jump based nodes after movement
     /// </summary>
     /// <param name="node"></param>
-    protected override void MapNodeConnections(GraphNode node)
+    protected override void MapNodeConnections(List<GraphNode> nodes)
     {
-        foreach (GraphNode connectingNode in nodeList)
-        {
-            //Cant connect to self
-            if (connectingNode != node)
+        //Movement
+        foreach (GraphNode node in nodes) 
+        { 
+            foreach (GraphNode connectingNode in nodes)
             {
-                //Cant connect if already connected
-                if (!node.IsConnectedByEdge(connectingNode))
+                //Cant connect to self
+                if (node != connectingNode)
                 {
-                    //Movement
-                    MapMovementConnections(node, connectingNode);
+                    //Cant connect if already connected
+                    if (!node.IsConnectedByEdge(connectingNode))
+                    {
+                        MapMovementConnections(node, connectingNode);
+                    }
+                }
+            }        
+        }
 
-                    //Jumps
-                    MapJumpConnections(node, connectingNode);
+        //Jumps
+        foreach (GraphNode node in nodes)
+        {
+            foreach (GraphNode connectingNode in nodes)
+            {
+                //Cant connect to self
+                if (node != connectingNode)
+                {
+                    //Cant connect if already connected
+                    if (!node.IsConnectedByEdge(connectingNode))
+                    {
+                        //Determine if node can be reached by ground connection
+                        if (!CheckForConnection(node, connectingNode, new List<EdgeType>() { EdgeType.Ground }))
+                        {
+                            MapJumpConnections(node, connectingNode);
+                        }
+                    }
                 }
             }
         }
@@ -105,7 +128,7 @@ public class PlatformGraph : Graph
         if (CheckJumpConnection(node, connectingNode, out float initialXVelocity, out float jumpXInfluence, out float jumpYInfluence))
         {
             node.EdgeList.Add(new JumpEdge(node, connectingNode, initialXVelocity, jumpXInfluence, jumpYInfluence));
-        }
+        }        
     }
 
 

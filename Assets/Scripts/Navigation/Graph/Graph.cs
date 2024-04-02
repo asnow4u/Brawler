@@ -28,9 +28,8 @@ public abstract class Graph
         
         this.startNode = CalculateNearestGraphNode(startNode);        
         this.endNode = CalculateNearestGraphNode(endNode);
-
-        foreach (GraphNode node in nodeList)
-            MapNodeConnections(node);
+        
+        MapNodeConnections(NodeList);
     }
   
 
@@ -41,7 +40,7 @@ public abstract class Graph
     /// <param name="endNode"></param>
     protected abstract void CreateNodes(TerrainNode startNode, TerrainNode endNode);
     protected abstract GraphNode CalculateNearestGraphNode(TerrainNode node);    
-    protected abstract void MapNodeConnections(GraphNode node);
+    protected abstract void MapNodeConnections(List<GraphNode> nodeList);
 
 
     /// <summary>
@@ -53,7 +52,7 @@ public abstract class Graph
     public bool CheckForConnection(GraphNode startNode, GraphNode endNode, List<EdgeType> typeMask = null, List<GraphNode> visitedNodes = null)
     {
         if (visitedNodes == null)
-            visitedNodes = new List<GraphNode>();
+            visitedNodes = new List<GraphNode>();      
 
         if (!visitedNodes.Contains(startNode))
         {
@@ -63,25 +62,45 @@ public abstract class Graph
             {
                 if (typeMask == null || typeMask.Contains(edge.Type))
                 {
-                    GraphNode connectingNode = edge.GetConnectingNode(startNode);
+                    if (edge.EndNode == endNode)
+                        return true;                    
 
-                    if (connectingNode == endNode)
-                    {
-                        string log = "EndNode Found: " + endNode.TerrainNode.LogCoordinates();
-
-                        foreach (GraphNode node in visitedNodes)
-                            log += "\n" + node.TerrainNode.LogCoordinates();
-
-                        Debug.Log(log);
-                        return true;
-                    }
-
-                    else if (CheckForConnection(connectingNode, endNode, typeMask, visitedNodes))
+                    else if (CheckForConnection(edge.EndNode, endNode, typeMask, visitedNodes))
                         return true;
                 }
             }
         }
 
         return false;
+    }
+
+
+    /// <summary>
+    /// Recursivly grab all connecting nodes based on the edge typeMask provided
+    /// </summary>
+    /// <param name="startNode"></param>
+    /// <param name="typeMask"></param>
+    /// <param name="connectingNodes"></param>
+    /// <returns></returns>
+    public List<GraphNode> GetAllConnectingNodes(GraphNode startNode, List<EdgeType> typeMask = null, List<GraphNode> connectingNodes = null)
+    {
+        if (connectingNodes == null)
+            connectingNodes = new List<GraphNode>();
+
+        if (!connectingNodes.Contains(startNode))
+        {
+            connectingNodes.Add(startNode);
+
+            foreach (Edge edge in startNode.EdgeList)
+            {
+                if (typeMask == null || typeMask.Contains(edge.Type))
+                {
+                    if (!connectingNodes.Contains(edge.EndNode))
+                        connectingNodes = GetAllConnectingNodes(edge.EndNode, typeMask, connectingNodes);
+                }
+            }
+        }
+
+        return connectingNodes;
     }
 }

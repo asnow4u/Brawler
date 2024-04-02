@@ -1,9 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public enum EdgeType { Ground, Jump, Fly }
 
+[Serializable]
 public abstract class Edge
 {
     protected EdgeType edgeType;
@@ -11,7 +13,7 @@ public abstract class Edge
     protected GraphNode endNode;
 
     //Getters
-    public EdgeType EdgeType => edgeType;
+    public EdgeType Type => edgeType;
     public GraphNode StartNode => startNode;
     public GraphNode EndNode => endNode;
 

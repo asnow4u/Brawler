@@ -13,11 +13,11 @@ public abstract class PathNavigator : MonoBehaviour
     protected PathFinder pathFinder;
 
     //PathPoints
-    protected PathPoint curPathPoint;
-    protected PathPoint nextPathPoint;
+    [SerializeField] protected Edge curRoute;
+    [SerializeField] protected Edge nextRoute;
 
     //Events
-    public event Action<TraversalType, float> PathMovementEvent;
+    public event Action<EdgeType, float> PathMovementEvent;
 
     //Getters
     protected Bounds bounds => GetComponent<CapsuleCollider>().bounds;
@@ -26,8 +26,8 @@ public abstract class PathNavigator : MonoBehaviour
 
     //Debug
     public bool DisplayGraph = false;
-    public bool DisplayPathPoints = false;   
-
+    public bool DisplayRoutes = false;   
+    public List<GraphNode> routes = new List<GraphNode>();
 
     /// <summary>
     /// Build graph from current position to destination
@@ -38,25 +38,25 @@ public abstract class PathNavigator : MonoBehaviour
     /// <returns></returns>
     public async Task SetDestination(Vector3 target)
     {
-        SetupPathFinder();
+        CreatePathFinder();
 
         if (TerrainNodeMapper.Instance.TryGetClosetNodeTo(transform.position, out TerrainNode startNode)
             && TerrainNodeMapper.Instance.TryGetClosetNodeTo(target, out TerrainNode endNode))
-        {                
+        {          
             //Graph
             curGraph = CreateGraph(startNode, endNode);
 
             //Pathfinder
-            pathFinder.Setup(curGraph, moveHandler.CurMovementCollection);
-            curPathPoint = pathFinder.CreateStartPathPoint(transform.position);
+            pathFinder.Setup(curGraph, moveHandler.CurMovementCollection);            
 
-            //Next PathPoint
-            SetNextPathPoint();
+            //Routes
+            SetCurRoute(await pathFinder.GetNextRoute(curGraph.StartNode));
+            SetNextRoute();
         }               
     }
 
 
-    protected abstract void SetupPathFinder();
+    protected abstract void CreatePathFinder();
 
 
     /// <summary>
@@ -70,26 +70,33 @@ public abstract class PathNavigator : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (curPathPoint != null)
+        if (curRoute != null)
         {
             if (CheckForDestination())
             {
-                if (nextPathPoint != null)
+                if (nextRoute != null)
                 {
-                    SetCurPathPoint(nextPathPoint);
-                    SetNextPathPoint();
+                    SetCurRoute(nextRoute);
+                    SetNextRoute();
                 }
 
                 else
-                {
-                    //TODO: Target reached
-                    curPathPoint = null;
+                {                    
+                    curRoute = null;
+                    rb.velocity = Vector3.zero;
+
+                    string log = "Path:";
+                    foreach (var route in routes)
+                    {
+                        log += "\n " + route.ColumnNum + ", " + route.RowNum;
+                    }
+                    Debug.Log(log);
                 }
             }
 
 
             //Movement
-            if (curPathPoint != null)
+            if (curRoute != null)
                 PerformMovement();
         }
     }
@@ -102,11 +109,9 @@ public abstract class PathNavigator : MonoBehaviour
     /// <returns></returns>
     private bool CheckForDestination()
     {
-        Bounds bounds = GetComponent<Collider>().bounds;
-        
-        if (bounds.Contains(curPathPoint.Pos))
+        if (Vector3.Distance(GetComponent<Collider>().bounds.center, curRoute.EndNode.Pos) < 0.2f)
         {
-            return true;        
+            return true;
         }
 
         return false;
@@ -118,18 +123,17 @@ public abstract class PathNavigator : MonoBehaviour
     /// Based on the traversal type, provide additionals
     /// </summary>
     /// <param name="pathPoint"></param>
-    private void SetCurPathPoint(PathPoint pathPoint)
+    private void SetCurRoute(Edge route)
     {
-        if (pathPoint != null)
+        if (route != null)
         {
-            curPathPoint = pathPoint;
+            curRoute = route;
 
             //Set velocity for jump
-            if (pathPoint.TraversalType == TraversalType.Jump)
+            if (route.Type == EdgeType.Jump)
             {
-                JumpPathPoint jumpPoint = (JumpPathPoint) pathPoint;
-                rb.velocity = new Vector3(jumpPoint.InitialVelocity, rb.velocity.y);
-                Debug.Log("Jump Inital Velocity Set: " + jumpPoint.InitialVelocity);
+                JumpEdge jumpRoute = (JumpEdge)route;
+                rb.velocity = new Vector3(jumpRoute.InitialVelocity, rb.velocity.y);
             }
         }
     }
@@ -139,14 +143,12 @@ public abstract class PathNavigator : MonoBehaviour
     /// Determine the next pathpoint
     /// </summary>
     /// <returns></returns>
-    private async Task SetNextPathPoint()
+    private async Task SetNextRoute()
     {
-        if (curPathPoint != null)
+        if (curRoute != null)
         {
-            nextPathPoint = await pathFinder.GetNextPathPoint(curPathPoint);
-
-            Debug.Log(nextPathPoint.GraphNode.TerrainNode.LogCoordinates());
-            Debug.Break();
+            routes.Add(curRoute.EndNode);
+            nextRoute = await pathFinder.GetNextRoute(curRoute.EndNode);
         }
     }
 
@@ -163,9 +165,9 @@ public abstract class PathNavigator : MonoBehaviour
     /// </summary>
     /// <param name="traversalType"></param>
     /// <param name="influence"></param>
-    protected void TriggerMovementEvent(TraversalType traversalType, float influence)
+    protected void TriggerMovementEvent(EdgeType edgeType, float influence)
     {
-        PathMovementEvent?.Invoke(traversalType, influence);
+        PathMovementEvent?.Invoke(edgeType, influence);
     }
 
 
@@ -178,7 +180,7 @@ public abstract class PathNavigator : MonoBehaviour
                 foreach (GraphNode node in curGraph.NodeList)
                 {
                     Gizmos.color = Color.blue;
-                    Gizmos.DrawCube(node.TerrainNode.Pos, Vector3.one * 0.2f);
+                    Gizmos.DrawCube(node.Pos, Vector3.one * 0.2f);
 
                     foreach (Edge edge in node.EdgeList)
                     {
@@ -190,11 +192,8 @@ public abstract class PathNavigator : MonoBehaviour
                                 break;
 
                             case EdgeType.Jump:
-                                if (edge.StartNode.Pos.y < edge.EndNode.Pos.y)
-                                {
-                                    Gizmos.color = Color.white;
-                                    Gizmos.DrawLine(edge.StartNode.Pos, edge.EndNode.Pos);
-                                }
+                                Gizmos.color = Color.yellow;
+                                Gizmos.DrawLine(edge.StartNode.Pos, edge.EndNode.Pos);                                
 
                                 break;
                             //        case EdgeType.Fly:
@@ -206,21 +205,19 @@ public abstract class PathNavigator : MonoBehaviour
                 }
             }
 
-            if (DisplayPathPoints && curPathPoint != null)
+            if (DisplayRoutes && curRoute != null)
             {
                 Gizmos.color = Color.red;
-                Gizmos.DrawSphere(curPathPoint.Pos, 0.1f);
-                Gizmos.DrawLine(transform.position, curPathPoint.Pos);
+                Gizmos.DrawSphere(curRoute.EndNode.Pos, 0.1f);
+                Gizmos.DrawLine(transform.position, curRoute.EndNode.Pos);
 
-                if (nextPathPoint != null)
+                if (nextRoute != null)
                 {
                     Gizmos.color = Color.red;
-                    Gizmos.DrawSphere(nextPathPoint.Pos, 0.1f);
-                    Gizmos.DrawLine(curPathPoint.Pos, nextPathPoint.Pos);
+                    Gizmos.DrawSphere(nextRoute.EndNode.Pos, 0.1f);
+                    Gizmos.DrawLine(curRoute.EndNode.Pos, nextRoute.EndNode.Pos);
                 }
             }
-
-            
         }
     }
 }

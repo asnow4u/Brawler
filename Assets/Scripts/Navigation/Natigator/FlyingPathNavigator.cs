@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class FlyingPathNavigator : PathNavigator
 {
-    protected override void SetupPathFinder()
+    protected override void CreatePathFinder()
     {
         pathFinder = new FlyingPathFinder(gameObject);
     }

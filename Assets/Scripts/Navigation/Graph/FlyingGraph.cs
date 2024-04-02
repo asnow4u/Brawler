@@ -25,7 +25,7 @@ public class FlyingGraph : Graph
         {
             foreach (TerrainNode terrainNode in columnNodeList)
             {
-                nodeList.Add(new Node(terrainNode));
+                nodeList.Add(new GraphNode(terrainNode.Pos, terrainNode));
             }
         }
     }
@@ -45,23 +45,25 @@ public class FlyingGraph : Graph
     /// The connecting node has to be 1 column and/or 1 row away
     /// </summary>
     /// <param name="node"></param>
-    protected override void MapNodeConnections(GraphNode node)
+    protected override void MapNodeConnections(List<GraphNode> nodes)
     {
-        foreach (GraphNode connectingNode in nodeList)
+        foreach (GraphNode node in nodes)
         {
-            //Cant connect to self
-            if (connectingNode != node)
+            foreach (GraphNode connectingNode in nodeList)
             {
-                if (!node.IsConnectedByEdge(connectingNode))
+                //Cant connect to self
+                if (connectingNode != node)
                 {
-                    //Check no more then one column away
-                    if (Mathf.Abs(node.ColumnNum - connectingNode.ColumnNum) <= 1)
+                    if (!node.IsConnectedByEdge(connectingNode))
                     {
-                        //Check no more then one row away
-                        if (Mathf.Abs(node.RowNum - connectingNode.RowNum) <= 1)
+                        //Check no more then one column away
+                        if (Mathf.Abs(node.ColumnNum - connectingNode.ColumnNum) <= 1)
                         {
-                            node.EdgeList.Add(new Edge(EdgeType.Fly, node, connectingNode));
-                            connectingNode.EdgeList.Add(new Edge(EdgeType.Fly, connectingNode, node));
+                            //Check no more then one row away
+                            if (Mathf.Abs(node.RowNum - connectingNode.RowNum) <= 1)
+                            {
+                                node.EdgeList.Add(new FlyingEdge(node, connectingNode));
+                            }
                         }
                     }
                 }

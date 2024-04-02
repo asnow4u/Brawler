@@ -1,7 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 
 public class GraphNode
 {
@@ -12,7 +12,7 @@ public class GraphNode
     protected TerrainNode terrainNode;
 
     //Getters
-    public Vector3 Pos => terrainNode.Pos;  
+    public Vector3 Pos => pos;  
     public int ColumnNum => terrainNode.ColumnNum;
     public int RowNum => terrainNode.RowNum;
 
@@ -35,7 +35,7 @@ public class GraphNode
         List<Edge> edges = new List<Edge>();
         foreach (Edge edge in EdgeList)
         {
-            if (edge.EdgeType == type)
+            if (edge.Type == type)
                 edges.Add(edge);
         }
 

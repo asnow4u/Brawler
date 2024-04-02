@@ -23,15 +23,15 @@ public class RushDown : Enemy
     /// <summary>
     /// Traverse to the next point in the path by moving
     /// </summary>
-    private void NavigatorMovement(TraversalType type, float movementInfluence)
+    private void NavigatorMovement(EdgeType type, float movementInfluence)
     {   
         switch (type)
         {
-            case TraversalType.Move:                
+            case EdgeType.Ground:                
                 MovementInputHandler.PerformMovement(new Vector2(movementInfluence, 0));
                 break;
 
-            case TraversalType.Jump:                
+            case EdgeType.Jump:                
                 if (MovementInputHandler.IsGrounded)
                     MovementInputHandler.PerformJump(movementInfluence);
 
