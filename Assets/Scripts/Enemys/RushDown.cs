@@ -37,5 +37,17 @@ public class RushDown : Enemy
 
                 break;
         }
-    } 
+    }
+    
+
+
+    //TODO:
+    //Need to be able to wander
+    //Wandering will need to be somewhat preset
+
+    //If player is seen attempt to chase after player
+    //Will need to update path on occation. Dont want to update the path every frame as that would be far to costly
+    //Suppose could update the path when sight is lost, or when end of current path is reached (As long as the next graph calculation is fast)
+   
+    
 }

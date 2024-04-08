@@ -179,12 +179,12 @@ public abstract class SceneObject : MonoBehaviour, IDamage
         killZone = KillZoneFactory.instance.Spawn(forceDirection.x > 0 ? true : false, false, this.UniqueId);
 
         //Start hitstun coroutine
-        if (hitStunTimer != null)
-        {
-            StopCoroutine(hitStunTimer);
-        }
+        //if (hitStunTimer != null)
+        //{
+        //    StopCoroutine(hitStunTimer);
+        //}
 
-        hitStunTimer = StartCoroutine(ApplyHitStun(totalForce));       
+        //hitStunTimer = StartCoroutine(ApplyHitStun(totalForce));       
     }
 
 
