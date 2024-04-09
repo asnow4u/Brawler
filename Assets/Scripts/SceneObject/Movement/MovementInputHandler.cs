@@ -328,7 +328,7 @@ public class MovementInputHandler : MonoBehaviour
             //Stop pos movement
             if (rb.velocity.x > 0f)
             {
-                rb.velocity -= Vector3.right * CurMovementCollection.GetXDeceleration() * Time.fixedDeltaTime;
+                rb.velocity -= Vector3.right * CurMovementCollection.GetGroundedXDeceleration() * Time.fixedDeltaTime;
 
                 if (rb.velocity.x < 0f)
                 {
@@ -340,7 +340,7 @@ public class MovementInputHandler : MonoBehaviour
             //Stop neg movement
             else
             {
-                rb.velocity += Vector3.right * CurMovementCollection.GetXDeceleration() * Time.fixedDeltaTime;
+                rb.velocity += Vector3.right * CurMovementCollection.GetGroundedXDeceleration() * Time.fixedDeltaTime;
 
                 if (rb.velocity.x > 0f)
                 {
@@ -365,8 +365,16 @@ public class MovementInputHandler : MonoBehaviour
             //Cap Velocity based on horizontal influence
             float targetVelocity = CurMovementCollection.GetMaxXVelocity() * horizontalInfluence;
 
-            //Update velocity based on horizontal influence
-            rb.velocity += Vector3.right * horizontalInfluence * CurMovementCollection.GetXAcceleration() * Time.fixedDeltaTime;
+            //Accelerate
+            if (sceneObj.IsFacingRightDirection() && horizontalInfluence > 0 ||
+                !sceneObj.IsFacingRightDirection() && horizontalInfluence < 0)
+            {
+                rb.velocity += Vector3.right * horizontalInfluence * CurMovementCollection.GetXAcceleration() * Time.fixedDeltaTime;
+            }
+
+            //Deccelerate
+            else
+                rb.velocity += Vector3.right * horizontalInfluence * CurMovementCollection.GetArialXDeceleration() * Time.fixedDeltaTime;                    
 
             //Cant exceed target velocity
             if ((horizontalInfluence > 0 && rb.velocity.x > targetVelocity) ||

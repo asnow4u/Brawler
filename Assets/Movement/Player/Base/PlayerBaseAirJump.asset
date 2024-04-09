@@ -16,4 +16,4 @@ MonoBehaviour:
   Type: 2
   Triggers: []
   JumpsAvailable: 2
-  AirJumpVelocity: 7
+  AirJumpVelocity: 6
