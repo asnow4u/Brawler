@@ -16,7 +16,7 @@ public abstract class SceneObject : MonoBehaviour, IDamage
     public SceneObjectType ObjectType;
 
     //Physics
-    public Rigidbody rb => GetComponent<Rigidbody>();
+    public Rigidbody Rb => GetComponent<Rigidbody>();
 
     [Header("Hit/Damage")]
     public bool InHitStun;
@@ -167,10 +167,10 @@ public abstract class SceneObject : MonoBehaviour, IDamage
     /// <param name="forceDirection"></param>
     public void ApplyForceBasedOnDamage(float baseKnockBack, float damageInfluence, Vector2 forceDirection)
     {
-        float damageForce = damageInfluence * Mathf.Pow((baseKnockBack * damageTaken) / Mathf.Pow(rb.mass, 1.75f), 2);
+        float damageForce = damageInfluence * Mathf.Pow((baseKnockBack * damageTaken) / Mathf.Pow(Rb.mass, 1.75f), 2);
         float totalForce = Mathf.Max(minKnockBackForce, baseKnockBack + damageForce);
 
-        rb.AddForce(new Vector3(forceDirection.x, forceDirection.y, 0) * totalForce, ForceMode.Impulse);
+        Rb.AddForce(new Vector3(forceDirection.x, forceDirection.y, 0) * totalForce, ForceMode.Impulse);
        
         //Reset KillZone
         if (killZone != null)        

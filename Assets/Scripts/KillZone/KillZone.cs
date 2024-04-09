@@ -74,9 +74,9 @@ public class KillZone : MonoBehaviour
     {
         if (uniqueObjID == null || sceneObject.UniqueId == uniqueObjID)
         {
-            Debug.Log("Kill Velocity: " + sceneObject.rb.velocity.magnitude, gameObject);
+            Debug.Log("Kill Velocity: " + sceneObject.Rb.velocity.magnitude, gameObject);
             
-            if (sceneObject.rb.velocity.magnitude > minVelocity)
+            if (sceneObject.Rb.velocity.magnitude > minVelocity)
             {                
                 destroyEvent?.Invoke(sceneObject);
                 Destroy(sceneObject.gameObject);
