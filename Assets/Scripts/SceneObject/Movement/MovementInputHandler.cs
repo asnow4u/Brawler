@@ -128,12 +128,9 @@ public class MovementInputHandler : MonoBehaviour
     {       
         //Check that moveData exists
         if (CurMovementCollection.TryGetMovementByType(MovementType.Move, out MovementData movement))
-        {
-            if (sceneObj.StateHandler.ChangeState(MOVESTATE))
-            {
-                horizontalInfluence = Mathf.Clamp(moveInfluence.x, -1, 1);
-                verticalInfluence = Mathf.Clamp(moveInfluence.y, -1, 1);                 
-            }
+        {          
+            horizontalInfluence = Mathf.Clamp(moveInfluence.x, -1, 1);
+            verticalInfluence = Mathf.Clamp(moveInfluence.y, -1, 1);                             
         }                           
     }
 
@@ -152,11 +149,8 @@ public class MovementInputHandler : MonoBehaviour
         if (IsGrounded)
         {
             if (CurMovementCollection.TryGetMovementByType(MovementType.Jump, out MovementData jump))
-            {
-                if (sceneObj.StateHandler.ChangeState(MOVESTATE))
-                {
-                    JumpAction((JumpData)jump, jumpInfluence);
-                }
+            {                
+               JumpAction((JumpData)jump, jumpInfluence);                
             }
         }
         
@@ -164,10 +158,7 @@ public class MovementInputHandler : MonoBehaviour
         {
             if (CurMovementCollection.TryGetMovementByType(MovementType.AirJump, out MovementData airJump))
             {
-                if (sceneObj.StateHandler.ChangeState(MOVESTATE))
-                {
-                    AirJumpAction((AirJumpData)airJump, jumpInfluence);
-                }
+                AirJumpAction((AirJumpData)airJump, jumpInfluence);                
             }
         }        
     }
@@ -175,46 +166,49 @@ public class MovementInputHandler : MonoBehaviour
 
     private void JumpAction(JumpData jumpData, float jumpInfluence)
     {
-        ChangeMoveState(jumpData.Type);
-        
-        rb.velocity = new Vector3(rb.velocity.x, jumpData.JumpVelocity * jumpInfluence, rb.velocity.z);
-        numJumpsPerformed++;
+        if (sceneObj.StateHandler.ChangeState(MOVESTATE))
+        {
+            ChangeMoveState(jumpData.Type);
 
-        PlayMoveAnimation(jumpData.Type);        
+            rb.velocity = new Vector3(rb.velocity.x, jumpData.JumpVelocity * jumpInfluence, rb.velocity.z);
+            numJumpsPerformed++;
+
+            PlayMoveAnimation(jumpData.Type);
+        }
     }
 
 
     private void AirJumpAction(AirJumpData airJumpData, float jumpInfluence)
     {
-        if (numJumpsPerformed < airJumpData.JumpsAvailable)
+        if (sceneObj.StateHandler.ChangeState(MOVESTATE))
         {
-            ChangeMoveState(airJumpData.Type);
-         
-            rb.velocity = new Vector3(rb.velocity.x, airJumpData.AirJumpVelocity * jumpInfluence, rb.velocity.z);
-            numJumpsPerformed++;
+            if (numJumpsPerformed < airJumpData.JumpsAvailable)
+            {
+                ChangeMoveState(airJumpData.Type);
 
-            CheckTurnAround();
+                rb.velocity = new Vector3(rb.velocity.x, airJumpData.AirJumpVelocity * jumpInfluence, rb.velocity.z);
+                numJumpsPerformed++;
 
-            PlayMoveAnimation(airJumpData.Type);
+                CheckTurnAround();
+
+                PlayMoveAnimation(airJumpData.Type);
+            }
         }
     }
 
 
-    //TODO: Will work out later
+    /// <summary>
+    /// Performs any actions associated with landing
+    /// </summary>
     private void PerformLand()
-    {
-        //Debug.Log("Land: \nPos: " + transform.position.x + "\nVelocity: " + rb.velocity.x + "\nTime: " + Time.time);
-
+    {       
         curMoveState = MovementType.Move;
+
+        //Reset jumps
         numJumpsPerformed = 0;
 
-        sceneObj.StateHandler.ResetState();
-
-        //if (curMovementCollection.GetMovementByType(MovementType.Type.Land, out MovementCollection.Movement movement))
-        //{
-        //    ChangeMoveState(MovementType.Type.Land);
-        //    PlayMoveAnimation(movement.type);
-        //}
+        if (horizontalInfluence == 0)
+            sceneObj.StateHandler.ResetState();      
     }
 
     #endregion
@@ -222,11 +216,20 @@ public class MovementInputHandler : MonoBehaviour
 
     private void CheckTurnAround()
     {
-        if ((sceneObj.IsFacingRightDirection() && horizontalInfluence < 0) 
-            || (!sceneObj.IsFacingRightDirection() && horizontalInfluence > 0))
+        if (sceneObj.IsFacingRightDirection() && horizontalInfluence < 0) 
         {
             sceneObj.TurnAround();
-            rb.velocity = new Vector3(rb.velocity.x * -1, rb.velocity.y, rb.velocity.z);
+
+            if (rb.velocity.x > 0)
+                rb.velocity = new Vector3(rb.velocity.x * -1, rb.velocity.y, rb.velocity.z);
+        }
+
+        else if(!sceneObj.IsFacingRightDirection() && horizontalInfluence > 0)
+        {
+            sceneObj.TurnAround();
+
+            if (rb.velocity.x < 0)
+                rb.velocity = new Vector3(rb.velocity.x * -1, rb.velocity.y, rb.velocity.z);
         }
     }
 
@@ -240,11 +243,8 @@ public class MovementInputHandler : MonoBehaviour
         ApplyGravity();
 
         //Check for landing
-        if (IsGrounded && rb.velocity.y < 0 && (curMoveState == MovementType.Jump || curMoveState == MovementType.AirJump))
-        {
-            PerformLand();
-        }
-
+        if (IsGrounded && rb.velocity.y <= 0 && (curMoveState == MovementType.Jump || curMoveState == MovementType.AirJump))
+            PerformLand();        
 
         //Check Action State and Movement data
         if (sceneObj.StateHandler.ChangeState(MOVESTATE) && CurMovementCollection.ContainsMovementType(MovementType.Move))
@@ -255,7 +255,7 @@ public class MovementInputHandler : MonoBehaviour
             }
 
             else
-            {
+            {                
                 UpdateAirMovement();
             }
         }
