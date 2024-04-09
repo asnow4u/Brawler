@@ -1,7 +1,5 @@
 using System;
 using System.Collections;
-using UnityEditor;
-using UnityEditor.Animations;
 using UnityEngine;
 
 [RequireComponent(typeof(Animator))]

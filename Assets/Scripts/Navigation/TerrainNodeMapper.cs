@@ -1,12 +1,6 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using static UnityEditor.PlayerSettings;
 
 public class TerrainNodeMapper : MonoBehaviour
 {
@@ -24,7 +18,7 @@ public class TerrainNodeMapper : MonoBehaviour
     public float ScaleFactor => scaleFactor;
 
 
-    private void Start()
+    private void Awake()
     {
         if (Instance == null)
             Instance = this;
@@ -497,6 +491,7 @@ public class TerrainNodeMapper : MonoBehaviour
     #endregion
 
 
+#if UNITY_EDITOR
     private void OnDrawGizmos()
     {
         if (TerrainNodes != null && TerrainNodes.Count > 0)
@@ -558,7 +553,7 @@ public class TerrainNodeMapper : MonoBehaviour
                 {
                     Gizmos.color = Color.yellow;
                     Gizmos.DrawLine(node.Pos, node.Pos - Vector3.up * scaleFactor);
-                        
+
                     Gizmos.color = Color.Lerp(Color.red, Color.green, node.DownCollision.SlopeGradiant / 90);
                     Gizmos.DrawSphere(node.DownCollision.CollisionPoint, 0.1f);
                 }
@@ -584,17 +579,17 @@ public class TerrainNodeMapper : MonoBehaviour
                 //Lables for column and row
                 //TODO only upate if within scene viw camera
                 Camera sceneViewCamera = SceneView.lastActiveSceneView.camera;
-                
+
                 if (sceneViewCamera != null)
                 {
                     Vector3 viewPoint = sceneViewCamera.WorldToViewportPoint(node.Pos);
 
-                    if (viewPoint.x >= 0 && viewPoint.x <= 1 
+                    if (viewPoint.x >= 0 && viewPoint.x <= 1
                         && viewPoint.y >= 0 && viewPoint.y <= 1
                         && viewPoint.z > 0)
-                        //&& Mathf.Abs(sceneViewCamera.transform.position.z) < 10)
+                    //&& Mathf.Abs(sceneViewCamera.transform.position.z) < 10)
                     {
-                        lableList.Add(node);                        
+                        lableList.Add(node);
                     }
                 }
             }
@@ -614,6 +609,8 @@ public class TerrainNodeMapper : MonoBehaviour
             }
         }
     }
+
+#endif
 
 
     //TEMP

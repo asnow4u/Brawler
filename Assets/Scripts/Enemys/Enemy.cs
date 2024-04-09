@@ -25,7 +25,7 @@ public abstract class Enemy : SceneObject
     protected override void FixedUpdate()
     {
         base.FixedUpdate();
-    }  
+    }
 
 
     private void OnTriggerEnter(Collider other)
@@ -45,9 +45,9 @@ public abstract class Enemy : SceneObject
         if (other.gameObject.layer == LayerMask.NameToLayer("PlayerEvent"))
         {
             if (Camera.main.TryGetComponent(out ICameraTarget cameraTarget))
-            {                
+            {
                 cameraTarget.RemoveTargetFocus(transform);
             }
         }
-    }    
+    }
 }

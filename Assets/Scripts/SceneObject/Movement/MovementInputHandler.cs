@@ -1,10 +1,5 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 
 public class MovementInputHandler : MonoBehaviour
@@ -208,7 +203,7 @@ public class MovementInputHandler : MonoBehaviour
     //TODO: Will work out later
     private void PerformLand()
     {
-        Debug.Log("Land: \nPos: " + transform.position.x + "\nVelocity: " + rb.velocity.x + "\nTime: " + Time.time);
+        //Debug.Log("Land: \nPos: " + transform.position.x + "\nVelocity: " + rb.velocity.x + "\nTime: " + Time.time);
 
         curMoveState = MovementType.Move;
         numJumpsPerformed = 0;

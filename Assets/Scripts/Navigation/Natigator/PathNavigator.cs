@@ -1,11 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UIElements;
-using UnityEngine.XR;
 
 public abstract class PathNavigator : MonoBehaviour
 {
@@ -16,13 +12,14 @@ public abstract class PathNavigator : MonoBehaviour
     [SerializeField] protected Edge curRoute;
     [SerializeField] protected Edge nextRoute;
 
-    //Events
-    public event Action<EdgeType, float> PathMovementEvent;
-
     //Getters
     protected Bounds bounds => GetComponent<CapsuleCollider>().bounds;
     protected MovementInputHandler moveHandler => GetComponent<MovementInputHandler>();
     protected Rigidbody rb => GetComponent<Rigidbody>();
+
+    //Events
+    public event Action<EdgeType, float> PathMovementEvent;
+    public event Action DestinationReachedEvent;
 
     //Debug
     public bool DisplayGraph = false;
@@ -38,13 +35,17 @@ public abstract class PathNavigator : MonoBehaviour
     /// <returns></returns>
     public async Task SetDestination(Vector3 target)
     {
+            Debug.Log("Set Destination");
         CreatePathFinder();
 
         if (TerrainNodeMapper.Instance.TryGetClosetNodeTo(transform.position, out TerrainNode startNode)
             && TerrainNodeMapper.Instance.TryGetClosetNodeTo(target, out TerrainNode endNode))
-        {          
+        {
+            Debug.Log("Create Graph");
+
             //Graph
             curGraph = CreateGraph(startNode, endNode);
+            Debug.Log(curGraph);
 
             //Pathfinder
             pathFinder.Setup(curGraph, moveHandler.CurMovementCollection);            
@@ -52,7 +53,11 @@ public abstract class PathNavigator : MonoBehaviour
             //Routes
             SetCurRoute(await pathFinder.GetNextRoute(curGraph.StartNode));
             SetNextRoute();
-        }               
+        }
+        else
+        {
+            Debug.Log("Failed to get closest terrain node");
+        }
     }
 
 
@@ -82,15 +87,8 @@ public abstract class PathNavigator : MonoBehaviour
 
                 else
                 {                    
-                    curRoute = null;
-                    rb.velocity = Vector3.zero;
-
-                    string log = "Path:";
-                    foreach (var route in routes)
-                    {
-                        log += "\n " + route.ColumnNum + ", " + route.RowNum;
-                    }
-                    Debug.Log(log);
+                    curRoute = null;                    
+                    DestinationReachedEvent?.Invoke();
                 }
             }
 

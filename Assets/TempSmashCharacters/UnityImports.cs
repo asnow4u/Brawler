@@ -4,6 +4,8 @@ using System.IO;
 using RayAssets;
 using System.Collections.Generic;
 
+#if UNITY_EDITOR
+
 [UnityEditor.AssetImporters.ScriptedImporter(1, ".mdl0")]
 public class ModelImporter : UnityEditor.AssetImporters.ScriptedImporter
 {
@@ -30,7 +32,7 @@ public class ModelImporter : UnityEditor.AssetImporters.ScriptedImporter
                 ctx.AddObjectToAsset(mesh.name, mesh);
             }
 
-            ctx.AddObjectToAsset("Model", Parent);  
+            ctx.AddObjectToAsset("Model", Parent);
         }
         catch
         {
@@ -60,3 +62,5 @@ public class AnimationImporter : UnityEditor.AssetImporters.ScriptedImporter
         }
     }
 }
+
+#endif
