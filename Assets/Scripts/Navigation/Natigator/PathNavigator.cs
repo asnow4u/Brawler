@@ -35,14 +35,11 @@ public abstract class PathNavigator : MonoBehaviour
     /// <returns></returns>
     public async Task SetDestination(Vector3 target)
     {
-            Debug.Log("Set Destination");
         CreatePathFinder();
 
         if (TerrainNodeMapper.Instance.TryGetClosetNodeTo(transform.position, out TerrainNode startNode)
             && TerrainNodeMapper.Instance.TryGetClosetNodeTo(target, out TerrainNode endNode))
         {
-            Debug.Log("Create Graph");
-
             //Graph
             curGraph = CreateGraph(startNode, endNode);
             Debug.Log(curGraph);
@@ -53,10 +50,6 @@ public abstract class PathNavigator : MonoBehaviour
             //Routes
             SetCurRoute(await pathFinder.GetNextRoute(curGraph.StartNode));
             SetNextRoute();
-        }
-        else
-        {
-            Debug.Log("Failed to get closest terrain node");
         }
     }
 
