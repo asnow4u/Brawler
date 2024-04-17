@@ -7,4 +7,5 @@ using UnityEngine;
 public class JumpData : MovementData
 {
     public float JumpVelocity;
+    public float GravityScaler;
 }

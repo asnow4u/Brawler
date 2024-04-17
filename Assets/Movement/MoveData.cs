@@ -14,7 +14,4 @@ public class MoveData : MovementData
     [Header("Decceleration")]
     public float GroundedXDeceleration;   
     public float ArialXDeceleration;
-
-    [Header("Fast Fall")]
-    public float FastFallVelocity;
 }

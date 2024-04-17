@@ -354,9 +354,9 @@ CapsuleCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   m_Radius: 0.16603103
-  m_Height: 1.2628818
+  m_Height: 1.7941151
   m_Direction: 1
-  m_Center: {x: 0.0017796457, y: 0.6314409, z: 0}
+  m_Center: {x: 0.0017796457, y: 0.91048145, z: 0}
 --- !u!54 &7769173568030621610
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -394,7 +394,6 @@ MonoBehaviour:
     - {fileID: 11400000, guid: aceefa5ca3bfa9349bdaaae42ab3fb2f, type: 2}
   CurMovementCollection:
     Movements: []
-  prevXVelocity: 0
 --- !u!114 &8984696060330667455
 MonoBehaviour:
   m_ObjectHideFlags: 0

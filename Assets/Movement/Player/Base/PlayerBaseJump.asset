@@ -16,3 +16,4 @@ MonoBehaviour:
   Type: 1
   Triggers: []
   JumpVelocity: 5
+  GravityScaler: 2
