@@ -111,6 +111,18 @@ public class MovementCollection
     }
 
 
+    public float GetGravityScaler()
+    {
+        foreach (MovementData move in Movements)
+        {
+            if (move.Type == MovementType.Jump)
+                return ((JumpData)move).GravityScaler;
+        }
+
+        return 1;
+    }
+
+
     public bool TryGetMovementFromAnimationClip(string clipName, out MovementData movement)
     {
         foreach (MovementData move in Movements)

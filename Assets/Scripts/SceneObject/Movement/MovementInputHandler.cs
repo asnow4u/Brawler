@@ -1,18 +1,27 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem.HID;
 
+public enum GroundedState { Airborn, Grounded, Sliding }
 
 public class MovementInputHandler : MonoBehaviour
 {
     const ActionState.State MOVESTATE = ActionState.State.Moving;
 
     //Movement State Data
-    private MovementType curMoveState = MovementType.Move;
-    private string curMoveAnimationState;
+    [Header("State")]
+    [SerializeField] private MovementType curMoveState = MovementType.Move;
+    [SerializeField] private string curMoveAnimationState;
+    [SerializeField] private GroundedState groundedState;
+    public bool IsGrounded = true;
 
-    //Movement Data
-    public bool IsGrounded = true;    
-    public float gravityScaler = 1;
+    //Movement Properties
+    [Header("Properties")]
+    [SerializeField] private float maxSlopeAngle;
+
+    //Movement Collection
+    [Header("Collection")]
     public MovementCollection BaseMovementCollection;
     public MovementCollection CurMovementCollection;
 
@@ -24,6 +33,7 @@ public class MovementInputHandler : MonoBehaviour
     //SceneObject
     private SceneObject sceneObj => GetComponent<SceneObject>();
     private Rigidbody rb => GetComponent<Rigidbody>();
+    private Collider collider => GetComponent<Collider>();
     
 
     //Events
@@ -169,6 +179,7 @@ public class MovementInputHandler : MonoBehaviour
         if (sceneObj.StateHandler.ChangeState(MOVESTATE))
         {
             ChangeMoveState(jumpData.Type);
+            groundedState = GroundedState.Airborn;
 
             rb.velocity = new Vector3(rb.velocity.x, jumpData.JumpVelocity * jumpInfluence, rb.velocity.z);
             numJumpsPerformed++;
@@ -237,7 +248,7 @@ public class MovementInputHandler : MonoBehaviour
     private void FixedUpdate()
     {
         //IsGrounded
-        CheckGroundedStatus();
+        //CheckGroundedStatus();
 
         //Gravity Scaler
         ApplyGravity();
@@ -251,6 +262,7 @@ public class MovementInputHandler : MonoBehaviour
         {
             if (IsGrounded && (curMoveState == MovementType.Move || curMoveState == MovementType.Land))
             {
+                CheckTurnAround();
                 UpdateGroundMovement();
             }
 
@@ -282,12 +294,34 @@ public class MovementInputHandler : MonoBehaviour
 
 
     /// <summary>
+    /// Attempt to get the current slope of the environment 
+    /// </summary>
+    /// <param name="slopeAngle"></param>
+    /// <returns></returns>
+    private bool TryGetSlopeAngle(out Vector3 slopeAngle)
+    {
+        if (groundedState != GroundedState.Airborn)
+        {
+            if (Physics.SphereCast(collider.bounds.center, collider.bounds.extents.x, Vector3.down, out RaycastHit hit, collider.bounds.extents.y + 0.001f, ~LayerMask.NameToLayer("Environment")))
+            {
+                slopeAngle = Vector3.Cross(hit.normal, transform.forward).normalized;
+                Debug.DrawRay(hit.point, slopeAngle, Color.green);
+                return true;
+            }
+        }
+
+        slopeAngle = Vector3.zero;
+        return false;
+    }
+
+
+    /// <summary>
     /// Mimic rb.UseGravity but allows the gravity to be scaled
     /// </summary>
     private void ApplyGravity()
     {
         if (rb.velocity.y < 0)
-            rb.AddForce(Physics.gravity * rb.mass * gravityScaler);
+            rb.AddForce(Physics.gravity * rb.mass * CurMovementCollection.GetGravityScaler());
         else
             rb.AddForce(Physics.gravity * rb.mass);
     }
@@ -298,59 +332,49 @@ public class MovementInputHandler : MonoBehaviour
     /// Based on current movement collection and horizontal influence try to speed up, slow down or stop
     /// </summary>
     private void UpdateGroundMovement()
-    {
-        //Turn around
-        CheckTurnAround();
-
-        //Apply Movement based on influence
-        if (horizontalInfluence != 0)
+    {        
+       
+        
+        //Ground slope
+        if (TryGetSlopeAngle(out Vector3 slope))
         {
-            //Animation
-            PlayMoveAnimation(MovementType.Move);
 
-            //Cap Velocity based on horizontal influence
-            float targetVelocity = CurMovementCollection.GetMaxXVelocity() * horizontalInfluence;
-
-            //Update velocity based on horizontal influence
-            rb.velocity += Vector3.right * horizontalInfluence * CurMovementCollection.GetXAcceleration() * Time.fixedDeltaTime;
-
-            //Cant exceed target velocity
-            if ((horizontalInfluence > 0 && rb.velocity.x > targetVelocity) ||
-                (horizontalInfluence < 0 && rb.velocity.x < targetVelocity))
+            //Apply Movement based on influence
+            if (horizontalInfluence != 0)
             {
-                rb.velocity = new Vector3(targetVelocity, rb.velocity.y);
-            }
-        }
+                //Animation
+                PlayMoveAnimation(MovementType.Move);
 
-        //Stopping
-        else if (rb.velocity.x != 0)
-        {
-            //Stop pos movement
-            if (rb.velocity.x > 0f)
-            {
-                rb.velocity -= Vector3.right * CurMovementCollection.GetGroundedXDeceleration() * Time.fixedDeltaTime;
+                //Cap Velocity based on horizontal influence
+                float targetVelocity = CurMovementCollection.GetMaxXVelocity() * Mathf.Abs(horizontalInfluence);
 
-                if (rb.velocity.x < 0f)
+                //Update velocity based on slope
+                rb.velocity += slope * Mathf.Abs(horizontalInfluence) * CurMovementCollection.GetXAcceleration() * Time.fixedDeltaTime;
+
+                //Cant exceed target velocity
+                if (rb.velocity.magnitude > targetVelocity)
                 {
-                    rb.velocity = new Vector3(0, rb.velocity.y, rb.velocity.z);
-                    sceneObj.StateHandler.ResetState();
+                    rb.velocity = slope * targetVelocity;
                 }
             }
 
-            //Stop neg movement
-            else
+            //Stopping
+            else if (rb.velocity.magnitude != 0)
             {
-                rb.velocity += Vector3.right * CurMovementCollection.GetGroundedXDeceleration() * Time.fixedDeltaTime;
-
-                if (rb.velocity.x > 0f)
+                if (rb.velocity.magnitude - (CurMovementCollection.GetGroundedXDeceleration() * Time.fixedDeltaTime) < 0)
                 {
-                    rb.velocity = new Vector3(0, rb.velocity.y, rb.velocity.z);
+                    rb.velocity = Vector3.zero;
                     sceneObj.StateHandler.ResetState();
                 }
-            }
-        }
 
-        sceneObj.AnimationHandler.SetFloatPerameter("Velocity", Mathf.Abs(rb.velocity.x) / CurMovementCollection.GetMaxXVelocity());             
+                else
+                {
+                    rb.velocity -= slope * CurMovementCollection.GetGroundedXDeceleration() * Time.fixedDeltaTime;
+                }
+            }
+
+            sceneObj.AnimationHandler.SetFloatPerameter("Velocity", Mathf.Abs(rb.velocity.x) / CurMovementCollection.GetMaxXVelocity());             
+        }
     }
 
 
@@ -423,6 +447,60 @@ public class MovementInputHandler : MonoBehaviour
             }           
 
             sceneObj.AnimationHandler.PlayAnimation(animationName);            
+        }
+    }
+
+
+
+
+
+
+
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (groundedState == GroundedState.Airborn)
+        {
+            if (collision.gameObject.layer == LayerMask.NameToLayer("Environment"))
+            {
+                if (Physics.SphereCast(collider.bounds.center, collider.bounds.extents.x, Vector3.down, out RaycastHit hit, collider.bounds.extents.y + 0.001f, ~LayerMask.NameToLayer("Environment")))
+                {
+                    IsGrounded = true;
+                    groundedState = GroundedState.Grounded;
+                    Debug.Log(groundedState);
+                }
+            }
+        }
+    }
+
+
+
+    private List<ContactPoint> environmentalCollisionPoints = new List<ContactPoint>();
+
+    private void OnCollisionStay(Collision collision)
+    {        
+        //collision.GetContacts(environmentalCollisionPoints);
+
+        //foreach (ContactPoint contact in environmentalCollisionPoints)
+        //{
+        //    if (Vector3.Angle(contact.normal, Vector3.up) > maxSlopeAngle)
+        //        groundedState = GroundedState.Sliding;
+        //    else
+        //        Debug.Break();
+        //}        
+    }
+
+
+    private void OnCollisionExit(Collision collision)
+    {
+        if (groundedState != GroundedState.Airborn)
+        {
+            if (!Physics.SphereCast(collider.bounds.center, collider.bounds.extents.x, Vector3.down, out RaycastHit hit, collider.bounds.extents.y + 1f, ~LayerMask.NameToLayer("Environment")))
+            {
+                groundedState = GroundedState.Airborn;
+                Debug.Log(groundedState);
+                IsGrounded = false;
+            }
         }
     }
 }
