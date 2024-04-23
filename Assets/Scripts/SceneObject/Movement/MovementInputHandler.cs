@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem.HID;
 
 public enum GroundedState { Airborn, Grounded, Sliding }
 
@@ -12,9 +11,8 @@ public class MovementInputHandler : MonoBehaviour
     //Movement State Data
     [Header("State")]
     [SerializeField] private MovementType curMoveState = MovementType.Move;
+    [SerializeField] private GroundedState curGroundedState;
     [SerializeField] private string curMoveAnimationState;
-    [SerializeField] private GroundedState groundedState;
-    public bool IsGrounded = true;
 
     //Movement Properties
     [Header("Properties")]
@@ -34,7 +32,12 @@ public class MovementInputHandler : MonoBehaviour
     private SceneObject sceneObj => GetComponent<SceneObject>();
     private Rigidbody rb => GetComponent<Rigidbody>();
     private Collider collider => GetComponent<Collider>();
-    
+
+
+    //Getters
+    public GroundedState GroundedState => curGroundedState;
+    public float MaxSlopeAngle => maxSlopeAngle;
+
 
     //Events
     public Action<MovementCollection> MovementCollectionChanged;
@@ -122,11 +125,48 @@ public class MovementInputHandler : MonoBehaviour
     #endregion
 
 
-    private void ChangeMoveState(MovementType moveType)
+    private void CheckTurnAround()
     {
-        curMoveState = moveType;
+        if (sceneObj.IsFacingRightDirection() && horizontalInfluence < 0)
+        {
+            sceneObj.TurnAround();
+
+            if (rb.velocity.x > 0)
+                rb.velocity = new Vector3(rb.velocity.x * -1, rb.velocity.y * -1, rb.velocity.z);
+        }
+
+        else if (!sceneObj.IsFacingRightDirection() && horizontalInfluence > 0)
+        {
+            sceneObj.TurnAround();
+
+            if (rb.velocity.x < 0)
+                rb.velocity = new Vector3(rb.velocity.x * -1, rb.velocity.y * -1, rb.velocity.z);
+        }
     }
 
+
+    /// <summary>
+    /// Attempt to get the current slope of the environment under the sceneObject
+    /// </summary>
+    /// <param name="slopeAngle"></param>
+    /// <returns></returns>
+    private bool TryGetSlopeAngle(out Vector3 slopeAngle)
+    {
+        if (Physics.SphereCast(collider.bounds.center, collider.bounds.extents.x, Vector3.down, out RaycastHit hit, collider.bounds.extents.y + 0.001f, ~LayerMask.NameToLayer("Environment")))
+        {
+            slopeAngle = Vector3.Cross(hit.normal, transform.forward).normalized;
+            Debug.DrawRay(hit.point, slopeAngle, Color.green);
+            return true;
+        }
+
+
+        slopeAngle = Vector3.zero;
+        return false;
+    }
+
+
+
+    #region Perform Movement
 
     /// <summary>
     /// Horizontal movement based on input value
@@ -145,64 +185,48 @@ public class MovementInputHandler : MonoBehaviour
     }
 
 
-    #region Jump
+    //TODO: Add timer which prevents influence from affectting player. Cancled if landing
+    //Not jumping up a slope. More dedicated jump
 
     /// <summary>
-    /// Vertical jump movement based on input value
+    /// Jump action based on input value <br/>
     /// Input value ranges between (0, 1) 
     /// </summary>
     /// <param name="jumpInfluence"></param>
     public void PerformJump(float jumpInfluence)
     {
-        jumpInfluence = Mathf.Clamp01(jumpInfluence);
-
-        if (IsGrounded)
-        {
-            if (CurMovementCollection.TryGetMovementByType(MovementType.Jump, out MovementData jump))
-            {                
-               JumpAction((JumpData)jump, jumpInfluence);                
-            }
-        }
-        
-        else
-        {
-            if (CurMovementCollection.TryGetMovementByType(MovementType.AirJump, out MovementData airJump))
-            {
-                AirJumpAction((AirJumpData)airJump, jumpInfluence);                
-            }
-        }        
-    }
-
-
-    private void JumpAction(JumpData jumpData, float jumpInfluence)
-    {
         if (sceneObj.StateHandler.ChangeState(MOVESTATE))
-        {
-            ChangeMoveState(jumpData.Type);
-            groundedState = GroundedState.Airborn;
+        {            
+            jumpInfluence = Mathf.Clamp01(jumpInfluence);
 
-            rb.velocity = new Vector3(rb.velocity.x, jumpData.JumpVelocity * jumpInfluence, rb.velocity.z);
-            numJumpsPerformed++;
-
-            PlayMoveAnimation(jumpData.Type);
-        }
-    }
-
-
-    private void AirJumpAction(AirJumpData airJumpData, float jumpInfluence)
-    {
-        if (sceneObj.StateHandler.ChangeState(MOVESTATE))
-        {
-            if (numJumpsPerformed < airJumpData.JumpsAvailable)
+            switch (curGroundedState)
             {
-                ChangeMoveState(airJumpData.Type);
+                case GroundedState.Grounded:
+                    if (CurMovementCollection.TryGetMovementByType(MovementType.Jump, out MovementData jump))
+                    {
+                        curMoveState = MovementType.Jump;
+                        VerticalJumpAction((JumpData)jump, jumpInfluence);
+                    }
+                    break;
 
-                rb.velocity = new Vector3(rb.velocity.x, airJumpData.AirJumpVelocity * jumpInfluence, rb.velocity.z);
-                numJumpsPerformed++;
+                case GroundedState.Sliding:
+                    if (CurMovementCollection.TryGetMovementByType(MovementType.Jump, out MovementData slideJump))
+                    {
+                        curMoveState = MovementType.Jump;
+                        SlidingJumpAction((JumpData)slideJump, jumpInfluence);
+                    }
+                    break;
 
-                CheckTurnAround();
-
-                PlayMoveAnimation(airJumpData.Type);
+                case GroundedState.Airborn:
+                    if (CurMovementCollection.TryGetMovementByType(MovementType.AirJump, out MovementData airJump))
+                    {
+                        if (numJumpsPerformed < ((AirJumpData)airJump).JumpsAvailable)
+                        {
+                            curMoveState = MovementType.AirJump;
+                            AirJumpAction((AirJumpData)airJump, jumpInfluence);
+                        }
+                    }
+                    break;
             }
         }
     }
@@ -211,109 +235,97 @@ public class MovementInputHandler : MonoBehaviour
     /// <summary>
     /// Performs any actions associated with landing
     /// </summary>
-    private void PerformLand()
-    {       
+    private void PerformLanding()
+    {
         curMoveState = MovementType.Move;
 
         //Reset jumps
         numJumpsPerformed = 0;
 
+        //Reset State
         if (horizontalInfluence == 0)
-            sceneObj.StateHandler.ResetState();      
+            sceneObj.StateHandler.ResetState();
     }
 
     #endregion
 
 
-    private void CheckTurnAround()
+    #region Movement Actions
+
+    /// <summary>
+    /// Velocity applied to rb based on jumpInfluence and current jumpVelocity
+    /// </summary>
+    /// <param name="jumpData"></param>
+    /// <param name="jumpInfluence"></param>
+    private void VerticalJumpAction(JumpData jumpData, float jumpInfluence)
+    {                   
+        rb.velocity = new Vector3(rb.velocity.x, jumpData.JumpVelocity * jumpInfluence, rb.velocity.z);
+        numJumpsPerformed++;
+
+        PlayMoveAnimation(jumpData.Type);        
+    }
+
+
+    /// <summary>
+    /// Velocity applied based on the normal of the environment the sceneobject is slideing on.<br/>
+    /// Velocity is based on the jumpInfluence and current jump velocity.
+    /// </summary>
+    /// <param name="jumpData"></param>
+    /// <param name="jumpInfluence"></param>
+    private void SlidingJumpAction(JumpData jumpData, float jumpInfluence)
     {
-        if (sceneObj.IsFacingRightDirection() && horizontalInfluence < 0) 
+        if (TryGetSlopeAngle(out Vector3 slopeAngle))
         {
-            sceneObj.TurnAround();
+            Vector3 normal = Vector3.Cross(slopeAngle, -transform.forward).normalized;
+            rb.velocity = normal * (jumpData.JumpVelocity * jumpInfluence);
+            numJumpsPerformed++;
 
-            if (rb.velocity.x > 0)
-                rb.velocity = new Vector3(rb.velocity.x * -1, rb.velocity.y, rb.velocity.z);
-        }
+            CheckTurnAround();
 
-        else if(!sceneObj.IsFacingRightDirection() && horizontalInfluence > 0)
-        {
-            sceneObj.TurnAround();
-
-            if (rb.velocity.x < 0)
-                rb.velocity = new Vector3(rb.velocity.x * -1, rb.velocity.y, rb.velocity.z);
+            PlayMoveAnimation(jumpData.Type);
         }
     }
 
 
+    private void AirJumpAction(AirJumpData airJumpData, float jumpInfluence)
+    {           
+        rb.velocity = new Vector3(rb.velocity.x, airJumpData.AirJumpVelocity * jumpInfluence, rb.velocity.z);
+        numJumpsPerformed++;
+
+        CheckTurnAround();
+
+        PlayMoveAnimation(airJumpData.Type);                   
+    }
+
+    #endregion
+
+
     private void FixedUpdate()
     {
-        //IsGrounded
-        //CheckGroundedStatus();
+        //Grounded Status
+        CheckGroundedStatus();
 
         //Gravity Scaler
-        ApplyGravity();
+        if (curGroundedState == GroundedState.Airborn)
+            ApplyGravity();
 
-        //Check for landing
-        if (IsGrounded && rb.velocity.y <= 0 && (curMoveState == MovementType.Jump || curMoveState == MovementType.AirJump))
-            PerformLand();        
-
-        //Check Action State and Movement data
-        if (sceneObj.StateHandler.ChangeState(MOVESTATE) && CurMovementCollection.ContainsMovementType(MovementType.Move))
-        {
-            if (IsGrounded && (curMoveState == MovementType.Move || curMoveState == MovementType.Land))
+        //Check Movement Action
+        if (sceneObj.StateHandler.ChangeState(MOVESTATE) &&
+            CurMovementCollection.ContainsMovementType(MovementType.Move))
+        {            
+            //Gounded Movement
+            if (curGroundedState == GroundedState.Grounded && (curMoveState == MovementType.Move))
             {
                 CheckTurnAround();
                 UpdateGroundMovement();
             }
 
-            else
-            {                
-                UpdateAirMovement();
-            }
+            //Arial Movement
+            else 
+                UpdateAirMovement();         
         }
     }
-
-
-    /// <summary>
-    /// Check to see if grounded
-    /// </summary>
-    private void CheckGroundedStatus()
-    {
-        //TODO: Store bounds
-        Bounds bounds = GetComponent<Collider>().bounds;
-        
-        if (Physics.Raycast(bounds.center, Vector3.down, out RaycastHit hit, bounds.size.y, ~LayerMask.NameToLayer("Environment")))
-        {
-            if (bounds.min.y <= hit.point.y + 0.001f)
-                IsGrounded = true;
-
-            else
-                IsGrounded = false;
-        }                                
-    }
-
-
-    /// <summary>
-    /// Attempt to get the current slope of the environment 
-    /// </summary>
-    /// <param name="slopeAngle"></param>
-    /// <returns></returns>
-    private bool TryGetSlopeAngle(out Vector3 slopeAngle)
-    {
-        if (groundedState != GroundedState.Airborn)
-        {
-            if (Physics.SphereCast(collider.bounds.center, collider.bounds.extents.x, Vector3.down, out RaycastHit hit, collider.bounds.extents.y + 0.001f, ~LayerMask.NameToLayer("Environment")))
-            {
-                slopeAngle = Vector3.Cross(hit.normal, transform.forward).normalized;
-                Debug.DrawRay(hit.point, slopeAngle, Color.green);
-                return true;
-            }
-        }
-
-        slopeAngle = Vector3.zero;
-        return false;
-    }
-
+  
 
     /// <summary>
     /// Mimic rb.UseGravity but allows the gravity to be scaled
@@ -327,18 +339,52 @@ public class MovementInputHandler : MonoBehaviour
     }
 
 
+    private void CheckGroundedStatus()
+    {
+        if (TryGetSlopeAngle(out Vector3 slopeAngle))
+        {
+            float angle = Vector3.Angle(transform.right, slopeAngle);
+            
+            switch (curGroundedState)
+            {
+                case GroundedState.Grounded:
+                case GroundedState.Sliding:
+
+                    if (angle > maxSlopeAngle)
+                        curGroundedState = GroundedState.Sliding;
+                    else
+                        curGroundedState = GroundedState.Grounded;
+                    break;
+
+                case GroundedState.Airborn:
+
+                    if (angle > maxSlopeAngle)
+                        curGroundedState = GroundedState.Sliding;
+                    else
+                        curGroundedState = GroundedState.Grounded;
+
+                    PerformLanding();
+                    break;
+            }
+        }
+
+        else
+        {
+            curGroundedState = GroundedState.Airborn;
+        }
+    }
+
+
+
     /// <summary>
     /// Update velocity while on the ground
     /// Based on current movement collection and horizontal influence try to speed up, slow down or stop
     /// </summary>
     private void UpdateGroundMovement()
-    {        
-       
-        
+    {                      
         //Ground slope
         if (TryGetSlopeAngle(out Vector3 slope))
         {
-
             //Apply Movement based on influence
             if (horizontalInfluence != 0)
             {
@@ -359,16 +405,16 @@ public class MovementInputHandler : MonoBehaviour
             }
 
             //Stopping
-            else if (rb.velocity.magnitude != 0)
+            else if (rb.velocity.x != 0)
             {
-                if (rb.velocity.magnitude - (CurMovementCollection.GetGroundedXDeceleration() * Time.fixedDeltaTime) < 0)
+                if ((rb.velocity - slope * CurMovementCollection.GetGroundedXDeceleration() * Time.fixedDeltaTime).x < 0)
                 {
                     rb.velocity = Vector3.zero;
                     sceneObj.StateHandler.ResetState();
                 }
 
                 else
-                {
+                {                    
                     rb.velocity -= slope * CurMovementCollection.GetGroundedXDeceleration() * Time.fixedDeltaTime;
                 }
             }
@@ -417,6 +463,8 @@ public class MovementInputHandler : MonoBehaviour
     }
 
 
+    #region Animation
+
     //TODO: Look at how animations are played. 
     //Move blendtree makes this not work so great...
     //This is the only place that uses the GetCurWeapon(), would like to remove
@@ -450,57 +498,5 @@ public class MovementInputHandler : MonoBehaviour
         }
     }
 
-
-
-
-
-
-
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        if (groundedState == GroundedState.Airborn)
-        {
-            if (collision.gameObject.layer == LayerMask.NameToLayer("Environment"))
-            {
-                if (Physics.SphereCast(collider.bounds.center, collider.bounds.extents.x, Vector3.down, out RaycastHit hit, collider.bounds.extents.y + 0.001f, ~LayerMask.NameToLayer("Environment")))
-                {
-                    IsGrounded = true;
-                    groundedState = GroundedState.Grounded;
-                    Debug.Log(groundedState);
-                }
-            }
-        }
-    }
-
-
-
-    private List<ContactPoint> environmentalCollisionPoints = new List<ContactPoint>();
-
-    private void OnCollisionStay(Collision collision)
-    {        
-        //collision.GetContacts(environmentalCollisionPoints);
-
-        //foreach (ContactPoint contact in environmentalCollisionPoints)
-        //{
-        //    if (Vector3.Angle(contact.normal, Vector3.up) > maxSlopeAngle)
-        //        groundedState = GroundedState.Sliding;
-        //    else
-        //        Debug.Break();
-        //}        
-    }
-
-
-    private void OnCollisionExit(Collision collision)
-    {
-        if (groundedState != GroundedState.Airborn)
-        {
-            if (!Physics.SphereCast(collider.bounds.center, collider.bounds.extents.x, Vector3.down, out RaycastHit hit, collider.bounds.extents.y + 1f, ~LayerMask.NameToLayer("Environment")))
-            {
-                groundedState = GroundedState.Airborn;
-                Debug.Log(groundedState);
-                IsGrounded = false;
-            }
-        }
-    }
+    #endregion
 }

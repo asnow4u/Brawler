@@ -138,7 +138,8 @@ public class AttackInputHandler : MonoBehaviour
     {
         if (sceneObj.StateHandler.ChangeState(ATTACKSTATE))
         {
-            if (sceneObj.MovementInputHandler.IsGrounded)
+            //TODO: What attack would happen when sliding
+            if (sceneObj.MovementInputHandler.GroundedState == GroundedState.Grounded)
             {
                 PlayAttackAnimation(AttackType.UpTilt);
             }
@@ -155,7 +156,7 @@ public class AttackInputHandler : MonoBehaviour
     {
         if (sceneObj.StateHandler.ChangeState(ATTACKSTATE))
         {
-            if (sceneObj.MovementInputHandler.IsGrounded)
+            if (sceneObj.MovementInputHandler.GroundedState == GroundedState.Grounded)
             {
                 PlayAttackAnimation(AttackType.DownTilt);                
             }
@@ -172,7 +173,7 @@ public class AttackInputHandler : MonoBehaviour
     {
         if (sceneObj.StateHandler.ChangeState(ATTACKSTATE))
         {
-            if (sceneObj.MovementInputHandler.IsGrounded)
+            if (sceneObj.MovementInputHandler.GroundedState == GroundedState.Grounded)
             {
                 if (!sceneObj.IsFacingRightDirection())
                 {
@@ -198,7 +199,7 @@ public class AttackInputHandler : MonoBehaviour
     {
         if (sceneObj.StateHandler.ChangeState(ATTACKSTATE))
         {
-            if (sceneObj.MovementInputHandler.IsGrounded)
+            if (sceneObj.MovementInputHandler.GroundedState == GroundedState.Grounded)
             {
                 if (sceneObj.IsFacingRightDirection())
                 {

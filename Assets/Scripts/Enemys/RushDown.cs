@@ -42,9 +42,7 @@ public class RushDown : Enemy
                 break;
 
             case EdgeType.Jump:                
-                if (MovementInputHandler.IsGrounded)
-                    MovementInputHandler.PerformJump(movementInfluence);
-
+                MovementInputHandler.PerformJump(movementInfluence);
                 break;
         }
     }

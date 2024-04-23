@@ -49,7 +49,7 @@ public class AnimationHandler : MonoBehaviour, IAnimator
 
     public void PlayIdleAnimation()
     {
-        if (sceneObj.MovementInputHandler.IsGrounded)
+        if (sceneObj.MovementInputHandler.GroundedState == GroundedState.Grounded)
             PlayAnimation("BaseIdle");
         else
             PlayAnimation("BaseAirIdle");
