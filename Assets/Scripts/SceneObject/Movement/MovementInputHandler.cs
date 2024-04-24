@@ -391,6 +391,9 @@ public class MovementInputHandler : MonoBehaviour
                 //Animation
                 PlayMoveAnimation(MovementType.Move);
 
+                //Drag
+                rb.drag = 0;
+
                 //Cap Velocity based on horizontal influence
                 float targetVelocity = CurMovementCollection.GetMaxXVelocity() * Mathf.Abs(horizontalInfluence);
 
@@ -407,15 +410,14 @@ public class MovementInputHandler : MonoBehaviour
             //Stopping
             else if (rb.velocity.x != 0)
             {
-                if ((rb.velocity - slope * CurMovementCollection.GetGroundedXDeceleration() * Time.fixedDeltaTime).x < 0)
+                Vector3 dragForce = rb.velocity.normalized * CurMovementCollection.GetGroundedXDeceleration();
+                rb.velocity -= dragForce * Time.fixedDeltaTime;
+
+                if ((sceneObj.IsFacingRightDirection() && rb.velocity.x < 0) ||
+                    (!sceneObj.IsFacingRightDirection() && rb.velocity.x > 0))
                 {
                     rb.velocity = Vector3.zero;
-                    sceneObj.StateHandler.ResetState();
-                }
-
-                else
-                {                    
-                    rb.velocity -= slope * CurMovementCollection.GetGroundedXDeceleration() * Time.fixedDeltaTime;
+                    sceneObj.StateHandler.ResetState();                
                 }
             }
 
