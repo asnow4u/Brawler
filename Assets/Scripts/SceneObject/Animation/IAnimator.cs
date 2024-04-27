@@ -10,8 +10,6 @@ public interface IAnimator
 
     public void SetUp(SceneObject obj);
 
-    public bool TryGetCurrentFrameOfAnimation(string animationState, out float curFrame);
-
     public void PlayAnimation(string animationState, AnimationTrigger[] animationTriggers = null);
 
     public void PlayIdleAnimation();

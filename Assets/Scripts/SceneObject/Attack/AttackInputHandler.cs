@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Android;
 
 public class AttackInputHandler : MonoBehaviour
 {
@@ -97,26 +98,27 @@ public class AttackInputHandler : MonoBehaviour
 
     public void OnAttackConnected(IDamage hitTarget)
     {
-        if (sceneObj.AnimationHandler.TryGetCurrentFrameOfAnimation(curAttackData.AttackAnimation.name, out float curFrame))
-        {            
-            float damage = curAttackData.GetAttackDamage(curFrame);            
-            float influence = curAttackData.GetAttackInflucence();
-            float knockBack = curAttackData.GetAttackKnockBack(curFrame);
+        //TODO: have handler keep track of what animation is cur playing
+        //if (sceneObj.AnimationHandler.TryGetCurrentFrameOfAnimation(curAttackData.AttackAnimation.name, out float curFrame))
+        //{            
+        //    float damage = curAttackData.GetAttackDamage(curFrame);            
+        //    float influence = curAttackData.GetAttackInflucence();
+        //    float knockBack = curAttackData.GetAttackKnockBack(curFrame);
 
-            float launchAngle = curAttackData.GetAttackLaunchAngle(curFrame);
-            float xLaunch = Mathf.Cos(launchAngle * Mathf.Deg2Rad);
-            float yLaunch = Mathf.Sin(launchAngle * Mathf.Deg2Rad);
+        //    float launchAngle = curAttackData.GetAttackLaunchAngle(curFrame);
+        //    float xLaunch = Mathf.Cos(launchAngle * Mathf.Deg2Rad);
+        //    float yLaunch = Mathf.Sin(launchAngle * Mathf.Deg2Rad);
 
-            string damageDebug = "Damage: " + damage + "\n";
-            damageDebug += "Knockback Force: " + knockBack + "\n";
-            damageDebug += "Launch Angle: " + launchAngle + "\n";
-            damageDebug += "Launch Vector: " + xLaunch * (sceneObj.IsFacingRightDirection() ? 1 : -1) + ", " + yLaunch + "\n";
-            Debug.Log(damageDebug);
+        //    string damageDebug = "Damage: " + damage + "\n";
+        //    damageDebug += "Knockback Force: " + knockBack + "\n";
+        //    damageDebug += "Launch Angle: " + launchAngle + "\n";
+        //    damageDebug += "Launch Vector: " + xLaunch * (sceneObj.IsFacingRightDirection() ? 1 : -1) + ", " + yLaunch + "\n";
+        //    Debug.Log(damageDebug);
 
 
-            hitTarget.AddDamage(damage);
-            hitTarget.ApplyForceBasedOnDamage(knockBack, influence, new Vector2(xLaunch * (sceneObj.IsFacingRightDirection() ? 1 : -1), yLaunch));
-        }
+        //    hitTarget.AddDamage(damage);
+        //    hitTarget.ApplyForceBasedOnDamage(knockBack, influence, new Vector2(xLaunch * (sceneObj.IsFacingRightDirection() ? 1 : -1), yLaunch));
+        //}
     }
 
     #endregion

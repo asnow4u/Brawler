@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using UnityEditor.Animations;
 using UnityEngine;
 
 [RequireComponent(typeof(Animator))]
@@ -31,19 +32,17 @@ public class AnimationHandler : MonoBehaviour, IAnimator
     }
 
 
-    public bool TryGetCurrentFrameOfAnimation(string animationState, out float curFrame)
+    private float GetCurAnimationNormalizedTime()
+    {        
+        AnimatorStateInfo animationInfo = animator.GetCurrentAnimatorStateInfo(0);
+        return animationInfo.normalizedTime;        
+    }
+
+
+    private float GetCurrentFrameOfCurAnimation()
     {
-        if (animationState == curAnimatorState)
-        {
-            AnimatorStateInfo animationInfo = animator.GetCurrentAnimatorStateInfo(0);
-
-            //Current animation frame
-            curFrame = Mathf.RoundToInt(animationInfo.normalizedTime * GetCurrentPlayingAnimation().frameRate);
-            return true;
-        }
-
-        curFrame = 0f;
-        return false;
+        AnimatorStateInfo animationInfo = animator.GetCurrentAnimatorStateInfo(0);
+        return Mathf.RoundToInt(animationInfo.normalizedTime * GetCurrentPlayingAnimation().frameRate);            
     }
 
 
@@ -62,13 +61,15 @@ public class AnimationHandler : MonoBehaviour, IAnimator
     {        
         if (animationState != null)
         {
+            Debug.Log(animationState);
+
             //Check for cur animation playing
             if (curAnimatorState != string.Empty)
             {
                 //Check for difference
                 if (curAnimatorState != animationState)
                 {
-                    OnAnimationUpdateEvent?.Invoke(curAnimatorState, AnimationTrigger.Type.End);
+                    EndCurAnimation();
 
                     animator.Play("Base Layer." + animationState);
                     StartCoroutine(WaitForAnimationStart(animationState, animationTriggers));
@@ -83,6 +84,12 @@ public class AnimationHandler : MonoBehaviour, IAnimator
         }
     }
 
+
+    private void EndCurAnimation()
+    {
+        OnAnimationUpdateEvent?.Invoke(curAnimatorState, AnimationTrigger.Type.End);
+        curAnimatorState = null;
+    }
 
     /// <summary>
     /// Wait till the animation begins playing
@@ -102,13 +109,31 @@ public class AnimationHandler : MonoBehaviour, IAnimator
         }
 
         curAnimatorState = waitingState;
+        SetUpAnimationEvents(animationTriggers);        
+    }
 
+
+    /// <summary>
+    /// Set up animation for trigger events
+    /// </summary>
+    /// <param name="animationTriggers"></param>
+    private void SetUpAnimationEvents(AnimationTrigger[] animationTriggers)
+    {       
+        //Reset Triggers
+        if (animationTriggers != null)
+        {
+            foreach (AnimationTrigger trigger in animationTriggers)
+                trigger.Reset();
+        }
+
+        //Stop previous animation events
         if (animationEventCorutine != null)
             StopCoroutine(animationEventCorutine);
 
+        //Start animation events
         animationEventCorutine = StartCoroutine(CheckAnimationEvents(animationTriggers));
 
-        OnAnimationUpdateEvent?.Invoke(waitingState, AnimationTrigger.Type.Start);
+        OnAnimationUpdateEvent?.Invoke(curAnimatorState, AnimationTrigger.Type.Start);
     }
 
 
@@ -119,25 +144,13 @@ public class AnimationHandler : MonoBehaviour, IAnimator
     /// <returns></returns>
     private IEnumerator CheckAnimationEvents(AnimationTrigger[] animationTriggers)
     {
-        //Get Animation info
-        AnimatorStateInfo animationInfo = animator.GetCurrentAnimatorStateInfo(0);
-        float length = animationInfo.length;
-        float curNormalizedTime = animationInfo.normalizedTime;
-
-        //Reset Triggers
-        if (animationTriggers != null)
+        //Loop while animation is running
+        while (GetCurAnimationNormalizedTime() < 1)
         {
-            foreach(AnimationTrigger trigger in animationTriggers)
+            if (animationTriggers != null)
             {
-                trigger.Reset();
-            }
-        }
+                float curFrame = GetCurrentFrameOfCurAnimation();
 
-        //Fire Triggers when needed
-        while (curNormalizedTime < 1)
-        {
-            if (animationTriggers != null && TryGetCurrentFrameOfAnimation(curAnimatorState, out float curFrame))
-            {
                 foreach (var trigger in animationTriggers)
                 {
                     if (!trigger.WasTriggered && curFrame >= trigger.TriggerFrame)
@@ -152,7 +165,7 @@ public class AnimationHandler : MonoBehaviour, IAnimator
         }
 
         //End Animation
-        OnAnimationUpdateEvent?.Invoke(curAnimatorState, AnimationTrigger.Type.End);
+        EndCurAnimation();
     }
 
     #endregion
