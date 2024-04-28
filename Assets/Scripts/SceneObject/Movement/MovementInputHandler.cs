@@ -505,7 +505,8 @@ public class MovementInputHandler : MonoBehaviour
         if (sceneObj.StateHandler.ChangeState(MOVESTATE) &&
             CurMovementCollection.ContainsMovementType(MovementType.Move))
         {
-            if (curMoveState == MovementType.FreeFall)
+            if (curMoveState == MovementType.FreeFall ||
+                curMoveState == MovementType.AirJump)
                 UpdateAirAcceleration();
         }
 
