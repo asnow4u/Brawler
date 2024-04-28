@@ -127,6 +127,19 @@ public class AttackInputHandler : MonoBehaviour
 
     #region Perform Attack
 
+    private bool ChangeToAttackState()
+    {
+        //TODO: Buffer attack till after jump/landing is done
+
+        if (sceneObj.MovementInputHandler.CurMoveState != MovementType.Jump &&
+            sceneObj.MovementInputHandler.CurMoveState != MovementType.Landing) 
+        {
+            return sceneObj.StateHandler.ChangeState(ATTACKSTATE);
+        }
+
+        return false;
+    }
+
     private void PlayAttackAnimation(AttackType attackType)
     {
         if (curAttackData == null && CurAttackCollection.GetAttackByType(attackType, out AttackData attack))
@@ -138,7 +151,7 @@ public class AttackInputHandler : MonoBehaviour
                 
     public void PerformUpAttack()
     {
-        if (sceneObj.StateHandler.ChangeState(ATTACKSTATE))
+        if (ChangeToAttackState())
         {
             //TODO: What attack would happen when sliding
             if (sceneObj.MovementInputHandler.GroundedState == GroundedState.Grounded)
@@ -148,7 +161,7 @@ public class AttackInputHandler : MonoBehaviour
 
             else
             {
-               PlayAttackAnimation(AttackType.UpAir);
+                PlayAttackAnimation(AttackType.UpAir);
             }
         }
     }
@@ -156,7 +169,7 @@ public class AttackInputHandler : MonoBehaviour
 
     public void PerformDownAttack()
     {
-        if (sceneObj.StateHandler.ChangeState(ATTACKSTATE))
+        if (ChangeToAttackState())
         {
             if (sceneObj.MovementInputHandler.GroundedState == GroundedState.Grounded)
             {
@@ -173,7 +186,7 @@ public class AttackInputHandler : MonoBehaviour
 
     public void PerformRightAttack()
     {
-        if (sceneObj.StateHandler.ChangeState(ATTACKSTATE))
+        if (ChangeToAttackState())
         {
             if (sceneObj.MovementInputHandler.GroundedState == GroundedState.Grounded)
             {
@@ -199,7 +212,7 @@ public class AttackInputHandler : MonoBehaviour
 
     public void PerformLeftAttack()
     {
-        if (sceneObj.StateHandler.ChangeState(ATTACKSTATE))
+        if (ChangeToAttackState())
         {
             if (sceneObj.MovementInputHandler.GroundedState == GroundedState.Grounded)
             {

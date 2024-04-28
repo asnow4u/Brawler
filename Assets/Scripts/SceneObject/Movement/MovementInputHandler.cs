@@ -37,6 +37,7 @@ public class MovementInputHandler : MonoBehaviour
 
 
     //Getters
+    public MovementType CurMoveState => curMoveState;
     public GroundedState GroundedState => curGroundedState;
     public float MaxSlopeAngle => maxSlopeAngle;
 
