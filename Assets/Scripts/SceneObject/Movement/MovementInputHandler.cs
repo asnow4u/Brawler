@@ -106,13 +106,11 @@ public class MovementInputHandler : MonoBehaviour
             {
                 case MovementType.Jump:
                 case MovementType.AirJump:
-                    Debug.Log("Jump Animation Ended");
                     curMoveState = MovementType.FreeFall;
                     sceneObj.StateHandler.ResetState();
                     break;
 
                 case MovementType.Landing:
-                    Debug.Log("Landing Animation Ended");
                     curMoveState = MovementType.Move;
                     sceneObj.StateHandler.ResetState();
                     break;

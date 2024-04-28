@@ -61,8 +61,6 @@ public class AnimationHandler : MonoBehaviour, IAnimator
     {        
         if (animationState != null)
         {
-            Debug.Log(animationState);
-
             //Check for cur animation playing
             if (curAnimatorState != string.Empty)
             {
