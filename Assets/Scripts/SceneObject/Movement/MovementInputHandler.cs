@@ -380,7 +380,14 @@ public class MovementInputHandler : MonoBehaviour
                 case GroundedState.Sliding:
 
                     if (angle > maxSlopeAngle)
+                    {
                         curGroundedState = GroundedState.Sliding;
+
+                        //Face direction of downward slope
+                        if (slopeAngle.y > 0)
+                            sceneObj.TurnAround();
+                    }
+
                     else
                         curGroundedState = GroundedState.Grounded;
                     break;

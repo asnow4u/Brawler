@@ -154,14 +154,14 @@ public class AttackInputHandler : MonoBehaviour
         if (ChangeToAttackState())
         {
             //TODO: What attack would happen when sliding
-            if (sceneObj.MovementInputHandler.GroundedState == GroundedState.Grounded)
+            if (sceneObj.MovementInputHandler.GroundedState == GroundedState.Airborn)
             {
-                PlayAttackAnimation(AttackType.UpTilt);
+                PlayAttackAnimation(AttackType.UpAir);
             }
 
             else
             {
-                PlayAttackAnimation(AttackType.UpAir);
+                PlayAttackAnimation(AttackType.UpTilt);
             }
         }
     }
@@ -171,14 +171,14 @@ public class AttackInputHandler : MonoBehaviour
     {
         if (ChangeToAttackState())
         {
-            if (sceneObj.MovementInputHandler.GroundedState == GroundedState.Grounded)
+            if (sceneObj.MovementInputHandler.GroundedState == GroundedState.Airborn)
             {
-                PlayAttackAnimation(AttackType.DownTilt);                
+                PlayAttackAnimation(AttackType.DownAir);
             }
 
             else
             {
-                PlayAttackAnimation(AttackType.DownAir);
+                PlayAttackAnimation(AttackType.DownTilt);                
             }
         }
     }
@@ -188,23 +188,24 @@ public class AttackInputHandler : MonoBehaviour
     {
         if (ChangeToAttackState())
         {
-            if (sceneObj.MovementInputHandler.GroundedState == GroundedState.Grounded)
-            {
-                if (!sceneObj.IsFacingRightDirection())
-                {
-                    sceneObj.TurnAround();
-                }
-
-                PlayAttackAnimation(AttackType.ForwardTilt);
-            }
-
-            else
+            if (sceneObj.MovementInputHandler.GroundedState == GroundedState.Airborn)
             {
                 if (!sceneObj.IsFacingRightDirection())
                     PlayAttackAnimation(AttackType.BackAir);
 
                 else
                     PlayAttackAnimation(AttackType.ForwardAir);
+            }
+
+            else
+            {
+                if (!sceneObj.IsFacingRightDirection() && 
+                    sceneObj.MovementInputHandler.GroundedState == GroundedState.Grounded)
+                {
+                    sceneObj.TurnAround();
+                }
+
+                PlayAttackAnimation(AttackType.ForwardTilt);
             }
         }
     }
@@ -214,23 +215,24 @@ public class AttackInputHandler : MonoBehaviour
     {
         if (ChangeToAttackState())
         {
-            if (sceneObj.MovementInputHandler.GroundedState == GroundedState.Grounded)
-            {
-                if (sceneObj.IsFacingRightDirection())
-                {
-                    sceneObj.TurnAround();
-                }
-
-                PlayAttackAnimation(AttackType.ForwardTilt);
-            }
-
-            else
+            if (sceneObj.MovementInputHandler.GroundedState == GroundedState.Airborn)
             {
                 if (sceneObj.IsFacingRightDirection())
                     PlayAttackAnimation(AttackType.BackAir);
 
                 else
                     PlayAttackAnimation(AttackType.ForwardAir);
+            }
+
+            else
+            {
+                if (sceneObj.IsFacingRightDirection() &&
+                    sceneObj.MovementInputHandler.GroundedState == GroundedState.Grounded)
+                {
+                    sceneObj.TurnAround();
+                }
+
+                PlayAttackAnimation(AttackType.ForwardTilt);
             }
         }
     }        
