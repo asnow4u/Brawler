@@ -128,7 +128,5 @@ public class RushDown : Enemy
                 Gizmos.DrawLine(transform.position, patrolPoints[patrolPointIndex].position);
             }
         }
-
     }
-
 }

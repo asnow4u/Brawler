@@ -9,11 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4b110e1c728de094e97b8a57099a9527, type: 3}
-  m_Name: RushDownJump
+  m_Script: {fileID: 11500000, guid: f699b9dd00ca7144cb992b6beff52ef7, type: 3}
+  m_Name: RushDownLand
   m_EditorClassIdentifier: 
-  Animation: {fileID: 7400000, guid: aabda58267bec094bbd5490f8526da3e, type: 2}
-  Type: 1
+  Animation: {fileID: 7400000, guid: dd3158a7439ed0949bf4ffb6033099d2, type: 2}
+  Type: 4
   Triggers: []
-  JumpVelocity: 7
-  GravityScaler: 1
