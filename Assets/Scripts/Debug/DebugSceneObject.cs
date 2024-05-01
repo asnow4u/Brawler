@@ -52,7 +52,7 @@ public static class DebugSceneObject
         GameObject mesh = new GameObject("Mesh");
         mesh.layer = LayerMask.NameToLayer("SceneObject");
         mesh.transform.SetParent(parent);
-        mesh.AddComponent<AnimationHandler>();
+        mesh.AddComponent<AnimationStateHandler>();
 
         return mesh;
     }

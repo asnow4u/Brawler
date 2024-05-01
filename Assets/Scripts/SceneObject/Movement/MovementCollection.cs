@@ -123,11 +123,11 @@ public class MovementCollection
     }
 
 
-    public bool TryGetMovementFromAnimationClip(string clipName, out MovementData movement)
+    public bool TryGetMovementFromAnimation(string animationName, out MovementData movement)
     {
         foreach (MovementData move in Movements)
         {
-            if (move.Animation.name == clipName)
+            if (move.Animation.name == animationName)
             {
                 movement = move;
                 return true;

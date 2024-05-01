@@ -6,7 +6,7 @@ public enum GroundedState { Airborn, Grounded, Sliding }
 
 public class MovementInputHandler : MonoBehaviour
 {
-    const ActionState.State MOVESTATE = ActionState.State.Moving;
+    const ActionState MOVESTATE = ActionState.Moving;
 
     //Movement State Data
     [Header("State")]
@@ -54,7 +54,7 @@ public class MovementInputHandler : MonoBehaviour
         rb.useGravity = false;
 
         //sceneObj.EquipmentHandler.Weapons.WeaponChangedEvent += OnWeaponChanged;
-        sceneObj.AnimationHandler.OnAnimationUpdateEvent += OnMovementAnimationUpdated;
+        sceneObj.AnimationStateHandler.OnAnimationUpdateEvent += OnAnimationUpdate;
 
         OnWeaponChanged(null);        
     }
@@ -74,9 +74,9 @@ public class MovementInputHandler : MonoBehaviour
         MovementCollectionChanged?.Invoke(CurMovementCollection);
     }
 
-    private void OnMovementAnimationUpdated(string animationState, AnimationTrigger.Type triggerType)
+    private void OnAnimationUpdate(string animationState, AnimationTrigger.Type triggerType)
     {
-        if (CurMovementCollection.TryGetMovementFromAnimationClip(animationState, out MovementData move))
+        if (CurMovementCollection.TryGetMovementFromAnimation(animationState, out MovementData move))
         {
             switch (triggerType)
             {
@@ -98,21 +98,22 @@ public class MovementInputHandler : MonoBehaviour
 
     private void OnMovementAnimationEnded(string animationState, MovementType type) 
     {        
-        if (curMoveAnimationState == animationState)
+        //if (curMoveAnimationState == animationState)
         {
-            curMoveAnimationState = null;
+            //curMoveAnimationState = null;
+            Debug.Log("MOVE: Animation finished for " + type);
 
             switch (type)
             {
                 case MovementType.Jump:
                 case MovementType.AirJump:
                     curMoveState = MovementType.FreeFall;
-                    sceneObj.StateHandler.ResetState();
+                    //sceneObj.StateHandler.ResetState();
                     break;
 
                 case MovementType.Landing:
                     curMoveState = MovementType.Move;
-                    sceneObj.StateHandler.ResetState();
+                    //sceneObj.StateHandler.ResetState();
                     break;
             }
         }
@@ -182,7 +183,6 @@ public class MovementInputHandler : MonoBehaviour
             return true;
         }
 
-
         slopeAngle = Vector3.zero;
         return false;
     }
@@ -213,40 +213,44 @@ public class MovementInputHandler : MonoBehaviour
 
     /// <summary>
     /// Jump action based on input value <br/>
+    /// Cant jump while jumping or landing <br/>
     /// Input value ranges between (0, 1) 
     /// </summary>
     /// <param name="jumpInfluence"></param>
     public void PerformJump(float jumpInfluence)
     {
-        if (sceneObj.StateHandler.ChangeState(MOVESTATE))
-        {            
-            jumpInfluence = Mathf.Clamp01(jumpInfluence);
+        if (curMoveState != MovementType.Jump && curMoveState != MovementType.Landing)
+        {
+            if (sceneObj.AnimationStateHandler.IsStatePossible(MOVESTATE))
+            {            
+                jumpInfluence = Mathf.Clamp01(jumpInfluence);
 
-            switch (curGroundedState)
-            {
-                case GroundedState.Grounded:
-                    if (CurMovementCollection.TryGetMovementByType(MovementType.Jump, out MovementData jump))
-                    {                        
-                        VerticalJumpAction((JumpData)jump, jumpInfluence);
-                    }
-                    break;
-
-                case GroundedState.Sliding:
-                    if (CurMovementCollection.TryGetMovementByType(MovementType.Jump, out MovementData slideJump))
-                    {
-                        SlidingJumpAction((JumpData)slideJump, jumpInfluence);
-                    }
-                    break;
-
-                case GroundedState.Airborn:
-                    if (CurMovementCollection.TryGetMovementByType(MovementType.AirJump, out MovementData airJump))
-                    {
-                        if (numJumpsPerformed < ((AirJumpData)airJump).JumpsAvailable)
-                        {
-                            AirJumpAction((AirJumpData)airJump, jumpInfluence);
+                switch (curGroundedState)
+                {
+                    case GroundedState.Grounded:
+                        if (CurMovementCollection.TryGetMovementByType(MovementType.Jump, out MovementData jump))
+                        {                        
+                            VerticalJumpAction((JumpData)jump, jumpInfluence);
                         }
-                    }
-                    break;
+                        break;
+
+                    case GroundedState.Sliding:
+                        if (CurMovementCollection.TryGetMovementByType(MovementType.Jump, out MovementData slideJump))
+                        {
+                            SlidingJumpAction((JumpData)slideJump, jumpInfluence);
+                        }
+                        break;
+
+                    case GroundedState.Airborn:
+                        if (CurMovementCollection.TryGetMovementByType(MovementType.AirJump, out MovementData airJump))
+                        {
+                            if (numJumpsPerformed < ((AirJumpData)airJump).JumpsAvailable)
+                            {
+                                AirJumpAction((AirJumpData)airJump, jumpInfluence);
+                            }
+                        }
+                        break;
+                }
             }
         }
     }
@@ -412,7 +416,7 @@ public class MovementInputHandler : MonoBehaviour
 
     private void UpdateGroundMovement()
     {
-        if (sceneObj.StateHandler.ChangeState(MOVESTATE) && 
+        if (sceneObj.AnimationStateHandler.IsStatePossible(MOVESTATE) && 
             curMoveState == MovementType.Move)
         {
             CheckTurnAround();
@@ -455,7 +459,7 @@ public class MovementInputHandler : MonoBehaviour
                     rb.velocity = slope * targetVelocity;
                 }
 
-                sceneObj.AnimationHandler.SetFloatPerameter("Velocity", Mathf.Abs(rb.velocity.x) / CurMovementCollection.GetMaxXVelocity());
+                sceneObj.AnimationStateHandler.SetFloatPerameter("Velocity", Mathf.Abs(rb.velocity.x) / CurMovementCollection.GetMaxXVelocity());
             }                        
         }
     }
@@ -474,10 +478,12 @@ public class MovementInputHandler : MonoBehaviour
                     (!sceneObj.IsFacingRightDirection() && rb.velocity.x >= 0))
                 {
                     rb.velocity = Vector3.zero;
-                    sceneObj.StateHandler.ResetState();
+
+                    if (curMoveState != MovementType.Landing)
+                        sceneObj.AnimationStateHandler.EndCurrentAnimation();
                 }
 
-                sceneObj.AnimationHandler.SetFloatPerameter("Velocity", Mathf.Abs(rb.velocity.x) / CurMovementCollection.GetMaxXVelocity());
+                sceneObj.AnimationStateHandler.SetFloatPerameter("Velocity", Mathf.Abs(rb.velocity.x) / CurMovementCollection.GetMaxXVelocity());
             }
         }
     }
@@ -508,7 +514,7 @@ public class MovementInputHandler : MonoBehaviour
     /// </summary>
     private void UpdateAirMovement()
     {
-        if (sceneObj.StateHandler.ChangeState(MOVESTATE) &&
+        if (sceneObj.AnimationStateHandler.IsStatePossible(MOVESTATE) &&
             CurMovementCollection.ContainsMovementType(MovementType.Move))
         {
             if (curMoveState == MovementType.FreeFall ||
@@ -585,7 +591,8 @@ public class MovementInputHandler : MonoBehaviour
                 animationName = userName + weaponName + clipName;
             }
 
-            sceneObj.AnimationHandler.PlayAnimation(animationName);            
+            Debug.Log("MOVE: Play Animation for " + moveType);
+            sceneObj.AnimationStateHandler.PlayAnimation(animationName);            
         }
     }
 

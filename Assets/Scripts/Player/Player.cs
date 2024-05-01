@@ -115,7 +115,7 @@ public class Player : SceneObject
 
     private void SwitchWeaponTo(int index)
     {
-        if (StateHandler.ChangeState(ActionState.State.Moving))
+        if (AnimationStateHandler.IsStatePossible(ActionState.Moving))
         {
             EquipmentHandler.Weapons.SwapWeaponTo(index);
         }

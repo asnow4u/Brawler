@@ -28,12 +28,11 @@ public abstract class SceneObject : MonoBehaviour, IDamage
     private Coroutine hitStunTimer;
 
     //Handlers
-    public IActionState StateHandler;
     public IEquipment EquipmentHandler;
     public IInteraction InteractionHandler;
     public MovementInputHandler MovementInputHandler => GetComponent<MovementInputHandler>();
     public AttackInputHandler AttackInputHandler => GetComponent<AttackInputHandler>();
-    public IAnimator AnimationHandler => GetComponentInChildren<IAnimator>();
+    public IAnimator AnimationStateHandler => GetComponentInChildren<IAnimator>();
 
     #region Initialize
 
@@ -49,10 +48,9 @@ public abstract class SceneObject : MonoBehaviour, IDamage
 
         InitializeInteractionHandler();
         InitializeEquipmentHandler();
-        InitializeAnimationHandler();
-        InitializeStateHandler();
         InitializeMovementHandler();
         InitializeAttackHandler();
+        InitializeAnimationStateHandler();
     }
 
 
@@ -67,19 +65,10 @@ public abstract class SceneObject : MonoBehaviour, IDamage
         //EquipmentHandler = new EquipmentHandler(this);
     }
 
-    private void InitializeAnimationHandler()
+    private void InitializeAnimationStateHandler()
     {
-        AnimationHandler.SetUp(this);
+        AnimationStateHandler.SetUp();
     }
-
-
-    private void InitializeStateHandler()
-    {
-        StateHandler = new ActionStateHandler();
-        StateHandler.Setup(this);
-        StateHandler.ResetState();
-    }
-
 
     private void InitializeMovementHandler()
     {         

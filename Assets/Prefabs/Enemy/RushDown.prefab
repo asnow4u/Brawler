@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 162542210556236613}
   - component: {fileID: 4421783498763120605}
   - component: {fileID: 3606919788912362873}
+  - component: {fileID: 101013005470840629}
   - component: {fileID: 857581707373331514}
   - component: {fileID: 8752136622161124601}
   - component: {fileID: 2705007949541630561}
@@ -87,7 +88,21 @@ MonoBehaviour:
   damageTaken: 0
   testForce: 0
   testDirection: {x: 0, y: 0}
-  pathTarget: {fileID: 0}
+  patrolPoints: []
+--- !u!114 &101013005470840629
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 162542210556236614}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2dd9e1c0037d8ff4d87c608e210e1f16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  curActionState: 0
+  curPlayingAnimation: 
 --- !u!114 &857581707373331514
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -100,8 +115,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 99e0a44c129ecbe4cb1fbf883587990b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  IsGrounded: 1
-  gravityScaler: 1
+  curMoveState: 0
+  curGroundedState: 0
+  curMoveAnimationState: 
+  maxSlopeAngle: 0
+  slidingMaxVelocity: 0
+  slidingAcceleration: 0
   BaseMovementCollection:
     Movements:
     - {fileID: 11400000, guid: 0357c9c67a146d94b8d4de688bf3891a, type: 2}
@@ -155,7 +174,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   DisplayGraph: 1
-  DisplayPathPoints: 1
+  DisplayRoutes: 0
 --- !u!1 &1704295450893306069
 GameObject:
   m_ObjectHideFlags: 0
@@ -340,7 +359,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4946371471994291653}
   - component: {fileID: 5041860188806343837}
-  - component: {fileID: 3464886866650370758}
   m_Layer: 0
   m_Name: SlimePBR
   m_TagString: Untagged
@@ -386,18 +404,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &3464886866650370758
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4948813596945170561}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2dd9e1c0037d8ff4d87c608e210e1f16, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &4948915812824429185
 GameObject:
   m_ObjectHideFlags: 0

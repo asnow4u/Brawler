@@ -7,7 +7,7 @@ using UnityEngine.Android;
 
 public class AttackInputHandler : MonoBehaviour
 {
-    const ActionState.State ATTACKSTATE = ActionState.State.Attacking;
+    const ActionState ATTACKSTATE = ActionState.Attacking;
 
     //Attack Data
     private AttackData curAttackData;
@@ -22,7 +22,7 @@ public class AttackInputHandler : MonoBehaviour
     public void Setup()
     {
         //sceneObj.EquipmentHandler.Weapons.WeaponChangedEvent += OnWeaponChanged;
-        sceneObj.AnimationHandler.OnAnimationUpdateEvent += OnAttackAnimationUpdated;
+        sceneObj.AnimationStateHandler.OnAnimationUpdateEvent += OnAttackAnimationUpdated;
 
         OnWeaponChanged(null);
     }
@@ -42,7 +42,7 @@ public class AttackInputHandler : MonoBehaviour
 
     private void OnAttackAnimationUpdated(string animationState, AnimationTrigger.Type triggerType)
     {
-        if (CurAttackCollection.TryGetAttackByAnimationClipName(animationState, out AttackData attackData))
+        if (CurAttackCollection.TryGetAttackByAnimation(animationState, out AttackData attackData))
         {
             switch(triggerType)
             {
@@ -91,7 +91,7 @@ public class AttackInputHandler : MonoBehaviour
             DisabledAttackColliders(attackData);
 
             curAttackData = null;
-            sceneObj.StateHandler.ResetState();
+            //sceneObj.StateHandler.ResetState();
         }
     }
 
@@ -134,7 +134,7 @@ public class AttackInputHandler : MonoBehaviour
         if (sceneObj.MovementInputHandler.CurMoveState != MovementType.Jump &&
             sceneObj.MovementInputHandler.CurMoveState != MovementType.Landing) 
         {
-            return sceneObj.StateHandler.ChangeState(ATTACKSTATE);
+            return sceneObj.AnimationStateHandler.IsStatePossible(ATTACKSTATE);
         }
 
         return false;
@@ -144,7 +144,7 @@ public class AttackInputHandler : MonoBehaviour
     {
         if (curAttackData == null && CurAttackCollection.GetAttackByType(attackType, out AttackData attack))
         {
-            sceneObj.AnimationHandler.PlayAnimation(attack.AttackAnimation.name, attack.GetAttackTriggers());
+            sceneObj.AnimationStateHandler.PlayAnimation(attack.AttackAnimation.name, attack.GetAttackTriggers());
         }
     }
 

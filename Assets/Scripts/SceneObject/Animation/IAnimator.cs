@@ -8,11 +8,13 @@ public interface IAnimator
 {
     public event Action<string, AnimationTrigger.Type> OnAnimationUpdateEvent;
 
-    public void SetUp(SceneObject obj);
+    public void SetUp();
+
+    public bool IsStatePossible(ActionState requestedState);
 
     public void PlayAnimation(string animationState, AnimationTrigger[] animationTriggers = null);
 
-    public void PlayIdleAnimation();
+    public void EndCurrentAnimation();
 
     public void SetFloatPerameter(string name, float value);
 }
