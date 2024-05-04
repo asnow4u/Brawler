@@ -16,8 +16,10 @@ public class AttackInputHandler : MonoBehaviour
 
     //SceneObject
     private SceneObject sceneObj => GetComponent<SceneObject>();
-    
 
+
+    //TESTING
+    public bool BackAirExists;
 
     public void Setup()
     {
@@ -191,18 +193,18 @@ public class AttackInputHandler : MonoBehaviour
             if (sceneObj.MovementInputHandler.GroundedState == GroundedState.Airborn)
             {
                 if (!sceneObj.IsFacingRightDirection())
-                    PlayAttackAnimation(AttackType.BackAir);
+                    sceneObj.TurnAround();
 
-                else
-                    PlayAttackAnimation(AttackType.ForwardAir);
+                PlayAttackAnimation(AttackType.ForwardAir);                
             }
 
             else
             {
-                if (!sceneObj.IsFacingRightDirection() && 
-                    sceneObj.MovementInputHandler.GroundedState == GroundedState.Grounded)
+                if (!sceneObj.IsFacingRightDirection())
                 {
-                    sceneObj.TurnAround();
+                    //Check not sliding
+                    if (sceneObj.MovementInputHandler.GroundedState == GroundedState.Grounded)
+                        sceneObj.TurnAround();  
                 }
 
                 PlayAttackAnimation(AttackType.ForwardTilt);
@@ -217,19 +219,18 @@ public class AttackInputHandler : MonoBehaviour
         {
             if (sceneObj.MovementInputHandler.GroundedState == GroundedState.Airborn)
             {
-                if (sceneObj.IsFacingRightDirection())
-                    PlayAttackAnimation(AttackType.BackAir);
+                    if (sceneObj.IsFacingRightDirection())
+                        sceneObj.TurnAround();
 
-                else
-                    PlayAttackAnimation(AttackType.ForwardAir);
+                    PlayAttackAnimation(AttackType.ForwardAir);                
             }
 
             else
             {
-                if (sceneObj.IsFacingRightDirection() &&
-                    sceneObj.MovementInputHandler.GroundedState == GroundedState.Grounded)
+                if (sceneObj.IsFacingRightDirection())
                 {
-                    sceneObj.TurnAround();
+                    if (sceneObj.MovementInputHandler.GroundedState == GroundedState.Grounded)                    
+                        sceneObj.TurnAround();
                 }
 
                 PlayAttackAnimation(AttackType.ForwardTilt);

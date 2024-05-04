@@ -8,10 +8,11 @@ public class MoveData : MovementData
     [Header("Velocity Limit")]
     public float MaxXVelocity;
 
-    [Header("Acceleration")]
-    public float XAcceleration;
-
-    [Header("Decceleration")]
+    [Header("Grounded Movement")]
+    public float GroundedXAcceleration;
     public float GroundedXDeceleration;   
+
+    [Header("Arial Movement")]
+    public float ArialXAcceleration;
     public float ArialXDeceleration;
 }

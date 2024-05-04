@@ -98,25 +98,14 @@ public class MovementInputHandler : MonoBehaviour
 
     private void OnMovementAnimationEnded(string animationState, MovementType type) 
     {        
-        //if (curMoveAnimationState == animationState)
-        {
             //curMoveAnimationState = null;
-            Debug.Log("MOVE: Animation finished for " + type);
+        Debug.Log("MOVE: Animation finished for " + type);
 
-            switch (type)
-            {
-                case MovementType.Jump:
-                case MovementType.AirJump:
-                    curMoveState = MovementType.FreeFall;
-                    //sceneObj.StateHandler.ResetState();
-                    break;
+        if (curGroundedState == GroundedState.Airborn)
+            curMoveState = MovementType.FreeFall;
 
-                case MovementType.Landing:
-                    curMoveState = MovementType.Move;
-                    //sceneObj.StateHandler.ResetState();
-                    break;
-            }
-        }
+        else
+            curMoveState = MovementType.Move;        
     }
 
     #endregion
@@ -409,6 +398,9 @@ public class MovementInputHandler : MonoBehaviour
         else
         {
             curGroundedState = GroundedState.Airborn;
+
+            if (curMoveState != MovementType.AirJump)
+                sceneObj.AnimationStateHandler.EndCurrentAnimation();
         }
     }
 
@@ -451,7 +443,7 @@ public class MovementInputHandler : MonoBehaviour
                 float targetVelocity = CurMovementCollection.GetMaxXVelocity() * Mathf.Abs(horizontalInfluence);
 
                 //Update velocity based on slope
-                rb.velocity += slope * Mathf.Abs(horizontalInfluence) * CurMovementCollection.GetXAcceleration() * Time.fixedDeltaTime;
+                rb.velocity += slope * Mathf.Abs(horizontalInfluence) * CurMovementCollection.GetGroundedXAcceleration() * Time.fixedDeltaTime;
 
                 //Cant exceed target velocity
                 if (rb.velocity.magnitude > targetVelocity)
@@ -519,7 +511,9 @@ public class MovementInputHandler : MonoBehaviour
         {
             if (curMoveState == MovementType.FreeFall ||
                 curMoveState == MovementType.AirJump)
+            {                   
                 UpdateAirAcceleration();
+            }
         }
 
 
@@ -536,19 +530,16 @@ public class MovementInputHandler : MonoBehaviour
         //Apply Movement based on influence
         if (horizontalInfluence != 0)
         {
+            if (horizontalInfluence < 0 && sceneObj.IsFacingRightDirection() ||
+                horizontalInfluence > 0 && !sceneObj.IsFacingRightDirection())
+            {
+                sceneObj.TurnAround();
+            }
+
             //Cap Velocity based on horizontal influence
             float targetVelocity = CurMovementCollection.GetMaxXVelocity() * horizontalInfluence;
 
-            //Accelerate
-            if (sceneObj.IsFacingRightDirection() && horizontalInfluence > 0 ||
-                !sceneObj.IsFacingRightDirection() && horizontalInfluence < 0)
-            {
-                rb.velocity += Vector3.right * horizontalInfluence * CurMovementCollection.GetXAcceleration() * Time.fixedDeltaTime;
-            }
-
-            //Deccelerate
-            else
-                rb.velocity += Vector3.right * horizontalInfluence * CurMovementCollection.GetArialXDeceleration() * Time.fixedDeltaTime;
+            rb.velocity += Vector3.right * horizontalInfluence * CurMovementCollection.GetArialXAcceleration() * Time.fixedDeltaTime;
 
             //Cant exceed target velocity
             if ((horizontalInfluence > 0 && rb.velocity.x > targetVelocity) ||

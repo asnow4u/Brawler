@@ -132,16 +132,10 @@ public class AnimationStateHandler : MonoBehaviour, IAnimator
     }
 
 
-    private bool TryChangeState(ActionState newState)
+    private void ChangeState(ActionState newState)
     {
-        if (IsStatePossible(newState))
-        {
-            Debug.Log("STATE: " + newState);
-            curActionState = newState;
-            return true;
-        }
-
-        return false;
+        Debug.Log("STATE: " + newState);
+        curActionState = newState;            
     }
 
 
@@ -175,15 +169,14 @@ public class AnimationStateHandler : MonoBehaviour, IAnimator
         {
             ActionState animationActionState = DetermineActionStateFromAnimation(animationName);
 
-            if (TryChangeState(animationActionState))
+            ChangeState(animationActionState);
+            
+            if (animationName != curPlayingAnimation)
             {
-                if (animationName != curPlayingAnimation)
-                {
-                    Debug.Log("ANIMATION: " + animationName);
-                    animator.Play("Base Layer." + animationName);
-                    StartCoroutine(WaitForAnimationStart(animationName, animationTriggers));
-                }                
-            }
+                Debug.Log("ANIMATION: " + animationName);
+                animator.Play("Base Layer." + animationName);
+                StartCoroutine(WaitForAnimationStart(animationName, animationTriggers));
+            }                
         }
     }
 

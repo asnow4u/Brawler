@@ -19,4 +19,3 @@ MonoBehaviour:
   XAcceleration: 50
   GroundedXDeceleration: 50
   ArialXDeceleration: 25
-  FastFallVelocity: 20

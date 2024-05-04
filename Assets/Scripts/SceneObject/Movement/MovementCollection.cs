@@ -55,13 +55,13 @@ public class MovementCollection
     }
 
 
-    public float GetXAcceleration()
+    public float GetGroundedXAcceleration()
     {
         foreach (MovementData move in Movements)
         {
             if (move.Type == MovementType.Move)
             {
-                return ((MoveData)move).XAcceleration;
+                return ((MoveData)move).GroundedXAcceleration;
             }
         }
 
@@ -76,6 +76,20 @@ public class MovementCollection
             if (move.Type == MovementType.Move)
             {
                 return ((MoveData)move).GroundedXDeceleration;
+            }
+        }
+
+        return 0;
+    }
+
+
+    public float GetArialXAcceleration()
+    {
+        foreach (MovementData move in Movements)
+        {
+            if (move.Type == MovementType.Move)
+            {
+                return ((MoveData)move).ArialXAcceleration;
             }
         }
 
