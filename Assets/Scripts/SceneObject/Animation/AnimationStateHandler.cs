@@ -186,6 +186,7 @@ public class AnimationStateHandler : MonoBehaviour, IAnimator
     /// </summary>
     public void EndCurrentAnimation()
     {
+        Debug.Log("ANIMATION: End " + curPlayingAnimation);
         ResetState();
         PlayIdleAnimation();
     }

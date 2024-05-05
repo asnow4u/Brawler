@@ -18,13 +18,10 @@ public class AttackInputHandler : MonoBehaviour
     private SceneObject sceneObj => GetComponent<SceneObject>();
 
 
-    //TESTING
-    public bool BackAirExists;
-
     public void Setup()
     {
         //sceneObj.EquipmentHandler.Weapons.WeaponChangedEvent += OnWeaponChanged;
-        sceneObj.AnimationStateHandler.OnAnimationUpdateEvent += OnAttackAnimationUpdated;
+        sceneObj.AnimationStateHandler.OnAnimationUpdateEvent += OnAnimationUpdated;
 
         OnWeaponChanged(null);
     }
@@ -42,7 +39,7 @@ public class AttackInputHandler : MonoBehaviour
 
     #region Attack Performed Events
 
-    private void OnAttackAnimationUpdated(string animationState, AnimationTrigger.Type triggerType)
+    private void OnAnimationUpdated(string animationState, AnimationTrigger.Type triggerType)
     {
         if (CurAttackCollection.TryGetAttackByAnimation(animationState, out AttackData attackData))
         {
@@ -93,7 +90,6 @@ public class AttackInputHandler : MonoBehaviour
             DisabledAttackColliders(attackData);
 
             curAttackData = null;
-            //sceneObj.StateHandler.ResetState();
         }
     }
 

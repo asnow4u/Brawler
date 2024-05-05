@@ -93,22 +93,34 @@ public class MovementInputHandler : MonoBehaviour
 
     private void OnMovementAnimationStarted(string animationState, MovementType type)
     {
-        curMoveAnimationState = animationState;        
+        curMoveAnimationState = animationState;                
     }
 
     private void OnMovementAnimationEnded(string animationState, MovementType type) 
     {        
-            //curMoveAnimationState = null;
         Debug.Log("MOVE: Animation finished for " + type);
 
-        if (curGroundedState == GroundedState.Airborn)
-            curMoveState = MovementType.FreeFall;
+        switch (type)
+        {
+            case MovementType.Jump:
+            case MovementType.AirJump:
+                SetCurrentMoveState(MovementType.FreeFall);
+                break;
 
-        else
-            curMoveState = MovementType.Move;        
+            case MovementType.Landing:
+                SetCurrentMoveState(MovementType.Move);
+                break;
+        }
     }
 
     #endregion
+
+
+    private void SetCurrentMoveState(MovementType moveState)
+    {
+        Debug.Log("MOVE: CurMoveState => " + moveState);
+        curMoveState = moveState;
+    }
 
 
     private void CheckTurnAround()
@@ -250,7 +262,7 @@ public class MovementInputHandler : MonoBehaviour
     /// </summary>
     private void PerformLanding()
     {
-        curMoveState = MovementType.Landing;
+        SetCurrentMoveState(MovementType.Landing);
 
         //Reset jumps
         numJumpsPerformed = 0;
@@ -270,7 +282,7 @@ public class MovementInputHandler : MonoBehaviour
     /// <param name="jumpInfluence"></param>
     private void VerticalJumpAction(JumpData jumpData, float jumpInfluence)
     {
-        curMoveState = MovementType.Jump;
+        SetCurrentMoveState(MovementType.Jump);
 
         rb.velocity = new Vector3(rb.velocity.x, jumpData.JumpVelocity * jumpInfluence, rb.velocity.z);
         numJumpsPerformed++;
@@ -289,7 +301,7 @@ public class MovementInputHandler : MonoBehaviour
     {
         if (TryGetSlopeAngle(out Vector3 slopeAngle))
         {
-            curMoveState = MovementType.Jump;
+            SetCurrentMoveState(MovementType.Jump);
 
             Vector3 normal = Vector3.Cross(slopeAngle, -transform.forward).normalized;
             rb.velocity = normal * (jumpData.JumpVelocity * jumpInfluence);
@@ -304,7 +316,7 @@ public class MovementInputHandler : MonoBehaviour
 
     private void AirJumpAction(AirJumpData airJumpData, float jumpInfluence)
     {
-        curMoveState = MovementType.AirJump;
+        SetCurrentMoveState(MovementType.AirJump);
 
         rb.velocity = new Vector3(rb.velocity.x, airJumpData.AirJumpVelocity * jumpInfluence, rb.velocity.z);
         numJumpsPerformed++;
@@ -397,10 +409,11 @@ public class MovementInputHandler : MonoBehaviour
 
         else
         {
-            curGroundedState = GroundedState.Airborn;
-
-            if (curMoveState != MovementType.AirJump)
+            if (curGroundedState != GroundedState.Airborn)
+            {
+                curGroundedState = GroundedState.Airborn;
                 sceneObj.AnimationStateHandler.EndCurrentAnimation();
+            }
         }
     }
 
