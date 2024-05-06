@@ -172,15 +172,47 @@ public class MovementInputHandler : MonoBehaviour
 
     /// <summary>
     /// Attempt to get the current slope of the environment under the sceneObject
+    /// Casts 10 rays based on the left/right most point of the collider
     /// </summary>
     /// <param name="slopeAngle"></param>
     /// <returns></returns>
     private bool TryGetSlopeAngle(out Vector3 slopeAngle)
     {
-        if (Physics.SphereCast(collider.bounds.center, collider.bounds.extents.x, Vector3.down, out RaycastHit hit, collider.bounds.extents.y + 0.001f, ~LayerMask.NameToLayer("Environment")))
+        List<RaycastHit> hits = new List<RaycastHit>();
+
+        //Create raycasts
+        Vector3 leftSidePoint = collider.bounds.center + Vector3.left * collider.bounds.extents.x;
+        Vector3 rightSidePoint = collider.bounds.center + Vector3.right * collider.bounds.extents.x;
+        float spaceBetweenRays = (rightSidePoint.x - leftSidePoint.x) / 10;
+
+        //Raycast
+        for (int i = 0; i < 10; i++)
         {
-            slopeAngle = Vector3.Cross(hit.normal, transform.forward).normalized;
-            Debug.DrawRay(hit.point, slopeAngle, Color.green);
+            Vector3 origin = leftSidePoint + Vector3.right * spaceBetweenRays * i;
+            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, collider.bounds.extents.y + 0.1f, ~LayerMask.NameToLayer("Environment")))
+            {
+                hits.Add(hit);
+            }
+        }
+
+        if (hits.Count > 0)
+        {       
+            //Average normals
+            Vector3 avgNormal = Vector3.zero;
+
+            foreach (RaycastHit hit in hits)
+            {
+                avgNormal += hit.normal;
+            }
+
+            avgNormal /= 10;
+
+            //Determine slope angle
+            slopeAngle = Vector3.Cross(avgNormal, transform.forward).normalized;
+
+            Debug.DrawRay(collider.bounds.center + Vector3.down * collider.bounds.extents.y, avgNormal, Color.green);
+            Debug.DrawRay(collider.bounds.center + Vector3.down * collider.bounds.extents.y, slopeAngle, Color.red);
+
             return true;
         }
 
