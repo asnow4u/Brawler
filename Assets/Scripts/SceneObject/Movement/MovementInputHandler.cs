@@ -189,7 +189,7 @@ public class MovementInputHandler : MonoBehaviour
         for (int i = 0; i < 10; i++)
         {
             Vector3 origin = leftSidePoint + Vector3.right * spaceBetweenRays * i;
-            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, collider.bounds.extents.y + 0.1f, ~LayerMask.NameToLayer("Environment")))
+            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, collider.bounds.extents.y + 0.3f, ~LayerMask.NameToLayer("Environment")))
             {
                 hits.Add(hit);
             }
