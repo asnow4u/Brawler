@@ -142,7 +142,7 @@ public class AttackInputHandler : MonoBehaviour
     {
         if (curAttackData == null && CurAttackCollection.GetAttackByType(attackType, out AttackData attack))
         {
-            sceneObj.AnimationStateHandler.PlayAnimation(attack.AttackAnimation.name, attack.GetAttackTriggers());
+            sceneObj.AnimationStateHandler.PlayAnimation(new AnimationStateData(attack.AttackAnimation.name, ATTACKSTATE, attack.GetAttackTriggers()));
         }
     }
 

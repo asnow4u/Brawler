@@ -12,7 +12,7 @@ public interface IAnimator
 
     public bool IsStatePossible(ActionState requestedState);
 
-    public void PlayAnimation(string animationState, AnimationTrigger[] animationTriggers = null);
+    public void PlayAnimation(AnimationStateData animationData);
 
     public void EndCurrentAnimation();
 

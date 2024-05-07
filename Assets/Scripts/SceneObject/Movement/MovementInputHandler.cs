@@ -609,26 +609,25 @@ public class MovementInputHandler : MonoBehaviour
     {
         if (CurMovementCollection.TryGetMovementByType(moveType, out MovementData move))
         {
-            string animationName = move.Animation.name;
+            Debug.Log("MOVE: Play Animation for " + moveType);
             
-            //Need to call name for blend tree
+            //NOTE: Need to call name for blend tree
             if (move.Type == MovementType.Move)
-            {
+            {                
                 string userName = gameObject.name;
+                string weaponName = "Base"; //TODO: Need to Implement with EquipmentHandler
                 string clipName = moveType.ToString();
-                string weaponName;
 
-                //TODO: Need to fix with EquipmentHandler
-                //if (sceneObj.EquipmentHandler.Weapons.GetCurWeapon() != null)
-                //    weaponName = sceneObj.EquipmentHandler.Weapons.GetCurWeapon().name;
-                //else
-                    weaponName = "Base";
+                string animationName = userName + weaponName + clipName;
 
-                animationName = userName + weaponName + clipName;
+                Debug.LogError(animationName);
+                sceneObj.AnimationStateHandler.PlayAnimation(new AnimationStateData(animationName, MOVESTATE, move.Triggers.ToArray()));
             }
 
-            Debug.Log("MOVE: Play Animation for " + moveType);
-            sceneObj.AnimationStateHandler.PlayAnimation(animationName);            
+            else
+            {
+                sceneObj.AnimationStateHandler.PlayAnimation(new AnimationStateData(move.Animation.name, MOVESTATE, move.Triggers.ToArray()));
+            }
         }
     }
 

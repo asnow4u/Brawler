@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEditor.Animations;
 using UnityEngine;
 
@@ -85,31 +86,6 @@ public class AnimationStateHandler : MonoBehaviour, IAnimator
     }
 
 
-    //TODO: Figure out a better flow for determining action state from animation
-    private ActionState DetermineActionStateFromAnimation(string animationName)
-    {
-        if (animationName.Contains("Idle"))
-            return ActionState.Idle;
-
-        else if (animationName.Contains("Hit"))
-            return ActionState.HitStun;
-
-        else if (animationName.Contains("Move"))
-            return ActionState.Moving;
-
-        else
-        {
-            if (movementHandler.CurMovementCollection.TryGetMovementFromAnimation(animationName, out MovementData moveData))
-                return ActionState.Moving;
-
-            if (attackHandler.CurAttackCollection.TryGetAttackByAnimation(animationName, out AttackData attackData))
-                return ActionState.Attacking;
-        }
-
-        return ActionState.Null;
-    }
-
-
     #endregion
 
 
@@ -133,7 +109,7 @@ public class AnimationStateHandler : MonoBehaviour, IAnimator
 
 
     private void ChangeState(ActionState newState)
-    {
+    {        
         Debug.Log("STATE: " + newState);
         curActionState = newState;            
     }
@@ -152,30 +128,30 @@ public class AnimationStateHandler : MonoBehaviour, IAnimator
     private void PlayIdleAnimation()
     {
         if (movementHandler.GroundedState == GroundedState.Airborn)
-            PlayAnimation("BaseAirIdle");
+            PlayAnimation(new AnimationStateData("BaseAirIdle", ActionState.Idle, null));
+
         else
-            PlayAnimation("BaseIdle");
+            PlayAnimation(new AnimationStateData("BaseIdle", ActionState.Idle, null));
     }
     
+
     /// <summary>
     /// Update the current ActionState <br/>
     /// Start playing animation.
     /// </summary>
     /// <param name="animationName"></param>
     /// <param name="animationTriggers"></param>
-    public void PlayAnimation(string animationName, AnimationTrigger[] animationTriggers = null)
+    public void PlayAnimation(AnimationStateData animationData)
     {        
-        if (animationName != null)
+        if (animationData != null)
         {
-            ActionState animationActionState = DetermineActionStateFromAnimation(animationName);
+            ChangeState(animationData.State);
 
-            ChangeState(animationActionState);
-            
-            if (animationName != curPlayingAnimation)
+            if (animationData.ClipName != curPlayingAnimation)
             {
-                Debug.Log("ANIMATION: " + animationName);
-                animator.Play("Base Layer." + animationName);
-                StartCoroutine(WaitForAnimationStart(animationName, animationTriggers));
+                Debug.Log("ANIMATION: " + animationData.ClipName);
+                animator.Play("Base Layer." + animationData.ClipName);
+                StartCoroutine(WaitForAnimationStart(animationData.ClipName, animationData.Triggers));
             }                
         }
     }
