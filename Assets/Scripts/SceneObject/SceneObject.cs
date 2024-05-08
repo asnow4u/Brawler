@@ -5,18 +5,21 @@ using System;
 using UnityEngine.InputSystem.Utilities;
 
 public enum SceneObjectType { Player, Enemy, Object }
+public enum GroundedState { Airborn, Grounded, Sliding }
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(MovementInputHandler))]
 [RequireComponent(typeof(AttackInputHandler))]
+[RequireComponent(typeof(AnimationStateHandler))]
 public abstract class SceneObject : MonoBehaviour, IDamage
 {
     [Header("SceneObject")]
     public string UniqueId;
     public SceneObjectType ObjectType;
 
-    //Physics
-    public Rigidbody Rb => GetComponent<Rigidbody>();
+    [Header("Ground Status")]
+    [SerializeField] private GroundedState curGroundedState;
+    [SerializeField] private float maxSlopeAngle;
 
     [Header("Hit/Damage")]
     public bool InHitStun;
@@ -30,9 +33,19 @@ public abstract class SceneObject : MonoBehaviour, IDamage
     //Handlers
     public IEquipment EquipmentHandler;
     public IInteraction InteractionHandler;
+
+    //Getters
+    public IAnimator AnimationStateHandler => GetComponentInChildren<IAnimator>();
     public MovementInputHandler MovementInputHandler => GetComponent<MovementInputHandler>();
     public AttackInputHandler AttackInputHandler => GetComponent<AttackInputHandler>();
-    public IAnimator AnimationStateHandler => GetComponentInChildren<IAnimator>();
+
+    public GroundedState GroundedState => curGroundedState;   
+    public Rigidbody Rb => GetComponent<Rigidbody>();
+    private Collider collider => GetComponent<Collider>();
+
+
+    //Events
+    public event Action<GroundedState> GroundedStateChangeEvent;
 
     #region Initialize
 
@@ -42,6 +55,10 @@ public abstract class SceneObject : MonoBehaviour, IDamage
     }
     
 
+    /// <summary>
+    /// Create Unique ID
+    /// Setup handlers
+    /// </summary>
     protected virtual void Initialize()
     {               
         UniqueId = Guid.NewGuid().ToString();        
@@ -84,11 +101,136 @@ public abstract class SceneObject : MonoBehaviour, IDamage
     #endregion
 
 
-    //TODO: make two rays on each side to prevent landing just on the edge and not getting jump reset
+    #region Update
+
     protected virtual void FixedUpdate()
-    {
-        
+    {  
+        //Grounded Status
+        CheckGroundedStatus();
+
+        MovementInputHandler.UpdateMovement();
     }
+
+    #endregion
+
+
+    #region Ground Status
+
+    /// <summary>
+    /// Use raycasts to determine current status of the ground
+    /// </summary>
+    private void CheckGroundedStatus()
+    {
+        if (TryGetSlopeAngle(out Vector3 slopeAngle))
+        {
+            float angle = Vector3.Angle(transform.right, slopeAngle);
+
+            switch (curGroundedState)
+            {
+                case GroundedState.Grounded:
+
+                    if (angle > maxSlopeAngle)
+                    {
+                        //Face direction of downward slope
+                        //if (slopeAngle.y > 0)
+                        //    TurnAround();
+
+                        curGroundedState = GroundedState.Sliding;
+
+                        GroundedStateChangeEvent?.Invoke(curGroundedState);
+                    }
+                    break;
+
+                case GroundedState.Sliding:
+
+                    if (angle < maxSlopeAngle)
+                    {                     
+                        curGroundedState = GroundedState.Grounded;
+
+                        GroundedStateChangeEvent?.Invoke(curGroundedState);
+                    }
+                    break;
+
+                case GroundedState.Airborn:
+
+                    if (angle > maxSlopeAngle)
+                        curGroundedState = GroundedState.Sliding;
+                    else
+                        curGroundedState = GroundedState.Grounded;
+
+                    AnimationStateHandler.EndCurrentAnimation(ActionState.Admin);
+
+                    GroundedStateChangeEvent?.Invoke(curGroundedState);
+                    //PerformLanding(); //TODO: Reimplement through event in movementInputHandler
+                    break;
+            }
+        }
+
+        else
+        {
+            if (curGroundedState != GroundedState.Airborn)
+            {
+                curGroundedState = GroundedState.Airborn;
+                AnimationStateHandler.EndCurrentAnimation(ActionState.Admin);
+
+                GroundedStateChangeEvent?.Invoke(curGroundedState);
+            }
+        }
+    }
+
+
+    /// <summary>
+    /// Attempt to get the current slope of the environment under the sceneObject
+    /// Casts 10 rays based on the left/right most point of the collider
+    /// </summary>
+    /// <param name="slopeAngle"></param>
+    /// <returns></returns>
+    public bool TryGetSlopeAngle(out Vector3 slopeAngle)
+    {
+        List<RaycastHit> hits = new List<RaycastHit>();
+
+        //Create raycasts
+        Vector3 leftSidePoint = collider.bounds.center + Vector3.left * collider.bounds.extents.x;
+        Vector3 rightSidePoint = collider.bounds.center + Vector3.right * collider.bounds.extents.x;
+        float spaceBetweenRays = (rightSidePoint.x - leftSidePoint.x) / 10;
+
+        //Raycast
+        for (int i = 0; i < 10; i++)
+        {
+            Vector3 origin = leftSidePoint + Vector3.right * spaceBetweenRays * i;
+            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, collider.bounds.extents.y + 0.3f, ~LayerMask.NameToLayer("Environment")))
+            {
+                hits.Add(hit);
+            }
+        }
+
+        if (hits.Count > 0)
+        {
+            //Average normals
+            Vector3 avgNormal = Vector3.zero;
+
+            foreach (RaycastHit hit in hits)
+            {
+                avgNormal += hit.normal;
+            }
+
+            avgNormal /= 10;
+
+            //Determine slope angle
+            slopeAngle = Vector3.Cross(avgNormal, transform.forward).normalized;
+
+            Debug.DrawRay(collider.bounds.center + Vector3.down * collider.bounds.extents.y, avgNormal, Color.green);
+            Debug.DrawRay(collider.bounds.center + Vector3.down * collider.bounds.extents.y, slopeAngle, Color.red);
+
+            return true;
+        }
+
+        slopeAngle = Vector3.zero;
+        return false;
+    }
+
+    #endregion
+
 
     #region Direction
 
@@ -239,6 +381,7 @@ public abstract class SceneObject : MonoBehaviour, IDamage
     }
 
     #endregion
+
 
     private void OnDestroy()
     {

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum GroundedState { Airborn, Grounded, Sliding }
 
 public class MovementInputHandler : MonoBehaviour
 {
@@ -11,12 +10,10 @@ public class MovementInputHandler : MonoBehaviour
     //Movement State Data
     [Header("State")]
     [SerializeField] private MovementType curMoveState = MovementType.Move;
-    [SerializeField] private GroundedState curGroundedState;
     [SerializeField] private string curMoveAnimationState;
 
     //Slope Properties
-    [Header("Slope")]
-    [SerializeField] private float maxSlopeAngle;
+    [Header("Slope")]    
     [SerializeField] private float slidingMaxVelocity;
     [SerializeField] private float slidingAcceleration;
 
@@ -37,9 +34,7 @@ public class MovementInputHandler : MonoBehaviour
 
 
     //Getters
-    public MovementType CurMoveState => curMoveState;
-    public GroundedState GroundedState => curGroundedState;
-    public float MaxSlopeAngle => maxSlopeAngle;
+    public MovementType CurMoveState => curMoveState;    
 
 
     //Events
@@ -53,8 +48,9 @@ public class MovementInputHandler : MonoBehaviour
         //NOTE: Uses ApplyGravity instead
         rb.useGravity = false;
 
-        //sceneObj.EquipmentHandler.Weapons.WeaponChangedEvent += OnWeaponChanged;
+        sceneObj.GroundedStateChangeEvent += OnGroundedStateChanged;
         sceneObj.AnimationStateHandler.OnAnimationUpdateEvent += OnAnimationUpdate;
+        //sceneObj.EquipmentHandler.Weapons.WeaponChangedEvent += OnWeaponChanged;
 
         OnWeaponChanged(null);        
     }
@@ -62,6 +58,22 @@ public class MovementInputHandler : MonoBehaviour
     #endregion
 
     #region Events
+
+    private void OnGroundedStateChanged(GroundedState curGroundState)
+    {
+        switch (curGroundState)
+        {
+            case GroundedState.Grounded:
+            case GroundedState.Sliding:
+                PerformLanding();
+                break;
+
+            case GroundedState.Airborn:
+                break;
+
+        }
+    }
+
 
     private void OnWeaponChanged(Weapon weapon)
     {
@@ -131,11 +143,11 @@ public class MovementInputHandler : MonoBehaviour
 
             if (rb.velocity.x > 0)
             {
-                switch (curGroundedState)
+                switch (sceneObj.GroundedState)
                 {
                     case GroundedState.Grounded:
                     case GroundedState.Sliding:
-                        if (TryGetSlopeAngle(out Vector3 slope))
+                        if (sceneObj.TryGetSlopeAngle(out Vector3 slope))
                         {
                             rb.velocity = slope * rb.velocity.magnitude;
                         }
@@ -152,11 +164,11 @@ public class MovementInputHandler : MonoBehaviour
         {
             sceneObj.TurnAround();
 
-            switch (curGroundedState)
+            switch (sceneObj.GroundedState)
             {
                 case GroundedState.Grounded:
                 case GroundedState.Sliding:
-                    if (TryGetSlopeAngle(out Vector3 slope))
+                    if (sceneObj.TryGetSlopeAngle(out Vector3 slope))
                     {
                         rb.velocity = slope * rb.velocity.magnitude;
                     }
@@ -168,58 +180,6 @@ public class MovementInputHandler : MonoBehaviour
             }
         }
     }
-
-
-    /// <summary>
-    /// Attempt to get the current slope of the environment under the sceneObject
-    /// Casts 10 rays based on the left/right most point of the collider
-    /// </summary>
-    /// <param name="slopeAngle"></param>
-    /// <returns></returns>
-    private bool TryGetSlopeAngle(out Vector3 slopeAngle)
-    {
-        List<RaycastHit> hits = new List<RaycastHit>();
-
-        //Create raycasts
-        Vector3 leftSidePoint = collider.bounds.center + Vector3.left * collider.bounds.extents.x;
-        Vector3 rightSidePoint = collider.bounds.center + Vector3.right * collider.bounds.extents.x;
-        float spaceBetweenRays = (rightSidePoint.x - leftSidePoint.x) / 10;
-
-        //Raycast
-        for (int i = 0; i < 10; i++)
-        {
-            Vector3 origin = leftSidePoint + Vector3.right * spaceBetweenRays * i;
-            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, collider.bounds.extents.y + 0.3f, ~LayerMask.NameToLayer("Environment")))
-            {
-                hits.Add(hit);
-            }
-        }
-
-        if (hits.Count > 0)
-        {       
-            //Average normals
-            Vector3 avgNormal = Vector3.zero;
-
-            foreach (RaycastHit hit in hits)
-            {
-                avgNormal += hit.normal;
-            }
-
-            avgNormal /= 10;
-
-            //Determine slope angle
-            slopeAngle = Vector3.Cross(avgNormal, transform.forward).normalized;
-
-            Debug.DrawRay(collider.bounds.center + Vector3.down * collider.bounds.extents.y, avgNormal, Color.green);
-            Debug.DrawRay(collider.bounds.center + Vector3.down * collider.bounds.extents.y, slopeAngle, Color.red);
-
-            return true;
-        }
-
-        slopeAngle = Vector3.zero;
-        return false;
-    }
-
 
 
     #region Perform Movement
@@ -258,7 +218,7 @@ public class MovementInputHandler : MonoBehaviour
             {            
                 jumpInfluence = Mathf.Clamp01(jumpInfluence);
 
-                switch (curGroundedState)
+                switch (sceneObj.GroundedState)
                 {
                     case GroundedState.Grounded:
                         if (CurMovementCollection.TryGetMovementByType(MovementType.Jump, out MovementData jump))
@@ -331,7 +291,7 @@ public class MovementInputHandler : MonoBehaviour
     /// <param name="jumpInfluence"></param>
     private void SlidingJumpAction(JumpData jumpData, float jumpInfluence)
     {
-        if (TryGetSlopeAngle(out Vector3 slopeAngle))
+        if (sceneObj.TryGetSlopeAngle(out Vector3 slopeAngle))
         {
             SetCurrentMoveState(MovementType.Jump);
 
@@ -361,17 +321,14 @@ public class MovementInputHandler : MonoBehaviour
     #endregion
 
 
-    private void FixedUpdate()
-    {
-        //Grounded Status
-        CheckGroundedStatus();
-
+    public void UpdateMovement()
+    {     
         //Gravity Scaler
-        if (curGroundedState == GroundedState.Airborn)
+        if (sceneObj.GroundedState == GroundedState.Airborn)
             ApplyGravity();
 
         //Check Movement Action
-        switch (curGroundedState)
+        switch (sceneObj.GroundedState)
         {
             case GroundedState.Grounded:
                 
@@ -403,52 +360,6 @@ public class MovementInputHandler : MonoBehaviour
     }
 
 
-    private void CheckGroundedStatus()
-    {
-        if (TryGetSlopeAngle(out Vector3 slopeAngle))
-        {
-            float angle = Vector3.Angle(transform.right, slopeAngle);
-            
-            switch (curGroundedState)
-            {
-                case GroundedState.Grounded:
-                case GroundedState.Sliding:
-
-                    if (angle > maxSlopeAngle)
-                    {
-                        curGroundedState = GroundedState.Sliding;
-
-                        //Face direction of downward slope
-                        if (slopeAngle.y > 0)
-                            sceneObj.TurnAround();
-                    }
-
-                    else
-                        curGroundedState = GroundedState.Grounded;
-                    break;
-
-                case GroundedState.Airborn:
-
-                    if (angle > maxSlopeAngle)
-                        curGroundedState = GroundedState.Sliding;
-                    else
-                        curGroundedState = GroundedState.Grounded;
-
-                    PerformLanding();
-                    break;
-            }
-        }
-
-        else
-        {
-            if (curGroundedState != GroundedState.Airborn)
-            {
-                curGroundedState = GroundedState.Airborn;
-                sceneObj.AnimationStateHandler.EndCurrentAnimation();
-            }
-        }
-    }
-
     #region Ground Movement
 
     private void UpdateGroundMovement()
@@ -473,7 +384,7 @@ public class MovementInputHandler : MonoBehaviour
     private void UpdateGroundAcceleration()
     {      
         //Ground slope
-        if (TryGetSlopeAngle(out Vector3 slope))
+        if (sceneObj.TryGetSlopeAngle(out Vector3 slope))
         {
             //Apply Movement based on influence
             if (horizontalInfluence != 0)
@@ -517,7 +428,7 @@ public class MovementInputHandler : MonoBehaviour
                     rb.velocity = Vector3.zero;
 
                     if (curMoveState != MovementType.Landing)
-                        sceneObj.AnimationStateHandler.EndCurrentAnimation();
+                        sceneObj.AnimationStateHandler.EndCurrentAnimation(MOVESTATE);
                 }
 
                 sceneObj.AnimationStateHandler.SetFloatPerameter("Velocity", Mathf.Abs(rb.velocity.x) / CurMovementCollection.GetMaxXVelocity());
@@ -529,7 +440,7 @@ public class MovementInputHandler : MonoBehaviour
     private void UpdateSlidingMovement()
     {
         //Ground slope
-        if (TryGetSlopeAngle(out Vector3 slope))
+        if (sceneObj.TryGetSlopeAngle(out Vector3 slope))
         {
             //Reverse slope downward
             if (slope.y > 0)
@@ -619,8 +530,6 @@ public class MovementInputHandler : MonoBehaviour
                 string clipName = moveType.ToString();
 
                 string animationName = userName + weaponName + clipName;
-
-                Debug.LogError(animationName);
                 sceneObj.AnimationStateHandler.PlayAnimation(new AnimationStateData(animationName, MOVESTATE, move.Triggers.ToArray()));
             }
 

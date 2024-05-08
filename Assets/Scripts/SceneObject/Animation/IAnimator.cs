@@ -14,7 +14,7 @@ public interface IAnimator
 
     public void PlayAnimation(AnimationStateData animationData);
 
-    public void EndCurrentAnimation();
+    public void EndCurrentAnimation(ActionState state);
 
     public void SetFloatPerameter(string name, float value);
 }

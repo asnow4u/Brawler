@@ -35,7 +35,7 @@ public class PlayerTester : Editor
         {
             int frameCount = 0;
 
-            while (frameCount < 120)
+            while (frameCount < 60)
             {
                 movementHandler.PerformMovement(new Vector2(1, 0));
                 frameCount++;
@@ -55,7 +55,7 @@ public class PlayerTester : Editor
         {
             int frameCount = 0;
             
-            while (frameCount < 120)
+            while (frameCount < 60)
             {
                 moveHandler.PerformMovement(new Vector2(1, 0));
                 frameCount++;

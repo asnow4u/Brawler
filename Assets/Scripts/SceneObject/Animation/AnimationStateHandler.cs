@@ -6,7 +6,7 @@ using UnityEngine;
 
 public enum ActionState
 {
-    Null, Idle, Moving, Attacking, HitStun, Dead
+    Null, Idle, Moving, Attacking, HitStun, Dead, Admin
 };
 
 
@@ -19,8 +19,7 @@ public class AnimationStateHandler : MonoBehaviour, IAnimator
 
     //Getter
     private Animator animator => GetComponentInChildren<Animator>();
-    private MovementInputHandler movementHandler => GetComponent<MovementInputHandler>();
-    private AttackInputHandler attackHandler => GetComponent<AttackInputHandler>();
+    private SceneObject sceneObject => GetComponent<SceneObject>();
 
     //Events
     public event Action<string, AnimationTrigger.Type> OnAnimationUpdateEvent;
@@ -127,7 +126,7 @@ public class AnimationStateHandler : MonoBehaviour, IAnimator
     
     private void PlayIdleAnimation()
     {
-        if (movementHandler.GroundedState == GroundedState.Airborn)
+        if (sceneObject.GroundedState == GroundedState.Airborn)
             PlayAnimation(new AnimationStateData("BaseAirIdle", ActionState.Idle, null));
 
         else
@@ -158,13 +157,17 @@ public class AnimationStateHandler : MonoBehaviour, IAnimator
 
 
     /// <summary>
+    /// Check for animation equal to or below the provided state
     /// Reset action state and play idle animation
     /// </summary>
-    public void EndCurrentAnimation()
+    public void EndCurrentAnimation(ActionState state)
     {
-        Debug.Log("ANIMATION: End " + curPlayingAnimation);
-        ResetState();
-        PlayIdleAnimation();
+        if (IsStatePossible(state))
+        {
+            Debug.Log("ANIMATION: End " + curPlayingAnimation);
+            ResetState();
+            PlayIdleAnimation();
+        }
     }
 
 
@@ -245,7 +248,7 @@ public class AnimationStateHandler : MonoBehaviour, IAnimator
         }        
 
         //End Animation
-        EndCurrentAnimation();
+        EndCurrentAnimation(ActionState.Admin);
     }
 
 
