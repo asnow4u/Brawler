@@ -52,8 +52,7 @@ public class WeaponFactory : MonoBehaviour
                     weaponData.GetRandomDownTilt(),
                     weaponData.GetRandomDownAir(),
                     weaponData.GetRandomForwardTilt(),
-                    weaponData.GetRandomForwardAir(),
-                    weaponData.GetRandomBackAir());
+                    weaponData.GetRandomForwardAir());
 
             //Get attack points
             List<GameObject> attackPoints = new List<GameObject>();

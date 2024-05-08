@@ -152,7 +152,7 @@ public class AttackInputHandler : MonoBehaviour
         if (ChangeToAttackState())
         {
             //TODO: What attack would happen when sliding
-            if (sceneObj.MovementInputHandler.GroundedState == GroundedState.Airborn)
+            if (sceneObj.GroundedState == GroundedState.Airborn)
             {
                 PlayAttackAnimation(AttackType.UpAir);
             }
@@ -169,7 +169,7 @@ public class AttackInputHandler : MonoBehaviour
     {
         if (ChangeToAttackState())
         {
-            if (sceneObj.MovementInputHandler.GroundedState == GroundedState.Airborn)
+            if (sceneObj.GroundedState == GroundedState.Airborn)
             {
                 PlayAttackAnimation(AttackType.DownAir);
             }
@@ -186,7 +186,7 @@ public class AttackInputHandler : MonoBehaviour
     {
         if (ChangeToAttackState())
         {
-            if (sceneObj.MovementInputHandler.GroundedState == GroundedState.Airborn)
+            if (sceneObj.GroundedState == GroundedState.Airborn)
             {
                 if (!sceneObj.IsFacingRightDirection())
                     sceneObj.TurnAround();
@@ -199,7 +199,7 @@ public class AttackInputHandler : MonoBehaviour
                 if (!sceneObj.IsFacingRightDirection())
                 {
                     //Check not sliding
-                    if (sceneObj.MovementInputHandler.GroundedState == GroundedState.Grounded)
+                    if (sceneObj.GroundedState == GroundedState.Grounded)
                         sceneObj.TurnAround();  
                 }
 
@@ -213,7 +213,7 @@ public class AttackInputHandler : MonoBehaviour
     {
         if (ChangeToAttackState())
         {
-            if (sceneObj.MovementInputHandler.GroundedState == GroundedState.Airborn)
+            if (sceneObj.GroundedState == GroundedState.Airborn)
             {
                     if (sceneObj.IsFacingRightDirection())
                         sceneObj.TurnAround();
@@ -225,7 +225,7 @@ public class AttackInputHandler : MonoBehaviour
             {
                 if (sceneObj.IsFacingRightDirection())
                 {
-                    if (sceneObj.MovementInputHandler.GroundedState == GroundedState.Grounded)                    
+                    if (sceneObj.GroundedState == GroundedState.Grounded)                    
                         sceneObj.TurnAround();
                 }
 

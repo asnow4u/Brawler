@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public enum AttackType { UpTilt, DownTilt, ForwardTilt, UpAir, DownAir, ForwardAir, BackAir };
+public enum AttackType { UpTilt, DownTilt, ForwardTilt, UpAir, DownAir, ForwardAir };
 
 [Serializable]
 public class AttackCollection
@@ -48,10 +48,6 @@ public class AttackCollection
             case AttackType.DownAir:
                 attack = WeaponData.DownAir;
                 return true;
-
-            case AttackType.BackAir:
-                attack = WeaponData.BackAir;
-                return true;
         }
 
         attack = null;
@@ -94,12 +90,6 @@ public class AttackCollection
         if (WeaponData.DownAir != null && WeaponData.DownAir.AttackAnimation.name == animationName)
         {
             attack = WeaponData.DownAir;
-            return true;
-        }
-
-        if (WeaponData.BackAir != null && WeaponData.BackAir.AttackAnimation.name == animationName)
-        {
-            attack = WeaponData.BackAir;
             return true;
         }
 
