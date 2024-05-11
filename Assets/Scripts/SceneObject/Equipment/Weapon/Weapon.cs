@@ -10,5 +10,6 @@ public class Weapon : MonoBehaviour
 
     public MovementCollection MovementCollection;
     public AttackCollection AttackCollection;
+    public AttackPointCollection AttackPointCollection;
 }
 

@@ -11,14 +11,10 @@ public class WeaponCollection : MonoBehaviour, IWeaponCollection
 
     [SerializeField] private Transform weaponHolder;
 
-    private List<IAttackPoint> bodyAttackPoints;
-
     public event Action<Weapon> WeaponChangedEvent;
 
     public void Initialize(SceneObject sceneObj)
-    {
-        bodyAttackPoints = new List<IAttackPoint>(sceneObj.GetComponentsInChildren<IAttackPoint>());
-        
+    {        
         foreach (Transform child in transform)
         {
             if (child.TryGetComponent(out Weapon weapon))

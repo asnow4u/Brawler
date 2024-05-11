@@ -9,39 +9,66 @@ public class AttackInputHandler : MonoBehaviour
 {
     const ActionState ATTACKSTATE = ActionState.Attacking;
 
+    [Header("Attacks")]
+    [SerializeField] private AttackCollection curAttackCollection;
+
+    [Header("Attack Points")]
+    [SerializeField] private AttackPointCollection curAttackPointCollection;
+
+    [Header("Base Collection (To be removed with Weapon integration)")]
+    //TODO: This should be replaced when weapons are fully integrated.
+    //Equipment handler will pass the correct attack collection
+    [SerializeField] private AttackCollection BaseAttackCollection;
+
+
     //Attack Data
     private AttackData curAttackData;
-    public AttackCollection BaseAttackCollection;
-    public AttackCollection CurAttackCollection; 
 
     //SceneObject
     private SceneObject sceneObj => GetComponent<SceneObject>();
 
+    #region Initialize
 
     public void Setup()
     {
-        //sceneObj.EquipmentHandler.Weapons.WeaponChangedEvent += OnWeaponChanged;
-        sceneObj.AnimationStateHandler.OnAnimationUpdateEvent += OnAnimationUpdated;
-
+        //TODO: Remove this with the implementation of equipmenthandler
+        //Equipment handler should handle updating the current weapon
         OnWeaponChanged(null);
+
+        curAttackPointCollection = new AttackPointCollection(gameObject);
+
+        SetUpEvents();
     }
+
+
+    #endregion
 
     #region Events
 
+    private void SetUpEvents()
+    {
+
+        //sceneObj.EquipmentHandler.Weapons.WeaponChangedEvent += OnWeaponChanged;
+        sceneObj.AnimationStateHandler.OnAnimationUpdateEvent += OnAnimationUpdated;
+    }
+
     private void OnWeaponChanged(Weapon weapon)
     {
+        //TODO: Remove this with the implementation of equipmenthandler
+        //Should always get the attackCollection even for base
         if (weapon == null)
-            CurAttackCollection = BaseAttackCollection;
+            curAttackCollection = BaseAttackCollection;
 
         else
-            CurAttackCollection = weapon.AttackCollection;
+            curAttackCollection = weapon.AttackCollection;
     }
+
 
     #region Attack Performed Events
 
     private void OnAnimationUpdated(string animationState, AnimationTrigger.Type triggerType)
     {
-        if (CurAttackCollection.TryGetAttackByAnimation(animationState, out AttackData attackData))
+        if (curAttackCollection.TryGetAttackByAnimation(animationState, out AttackData attackData))
         {
             switch(triggerType)
             {
@@ -73,13 +100,13 @@ public class AttackInputHandler : MonoBehaviour
 
     private void EnabledAttackColliders(AttackData attackData)
     {
-        CurAttackCollection.EnableAttackColliders(attackData.ColliderType, OnAttackConnected);        
+        curAttackPointCollection.EnableCollidersForAttack(attackData);        
     }
 
 
     private void DisabledAttackColliders(AttackData attackData)
     {
-        CurAttackCollection.DisableAttackColliders(attackData.ColliderType, OnAttackConnected);        
+        curAttackPointCollection.DisableCollidersForAttack(attackData);        
     }
 
 
@@ -94,7 +121,7 @@ public class AttackInputHandler : MonoBehaviour
     }
 
 
-    public void OnAttackConnected(IDamage hitTarget)
+    public void OnAttackConnected(ITakeDamage hitTarget)
     {
         //TODO: have handler keep track of what animation is cur playing
         //if (sceneObj.AnimationHandler.TryGetCurrentFrameOfAnimation(curAttackData.AttackAnimation.name, out float curFrame))
@@ -140,7 +167,7 @@ public class AttackInputHandler : MonoBehaviour
 
     private void PlayAttackAnimation(AttackType attackType)
     {
-        if (curAttackData == null && CurAttackCollection.GetAttackByType(attackType, out AttackData attack))
+        if (curAttackData == null && curAttackCollection.GetAttackByType(attackType, out AttackData attack))
         {
             sceneObj.AnimationStateHandler.PlayAnimation(new AnimationStateData(attack.AttackAnimation.name, ATTACKSTATE, attack.GetAttackTriggers()));
         }

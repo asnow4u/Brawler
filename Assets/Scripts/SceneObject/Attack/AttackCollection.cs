@@ -10,12 +10,10 @@ public enum AttackType { UpTilt, DownTilt, ForwardTilt, UpAir, DownAir, ForwardA
 public class AttackCollection
 {
     public WeaponData WeaponData;
-    public AttackPointCollection AttackPointCollection;
 
-    public AttackCollection(WeaponData weaponData, List<GameObject> attackPoints)
+    public AttackCollection(WeaponData weaponData)
     {
         this.WeaponData = weaponData;
-        AttackPointCollection = new AttackPointCollection(attackPoints);
     }
 
 
@@ -95,22 +93,6 @@ public class AttackCollection
 
         attack = null;
         return false;
-    }
-
-    #endregion
-
-
-    #region Attack Points
-
-    public void EnableAttackColliders(List<AttackColliderType> colliderTypes, Action<IDamage> OnHitEvent)
-    {
-        AttackPointCollection.EnableAttackColliders(colliderTypes, OnHitEvent);
-    }
-
-
-    public void DisableAttackColliders(List<AttackColliderType> colliderTypes, Action<IDamage> OnHitEvent)
-    {
-        AttackPointCollection.DisableAttackColliders(colliderTypes, OnHitEvent);
     }
 
     #endregion

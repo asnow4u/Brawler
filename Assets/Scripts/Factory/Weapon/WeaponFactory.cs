@@ -62,9 +62,12 @@ public class WeaponFactory : MonoBehaviour
             }
 
             //Create attack collection
-            AttackCollection attackCollection = new AttackCollection(attackData, attackPoints);
-
+            AttackCollection attackCollection = new AttackCollection(attackData);
             weapon.AttackCollection = attackCollection;
+
+            //Create attackPoint collection
+            AttackPointCollection attackPointCollection = new AttackPointCollection(weaponGO);
+            weapon.AttackPointCollection = attackPointCollection;
         }
     }
 

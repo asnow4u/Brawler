@@ -340,6 +340,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   UniqueId: 
   ObjectType: 0
+  curGroundedState: 0
+  maxSlopeAngle: 45
   InHitStun: 0
   damageTaken: 0
   testForce: 5000
@@ -401,9 +403,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   curMoveState: 0
-  curGroundedState: 1
   curMoveAnimationState: 
-  maxSlopeAngle: 45
   slidingMaxVelocity: 5
   slidingAcceleration: 0.4
   BaseMovementCollection:
@@ -434,7 +434,6 @@ MonoBehaviour:
       DownAir: {fileID: 11400000, guid: 2ded7fc922e4f074b8d758dcef842c78, type: 2}
       ForwardTilt: {fileID: 11400000, guid: 540c64e2f33198f409d16180c1d0586f, type: 2}
       ForwardAir: {fileID: 11400000, guid: 9bf6cf8b1b312e94c8eb0dcfe57f3617, type: 2}
-      BackAir: {fileID: 11400000, guid: ba5f9873afc80594aa5bb5856ed753c7, type: 2}
     AttackPointCollection:
       AttackPoints:
       - {fileID: 7313295741097588721}
@@ -449,7 +448,6 @@ MonoBehaviour:
       DownAir: {fileID: 0}
       ForwardTilt: {fileID: 0}
       ForwardAir: {fileID: 0}
-      BackAir: {fileID: 0}
     AttackPointCollection:
       AttackPoints: []
 --- !u!1 &6698363928555218558

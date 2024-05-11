@@ -11,7 +11,7 @@ public enum GroundedState { Airborn, Grounded, Sliding }
 [RequireComponent(typeof(MovementInputHandler))]
 [RequireComponent(typeof(AttackInputHandler))]
 [RequireComponent(typeof(AnimationStateHandler))]
-public abstract class SceneObject : MonoBehaviour, IDamage
+public abstract class SceneObject : MonoBehaviour, ITakeDamage
 {
     [Header("SceneObject")]
     public string UniqueId;

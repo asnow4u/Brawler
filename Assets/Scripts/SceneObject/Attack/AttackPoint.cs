@@ -15,57 +15,51 @@ public enum AttackColliderType
 }
 
 [Serializable]
-public class AttackPoint : MonoBehaviour, IAttackPoint
+public class AttackPoint : MonoBehaviour
 {
     [SerializeField] private AttackColliderType collderType;
     private Collider collider;
+    private AttackData curAttackData;
 
-    private event Action<IDamage> colliderHitEvent;
+    //Getters
+    public AttackColliderType ColliderType => collderType;
+
 
     public void Start()
     {
         tag = gameObject.tag;
         collider = GetComponent<Collider>();
 
-        DisableColliders();
+        Reset();
     }
 
 
-    public AttackColliderType GetColliderType()
+    public void PrepForAttack(AttackData attackData)
     {
-        return collderType;
+        collider.enabled = true;
+        curAttackData = attackData;
     }
 
 
-    public void RegisterToHitEvent(Action<IDamage> callback)
-    {
-        colliderHitEvent += callback;
-    }
-
-    public void UnRegisterToHitEvent(Action<IDamage> callback)
-    {
-        colliderHitEvent -= callback;
-    }
-
-
-    public void EnableColliders()
-    {           
-        collider.enabled = true;                   
-    }
-
-
-    public void DisableColliders()
+    public void Reset()
     {
         collider.enabled = false;
+        curAttackData = null;
     }
+
 
 
     private void OnTriggerEnter(Collider col)
     {        
         if (col.gameObject.layer == LayerMask.NameToLayer("DamageHitBox"))
         {
-            IDamage target = col.GetComponentInParent<IDamage>();
-            colliderHitEvent?.Invoke(target);
+            ITakeDamage target = col.GetComponentInParent<ITakeDamage>();
+
+            if (curAttackData != null)
+            {
+                //TODO: use attackData for attack
+
+            }            
         }
     }
 
