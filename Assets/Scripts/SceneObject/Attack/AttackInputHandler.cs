@@ -77,11 +77,11 @@ public class AttackInputHandler : MonoBehaviour
                     break;
 
                 case AnimationTrigger.Type.EnableCollider:
-                    EnabledAttackColliders(attackData);
+                    SetUpAttackPoints(attackData);
                     break;
 
                 case AnimationTrigger.Type.DisableCollider: 
-                    DisabledAttackColliders(attackData);
+                    ResetAttackPoints(attackData);
                     break;
 
                 case AnimationTrigger.Type.End:
@@ -98,15 +98,15 @@ public class AttackInputHandler : MonoBehaviour
     }
 
 
-    private void EnabledAttackColliders(AttackData attackData)
+    private void SetUpAttackPoints(AttackData attackData)
     {
-        curAttackPointCollection.EnableCollidersForAttack(attackData);        
+        curAttackPointCollection.SetupAttackPointsForAttack(attackData);        
     }
 
 
-    private void DisabledAttackColliders(AttackData attackData)
+    private void ResetAttackPoints(AttackData attackData)
     {
-        curAttackPointCollection.DisableCollidersForAttack(attackData);        
+        curAttackPointCollection.ResetAttackPoints(attackData);        
     }
 
 
@@ -114,36 +114,10 @@ public class AttackInputHandler : MonoBehaviour
     {
         if (curAttackData != null && curAttackData.AttackAnimation.name == attackData.AttackAnimation.name)
         {
-            DisabledAttackColliders(attackData);
+            ResetAttackPoints(attackData);
 
             curAttackData = null;
         }
-    }
-
-
-    public void OnAttackConnected(ITakeDamage hitTarget)
-    {
-        //TODO: have handler keep track of what animation is cur playing
-        //if (sceneObj.AnimationHandler.TryGetCurrentFrameOfAnimation(curAttackData.AttackAnimation.name, out float curFrame))
-        //{            
-        //    float damage = curAttackData.GetAttackDamage(curFrame);            
-        //    float influence = curAttackData.GetAttackInflucence();
-        //    float knockBack = curAttackData.GetAttackKnockBack(curFrame);
-
-        //    float launchAngle = curAttackData.GetAttackLaunchAngle(curFrame);
-        //    float xLaunch = Mathf.Cos(launchAngle * Mathf.Deg2Rad);
-        //    float yLaunch = Mathf.Sin(launchAngle * Mathf.Deg2Rad);
-
-        //    string damageDebug = "Damage: " + damage + "\n";
-        //    damageDebug += "Knockback Force: " + knockBack + "\n";
-        //    damageDebug += "Launch Angle: " + launchAngle + "\n";
-        //    damageDebug += "Launch Vector: " + xLaunch * (sceneObj.IsFacingRightDirection() ? 1 : -1) + ", " + yLaunch + "\n";
-        //    Debug.Log(damageDebug);
-
-
-        //    hitTarget.AddDamage(damage);
-        //    hitTarget.ApplyForceBasedOnDamage(knockBack, influence, new Vector2(xLaunch * (sceneObj.IsFacingRightDirection() ? 1 : -1), yLaunch));
-        //}
     }
 
     #endregion

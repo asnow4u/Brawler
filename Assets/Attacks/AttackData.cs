@@ -10,10 +10,7 @@ public class AttackData : ScriptableObject
 
     [Header("Attack Details")]
     [SerializeField] private AnimationCurve damageCurve;
-    [SerializeField] private AnimationCurve knockbackCurve;
     [SerializeField] private AnimationCurve launchAngleCurve;
-    [Range(0f, 1f)]
-    [SerializeField] private float damageInfluence;
     
     [Header("Triggers")]
     [Tooltip("Trigger to be fired when attack colliders should be enabled")]
@@ -38,17 +35,6 @@ public class AttackData : ScriptableObject
     public float GetAttackDamage(float frameNumber)
     {
         return damageCurve.Evaluate(frameNumber);
-    }
-
-    public float GetAttackInflucence()
-    {
-        return damageInfluence;
-    }
-
-
-    public float GetAttackKnockBack(float frameNumber)
-    {
-        return knockbackCurve.Evaluate(frameNumber);
     }
 
 

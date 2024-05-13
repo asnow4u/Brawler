@@ -78,7 +78,7 @@ public class AnimationStateHandler : MonoBehaviour, IAnimator
     /// Returns the current frame of the playing animation
     /// </summary>
     /// <returns></returns>
-    private float GetCurrentFrameOfCurAnimation()
+    public int GetCurrentFrameOfCurAnimation()
     {
         AnimatorStateInfo animationInfo = animator.GetCurrentAnimatorStateInfo(0);
         return Mathf.RoundToInt(animationInfo.normalizedTime * GetCurrentPlayingAnimation().frameRate);            
@@ -258,12 +258,18 @@ public class AnimationStateHandler : MonoBehaviour, IAnimator
         {
             float curFrame = GetCurrentFrameOfCurAnimation();
 
-            foreach (var trigger in animationTriggers)
+            foreach (AnimationTrigger trigger in animationTriggers)
             {
                 if (!trigger.WasTriggered && curFrame >= trigger.TriggerFrame)
                 {
                     OnAnimationUpdateEvent?.Invoke(curPlayingAnimation, trigger.TriggerType);
                     trigger.WasTriggered = true;
+
+                    //End Animation                    
+                    if (trigger.TriggerType == AnimationTrigger.Type.End)
+                    {
+                        EndCurrentAnimation(ActionState.Admin);
+                    }
                 }
             }
         }

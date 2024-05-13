@@ -74,19 +74,19 @@ public class AttackPointCollection
 
     #region Colliders
 
-    public void EnableCollidersForAttack(AttackData attackData)
+    public void SetupAttackPointsForAttack(AttackData attackData)
     {
         foreach (AttackColliderType colliderType in attackData.ColliderType)
         {
             if (TryGetAttackPointFromType(colliderType, out AttackPoint attackPoint))
             {                
-                attackPoint.PrepForAttack(attackData);
+                attackPoint.SetupForAttack(attackData);
             }
         }
     }
 
 
-    public void DisableCollidersForAttack(AttackData attackData)
+    public void ResetAttackPoints(AttackData attackData)
     {
         foreach (AttackColliderType colliderType in attackData.ColliderType)
         {

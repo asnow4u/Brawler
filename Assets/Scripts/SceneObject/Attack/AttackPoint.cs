@@ -17,12 +17,12 @@ public enum AttackColliderType
 [Serializable]
 public class AttackPoint : MonoBehaviour
 {
-    [SerializeField] private AttackColliderType collderType;
+    [SerializeField] private AttackColliderType attackType;
     private Collider collider;
     private AttackData curAttackData;
 
     //Getters
-    public AttackColliderType ColliderType => collderType;
+    public AttackColliderType ColliderType => attackType;
 
 
     public void Start()
@@ -34,7 +34,7 @@ public class AttackPoint : MonoBehaviour
     }
 
 
-    public void PrepForAttack(AttackData attackData)
+    public void SetupForAttack(AttackData attackData)
     {
         collider.enabled = true;
         curAttackData = attackData;
@@ -50,16 +50,23 @@ public class AttackPoint : MonoBehaviour
 
 
     private void OnTriggerEnter(Collider col)
-    {        
+    {
+        Debug.LogWarning("AttackPoint Collision with " + col.gameObject.name, gameObject);
         if (col.gameObject.layer == LayerMask.NameToLayer("DamageHitBox"))
         {
-            ITakeDamage target = col.GetComponentInParent<ITakeDamage>();
+            ITakeDamage hitTarget = col.GetComponentInParent<ITakeDamage>();
+            Debug.LogWarning("ITAKEDAMAGE found");
 
             if (curAttackData != null)
             {
-                //TODO: use attackData for attack
+                SceneObject sceneObject = GetComponentInParent<SceneObject>();
+                if (sceneObject != null)
+                {
+                    int curFrame = sceneObject.AnimationStateHandler.GetCurrentFrameOfCurAnimation();
 
-            }            
+                    hitTarget.HitByAttack(attackType, curAttackData, curFrame);
+                }
+            }
         }
     }
 

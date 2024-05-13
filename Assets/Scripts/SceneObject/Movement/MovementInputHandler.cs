@@ -110,7 +110,7 @@ public class MovementInputHandler : MonoBehaviour
 
     private void OnMovementAnimationEnded(string animationState, MovementType type) 
     {        
-        Debug.Log("MOVE: Animation finished for " + type);
+        Debug.Log("MOVEMENT: Animation finished for " + type);
 
         switch (type)
         {
@@ -130,7 +130,7 @@ public class MovementInputHandler : MonoBehaviour
 
     private void SetCurrentMoveState(MovementType moveState)
     {
-        Debug.Log("MOVE: CurMoveState => " + moveState);
+        Debug.Log("MOVEMENT: CurMoveState => " + moveState);
         curMoveState = moveState;
     }
 
@@ -520,7 +520,7 @@ public class MovementInputHandler : MonoBehaviour
     {
         if (CurMovementCollection.TryGetMovementByType(moveType, out MovementData move))
         {
-            Debug.Log("MOVE: Play Animation for " + moveType);
+            Debug.Log("MOVEMENT: Play Animation for " + moveType);
             
             //NOTE: Need to call name for blend tree
             if (move.Type == MovementType.Move)

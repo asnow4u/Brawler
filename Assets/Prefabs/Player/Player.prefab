@@ -136,7 +136,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7d0b5a3cd5de804892120c03848d209, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  collderType: 1
+  attackType: 1
 --- !u!1 &2253536348902060994
 GameObject:
   m_ObjectHideFlags: 0
@@ -195,7 +195,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7d0b5a3cd5de804892120c03848d209, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  collderType: 0
+  attackType: 0
 --- !u!1 &2481771394715211491
 GameObject:
   m_ObjectHideFlags: 0
@@ -254,7 +254,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7d0b5a3cd5de804892120c03848d209, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  collderType: 3
+  attackType: 3
 --- !u!1 &4222309936731493003
 GameObject:
   m_ObjectHideFlags: 0
@@ -342,10 +342,8 @@ MonoBehaviour:
   ObjectType: 0
   curGroundedState: 0
   maxSlopeAngle: 45
-  InHitStun: 0
   damageTaken: 0
-  testForce: 5000
-  testDirection: {x: -0.5, y: 0.5}
+  InHitStun: 0
 --- !u!136 &6533080229536739736
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -426,6 +424,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 323b280502324d249af0cae379a4e74d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  curAttackCollection:
+    WeaponData:
+      UpTilt: {fileID: 0}
+      UpAir: {fileID: 0}
+      DownTilt: {fileID: 0}
+      DownAir: {fileID: 0}
+      ForwardTilt: {fileID: 0}
+      ForwardAir: {fileID: 0}
+  curAttackPointCollection:
+    curAttackPoints: []
+    baseAttackPoints: []
   BaseAttackCollection:
     WeaponData:
       UpTilt: {fileID: 11400000, guid: 57e4b90f1010ea741adf23b3539e025d, type: 2}
@@ -434,22 +443,6 @@ MonoBehaviour:
       DownAir: {fileID: 11400000, guid: 2ded7fc922e4f074b8d758dcef842c78, type: 2}
       ForwardTilt: {fileID: 11400000, guid: 540c64e2f33198f409d16180c1d0586f, type: 2}
       ForwardAir: {fileID: 11400000, guid: 9bf6cf8b1b312e94c8eb0dcfe57f3617, type: 2}
-    AttackPointCollection:
-      AttackPoints:
-      - {fileID: 7313295741097588721}
-      - {fileID: 2481771394715211491}
-      - {fileID: 2253536348902060994}
-      - {fileID: 1804700181859881100}
-  CurAttackCollection:
-    WeaponData:
-      UpTilt: {fileID: 0}
-      UpAir: {fileID: 0}
-      DownTilt: {fileID: 0}
-      DownAir: {fileID: 0}
-      ForwardTilt: {fileID: 0}
-      ForwardAir: {fileID: 0}
-    AttackPointCollection:
-      AttackPoints: []
 --- !u!1 &6698363928555218558
 GameObject:
   m_ObjectHideFlags: 0
@@ -587,7 +580,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7d0b5a3cd5de804892120c03848d209, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  collderType: 2
+  attackType: 2
 --- !u!1 &8994808817607460034
 GameObject:
   m_ObjectHideFlags: 0

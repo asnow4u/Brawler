@@ -22,11 +22,17 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
     [SerializeField] private float maxSlopeAngle;
 
     [Header("Hit/Damage")]
-    public bool InHitStun;
     [SerializeField] protected float damageTaken;
+
+    //Damage Handlers
+    private KnockbackCalculator knockbackHandler;
+    private HitStunCalculator hitStunHandler;
+
+
+    public bool InHitStun;
     private float maxHitVelocity = 10f;    
     private float hitDecelerationRate = 2;
-    const float minKnockBackForce = 200f;
+    
     private KillZone killZone;
     private Coroutine hitStunTimer;
 
@@ -61,7 +67,10 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
     /// </summary>
     protected virtual void Initialize()
     {               
-        UniqueId = Guid.NewGuid().ToString();        
+        UniqueId = Guid.NewGuid().ToString();
+
+        knockbackHandler = new KnockbackCalculator();
+        hitStunHandler = new HitStunCalculator();
 
         InitializeInteractionHandler();
         InitializeEquipmentHandler();
@@ -258,32 +267,63 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
 
     #region Damage
 
-
-    [Header("Force Test")]
-    public float testForce;
-    public Vector2 testDirection;
-
-    [ContextMenu("TestForce")]
-    public void TestForce()
+    /// <summary>
+    /// Add an amount of damage based on the provided percent <\br>
+    /// </summary>
+    /// <param name="percent"></param>
+    public void AddDamage(float percent)
     {
-        ApplyForceBasedOnDamage(testForce, 0f, testDirection);
+        damageTaken += percent;
+    }
+
+    /// <summary>
+    /// Remove an amount of damage based on the provided percent <\br>
+    /// Cant drop below 0
+    /// </summary>
+    /// <param name="percent"></param>
+    public void RemoveDamage(float percent)
+    {
+        damageTaken -= percent;
+
+        if (damageTaken < 0)
+            damageTaken = 0;
     }
 
 
+    /// <summary>
+    /// Reset any damage that was previously taken
+    /// </summary>
     public void ResetDamage()
     {
         damageTaken = 0;
     }
 
-    public void AddDamage(float percent)
-    {
-        damageTaken += percent;
-    }   
 
-    public void RemoveDamage(float percent)
+
+    public void HitByAttack(AttackColliderType attackType, AttackData attackData, int frame)
     {
-        damageTaken -= percent;
+        Debug.Log(gameObject.name + " Hit by attack");
+
+        float attackDamage = attackData.GetAttackDamage(frame);
+       
+        AddDamage(attackDamage);
+
+        //Launch knockback
+        Vector3 launchForce = knockbackHandler.CalculateForceKnockBack(attackType, damageTaken, Rb.mass, attackData.GetAttackLaunchAngle(frame));                       
+        Rb.AddForce(launchForce, ForceMode.Impulse);
+
+        //HitStun
+
+
+        //KillZone
+        //if (killZone != null)
+        //    Destroy(killZone.gameObject);
+
+        //killZone = KillZoneFactory.instance.Spawn(forceDirection.x > 0 ? true : false, false, this.UniqueId);
     }
+
+    
+
 
 
     /// <summary>
@@ -298,10 +338,10 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
     /// <param name="forceDirection"></param>
     public void ApplyForceBasedOnDamage(float baseKnockBack, float damageInfluence, Vector2 forceDirection)
     {
-        float damageForce = damageInfluence * Mathf.Pow((baseKnockBack * damageTaken) / Mathf.Pow(Rb.mass, 1.75f), 2);
-        float totalForce = Mathf.Max(minKnockBackForce, baseKnockBack + damageForce);
+        //float damageForce = damageInfluence * Mathf.Pow((baseKnockBack * damageTaken) / Mathf.Pow(Rb.mass, 1.75f), 2);
+        //float totalForce = Mathf.Max(minKnockBackForce, baseKnockBack + damageForce);
 
-        Rb.AddForce(new Vector3(forceDirection.x, forceDirection.y, 0) * totalForce, ForceMode.Impulse);
+        //Rb.AddForce(new Vector3(forceDirection.x, forceDirection.y, 0) * totalForce, ForceMode.Impulse);
        
         //Reset KillZone
         if (killZone != null)        
@@ -388,5 +428,7 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
         if (killZone != null)
             Destroy(killZone.gameObject);
     }
+
+    
 }
 

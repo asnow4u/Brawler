@@ -17,7 +17,7 @@ public class RushDown : Enemy
 
         SetUpEvents();
 
-        NavigateToPatrolPoint(0);
+        //NavigateToPatrolPoint(0);
     }
 
     #region Events
@@ -127,6 +127,35 @@ public class RushDown : Enemy
                 Gizmos.color = Color.black;
                 Gizmos.DrawLine(transform.position, patrolPoints[patrolPointIndex].position);
             }
+        }
+    }
+
+
+
+
+
+    public float Force;
+    public float Angle;
+
+    [Range(0f, 1f)]
+    public float influence;
+
+    public bool Launch;
+
+    private void Update()
+    {
+        if (Launch)
+        {
+            float xLaunch = Mathf.Cos(Angle * Mathf.Deg2Rad);
+            float yLaunch = Mathf.Sin(Angle * Mathf.Deg2Rad);
+
+            float damageForce = 500f + (influence * (Mathf.Pow(damageTaken, 2.75f) / Rb.mass));
+
+            Vector3 launchForce = new Vector2(xLaunch, yLaunch);
+
+            Rb.AddForce(launchForce * damageForce, ForceMode.Impulse);
+
+            Launch = false;
         }
     }
 }

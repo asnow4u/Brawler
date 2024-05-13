@@ -16,5 +16,7 @@ public interface IAnimator
 
     public void EndCurrentAnimation(ActionState state);
 
+    public int GetCurrentFrameOfCurAnimation();
+
     public void SetFloatPerameter(string name, float value);
 }
