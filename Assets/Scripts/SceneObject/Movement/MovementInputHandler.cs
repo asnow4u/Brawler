@@ -364,16 +364,19 @@ public class MovementInputHandler : MonoBehaviour
 
     private void UpdateGroundMovement()
     {
-        if (sceneObj.AnimationStateHandler.IsStatePossible(MOVESTATE) && 
-            curMoveState == MovementType.Move)
+        if (curMoveState == MovementType.Move)
         {
-            CheckTurnAround();
+            if (sceneObj.AnimationStateHandler.IsStatePossible(MOVESTATE) && 
+                curMoveState == MovementType.Move)
+            {
+                CheckTurnAround();
 
-            if (CurMovementCollection.ContainsMovementType(MovementType.Move))
-                UpdateGroundAcceleration();
+                if (CurMovementCollection.ContainsMovementType(MovementType.Move))
+                    UpdateGroundAcceleration();
+            }
+
+            UpdateGroundDecceleration();        
         }
-
-        UpdateGroundDecceleration();        
     }
 
 
@@ -425,10 +428,8 @@ public class MovementInputHandler : MonoBehaviour
                 if ((sceneObj.IsFacingRightDirection() && rb.velocity.x <= 0) ||
                     (!sceneObj.IsFacingRightDirection() && rb.velocity.x >= 0))
                 {
-                    rb.velocity = Vector3.zero;
-
-                    if (curMoveState != MovementType.Landing)
-                        sceneObj.AnimationStateHandler.EndCurrentAnimation(MOVESTATE);
+                    rb.velocity = Vector3.zero;                    
+                    sceneObj.AnimationStateHandler.EndCurrentAnimation(MOVESTATE);
                 }
 
                 sceneObj.AnimationStateHandler.SetFloatPerameter("Velocity", Mathf.Abs(rb.velocity.x) / CurMovementCollection.GetMaxXVelocity());
@@ -519,9 +520,7 @@ public class MovementInputHandler : MonoBehaviour
     private void PlayMoveAnimation(MovementType moveType)
     {
         if (CurMovementCollection.TryGetMovementByType(moveType, out MovementData move))
-        {
-            Debug.Log("MOVEMENT: Play Animation for " + moveType);
-            
+        {            
             //NOTE: Need to call name for blend tree
             if (move.Type == MovementType.Move)
             {                

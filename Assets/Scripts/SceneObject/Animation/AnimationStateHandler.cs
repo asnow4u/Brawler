@@ -148,7 +148,7 @@ public class AnimationStateHandler : MonoBehaviour, IAnimator
 
             if (animationData.ClipName != curPlayingAnimation)
             {
-                Debug.Log("ANIMATION: " + animationData.ClipName);
+                Debug.Log("ANIMATION: Start " + animationData.ClipName);
                 animator.Play("Base Layer." + animationData.ClipName);
                 StartCoroutine(WaitForAnimationStart(animationData.ClipName, animationData.Triggers));
             }                
@@ -205,7 +205,10 @@ public class AnimationStateHandler : MonoBehaviour, IAnimator
 
         //Send end event for previous animation
         if (curPlayingAnimation != null && curPlayingAnimation != animationName)
+        {
+            Debug.Log("ANIMATION: End " + curPlayingAnimation);
             OnAnimationUpdateEvent?.Invoke(curPlayingAnimation, AnimationTrigger.Type.End);
+        }
 
         curPlayingAnimation = animationName;
 

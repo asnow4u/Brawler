@@ -170,7 +170,7 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
                     AnimationStateHandler.EndCurrentAnimation(ActionState.Admin);
 
                     GroundedStateChangeEvent?.Invoke(curGroundedState);
-                    //PerformLanding(); //TODO: Reimplement through event in movementInputHandler
+                    
                     break;
             }
         }
@@ -207,7 +207,8 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
         for (int i = 0; i < 10; i++)
         {
             Vector3 origin = leftSidePoint + Vector3.right * spaceBetweenRays * i;
-            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, collider.bounds.extents.y + 0.3f, ~LayerMask.NameToLayer("Environment")))
+
+            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, collider.bounds.extents.y + 0.3f, LayerMask.GetMask("Environment")))
             {
                 hits.Add(hit);
             }
@@ -227,7 +228,7 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
 
             //Determine slope angle
             slopeAngle = Vector3.Cross(avgNormal, transform.forward).normalized;
-
+            
             Debug.DrawRay(collider.bounds.center + Vector3.down * collider.bounds.extents.y, avgNormal, Color.green);
             Debug.DrawRay(collider.bounds.center + Vector3.down * collider.bounds.extents.y, slopeAngle, Color.red);
 
@@ -300,17 +301,16 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
 
 
 
-    public void HitByAttack(AttackColliderType attackType, AttackData attackData, int frame)
+    public void HitByAttack(AttackColliderType attackType, float attackDamage, float launchAngle)
     {
-        Debug.Log(gameObject.name + " Hit by attack");
-
-        float attackDamage = attackData.GetAttackDamage(frame);
+        Debug.Log(gameObject.name + " Hit by attack");        
        
         AddDamage(attackDamage);
 
         //Launch knockback
-        Vector3 launchForce = knockbackHandler.CalculateForceKnockBack(attackType, damageTaken, Rb.mass, attackData.GetAttackLaunchAngle(frame));                       
+        Vector3 launchForce = knockbackHandler.CalculateForceKnockBack(attackType, damageTaken, Rb.mass, launchAngle);
         Rb.AddForce(launchForce, ForceMode.Impulse);
+        
 
         //HitStun
 

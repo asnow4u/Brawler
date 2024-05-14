@@ -50,24 +50,30 @@ public class AttackPoint : MonoBehaviour
 
 
     private void OnTriggerEnter(Collider col)
-    {
-        Debug.LogWarning("AttackPoint Collision with " + col.gameObject.name, gameObject);
+    {        
         if (col.gameObject.layer == LayerMask.NameToLayer("DamageHitBox"))
         {
             ITakeDamage hitTarget = col.GetComponentInParent<ITakeDamage>();
-            Debug.LogWarning("ITAKEDAMAGE found");
 
+            //Current Attack
             if (curAttackData != null)
             {
+                //Get SceneObject
                 SceneObject sceneObject = GetComponentInParent<SceneObject>();
                 if (sceneObject != null)
                 {
                     int curFrame = sceneObject.AnimationStateHandler.GetCurrentFrameOfCurAnimation();
+                    float launchAngle = curAttackData.GetAttackLaunchAngle(curFrame);
 
-                    hitTarget.HitByAttack(attackType, curAttackData, curFrame);
+                    //Reverse launch angle
+                    if (!sceneObject.IsFacingRightDirection())
+                        launchAngle = 180 - launchAngle;
+
+                    Debug.Log(launchAngle);
+
+                    hitTarget.HitByAttack(attackType, curAttackData.GetAttackDamage(curFrame), launchAngle);
                 }
             }
         }
     }
-
 }
