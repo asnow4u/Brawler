@@ -47,7 +47,7 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
     public IAnimator AnimationStateHandler => GetComponentInChildren<IAnimator>();
     public MovementInputHandler MovementInputHandler => GetComponent<MovementInputHandler>();
     public AttackInputHandler AttackInputHandler => GetComponent<AttackInputHandler>();
-
+    
     public GroundedState GroundedState => curGroundedState;   
     public Rigidbody Rb => GetComponent<Rigidbody>();
     private Collider collider => GetComponent<Collider>();
@@ -112,7 +112,7 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
     #endregion
 
 
-    #region Update
+    #region Fixed Update
 
     protected virtual void FixedUpdate()
     {  

@@ -463,22 +463,22 @@ public class MovementInputHandler : MonoBehaviour
     /// </summary>
     private void UpdateAirMovement()
     {
-        if (sceneObj.AnimationStateHandler.IsStatePossible(MOVESTATE) &&
-            CurMovementCollection.ContainsMovementType(MovementType.Move))
+        if (sceneObj.AnimationStateHandler.CurActionState < ActionState.HitStun)
         {
-            if (curMoveState == MovementType.FreeFall ||
-                curMoveState == MovementType.AirJump)
-            {                   
-                UpdateAirAcceleration();
+            if (CurMovementCollection.ContainsMovementType(MovementType.Move) &&
+               (curMoveState == MovementType.FreeFall || curMoveState == MovementType.AirJump))
+            {
+                UpdateAirAcceleration();                
+                
+                //Vertical Movement
+                //if (verticalInfluence < 0f)
+                //{
+                    //rb.velocity += transform.up * verticalInfluence * curMoveData.FastFallVelocity * Time.fixedDeltaTime;
+                //}
             }
+
+            UpdateAirDeceleration();
         }
-
-
-        //Vertical Movement
-        //if (verticalInfluence < 0f)
-        //{
-            //rb.velocity += transform.up * verticalInfluence * curMoveData.FastFallVelocity * Time.fixedDeltaTime;
-        //}
     }
 
 
@@ -486,25 +486,28 @@ public class MovementInputHandler : MonoBehaviour
     {
         //Apply Movement based on influence
         if (horizontalInfluence != 0)
-        {
-            if (horizontalInfluence < 0 && sceneObj.IsFacingRightDirection() ||
-                horizontalInfluence > 0 && !sceneObj.IsFacingRightDirection())
-            {
-                sceneObj.TurnAround();
-            }
-
+        {            
             //Cap Velocity based on horizontal influence
-            float targetVelocity = CurMovementCollection.GetMaxXVelocity() * horizontalInfluence;
+            float targetXVelocity = CurMovementCollection.GetMaxXVelocity() * horizontalInfluence;
 
-            rb.velocity += Vector3.right * horizontalInfluence * CurMovementCollection.GetArialXAcceleration() * Time.fixedDeltaTime;
-
-            //Cant exceed target velocity
-            if ((horizontalInfluence > 0 && rb.velocity.x > targetVelocity) ||
-                (horizontalInfluence < 0 && rb.velocity.x < targetVelocity))
+            if ((horizontalInfluence > 0 && rb.velocity.x < targetXVelocity) ||
+                (horizontalInfluence < 0 && rb.velocity.x > targetXVelocity))
             {
-                rb.velocity = new Vector3(targetVelocity, rb.velocity.y);
-            }
+                rb.velocity += Vector3.right * horizontalInfluence * CurMovementCollection.GetArialXAcceleration() * Time.fixedDeltaTime;
+            }          
         }
+    }
+
+
+    private void UpdateAirDeceleration()
+    {
+        float targetXVelocity = CurMovementCollection.GetMaxXVelocity();
+
+        if (horizontalInfluence > 0)
+            targetXVelocity *= horizontalInfluence;
+
+        if (Mathf.Abs(rb.velocity.x) > targetXVelocity)
+            rb.velocity -= Vector3.right * CurMovementCollection.GetArialXDeceleration() * Time.fixedDeltaTime;        
     }
 
 

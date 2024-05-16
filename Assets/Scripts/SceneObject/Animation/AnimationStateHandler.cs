@@ -17,9 +17,11 @@ public class AnimationStateHandler : MonoBehaviour, IAnimator
 
     private Coroutine animationEventCorutine;
 
-    //Getter
+    //Getter    
+    public ActionState CurActionState => curActionState;
     private Animator animator => GetComponentInChildren<Animator>();
     private SceneObject sceneObject => GetComponent<SceneObject>();
+
 
     //Events
     public event Action<string, AnimationTrigger.Type> OnAnimationUpdateEvent;

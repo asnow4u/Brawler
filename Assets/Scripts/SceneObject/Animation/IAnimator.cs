@@ -10,6 +10,8 @@ public interface IAnimator
 
     public void SetUp();
 
+    public ActionState CurActionState { get; }
+
     public bool IsStatePossible(ActionState requestedState);
 
     public void PlayAnimation(AnimationStateData animationData);
