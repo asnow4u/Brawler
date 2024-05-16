@@ -104,32 +104,6 @@ AnimatorState:
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
---- !u!1102 &-7370617190501895382
-AnimatorState:
-  serializedVersion: 6
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: PlayerBaseBackAir
-  m_Speed: 1
-  m_CycleOffset: 0
-  m_Transitions: []
-  m_StateMachineBehaviours: []
-  m_Position: {x: 50, y: 50, z: 0}
-  m_IKOnFeet: 0
-  m_WriteDefaultValues: 1
-  m_Mirror: 0
-  m_SpeedParameterActive: 0
-  m_MirrorParameterActive: 0
-  m_CycleOffsetParameterActive: 0
-  m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 0ac74f7ad4f7be84297118946cd683b8, type: 2}
-  m_Tag: 
-  m_SpeedParameter: 
-  m_MirrorParameter: 
-  m_CycleOffsetParameter: 
-  m_TimeParameter: 
 --- !u!1102 &-7296742274277640125
 AnimatorState:
   serializedVersion: 6
@@ -260,32 +234,6 @@ AnimatorState:
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
---- !u!1102 &-4241167491977540279
-AnimatorState:
-  serializedVersion: 6
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: PlayerSwordBA2
-  m_Speed: 1
-  m_CycleOffset: 0
-  m_Transitions: []
-  m_StateMachineBehaviours: []
-  m_Position: {x: 50, y: 50, z: 0}
-  m_IKOnFeet: 0
-  m_WriteDefaultValues: 1
-  m_Mirror: 0
-  m_SpeedParameterActive: 0
-  m_MirrorParameterActive: 0
-  m_CycleOffsetParameterActive: 0
-  m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 4482e59cca43dd94aa3ca379a182a9ac, type: 2}
-  m_Tag: 
-  m_SpeedParameter: 
-  m_MirrorParameter: 
-  m_CycleOffsetParameter: 
-  m_TimeParameter: 
 --- !u!206 &-4062183731136877086
 BlendTree:
   m_ObjectHideFlags: 1
@@ -322,32 +270,6 @@ AnimatorState:
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
   m_Motion: {fileID: 7400000, guid: 07b5c2c8205a8a7448403075a4286be5, type: 2}
-  m_Tag: 
-  m_SpeedParameter: 
-  m_MirrorParameter: 
-  m_CycleOffsetParameter: 
-  m_TimeParameter: 
---- !u!1102 &-3716798928781013856
-AnimatorState:
-  serializedVersion: 6
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: PlayerSwordBA
-  m_Speed: 1
-  m_CycleOffset: 0
-  m_Transitions: []
-  m_StateMachineBehaviours: []
-  m_Position: {x: 50, y: 50, z: 0}
-  m_IKOnFeet: 0
-  m_WriteDefaultValues: 1
-  m_Mirror: 0
-  m_SpeedParameterActive: 0
-  m_MirrorParameterActive: 0
-  m_CycleOffsetParameterActive: 0
-  m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 3570a0da8fd6f8c458e80919ed97562b, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -474,7 +396,7 @@ AnimatorStateMachine:
     m_Position: {x: 1390, y: -170, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 7613800467067632460}
-    m_Position: {x: 1390, y: 10, z: 0}
+    m_Position: {x: 1390, y: -50, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 8948477171696938711}
     m_Position: {x: 410, y: -100, z: 0}
@@ -484,9 +406,6 @@ AnimatorStateMachine:
   - serializedVersion: 1
     m_State: {fileID: 149791214791605558}
     m_Position: {x: 1150, y: -110, z: 0}
-  - serializedVersion: 1
-    m_State: {fileID: -7370617190501895382}
-    m_Position: {x: 1390, y: -50, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 1734522947182371765}
     m_Position: {x: 910, y: -50, z: 0}
@@ -509,11 +428,8 @@ AnimatorStateMachine:
     m_State: {fileID: -7296742274277640125}
     m_Position: {x: 910, y: 190, z: 0}
   - serializedVersion: 1
-    m_State: {fileID: -3716798928781013856}
-    m_Position: {x: 2350, y: 130, z: 0}
-  - serializedVersion: 1
     m_State: {fileID: 8844178082689790273}
-    m_Position: {x: 2590, y: 130, z: 0}
+    m_Position: {x: 2350, y: 130, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -2264775131846915163}
     m_Position: {x: 1630, y: 130, z: 0}
@@ -551,17 +467,11 @@ AnimatorStateMachine:
     m_State: {fileID: 4857706237061015945}
     m_Position: {x: 910, y: 310, z: 0}
   - serializedVersion: 1
-    m_State: {fileID: -4241167491977540279}
+    m_State: {fileID: 5793151542346396631}
     m_Position: {x: 2350, y: 190, z: 0}
   - serializedVersion: 1
-    m_State: {fileID: 2650418463729014831}
-    m_Position: {x: 2350, y: 250, z: 0}
-  - serializedVersion: 1
-    m_State: {fileID: 5793151542346396631}
-    m_Position: {x: 2590, y: 190, z: 0}
-  - serializedVersion: 1
     m_State: {fileID: 6140737590396298738}
-    m_Position: {x: 2590, y: 250, z: 0}
+    m_Position: {x: 2350, y: 250, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 1258892108017196796}
     m_Position: {x: 1630, y: 190, z: 0}
@@ -598,6 +508,9 @@ AnimatorStateMachine:
   - serializedVersion: 1
     m_State: {fileID: 6868103182430440230}
     m_Position: {x: 1150, y: 250, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: 6564953457968441344}
+    m_Position: {x: 1630, y: -170, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions: []
   m_EntryTransitions: []
@@ -845,32 +758,6 @@ AnimatorState:
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
   m_Motion: {fileID: 7400000, guid: 0a345bb362d58b647bc8d48a22dbd1df, type: 2}
-  m_Tag: 
-  m_SpeedParameter: 
-  m_MirrorParameter: 
-  m_CycleOffsetParameter: 
-  m_TimeParameter: 
---- !u!1102 &2650418463729014831
-AnimatorState:
-  serializedVersion: 6
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: PlayerSwordBA3
-  m_Speed: 1
-  m_CycleOffset: 0
-  m_Transitions: []
-  m_StateMachineBehaviours: []
-  m_Position: {x: 50, y: 50, z: 0}
-  m_IKOnFeet: 0
-  m_WriteDefaultValues: 1
-  m_Mirror: 0
-  m_SpeedParameterActive: 0
-  m_MirrorParameterActive: 0
-  m_CycleOffsetParameterActive: 0
-  m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: bcc9b034855a4bb4d99674f2547fac80, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -1212,6 +1099,32 @@ AnimatorState:
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
   m_Motion: {fileID: 7400000, guid: 80565e2a88a1caf4d89bfc661386947d, type: 2}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
+--- !u!1102 &6564953457968441344
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: PlayerBaseHit
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions: []
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: 7400000, guid: 0ceed2d3cde386a40beb6458f5ff3425, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 

@@ -134,26 +134,15 @@ public class RushDown : Enemy
 
 
 
-    public float Force;
-    public float Angle;
 
-    [Range(0f, 1f)]
-    public float influence;
-
+    public float angle = 45;    
     public bool Launch;
 
     private void Update()
     {
         if (Launch)
         {
-            float xLaunch = Mathf.Cos(Angle * Mathf.Deg2Rad);
-            float yLaunch = Mathf.Sin(Angle * Mathf.Deg2Rad);
-
-            float damageForce = 500f + (influence * (Mathf.Pow(damageTaken, 2.75f) / Rb.mass));
-
-            Vector3 launchForce = new Vector2(xLaunch, yLaunch);
-
-            Rb.AddForce(launchForce * damageForce, ForceMode.Impulse);
+            HitByAttack(AttackColliderType.PlayerRightFoot, 0, angle);
 
             Launch = false;
         }

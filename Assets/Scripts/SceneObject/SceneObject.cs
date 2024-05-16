@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using UnityEngine.InputSystem.Utilities;
+using System.Threading.Tasks;
 
 public enum SceneObjectType { Player, Enemy, Object }
 public enum GroundedState { Airborn, Grounded, Sliding }
@@ -25,8 +26,11 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
     [SerializeField] protected float damageTaken;
 
     //Damage Handlers
-    private KnockbackCalculator knockbackHandler;
-    private HitStunCalculator hitStunHandler;
+    private KnockbackCalculator knockbackHandler;    
+
+
+    //Hit Stun
+    private Coroutine hitStunTimer;
 
 
     public bool InHitStun;
@@ -34,7 +38,6 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
     private float hitDecelerationRate = 2;
     
     private KillZone killZone;
-    private Coroutine hitStunTimer;
 
     //Handlers
     public IEquipment EquipmentHandler;
@@ -70,7 +73,6 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
         UniqueId = Guid.NewGuid().ToString();
 
         knockbackHandler = new KnockbackCalculator();
-        hitStunHandler = new HitStunCalculator();
 
         InitializeInteractionHandler();
         InitializeEquipmentHandler();
@@ -167,7 +169,8 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
                     else
                         curGroundedState = GroundedState.Grounded;
 
-                    AnimationStateHandler.EndCurrentAnimation(ActionState.Admin);
+                    //End animation at or below attacking state
+                    AnimationStateHandler.EndCurrentAnimation(ActionState.Attacking);
 
                     GroundedStateChangeEvent?.Invoke(curGroundedState);
                     
@@ -180,7 +183,9 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
             if (curGroundedState != GroundedState.Airborn)
             {
                 curGroundedState = GroundedState.Airborn;
-                AnimationStateHandler.EndCurrentAnimation(ActionState.Admin);
+
+                //End animation at or below attacking state
+                AnimationStateHandler.EndCurrentAnimation(ActionState.Attacking);
 
                 GroundedStateChangeEvent?.Invoke(curGroundedState);
             }
@@ -310,9 +315,9 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
         //Launch knockback
         Vector3 launchForce = knockbackHandler.CalculateForceKnockBack(attackType, damageTaken, Rb.mass, launchAngle);
         Rb.AddForce(launchForce, ForceMode.Impulse);
-        
 
         //HitStun
+        SetHitStun(launchForce.magnitude);
 
 
         //KillZone
@@ -322,65 +327,40 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
         //killZone = KillZoneFactory.instance.Spawn(forceDirection.x > 0 ? true : false, false, this.UniqueId);
     }
 
-    
+   
 
 
+  
 
-    /// <summary>
-    /// The equation is used to calculate the force that will be applied based on its mass and the amount of damage dealt to it, and the knockback of the attack. 
-    /// The idea is that the more mass the target has, the more force is required to knock it the same distance compared to an object with less mass. 
-    /// Similarly, the more total damage that is dealt to the target, will result in higher force values.
-    /// Similarly, the more baseKnockBack being applied will result in higher force values.
-    /// Lastly the damageInfluence helps determine how much influence the damage will have on the final force value
-    /// The equation breaks down into three main parts.
-    /// </summary>
-    /// <param name="baseKnockBack"></param>
-    /// <param name="forceDirection"></param>
-    public void ApplyForceBasedOnDamage(float baseKnockBack, float damageInfluence, Vector2 forceDirection)
-    {
-        //float damageForce = damageInfluence * Mathf.Pow((baseKnockBack * damageTaken) / Mathf.Pow(Rb.mass, 1.75f), 2);
-        //float totalForce = Mathf.Max(minKnockBackForce, baseKnockBack + damageForce);
+    #endregion
 
-        //Rb.AddForce(new Vector3(forceDirection.x, forceDirection.y, 0) * totalForce, ForceMode.Impulse);
-       
-        //Reset KillZone
-        if (killZone != null)        
-            Destroy(killZone.gameObject);
 
-        killZone = KillZoneFactory.instance.Spawn(forceDirection.x > 0 ? true : false, false, this.UniqueId);
+    #region HitStun
 
-        //Start hitstun coroutine
-        //if (hitStunTimer != null)
-        //{
-        //    StopCoroutine(hitStunTimer);
-        //}
+    private void SetHitStun(float launchForce)
+    {   
+        //TODO: This does not incorperate different weapons yet
+        AnimationStateHandler.PlayAnimation(new AnimationStateData(gameObject.name + "BaseHit", ActionState.HitStun, null));
 
-        //hitStunTimer = StartCoroutine(ApplyHitStun(totalForce));       
+        if (hitStunTimer != null)
+            StopCoroutine(hitStunTimer);
+
+        hitStunTimer = StartCoroutine(HitStunTimer(launchForce / 1000));
     }
 
 
-    public IEnumerator ApplyHitStun(float totalForce)
+    public IEnumerator HitStunTimer(float timer)
     {
-        ////TODO: Remove
-        //InHitStun = true;
+        while (timer > 0)
+        {
+            timer -= Time.deltaTime;
+            yield return null;
+        }
 
-        //StateHandler.ChangeState(ActionState.State.HitStun);
-        //float timer = totalForce / 1000f;
+        AnimationStateHandler.EndCurrentAnimation(ActionState.Admin);
 
-        //Debug.Log("HitStun: " + timer);
+   
 
-        //while (timer > 0)
-        //{
-        //    timer -= Time.deltaTime;
-        //    yield return null;
-        //}
-
-        //Destroy(killZone.gameObject);
-
-        //StateHandler.ResetState();
-
-        ////TODO: Remove
-        //InHitStun = false;
 
         //while (Mathf.Abs(rb.velocity.x) > maxHitVelocity || Mathf.Abs(rb.velocity.y) > maxHitVelocity)
         //{
@@ -415,10 +395,9 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
         //            rb.velocity += transform.up * hitDecelerationRate * Time.deltaTime;
         //        }
         //    }
-
-            yield return null;
         //}
     }
+
 
     #endregion
 
@@ -427,8 +406,6 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
     {
         if (killZone != null)
             Destroy(killZone.gameObject);
-    }
-
-    
+    }    
 }
 

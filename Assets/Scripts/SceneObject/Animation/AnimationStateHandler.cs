@@ -160,9 +160,9 @@ public class AnimationStateHandler : MonoBehaviour, IAnimator
     /// Check for animation equal to or below the provided state
     /// Reset action state and play idle animation
     /// </summary>
-    public void EndCurrentAnimation(ActionState state)
+    public void EndCurrentAnimation(ActionState priorityState)
     {
-        if (IsStatePossible(state))
+        if (IsStatePossible(priorityState))
         {
             Debug.Log("ANIMATION: End " + curPlayingAnimation);
             ResetState();
