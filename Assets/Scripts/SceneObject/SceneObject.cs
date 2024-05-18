@@ -308,13 +308,16 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
 
     public void HitByAttack(AttackColliderType attackType, float attackDamage, float launchAngle)
     {
-        Debug.Log(gameObject.name + " Hit by attack");        
+        Debug.LogWarning(gameObject.name + " Hit by attack " + launchAngle);        
        
         AddDamage(attackDamage);
 
         //Launch knockback
         Vector3 launchForce = knockbackHandler.CalculateForceKnockBack(attackType, damageTaken, Rb.mass, launchAngle);
         Rb.AddForce(launchForce, ForceMode.Impulse);
+
+        Debug.DrawRay(transform.position, launchForce.normalized, Color.black);
+
 
         //HitStun
         SetHitStun(launchForce.magnitude);
@@ -343,7 +346,10 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
         AnimationStateHandler.PlayAnimation(new AnimationStateData(gameObject.name + "BaseHit", ActionState.HitStun, null));
 
         if (hitStunTimer != null)
+        {
+            Debug.LogWarning("Combo");
             StopCoroutine(hitStunTimer);
+        }
 
         hitStunTimer = StartCoroutine(HitStunTimer(launchForce / 1000));
     }
@@ -359,7 +365,7 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
 
         AnimationStateHandler.EndCurrentAnimation(ActionState.Admin);
 
-   
+        hitStunTimer = null;
 
 
         //while (Mathf.Abs(rb.velocity.x) > maxHitVelocity || Mathf.Abs(rb.velocity.y) > maxHitVelocity)

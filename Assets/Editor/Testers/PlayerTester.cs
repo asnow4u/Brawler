@@ -26,6 +26,22 @@ public class PlayerTester : Editor
         {
             CancelMovementAndAttackTest(sceneObject);
         }
+
+
+        if (GUILayout.Button("Perform UpTilt Attack"))
+        {
+            sceneObject.AttackInputHandler.PerformUpAttack();
+        }
+
+        if (GUILayout.Button("Perform ForwardTilt Attack"))
+        {
+            sceneObject.AttackInputHandler.PerformRightAttack();
+        }
+
+        if (GUILayout.Button("Perform DownTilt Attack"))
+        {
+            sceneObject.AttackInputHandler.PerformDownAttack();
+        }
     }
 
 

@@ -505,9 +505,12 @@ public class MovementInputHandler : MonoBehaviour
 
         if (horizontalInfluence > 0)
             targetXVelocity *= horizontalInfluence;
+        
+        if (rb.velocity.x > targetXVelocity)
+            rb.velocity -= Vector3.right * CurMovementCollection.GetArialXDeceleration() * Time.fixedDeltaTime;                
 
-        if (Mathf.Abs(rb.velocity.x) > targetXVelocity)
-            rb.velocity -= Vector3.right * CurMovementCollection.GetArialXDeceleration() * Time.fixedDeltaTime;        
+        else if (rb.velocity.x < -targetXVelocity)
+            rb.velocity += Vector3.right * CurMovementCollection.GetArialXDeceleration() * Time.fixedDeltaTime;        
     }
 
 

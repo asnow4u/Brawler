@@ -14,9 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Animation: {fileID: 7400000, guid: 859aec2fb18297243888f38438996d95, type: 2}
   Type: 1
-  Triggers:
-  - TriggerFrame: 5
-    TriggerType: 1
-    WasTriggered: 0
+  Triggers: []
   JumpVelocity: 5
   GravityScaler: 2

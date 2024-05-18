@@ -16,6 +16,7 @@ MonoBehaviour:
   Type: 0
   Triggers: []
   MaxXVelocity: 10
-  XAcceleration: 50
+  GroundedXAcceleration: 50
   GroundedXDeceleration: 50
+  ArialXAcceleration: 25
   ArialXDeceleration: 25
