@@ -116,10 +116,12 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
 
     protected virtual void FixedUpdate()
     {  
+        MovementInputHandler.UpdateMovement();
+        
+        PredictHitStunBounce();
+
         //Grounded Status
         CheckGroundedStatus();
-
-        MovementInputHandler.UpdateMovement();
     }
 
     #endregion
@@ -305,12 +307,13 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
     }
 
 
-
     public void HitByAttack(AttackColliderType attackType, float attackDamage, float launchAngle)
     {
         Debug.LogWarning(gameObject.name + " Hit by attack " + launchAngle);        
        
         AddDamage(attackDamage);
+        
+        //TODO: Determine if force pushes into ground/wall, in which bounce should occure (Eventally should pass past player
 
         //Launch knockback
         Vector3 launchForce = knockbackHandler.CalculateForceKnockBack(attackType, damageTaken, Rb.mass, launchAngle);
@@ -330,15 +333,21 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
         //killZone = KillZoneFactory.instance.Spawn(forceDirection.x > 0 ? true : false, false, this.UniqueId);
     }
 
-   
-
-
-  
-
     #endregion
 
 
     #region HitStun
+
+    //TODO: Seperate into its own handler class
+    //TODO: Bounce timer should be based on damage (more damage = more emphisis on bounce)
+
+    public enum HitStunState { Movement, PredictedBounce, Bounce }
+
+    [Header("HitStun")]
+    [SerializeField] private HitStunState hitStunState;
+    [SerializeField] private Vector3 bounceVelocity;
+    [SerializeField] private float bounceDegrade = 0.9f;
+    [SerializeField] private float bounceFrameTimer;
 
     private void SetHitStun(float launchForce)
     {   
@@ -366,44 +375,79 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
         AnimationStateHandler.EndCurrentAnimation(ActionState.Admin);
 
         hitStunTimer = null;
-
-
-        //while (Mathf.Abs(rb.velocity.x) > maxHitVelocity || Mathf.Abs(rb.velocity.y) > maxHitVelocity)
-        //{
-        //    //Horizontal
-        //    if (Mathf.Abs(rb.velocity.x) > maxHitVelocity)
-        //    {
-        //        //Right Direction
-        //        if (rb.velocity.x > maxHitVelocity)
-        //        {
-        //            rb.velocity -= transform.right * hitDecelerationRate * Time.deltaTime;
-        //        }
-
-        //        //Left Direction
-        //        else
-        //        {
-        //            rb.velocity += transform.right * hitDecelerationRate * Time.deltaTime;
-        //        }
-        //    }
-
-        //    //Vertical
-        //    if (Mathf.Abs(rb.velocity.y) > maxHitVelocity)
-        //    {
-        //        //Up
-        //        if (rb.velocity.y > maxHitVelocity)
-        //        {
-        //            rb.velocity -= transform.up * hitDecelerationRate * Time.deltaTime;
-        //        }
-
-        //        //Down
-        //        else
-        //        {
-        //            rb.velocity += transform.up * hitDecelerationRate * Time.deltaTime;
-        //        }
-        //    }
-        //}
     }
 
+
+    /// <summary>
+    /// Looks ahead to help calculate a bounce
+    /// </summary>
+    private void PredictHitStunBounce()
+    {
+        if (AnimationStateHandler.CurActionState == ActionState.HitStun &&
+            hitStunState == HitStunState.Movement)
+        {
+            float distance = Rb.velocity.magnitude * Time.fixedDeltaTime;
+            Vector3 direction = Rb.velocity.normalized;
+
+            RaycastHit[] hits = Rb.SweepTestAll(direction, distance);
+
+            foreach (RaycastHit hit in hits)
+            {
+                if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Environment"))
+                {
+                    Debug.Log("HitStun Perdicted", hit.collider.gameObject);
+                    bounceVelocity = Vector3.Reflect(Rb.velocity, hit.normal) * bounceDegrade;
+                    hitStunState = HitStunState.PredictedBounce;
+
+                    break;
+                }
+            }            
+        }
+    }
+
+
+    /// <summary>
+    /// Used to slow down the bounce effect when a scene object hits a environment surface
+    /// </summary>
+    /// <returns></returns>
+    private IEnumerator BounceTimer()
+    {
+        hitStunState = HitStunState.Bounce;
+        Debug.Log("HitStun BounceTimer started");
+
+        int frameCount = 0;
+
+        while (frameCount < bounceFrameTimer)
+        {
+            frameCount++;
+            yield return null;
+        }
+
+        Debug.Log("HitStun BounceTimer ended");
+
+        Rb.velocity = bounceVelocity;
+
+        hitStunState = HitStunState.Movement;
+    }
+
+
+    #endregion
+
+
+    #region Collision
+
+    private void OnCollisionEnter(Collision col)
+    {
+        //Environment
+        if (col.gameObject.layer == LayerMask.NameToLayer("Environment"))
+        {
+            if (AnimationStateHandler.CurActionState == ActionState.HitStun)
+            {
+                Debug.Log("HitStun Collided");
+                StartCoroutine(BounceTimer());
+            }
+        }
+    }
 
     #endregion
 

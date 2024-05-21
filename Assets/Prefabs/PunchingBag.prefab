@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1805824689445113048}
   - component: {fileID: 1805824689445113049}
   - component: {fileID: 1805824689445113054}
-  - component: {fileID: 1805824689445113055}
+  - component: {fileID: 5901365588568686787}
   - component: {fileID: 1593448204}
   - component: {fileID: 1593448197}
   - component: {fileID: 2972585534415002338}
@@ -108,8 +108,8 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 120
   m_CollisionDetection: 2
---- !u!65 &1805824689445113055
-BoxCollider:
+--- !u!136 &5901365588568686787
+CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -118,8 +118,9 @@ BoxCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
+  m_Radius: 0.5
+  m_Height: 0.99999994
+  m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!95 &1593448204
 Animator:
@@ -172,8 +173,12 @@ MonoBehaviour:
   ObjectType: 1
   curGroundedState: 0
   maxSlopeAngle: 0
-  damageTaken: 0
+  damageTaken: 120
   InHitStun: 0
+  hitStunState: 0
+  bounceVelocity: {x: 0, y: 0, z: 0}
+  bounceDegrade: 0.9
+  bounceTimer: 1
   patrolPoints: []
   angle: 0
   Launch: 0
