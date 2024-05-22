@@ -12,7 +12,8 @@ public enum GroundedState { Airborn, Grounded, Sliding }
 [RequireComponent(typeof(MovementInputHandler))]
 [RequireComponent(typeof(AttackInputHandler))]
 [RequireComponent(typeof(AnimationStateHandler))]
-public abstract class SceneObject : MonoBehaviour, ITakeDamage
+[RequireComponent(typeof(DamageHandler))]
+public abstract class SceneObject : MonoBehaviour
 {
     [Header("SceneObject")]
     public string UniqueId;
@@ -20,24 +21,7 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
 
     [Header("Ground Status")]
     [SerializeField] private GroundedState curGroundedState;
-    [SerializeField] private float maxSlopeAngle;
-
-    [Header("Hit/Damage")]
-    [SerializeField] protected float damageTaken;
-
-    //Damage Handlers
-    private KnockbackCalculator knockbackHandler;    
-
-
-    //Hit Stun
-    private Coroutine hitStunTimer;
-
-
-    public bool InHitStun;
-    private float maxHitVelocity = 10f;    
-    private float hitDecelerationRate = 2;
-    
-    private KillZone killZone;
+    [SerializeField] private float maxSlopeAngle;      
 
     //Handlers
     public IEquipment EquipmentHandler;
@@ -47,6 +31,7 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
     public IAnimator AnimationStateHandler => GetComponentInChildren<IAnimator>();
     public MovementInputHandler MovementInputHandler => GetComponent<MovementInputHandler>();
     public AttackInputHandler AttackInputHandler => GetComponent<AttackInputHandler>();
+    public DamageHandler DamageHandler => GetComponent<DamageHandler>();
     
     public GroundedState GroundedState => curGroundedState;   
     public Rigidbody Rb => GetComponent<Rigidbody>();
@@ -70,17 +55,15 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
     /// </summary>
     protected virtual void Initialize()
     {               
-        UniqueId = Guid.NewGuid().ToString();
-
-        knockbackHandler = new KnockbackCalculator();
+        UniqueId = Guid.NewGuid().ToString();        
 
         InitializeInteractionHandler();
         InitializeEquipmentHandler();
         InitializeMovementHandler();
         InitializeAttackHandler();
         InitializeAnimationStateHandler();
+        InitializeDamageHandler();
     }
-
 
     private void InitializeInteractionHandler()
     {
@@ -103,10 +86,14 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
         MovementInputHandler.Setup();        
     }
 
-
     private void InitializeAttackHandler()
     {        
         AttackInputHandler.Setup();        
+    }
+
+    private void InitializeDamageHandler()
+    {
+        DamageHandler.Initialize();
     }
 
     #endregion
@@ -118,7 +105,7 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
     {  
         MovementInputHandler.UpdateMovement();
         
-        PredictHitStunBounce();
+        DamageHandler.PredictHitStunBounce();
 
         //Grounded Status
         CheckGroundedStatus();
@@ -272,190 +259,5 @@ public abstract class SceneObject : MonoBehaviour, ITakeDamage
 
     #endregion
 
-
-    #region Damage
-
-    /// <summary>
-    /// Add an amount of damage based on the provided percent <\br>
-    /// </summary>
-    /// <param name="percent"></param>
-    public void AddDamage(float percent)
-    {
-        damageTaken += percent;
-    }
-
-    /// <summary>
-    /// Remove an amount of damage based on the provided percent <\br>
-    /// Cant drop below 0
-    /// </summary>
-    /// <param name="percent"></param>
-    public void RemoveDamage(float percent)
-    {
-        damageTaken -= percent;
-
-        if (damageTaken < 0)
-            damageTaken = 0;
-    }
-
-
-    /// <summary>
-    /// Reset any damage that was previously taken
-    /// </summary>
-    public void ResetDamage()
-    {
-        damageTaken = 0;
-    }
-
-
-    public void HitByAttack(AttackColliderType attackType, float attackDamage, float launchAngle)
-    {
-        Debug.LogWarning(gameObject.name + " Hit by attack " + launchAngle);        
-       
-        AddDamage(attackDamage);
-        
-        //TODO: Determine if force pushes into ground/wall, in which bounce should occure (Eventally should pass past player
-
-        //Launch knockback
-        Vector3 launchForce = knockbackHandler.CalculateForceKnockBack(attackType, damageTaken, Rb.mass, launchAngle);
-        Rb.AddForce(launchForce, ForceMode.Impulse);
-
-        Debug.DrawRay(transform.position, launchForce.normalized, Color.black);
-
-
-        //HitStun
-        SetHitStun(launchForce.magnitude);
-
-
-        //KillZone
-        //if (killZone != null)
-        //    Destroy(killZone.gameObject);
-
-        //killZone = KillZoneFactory.instance.Spawn(forceDirection.x > 0 ? true : false, false, this.UniqueId);
-    }
-
-    #endregion
-
-
-    #region HitStun
-
-    //TODO: Seperate into its own handler class
-    //TODO: Bounce timer should be based on damage (more damage = more emphisis on bounce)
-
-    public enum HitStunState { Movement, PredictedBounce, Bounce }
-
-    [Header("HitStun")]
-    [SerializeField] private HitStunState hitStunState;
-    [SerializeField] private Vector3 bounceVelocity;
-    [SerializeField] private float bounceDegrade = 0.9f;
-    [SerializeField] private float bounceFrameTimer;
-
-    private void SetHitStun(float launchForce)
-    {   
-        //TODO: This does not incorperate different weapons yet
-        AnimationStateHandler.PlayAnimation(new AnimationStateData(gameObject.name + "BaseHit", ActionState.HitStun, null));
-
-        if (hitStunTimer != null)
-        {
-            Debug.LogWarning("Combo");
-            StopCoroutine(hitStunTimer);
-        }
-
-        hitStunTimer = StartCoroutine(HitStunTimer(launchForce / 1000));
-    }
-
-
-    public IEnumerator HitStunTimer(float timer)
-    {
-        while (timer > 0)
-        {
-            timer -= Time.deltaTime;
-            yield return null;
-        }
-
-        AnimationStateHandler.EndCurrentAnimation(ActionState.Admin);
-
-        hitStunTimer = null;
-    }
-
-
-    /// <summary>
-    /// Looks ahead to help calculate a bounce
-    /// </summary>
-    private void PredictHitStunBounce()
-    {
-        if (AnimationStateHandler.CurActionState == ActionState.HitStun &&
-            hitStunState == HitStunState.Movement)
-        {
-            float distance = Rb.velocity.magnitude * Time.fixedDeltaTime;
-            Vector3 direction = Rb.velocity.normalized;
-
-            RaycastHit[] hits = Rb.SweepTestAll(direction, distance);
-
-            foreach (RaycastHit hit in hits)
-            {
-                if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Environment"))
-                {
-                    Debug.Log("HitStun Perdicted", hit.collider.gameObject);
-                    bounceVelocity = Vector3.Reflect(Rb.velocity, hit.normal) * bounceDegrade;
-                    hitStunState = HitStunState.PredictedBounce;
-
-                    break;
-                }
-            }            
-        }
-    }
-
-
-    /// <summary>
-    /// Used to slow down the bounce effect when a scene object hits a environment surface
-    /// </summary>
-    /// <returns></returns>
-    private IEnumerator BounceTimer()
-    {
-        hitStunState = HitStunState.Bounce;
-        Debug.Log("HitStun BounceTimer started");
-
-        int frameCount = 0;
-
-        while (frameCount < bounceFrameTimer)
-        {
-            frameCount++;
-            yield return null;
-        }
-
-        Debug.Log("HitStun BounceTimer ended");
-
-        Rb.velocity = bounceVelocity;
-
-        hitStunState = HitStunState.Movement;
-    }
-
-
-    #endregion
-
-
-    #region Collision
-
-    private void OnCollisionEnter(Collision col)
-    {
-        //Environment
-        if (col.gameObject.layer == LayerMask.NameToLayer("Environment"))
-        {
-            if (AnimationStateHandler.CurActionState == ActionState.HitStun)
-            {
-                Debug.Log("HitStun Collided");
-                StartCoroutine(BounceTimer());
-            }
-        }
-    }
-
-    #endregion
-
-
-    private void OnDestroy()
-    {
-        if (killZone != null)
-            Destroy(killZone.gameObject);
-    }    
 }
 

@@ -129,22 +129,4 @@ public class RushDown : Enemy
             }
         }
     }
-
-
-
-
-
-
-    public float angle = 45;    
-    public bool Launch;
-
-    private void Update()
-    {
-        if (Launch)
-        {
-            HitByAttack(AttackColliderType.PlayerRightFoot, 0, angle);
-
-            Launch = false;
-        }
-    }
 }
