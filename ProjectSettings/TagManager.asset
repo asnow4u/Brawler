@@ -8,6 +8,7 @@ TagManager:
   - PlayerFist
   - Item
   - AttackSword
+  - UIDamageDisplay
   layers:
   - Default
   - TransparentFX

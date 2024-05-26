@@ -69,7 +69,10 @@ public class AttackPoint : MonoBehaviour
                     if (!sceneObject.IsFacingRightDirection())
                         launchAngle = 180 - launchAngle;
 
-                    hitTarget.HitByAttack(attackType, curAttackData.GetAttackDamage(curFrame), launchAngle);                    
+                    hitTarget.HitByAttack(attackType, curAttackData.GetAttackDamage(curFrame), launchAngle);
+
+                    //Damage bubble                    
+                    UIFactory.Instance.SpawnDamageBubble(col.ClosestPoint(transform.position), curAttackData.GetAttackDamage(curFrame));
                 }
             }
         }

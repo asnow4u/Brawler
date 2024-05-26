@@ -12,6 +12,7 @@ public enum GroundedState { Airborn, Grounded, Sliding }
 [RequireComponent(typeof(MovementInputHandler))]
 [RequireComponent(typeof(AttackInputHandler))]
 [RequireComponent(typeof(AnimationStateHandler))]
+[RequireComponent(typeof(UIHandler))]
 [RequireComponent(typeof(DamageHandler))]
 public abstract class SceneObject : MonoBehaviour
 {
@@ -31,6 +32,7 @@ public abstract class SceneObject : MonoBehaviour
     public IAnimator AnimationStateHandler => GetComponentInChildren<IAnimator>();
     public MovementInputHandler MovementInputHandler => GetComponent<MovementInputHandler>();
     public AttackInputHandler AttackInputHandler => GetComponent<AttackInputHandler>();
+    public UIHandler UIHandler => GetComponent<UIHandler>();
     public DamageHandler DamageHandler => GetComponent<DamageHandler>();
     
     public GroundedState GroundedState => curGroundedState;   
@@ -40,6 +42,7 @@ public abstract class SceneObject : MonoBehaviour
 
     //Events
     public event Action<GroundedState> GroundedStateChangeEvent;
+
 
     #region Initialize
 
@@ -58,11 +61,18 @@ public abstract class SceneObject : MonoBehaviour
         UniqueId = Guid.NewGuid().ToString();        
 
         InitializeInteractionHandler();
+
         InitializeEquipmentHandler();
-        InitializeMovementHandler();
-        InitializeAttackHandler();
-        InitializeAnimationStateHandler();
-        InitializeDamageHandler();
+
+        MovementInputHandler.Setup();
+
+        AttackInputHandler.Setup();
+
+        AnimationStateHandler.SetUp();
+
+        UIHandler.Initialize();
+
+        DamageHandler.Initialize();
     }
 
     private void InitializeInteractionHandler()
@@ -75,27 +85,7 @@ public abstract class SceneObject : MonoBehaviour
         //TODO: Rework
         //EquipmentHandler = new EquipmentHandler(this);
     }
-
-    private void InitializeAnimationStateHandler()
-    {
-        AnimationStateHandler.SetUp();
-    }
-
-    private void InitializeMovementHandler()
-    {         
-        MovementInputHandler.Setup();        
-    }
-
-    private void InitializeAttackHandler()
-    {        
-        AttackInputHandler.Setup();        
-    }
-
-    private void InitializeDamageHandler()
-    {
-        DamageHandler.Initialize();
-    }
-
+  
     #endregion
 
 
@@ -241,6 +231,8 @@ public abstract class SceneObject : MonoBehaviour
     public void TurnAround()
     {
         transform.Rotate(transform.up, 180f);
+
+        UIHandler.RotateDisplayText();
     }
 
 

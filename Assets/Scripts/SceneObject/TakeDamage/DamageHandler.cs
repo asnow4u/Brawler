@@ -44,6 +44,8 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     public void AddDamage(float percent)
     {
         damageTaken += percent;
+
+        sceneObject.UIHandler.UpdateDamageDisplay(damageTaken);        
     }
 
 
@@ -218,7 +220,7 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
 
         int frameCount = 0;
 
-        while (frameCount < bounceFrameTimer)
+        while (frameCount <= bounceFrameTimer)
         {
             frameCount++;
             yield return null;
