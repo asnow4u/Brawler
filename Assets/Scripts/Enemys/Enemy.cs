@@ -28,26 +28,26 @@ public abstract class Enemy : SceneObject
     }
 
 
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.gameObject.layer == LayerMask.NameToLayer("PlayerEvent"))
-        {
-            if (Camera.main.TryGetComponent(out ICameraTarget cameraTarget))
-            {
-                cameraTarget.AddTargetFocus(transform);
-            }
-        }
-    }
+    //private void OnTriggerEnter(Collider other)
+    //{
+    //    if (other.gameObject.layer == LayerMask.NameToLayer("PlayerEvent"))
+    //    {
+    //        if (Camera.main.TryGetComponent(out ICameraTarget cameraTarget))
+    //        {
+    //            cameraTarget.AddTargetFocus(transform);
+    //        }
+    //    }
+    //}
 
 
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.gameObject.layer == LayerMask.NameToLayer("PlayerEvent"))
-        {
-            if (Camera.main.TryGetComponent(out ICameraTarget cameraTarget))
-            {
-                cameraTarget.RemoveTargetFocus(transform);
-            }
-        }
-    }
+    //private void OnTriggerExit(Collider other)
+    //{
+    //    if (other.gameObject.layer == LayerMask.NameToLayer("PlayerEvent"))
+    //    {
+    //        if (Camera.main.TryGetComponent(out ICameraTarget cameraTarget))
+    //        {
+    //            cameraTarget.RemoveTargetFocus(transform);
+    //        }
+    //    }
+    //}
 }

@@ -22,15 +22,16 @@ public class KillZoneFactory : MonoBehaviour
     }
 
 
-    public KillZone Spawn(bool isRightDependent, bool isSolid = false, string objID = null, Action<SceneObject> listener = null)
+    public KillZone[] SpawnGhostKillZones(string objID)
     {
-        GameObject obj = Instantiate(killZonePrefab);
+        GameObject leftKillZoneObj = Instantiate(killZonePrefab);
+        KillZone leftKillZone = leftKillZoneObj.GetComponent<KillZone>();
+        leftKillZone.Initialize(KillZoneType.LeftGhost, objID);
+                
+        GameObject rightKillZoneObj = Instantiate(killZonePrefab);
+        KillZone rightKillZone = rightKillZoneObj.GetComponent<KillZone>();
+        rightKillZone.Initialize(KillZoneType.RightGhost, objID);
 
-        KillZone killZone = obj.GetComponent<KillZone>();
-        killZone.SetUp(isRightDependent, isSolid, objID, listener);
-
-        return killZone;
+        return new KillZone[] { rightKillZone, leftKillZone};
     }
-
-
 }

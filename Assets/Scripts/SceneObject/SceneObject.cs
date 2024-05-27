@@ -1,12 +1,10 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
-using UnityEngine.InputSystem.Utilities;
-using System.Threading.Tasks;
 
 public enum SceneObjectType { Player, Enemy, Object }
 public enum GroundedState { Airborn, Grounded, Sliding }
+
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(MovementInputHandler))]

@@ -9,19 +9,19 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
 {
     [Header("Damage")]
     [SerializeField] protected float damageTaken;
+    private KnockbackCalculator knockbackHandler;
 
     [Header("HitStun")]
     [SerializeField] private HitStunState hitStunState;
     [SerializeField] private float bounceDegrade = 0.9f;
     //TODO: Bounce timer should be based on damage(more damage = more emphisis on bounce)
     [SerializeField] private float bounceFrameTimer;
-
-    private KnockbackCalculator knockbackHandler;
     private Coroutine hitStunTimer;
 
     private Vector3 predictedBounceVelocity;
 
-    private KillZone killZone;
+    //KillZones
+    private KillZone[] killZones;
 
     //Getters
     private SceneObject sceneObject => GetComponent<SceneObject>();
@@ -80,6 +80,7 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     /// <param name="launchAngle"></param>
     public void HitByAttack(AttackColliderType attackType, float attackDamage, float launchAngle)
     {        
+        //Damage
         AddDamage(attackDamage);
 
         //Launch knockback
@@ -89,12 +90,8 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
 
         rb.AddForce(launchForce, ForceMode.Impulse);
 
-        Debug.DrawRay(transform.position, launchForce.normalized, Color.black, 2f);
-
         //HitStun
-        SetHitStun(launchForce.magnitude);
-
-        SetUpKillZone();        
+        SetHitStun(launchForce.magnitude);              
     }
 
 
@@ -168,7 +165,9 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     /// <param name="timer"></param>
     /// <returns></returns>
     private IEnumerator HitStunTimer(float timer)
-    {
+    {        
+        SetUpKillZone();
+
         while (timer > 0)
         {
             timer -= Time.deltaTime;
@@ -178,6 +177,8 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
         sceneObject.AnimationStateHandler.EndCurrentAnimation(ActionState.Admin);
 
         hitStunTimer = null;
+
+        DestroyKillZones();
     }
 
 
@@ -256,21 +257,38 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
 
     #region KillZone
 
+    /// <summary>
+    /// Spawn killzones
+    /// </summary>
     private void SetUpKillZone()
     {
-        if (killZone != null)
-            Destroy(killZone.gameObject);
-
-        //TODO: Spawn both killzones (bounce makes this less predictable)
-        //killZone = KillZoneFactory.instance.Spawn(forceDirection.x > 0 ? true : false, false, sceneObject.UniqueId);
+        if (killZones == null)
+        {
+            killZones = KillZoneFactory.instance.SpawnGhostKillZones(sceneObject.UniqueId);            
+        }
     }
 
 
-    private void OnDestroy()
+    /// <summary>
+    /// Destroy current killzones
+    /// </summary>
+    private void DestroyKillZones()
     {
-        if (killZone != null)
-            Destroy(killZone.gameObject);
+        if (killZones != null)
+        {
+            foreach (KillZone killZone in killZones)
+            {
+                Destroy(killZone.gameObject);
+            }
+        }
+
+        killZones = null;
     }
 
     #endregion
+
+    private void OnDestroy()
+    {
+        DestroyKillZones();   
+    }
 }

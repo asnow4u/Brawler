@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 5416649112707803761}
   - component: {fileID: 6467164935767999586}
   m_Layer: 6
-  m_Name: KillZone
+  m_Name: GhostKillZone
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
