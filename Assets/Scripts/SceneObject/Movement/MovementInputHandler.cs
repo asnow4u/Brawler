@@ -12,6 +12,13 @@ public class MovementInputHandler : MonoBehaviour
     [SerializeField] private MovementType curMoveState = MovementType.Move;
     [SerializeField] private string curMoveAnimationState;
 
+    //Jump Properties
+    private int numJumpsPerformed;
+
+    //Fast Fall Properties
+    private const float fastFallAcceleration = 20f;
+    private const float MaxYVelocity = 15f;
+
     //Slope Properties
     [Header("Slope")]    
     [SerializeField] private float slidingMaxVelocity;
@@ -24,8 +31,7 @@ public class MovementInputHandler : MonoBehaviour
 
     //Infulence
     private float horizontalInfluence;
-    private float verticalInfluence;
-    private int numJumpsPerformed;
+    private float verticalInfluence;    
    
     //SceneObject
     private SceneObject sceneObj => GetComponent<SceneObject>();
@@ -117,10 +123,12 @@ public class MovementInputHandler : MonoBehaviour
             case MovementType.Jump:
             case MovementType.AirJump:
                 SetCurrentMoveState(MovementType.FreeFall);
+                sceneObj.AttackInputHandler.ExecuteBufferedAttack();
                 break;
 
             case MovementType.Landing:
                 SetCurrentMoveState(MovementType.Move);
+                sceneObj.AttackInputHandler.ExecuteBufferedAttack();
                 break;
         }
     }
@@ -201,12 +209,10 @@ public class MovementInputHandler : MonoBehaviour
     }
 
 
-    //TODO: Add timer which prevents influence from affectting player. Cancled if landing
-    //Not jumping up a slope. More dedicated jump
-
     /// <summary>
     /// Jump action based on input value <br/>
     /// Cant jump while jumping or landing <br/>
+    /// Cant jump while attacking
     /// Input value ranges between (0, 1) 
     /// </summary>
     /// <param name="jumpInfluence"></param>
@@ -254,12 +260,11 @@ public class MovementInputHandler : MonoBehaviour
     /// </summary>
     private void PerformLanding()
     {
-        SetCurrentMoveState(MovementType.Landing);
-
         //Reset jumps
         numJumpsPerformed = 0;
 
-        PlayMoveAnimation(MovementType.Landing);
+        SetCurrentMoveState(MovementType.Landing);
+        PlayTransitionAnimation(MovementType.Landing);
     }
 
     #endregion
@@ -279,7 +284,7 @@ public class MovementInputHandler : MonoBehaviour
         rb.velocity = new Vector3(rb.velocity.x, jumpData.JumpVelocity * jumpInfluence, rb.velocity.z);
         numJumpsPerformed++;
 
-        PlayMoveAnimation(jumpData.Type);        
+        PlayTransitionAnimation(jumpData.Type);        
     }
 
 
@@ -301,7 +306,7 @@ public class MovementInputHandler : MonoBehaviour
 
             CheckTurnAround();
 
-            PlayMoveAnimation(jumpData.Type);
+            PlayTransitionAnimation(jumpData.Type);
         }
     }
 
@@ -315,7 +320,7 @@ public class MovementInputHandler : MonoBehaviour
 
         CheckTurnAround();
 
-        PlayMoveAnimation(airJumpData.Type);                   
+        PlayTransitionAnimation(airJumpData.Type);                   
     }
 
     #endregion
@@ -468,13 +473,13 @@ public class MovementInputHandler : MonoBehaviour
             if (CurMovementCollection.ContainsMovementType(MovementType.Move) &&
                (curMoveState == MovementType.FreeFall || curMoveState == MovementType.AirJump))
             {
-                UpdateAirAcceleration();                
+                UpdateAirAcceleration();
                 
                 //Vertical Movement
-                //if (verticalInfluence < 0f)
-                //{
-                    //rb.velocity += transform.up * verticalInfluence * curMoveData.FastFallVelocity * Time.fixedDeltaTime;
-                //}
+                if (verticalInfluence < 0f && rb.velocity.y > -MaxYVelocity)
+                {
+                    rb.velocity += transform.up * verticalInfluence * fastFallAcceleration * Time.fixedDeltaTime;
+                }
             }
 
             UpdateAirDeceleration();
@@ -518,7 +523,6 @@ public class MovementInputHandler : MonoBehaviour
 
     //TODO: Look at how animations are played. 
     //Move blendtree makes this not work so great...
-    //This is the only place that uses the GetCurWeapon(), would like to remove
     /// <summary>
     /// Play move animation based on moveType
     /// </summary>
@@ -542,6 +546,20 @@ public class MovementInputHandler : MonoBehaviour
             {
                 sceneObj.AnimationStateHandler.PlayAnimation(new AnimationStateData(move.Animation.name, MOVESTATE, move.Triggers.ToArray()));
             }
+        }
+    }
+
+
+    /// <summary>
+    /// Play transition based animation <\br>
+    /// Jump and landing 
+    /// </summary>
+    /// <param name="moveType"></param>
+    private void PlayTransitionAnimation(MovementType moveType)
+    {
+        if (CurMovementCollection.TryGetMovementByType(moveType, out MovementData move))
+        {
+            sceneObj.AnimationStateHandler.PlayAnimation(new AnimationStateData(move.Animation.name, ActionState.MoveTransition, move.Triggers.ToArray()));
         }
     }
 

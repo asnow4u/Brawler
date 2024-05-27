@@ -9,7 +9,7 @@ public class AttackInputHandler : MonoBehaviour
 {
     const ActionState ATTACKSTATE = ActionState.Attacking;
 
-    [Header("Attacks")]
+    [Header("Collection")]
     [SerializeField] private AttackCollection curAttackCollection;
 
     [Header("Attack Points")]
@@ -23,6 +23,7 @@ public class AttackInputHandler : MonoBehaviour
 
     //Attack Data
     private AttackData curAttackData;
+    private Action bufferedAttackAction = null;
 
     //SceneObject
     private SceneObject sceneObj => GetComponent<SceneObject>();
@@ -47,7 +48,6 @@ public class AttackInputHandler : MonoBehaviour
 
     private void SetUpEvents()
     {
-
         //sceneObj.EquipmentHandler.Weapons.WeaponChangedEvent += OnWeaponChanged;
         sceneObj.AnimationStateHandler.OnAnimationUpdateEvent += OnAnimationUpdated;
     }
@@ -70,7 +70,7 @@ public class AttackInputHandler : MonoBehaviour
     {
         if (curAttackCollection.TryGetAttackByAnimation(animationState, out AttackData attackData))
         {
-            switch(triggerType)
+            switch (triggerType)
             {
                 case AnimationTrigger.Type.Start:
                     OnAttackAnimationStarted(attackData);
@@ -80,7 +80,7 @@ public class AttackInputHandler : MonoBehaviour
                     SetUpAttackPoints(attackData);
                     break;
 
-                case AnimationTrigger.Type.DisableCollider: 
+                case AnimationTrigger.Type.DisableCollider:
                     ResetAttackPoints(attackData);
                     break;
 
@@ -100,13 +100,13 @@ public class AttackInputHandler : MonoBehaviour
 
     private void SetUpAttackPoints(AttackData attackData)
     {
-        curAttackPointCollection.SetupAttackPointsForAttack(attackData);        
+        curAttackPointCollection.SetupAttackPointsForAttack(attackData);
     }
 
 
     private void ResetAttackPoints(AttackData attackData)
     {
-        curAttackPointCollection.ResetAttackPoints(attackData);        
+        curAttackPointCollection.ResetAttackPoints(attackData);
     }
 
 
@@ -126,19 +126,6 @@ public class AttackInputHandler : MonoBehaviour
 
     #region Perform Attack
 
-    private bool ChangeToAttackState()
-    {
-        //TODO: Buffer attack till after jump/landing is done
-
-        if (sceneObj.MovementInputHandler.CurMoveState != MovementType.Jump &&
-            sceneObj.MovementInputHandler.CurMoveState != MovementType.Landing) 
-        {
-            return sceneObj.AnimationStateHandler.IsStatePossible(ATTACKSTATE);
-        }
-
-        return false;
-    }
-
     private void PlayAttackAnimation(AttackType attackType)
     {
         if (curAttackData == null && curAttackCollection.GetAttackByType(attackType, out AttackData attack))
@@ -147,52 +134,91 @@ public class AttackInputHandler : MonoBehaviour
         }
     }
 
-                
+
+    /// <summary>
+    /// Play the animation for a buffered attack
+    /// </summary>
+    public void ExecuteBufferedAttack()
+    {
+        if (bufferedAttackAction != null)
+        {
+            bufferedAttackAction.Invoke();
+            bufferedAttackAction = null;
+        }
+    }
+
+
+    /// <summary>
+    /// Buffer attack if currently jumping or landing
+    /// Buffered attack will attempt to exacute when transition state ends
+    /// </summary>
+    /// <param name="attackType"></param>
+    private void BufferAttack(Action bufferedAttackAction)
+    {
+        if (sceneObj.AnimationStateHandler.CurActionState == ActionState.MoveTransition)
+        {
+            this.bufferedAttackAction = bufferedAttackAction;
+        }
+    }
+
+
+    /// <summary>
+    /// Try to perform a grounded / Air Up attack
+    /// </summary>
     public void PerformUpAttack()
     {
-        if (ChangeToAttackState())
+        if (sceneObj.AnimationStateHandler.IsStatePossible(ATTACKSTATE))
         {
             //TODO: What attack would happen when sliding
             if (sceneObj.GroundedState == GroundedState.Airborn)
-            {
                 PlayAttackAnimation(AttackType.UpAir);
-            }
 
             else
-            {
                 PlayAttackAnimation(AttackType.UpTilt);
-            }
+        }
+
+        else
+        {
+            BufferAttack(this.PerformUpAttack);
         }
     }
 
 
+    /// <summary>
+    /// Try to perform a grounded / Air Down attack
+    /// </summary>
     public void PerformDownAttack()
     {
-        if (ChangeToAttackState())
+        if (sceneObj.AnimationStateHandler.IsStatePossible(ATTACKSTATE))
         {
             if (sceneObj.GroundedState == GroundedState.Airborn)
-            {
                 PlayAttackAnimation(AttackType.DownAir);
-            }
 
             else
-            {
-                PlayAttackAnimation(AttackType.DownTilt);                
-            }
+                PlayAttackAnimation(AttackType.DownTilt);
+        }
+
+        else
+        {
+            BufferAttack(this.PerformDownAttack);
         }
     }
 
 
+    /// <summary>
+    /// Try to perform a grounded / Air Forward attack <\br>
+    /// Turn around if facing the wrong direction
+    /// </summary>
     public void PerformRightAttack()
     {
-        if (ChangeToAttackState())
+        if (sceneObj.AnimationStateHandler.IsStatePossible(ATTACKSTATE))
         {
             if (sceneObj.GroundedState == GroundedState.Airborn)
             {
                 if (!sceneObj.IsFacingRightDirection())
                     sceneObj.TurnAround();
 
-                PlayAttackAnimation(AttackType.ForwardAir);                
+                PlayAttackAnimation(AttackType.ForwardAir);
             }
 
             else
@@ -201,39 +227,53 @@ public class AttackInputHandler : MonoBehaviour
                 {
                     //Check not sliding
                     if (sceneObj.GroundedState == GroundedState.Grounded)
-                        sceneObj.TurnAround();  
+                        sceneObj.TurnAround();
                 }
 
                 PlayAttackAnimation(AttackType.ForwardTilt);
             }
         }
+
+        else
+        {
+            BufferAttack(this.PerformRightAttack);            
+        }
     }
 
 
+    /// <summary>
+    /// Try to perform a grounded / Air Forward attack <\br>
+    /// Turn around if facing the wrong direction
+    /// </summary>
     public void PerformLeftAttack()
     {
-        if (ChangeToAttackState())
+        if (sceneObj.AnimationStateHandler.IsStatePossible(ATTACKSTATE))
         {
             if (sceneObj.GroundedState == GroundedState.Airborn)
             {
-                    if (sceneObj.IsFacingRightDirection())
-                        sceneObj.TurnAround();
+                if (sceneObj.IsFacingRightDirection())
+                    sceneObj.TurnAround();
 
-                    PlayAttackAnimation(AttackType.ForwardAir);                
+                PlayAttackAnimation(AttackType.ForwardAir);
             }
 
             else
             {
                 if (sceneObj.IsFacingRightDirection())
                 {
-                    if (sceneObj.GroundedState == GroundedState.Grounded)                    
+                    if (sceneObj.GroundedState == GroundedState.Grounded)
                         sceneObj.TurnAround();
                 }
 
                 PlayAttackAnimation(AttackType.ForwardTilt);
             }
         }
-    }        
+
+        else
+        {
+            BufferAttack(this.PerformLeftAttack);           
+        }
+    }
 
     #endregion
 

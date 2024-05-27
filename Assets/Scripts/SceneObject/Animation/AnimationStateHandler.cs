@@ -5,7 +5,7 @@ using UnityEngine;
 
 public enum ActionState
 {
-    Null, Idle, Moving, Attacking, HitStun, Dead, Admin
+    Null, Idle, Moving, Attacking, MoveTransition, HitStun, Dead, Admin
 };
 
 
