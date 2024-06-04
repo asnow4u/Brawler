@@ -20,7 +20,10 @@ public abstract class SceneObject : MonoBehaviour
 
     [Header("Ground Status")]
     [SerializeField] private GroundedState curGroundedState;
-    [SerializeField] private float maxSlopeAngle;      
+    [SerializeField] private float maxSlopeAngle;
+
+    [Header("Transform")]
+    [SerializeField] private Transform meshRoot;    
 
     //Handlers
     public IEquipment EquipmentHandler;
@@ -32,7 +35,8 @@ public abstract class SceneObject : MonoBehaviour
     public AttackInputHandler AttackInputHandler => GetComponent<AttackInputHandler>();
     public UIHandler UIHandler => GetComponent<UIHandler>();
     public DamageHandler DamageHandler => GetComponent<DamageHandler>();
-    
+
+    public Transform MeshRoot => meshRoot;
     public GroundedState GroundedState => curGroundedState;   
     public Rigidbody Rb => GetComponent<Rigidbody>();
     private Collider collider => GetComponent<Collider>();
@@ -46,7 +50,18 @@ public abstract class SceneObject : MonoBehaviour
 
     private void Start()
     {
+        InspectorCheck();
         Initialize();
+    }
+
+
+    /// <summary>
+    /// Make sure everything has been set within the inspector
+    /// </summary>
+    private void InspectorCheck()
+    {
+        Debug.Assert(meshRoot != null, "MeshRoot has not been set.", gameObject);
+        Debug.Assert(maxSlopeAngle > 0, "MaxSlopeAngle needs to be > 0." ,gameObject);
     }
     
 
