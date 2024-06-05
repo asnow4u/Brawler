@@ -46,39 +46,6 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  knockbackCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 4
-      value: 200
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 5
-      value: 450
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 11
-      value: 200
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   launchAngleCurve:
     serializedVersion: 2
     m_Curve:
@@ -103,7 +70,6 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  damageInfluence: 1
   enableCollider:
     TriggerFrame: 4
     TriggerType: 2
@@ -113,7 +79,7 @@ MonoBehaviour:
     TriggerType: 3
     WasTriggered: 1
   end:
-    TriggerFrame: 19
+    TriggerFrame: 23
     TriggerType: 1
     WasTriggered: 1
   otherTriggers: []
