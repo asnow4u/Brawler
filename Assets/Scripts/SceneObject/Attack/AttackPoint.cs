@@ -48,10 +48,15 @@ public class AttackPoint : MonoBehaviour
     }
 
 
+    private void OnCollisionEnter(Collision collision)
+    {
+       //TODO: Target in hitstun 
+    }
+
 
     private void OnTriggerEnter(Collider col)
     {        
-        if (col.gameObject.layer == LayerMask.NameToLayer("DamageHitBox"))
+        if (col.gameObject.layer == LayerMask.NameToLayer("Ragdoll"))
         {
             ITakeDamage hitTarget = col.GetComponentInParent<ITakeDamage>();
 

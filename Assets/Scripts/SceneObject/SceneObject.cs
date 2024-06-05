@@ -20,10 +20,7 @@ public abstract class SceneObject : MonoBehaviour
 
     [Header("Ground Status")]
     [SerializeField] private GroundedState curGroundedState;
-    [SerializeField] private float maxSlopeAngle;
-
-    [Header("Transform")]
-    [SerializeField] private Transform meshRoot;    
+    [SerializeField] private float maxSlopeAngle; 
 
     //Handlers
     public IEquipment EquipmentHandler;
@@ -35,8 +32,7 @@ public abstract class SceneObject : MonoBehaviour
     public AttackInputHandler AttackInputHandler => GetComponent<AttackInputHandler>();
     public UIHandler UIHandler => GetComponent<UIHandler>();
     public DamageHandler DamageHandler => GetComponent<DamageHandler>();
-
-    public Transform MeshRoot => meshRoot;
+    
     public GroundedState GroundedState => curGroundedState;   
     public Rigidbody Rb => GetComponent<Rigidbody>();
     private Collider collider => GetComponent<Collider>();
@@ -60,7 +56,6 @@ public abstract class SceneObject : MonoBehaviour
     /// </summary>
     private void InspectorCheck()
     {
-        Debug.Assert(meshRoot != null, "MeshRoot has not been set.", gameObject);
         Debug.Assert(maxSlopeAngle > 0, "MaxSlopeAngle needs to be > 0." ,gameObject);
     }
     
@@ -71,8 +66,15 @@ public abstract class SceneObject : MonoBehaviour
     /// </summary>
     protected virtual void Initialize()
     {               
-        UniqueId = Guid.NewGuid().ToString();        
+        UniqueId = Guid.NewGuid().ToString();
 
+        SetUpRigidBodies();
+        SetUpHandlers();              
+    }
+
+
+    private void SetUpHandlers()
+    {
         InitializeInteractionHandler();
 
         InitializeEquipmentHandler();
@@ -87,6 +89,7 @@ public abstract class SceneObject : MonoBehaviour
 
         DamageHandler.Initialize();
     }
+
 
     private void InitializeInteractionHandler()
     {
@@ -234,6 +237,49 @@ public abstract class SceneObject : MonoBehaviour
 
         slopeAngle = Vector3.zero;
         return false;
+    }
+
+    #endregion
+
+
+    #region RigidBody
+
+    public Rigidbody CoreRigidBody 
+    { 
+        get { return GetComponent<Rigidbody>(); }            
+    }
+
+
+    /// <summary>
+    /// Returns a list of active rigidbody where the associated collider is not trigger
+    /// </summary>
+    public List<Rigidbody> ActiveRigidbodies 
+    { 
+        get 
+        {
+            List<Rigidbody> activeRbs = new List<Rigidbody>();
+
+            foreach (Rigidbody rb in GetComponentsInChildren<Rigidbody>())
+            {
+                if (rb.TryGetComponent(out Collider collider))
+                {
+                    if (collider.enabled == true && collider.isTrigger == false)
+                        activeRbs.Add(rb);
+                }
+            }
+
+            return activeRbs;
+        } 
+    }
+
+
+    /// <summary>
+    /// Setup all rigidbodies to use movement gravity instead of physics gravity
+    /// </summary>
+    private void SetUpRigidBodies()
+    {
+        CoreRigidBody.isKinematic = false;
+        CoreRigidBody.useGravity = false;
     }
 
     #endregion

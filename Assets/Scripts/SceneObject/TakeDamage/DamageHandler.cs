@@ -17,8 +17,13 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     //TODO: Bounce timer should be based on damage(more damage = more emphisis on bounce)
     [SerializeField] private float bounceFrameTimer;
     private Coroutine hitStunTimer;
-
     private Vector3 predictedBounceVelocity;
+
+    [Header("RagDoll")]
+    [SerializeField] private GameObject ragdollRoot;
+
+    //RagDoll
+    private Ragdoll ragdoll = null;
 
     //KillZones
     private KillZone[] killZones;
@@ -29,10 +34,37 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     private Collider collider => GetComponent<Collider>();
 
 
+    #region Initialize
+
     public void Initialize()
     {
         knockbackHandler = new KnockbackCalculator();
+
+        SetUpRagdoll();
     }
+
+
+    private void SetUpRagdoll()
+    {
+        if (ragdollRoot != null)
+        {
+            List<GameObject> ragdollParts = new List<GameObject>();
+            ragdollRoot.layer = LayerMask.NameToLayer("Ragdoll");
+            ragdollParts.Add(ragdollRoot);
+
+            foreach (Rigidbody rb in ragdollRoot.GetComponentsInChildren<Rigidbody>())
+            {
+                rb.gameObject.layer = LayerMask.NameToLayer("Ragdoll");
+                ragdollParts.Add(rb.gameObject);            
+            }
+
+            ragdoll = new Ragdoll(ragdollParts);
+        }
+        
+        DisableRagdoll();        
+    }
+
+    #endregion
 
 
     #region Damage
@@ -79,7 +111,10 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     /// <param name="attackDamage"></param>
     /// <param name="launchAngle"></param>
     public void HitByAttack(AttackColliderType attackType, float attackDamage, float launchAngle)
-    {        
+    {
+        //Ragdoll
+        EnableRagdoll();
+
         //Damage
         AddDamage(attackDamage);
 
@@ -88,7 +123,12 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
 
         launchForce = CheckForImmediateBounce(launchForce);
 
-        rb.AddForce(launchForce, ForceMode.Impulse);
+        ragdollRoot.GetComponent<Rigidbody>().AddForce(launchForce, ForceMode.Impulse);
+        //foreach(Rigidbody rb in sceneObject.ActiveRigidbodies)
+        //{
+        //    rb.AddForce(launchForce / sceneObject.ActiveRigidbodies.Count, ForceMode.Impulse);        
+        //}
+        
 
         //HitStun
         SetHitStun(launchForce.magnitude);              
@@ -249,6 +289,34 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
                 Debug.Log("HitStun Collided");
                 StartCoroutine(BounceTimer());
             }
+        }
+    }
+
+    #endregion
+
+
+    #region Ragdoll
+
+    private void EnableRagdoll()
+    {        
+        if (ragdoll != null)
+        {
+            GetComponent<Collider>().enabled = false;            
+            GetComponentInChildren<Animator>().enabled = false;
+        
+            ragdoll.Enable();
+        }
+    }
+
+    [ContextMenu("DisableRagDoll")]
+    private void DisableRagdoll()
+    {
+        if (ragdoll != null)
+        {
+            GetComponent<Collider>().enabled = true;
+            GetComponentInChildren<Animator>().enabled = true;
+
+            ragdoll.Disable();  
         }
     }
 

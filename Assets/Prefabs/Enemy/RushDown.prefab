@@ -16,13 +16,15 @@ GameObject:
   - component: {fileID: 857581707373331514}
   - component: {fileID: 8752136622161124601}
   - component: {fileID: 2705007949541630561}
+  - component: {fileID: 5625917877015136597}
+  - component: {fileID: 3518926930018601607}
   m_Layer: 7
   m_Name: RushDown
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &162542210556236608
 Transform:
   m_ObjectHideFlags: 0
@@ -86,15 +88,9 @@ MonoBehaviour:
   ObjectType: 1
   curGroundedState: 1
   maxSlopeAngle: 0
-  damageTaken: 0
-  InHitStun: 0
   patrolPoints:
   - {fileID: 0}
   - {fileID: 0}
-  Force: 0
-  Angle: 0
-  influence: 0
-  Launch: 0
 --- !u!114 &101013005470840629
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -177,6 +173,34 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   DisplayGraph: 1
   DisplayRoutes: 1
+--- !u!114 &5625917877015136597
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 162542210556236614}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1322150aebb5634680973534bacc38c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &3518926930018601607
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 162542210556236614}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c67052fc0716664989d2bb2093fec61, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damageTaken: 0
+  hitStunState: 0
+  bounceDegrade: 0.9
+  bounceFrameTimer: 0
 --- !u!1 &1704295450893306069
 GameObject:
   m_ObjectHideFlags: 0
@@ -784,8 +808,8 @@ Transform:
   m_GameObject: {fileID: 8896111555140783735}
   m_LocalRotation: {x: 0.5563575, y: -0.8309431, z: -0, w: 0}
   m_LocalPosition: {x: -0.33674085, y: 0.12988463, z: 0}
-  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 4946389004117961807}
   m_RootOrder: 2
@@ -800,7 +824,7 @@ CapsuleCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 1
   m_Enabled: 1
-  m_Radius: 0.5
-  m_Height: 1.0000004
+  m_Radius: 0.56800073
+  m_Height: 1.136002
   m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: -0.00004798172, y: 5.719867e-12, z: -5.7198664e-12}

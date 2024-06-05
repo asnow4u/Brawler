@@ -85,9 +85,7 @@ public class KillZone : MonoBehaviour
     private void CollisionWithSceneObject(SceneObject sceneObject)
     {
         if (sceneObject.UniqueId == killID)
-        {
-            Debug.Log("Kill Velocity: " + sceneObject.Rb.velocity.magnitude, gameObject);
-            
+        {                        
             if (sceneObject.AnimationStateHandler.CurActionState == ActionState.HitStun)
             {                                
                 //TODO: Spawn partical effect

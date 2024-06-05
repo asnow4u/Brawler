@@ -5,18 +5,12 @@ using UnityEngine;
 
 public class UIHandler : MonoBehaviour
 {
-    private TextMeshProUGUI damageDisplay;
+    [SerializeField] private TextMeshProUGUI damageDisplay;
 
 
     public void Initialize()
-    {
-        TextMeshProUGUI[] textMeshs = GetComponentsInChildren<TextMeshProUGUI>();
-
-        foreach (TextMeshProUGUI textMesh in textMeshs)
-        {
-            if (textMesh.gameObject.tag == "UIDamageDisplay")
-                damageDisplay = textMesh;
-        }       
+    {        
+        Debug.Assert(damageDisplay != null, "Damage display not hooked up.", gameObject);
     }
 
 

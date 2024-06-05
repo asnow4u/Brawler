@@ -35,7 +35,6 @@ public class MovementInputHandler : MonoBehaviour
    
     //SceneObject
     private SceneObject sceneObj => GetComponent<SceneObject>();
-    private Rigidbody rb => GetComponent<Rigidbody>();
     private Collider collider => GetComponent<Collider>();
 
 
@@ -51,9 +50,6 @@ public class MovementInputHandler : MonoBehaviour
 
     public void Setup()
     {
-        //NOTE: Uses ApplyGravity instead
-        rb.useGravity = false;
-
         sceneObj.GroundedStateChangeEvent += OnGroundedStateChanged;
         sceneObj.AnimationStateHandler.OnAnimationUpdateEvent += OnAnimationUpdate;
         //sceneObj.EquipmentHandler.Weapons.WeaponChangedEvent += OnWeaponChanged;
@@ -149,7 +145,7 @@ public class MovementInputHandler : MonoBehaviour
         {
             sceneObj.TurnAround();
 
-            if (rb.velocity.x > 0)
+            if (sceneObj.CoreRigidBody.velocity.x > 0)
             {
                 switch (sceneObj.GroundedState)
                 {
@@ -157,12 +153,12 @@ public class MovementInputHandler : MonoBehaviour
                     case GroundedState.Sliding:
                         if (sceneObj.TryGetSlopeAngle(out Vector3 slope))
                         {
-                            rb.velocity = slope * rb.velocity.magnitude;
+                            sceneObj.CoreRigidBody.velocity = slope * sceneObj.CoreRigidBody.velocity.magnitude;
                         }
                         break;
 
                     case GroundedState.Airborn:
-                        rb.velocity = new Vector3(rb.velocity.x * -1, rb.velocity.y, rb.velocity.z);
+                        sceneObj.CoreRigidBody.velocity = new Vector3(sceneObj.CoreRigidBody.velocity.x * -1, sceneObj.CoreRigidBody.velocity.y, sceneObj.CoreRigidBody.velocity.z);
                         break;
                 }
             }
@@ -178,12 +174,12 @@ public class MovementInputHandler : MonoBehaviour
                 case GroundedState.Sliding:
                     if (sceneObj.TryGetSlopeAngle(out Vector3 slope))
                     {
-                        rb.velocity = slope * rb.velocity.magnitude;
+                        sceneObj.CoreRigidBody.velocity = slope * sceneObj.CoreRigidBody.velocity.magnitude;
                     }
                     break;
 
                 case GroundedState.Airborn:
-                    rb.velocity = new Vector3(rb.velocity.x * -1, rb.velocity.y, rb.velocity.z);
+                    sceneObj.CoreRigidBody.velocity = new Vector3(sceneObj.CoreRigidBody.velocity.x * -1, sceneObj.CoreRigidBody.velocity.y, sceneObj.CoreRigidBody.velocity.z);
                     break;
             }
         }
@@ -281,7 +277,7 @@ public class MovementInputHandler : MonoBehaviour
     {
         SetCurrentMoveState(MovementType.Jump);
 
-        rb.velocity = new Vector3(rb.velocity.x, jumpData.JumpVelocity * jumpInfluence, rb.velocity.z);
+        sceneObj.CoreRigidBody.velocity = new Vector3(sceneObj.CoreRigidBody.velocity.x, jumpData.JumpVelocity * jumpInfluence, sceneObj.CoreRigidBody.velocity.z);
         numJumpsPerformed++;
 
         PlayTransitionAnimation(jumpData.Type);        
@@ -301,7 +297,7 @@ public class MovementInputHandler : MonoBehaviour
             SetCurrentMoveState(MovementType.Jump);
 
             Vector3 normal = Vector3.Cross(slopeAngle, -transform.forward).normalized;
-            rb.velocity = normal * (jumpData.JumpVelocity * jumpInfluence);
+            sceneObj.CoreRigidBody.velocity = normal * (jumpData.JumpVelocity * jumpInfluence);
             numJumpsPerformed++;
 
             CheckTurnAround();
@@ -315,7 +311,7 @@ public class MovementInputHandler : MonoBehaviour
     {
         SetCurrentMoveState(MovementType.AirJump);
 
-        rb.velocity = new Vector3(rb.velocity.x, airJumpData.AirJumpVelocity * jumpInfluence, rb.velocity.z);
+        sceneObj.CoreRigidBody.velocity = new Vector3(sceneObj.CoreRigidBody.velocity.x, airJumpData.AirJumpVelocity * jumpInfluence, sceneObj.CoreRigidBody.velocity.z);
         numJumpsPerformed++;
 
         CheckTurnAround();
@@ -332,24 +328,27 @@ public class MovementInputHandler : MonoBehaviour
         if (sceneObj.GroundedState == GroundedState.Airborn)
             ApplyGravity();
 
-        //Check Movement Action
-        switch (sceneObj.GroundedState)
+        if (sceneObj.AnimationStateHandler.CurActionState < ActionState.HitStun)
         {
-            case GroundedState.Grounded:
+            //Check Movement Action
+            switch (sceneObj.GroundedState)
+            {
+                case GroundedState.Grounded:
                 
-                UpdateGroundMovement();                
-                break;
+                    UpdateGroundMovement(sceneObj.CoreRigidBody);                
+                    break;
 
-            case GroundedState.Sliding:
+                case GroundedState.Sliding:
 
-                UpdateSlidingMovement();
-                break;
+                    UpdateSlidingMovement(sceneObj.CoreRigidBody);
+                    break;
 
-            case GroundedState.Airborn:
+                case GroundedState.Airborn:
                                 
-                UpdateAirMovement();                
-                break;
-        }        
+                    UpdateAirMovement(sceneObj.CoreRigidBody);                
+                    break;
+            }        
+        }
     }
   
 
@@ -358,16 +357,20 @@ public class MovementInputHandler : MonoBehaviour
     /// </summary>
     private void ApplyGravity()
     {
-        if (rb.velocity.y < 0)
-            rb.AddForce(Physics.gravity * rb.mass * CurMovementCollection.GetGravityScaler());
-        else
-            rb.AddForce(Physics.gravity * rb.mass);
+        Debug.Log(sceneObj.ActiveRigidbodies.Count);
+        foreach (Rigidbody rb in sceneObj.ActiveRigidbodies)
+        {
+            if (rb.velocity.y < 0)
+                rb.AddForce(Physics.gravity * rb.mass * CurMovementCollection.GetGravityScaler());
+            else
+                rb.AddForce(Physics.gravity * rb.mass);
+        }
     }
 
 
     #region Ground Movement
 
-    private void UpdateGroundMovement()
+    private void UpdateGroundMovement(Rigidbody rb)
     {
         if (curMoveState == MovementType.Move)
         {
@@ -380,7 +383,7 @@ public class MovementInputHandler : MonoBehaviour
                     UpdateGroundAcceleration();
             }
 
-            UpdateGroundDecceleration();        
+            UpdateGroundDecceleration(rb);        
         }
     }
 
@@ -401,31 +404,31 @@ public class MovementInputHandler : MonoBehaviour
                 PlayMoveAnimation(MovementType.Move);
 
                 //Drag
-                rb.drag = 0;
+                sceneObj.CoreRigidBody.drag = 0;
 
                 //Cap Velocity based on horizontal influence
                 float targetVelocity = CurMovementCollection.GetMaxXVelocity() * Mathf.Abs(horizontalInfluence);
 
                 //Update velocity based on slope
-                rb.velocity += slope * Mathf.Abs(horizontalInfluence) * CurMovementCollection.GetGroundedXAcceleration() * Time.fixedDeltaTime;
+                sceneObj.CoreRigidBody.velocity += slope * Mathf.Abs(horizontalInfluence) * CurMovementCollection.GetGroundedXAcceleration() * Time.fixedDeltaTime;
 
                 //Cant exceed target velocity
-                if (rb.velocity.magnitude > targetVelocity)
+                if (sceneObj.CoreRigidBody.velocity.magnitude > targetVelocity)
                 {
-                    rb.velocity = slope * targetVelocity;
+                    sceneObj.CoreRigidBody.velocity = slope * targetVelocity;
                 }
 
-                sceneObj.AnimationStateHandler.SetFloatPerameter("Velocity", Mathf.Abs(rb.velocity.x) / CurMovementCollection.GetMaxXVelocity());
+                sceneObj.AnimationStateHandler.SetFloatPerameter("Velocity", Mathf.Abs(sceneObj.CoreRigidBody.velocity.x) / CurMovementCollection.GetMaxXVelocity());
             }                        
         }
     }
 
 
-    private void UpdateGroundDecceleration()
+    private void UpdateGroundDecceleration(Rigidbody rb)
     {
         if (horizontalInfluence == 0)
         {
-            if (rb.velocity.x != 0)
+            if (sceneObj.CoreRigidBody.velocity.x != 0)
             {
                 Vector3 dragForce = rb.velocity.normalized * CurMovementCollection.GetGroundedXDeceleration();
                 rb.velocity -= dragForce * Time.fixedDeltaTime;
@@ -443,7 +446,7 @@ public class MovementInputHandler : MonoBehaviour
     }
 
 
-    private void UpdateSlidingMovement()
+    private void UpdateSlidingMovement(Rigidbody rb)
     {
         //Ground slope
         if (sceneObj.TryGetSlopeAngle(out Vector3 slope))
@@ -466,14 +469,14 @@ public class MovementInputHandler : MonoBehaviour
     /// <summary>
     /// Update velocity while in the air
     /// </summary>
-    private void UpdateAirMovement()
+    private void UpdateAirMovement(Rigidbody rb)
     {
         if (sceneObj.AnimationStateHandler.CurActionState < ActionState.HitStun)
         {
             if (CurMovementCollection.ContainsMovementType(MovementType.Move) &&
                (curMoveState == MovementType.FreeFall || curMoveState == MovementType.AirJump))
             {
-                UpdateAirAcceleration();
+                UpdateAirAcceleration(rb);
                 
                 //Vertical Movement
                 if (verticalInfluence < 0f && rb.velocity.y > -MaxYVelocity)
@@ -482,12 +485,12 @@ public class MovementInputHandler : MonoBehaviour
                 }
             }
 
-            UpdateAirDeceleration();
+            UpdateAirDeceleration(rb);
         }
     }
 
 
-    private void UpdateAirAcceleration()
+    private void UpdateAirAcceleration(Rigidbody rb)
     {
         //Apply Movement based on influence
         if (horizontalInfluence != 0)
@@ -504,7 +507,7 @@ public class MovementInputHandler : MonoBehaviour
     }
 
 
-    private void UpdateAirDeceleration()
+    private void UpdateAirDeceleration(Rigidbody rb)
     {
         float targetXVelocity = CurMovementCollection.GetMaxXVelocity();
 
