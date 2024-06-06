@@ -1,37 +1,60 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
+public struct RagdollPart
+{
+    public GameObject GO;
+
+    public Collider Collider;
+    public Rigidbody Rb;
+
+    public Joint Joint;
+    public Rigidbody JointConnectedRb;
+
+    public RagdollPart(GameObject go)
+    {
+        GO = go;
+        Collider = go.GetComponent<Collider>();
+        Rb = go.GetComponent<Rigidbody>();
+        Joint = go.GetComponent<Joint>();
+        JointConnectedRb = Joint.connectedBody;
+    }
+}
+
+
 public class Ragdoll
 {
-    public List<GameObject> Parts;    
+    private List<RagdollPart> ragdollParts = new List<RagdollPart>();    
 
     public Ragdoll(List<GameObject> parts)
     {
-        Parts = parts;        
+        foreach (GameObject part in parts)
+        {
+            ragdollParts.Add(new RagdollPart(part));
+        }
     }
 
 
     public void Enable()
     {
-        foreach (GameObject part in Parts)
+        foreach (RagdollPart part in ragdollParts)
         {
-            if (part.TryGetComponent(out Collider collider))
-            {
-                collider.isTrigger = false;
-            }
+            part.Collider.isTrigger = false;            
+            //part.Joint.connectedBody = part.JointConnectedRb;
         }
     }
 
 
     public void Disable()
     {
-        foreach (GameObject part in Parts)
+        foreach (RagdollPart part in ragdollParts)
         {
-            if (part.TryGetComponent(out Collider collider))
-            {
-                collider.isTrigger = true;
-            }
+            part.Collider.isTrigger = true;
+            //part.Joint.connectedBody = null;
+            part.Rb.velocity = Vector3.zero;
         }
     }
 }

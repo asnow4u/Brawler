@@ -68,7 +68,6 @@ public abstract class SceneObject : MonoBehaviour
     {               
         UniqueId = Guid.NewGuid().ToString();
 
-        SetUpRigidBodies();
         SetUpHandlers();              
     }
 
@@ -270,16 +269,6 @@ public abstract class SceneObject : MonoBehaviour
 
             return activeRbs;
         } 
-    }
-
-
-    /// <summary>
-    /// Setup all rigidbodies to use movement gravity instead of physics gravity
-    /// </summary>
-    private void SetUpRigidBodies()
-    {
-        CoreRigidBody.isKinematic = false;
-        CoreRigidBody.useGravity = false;
     }
 
     #endregion

@@ -323,11 +323,7 @@ public class MovementInputHandler : MonoBehaviour
 
 
     public void UpdateMovement()
-    {     
-        //Gravity Scaler
-        if (sceneObj.GroundedState == GroundedState.Airborn)
-            ApplyGravity();
-
+    {             
         if (sceneObj.AnimationStateHandler.CurActionState < ActionState.HitStun)
         {
             //Check Movement Action
@@ -348,22 +344,6 @@ public class MovementInputHandler : MonoBehaviour
                     UpdateAirMovement(sceneObj.CoreRigidBody);                
                     break;
             }        
-        }
-    }
-  
-
-    /// <summary>
-    /// Mimic rb.UseGravity but allows the gravity to be scaled
-    /// </summary>
-    private void ApplyGravity()
-    {
-        Debug.Log(sceneObj.ActiveRigidbodies.Count);
-        foreach (Rigidbody rb in sceneObj.ActiveRigidbodies)
-        {
-            if (rb.velocity.y < 0)
-                rb.AddForce(Physics.gravity * rb.mass * CurMovementCollection.GetGravityScaler());
-            else
-                rb.AddForce(Physics.gravity * rb.mass);
         }
     }
 

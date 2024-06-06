@@ -49,19 +49,18 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
         if (ragdollRoot != null)
         {
             List<GameObject> ragdollParts = new List<GameObject>();
-            ragdollRoot.layer = LayerMask.NameToLayer("Ragdoll");
-            ragdollParts.Add(ragdollRoot);
 
-            foreach (Rigidbody rb in ragdollRoot.GetComponentsInChildren<Rigidbody>())
+            foreach (Joint joint in ragdollRoot.GetComponentsInChildren<Joint>())
             {
-                rb.gameObject.layer = LayerMask.NameToLayer("Ragdoll");
-                ragdollParts.Add(rb.gameObject);            
+                joint.gameObject.layer = LayerMask.NameToLayer("Ragdoll");
+                ragdollParts.Add(joint.gameObject);            
             }
 
             ragdoll = new Ragdoll(ragdollParts);
         }
-        
-        DisableRagdoll();        
+
+        EnableRagdoll();
+        //DisableRagdoll();        
     }
 
     #endregion
@@ -123,12 +122,7 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
 
         launchForce = CheckForImmediateBounce(launchForce);
 
-        ragdollRoot.GetComponent<Rigidbody>().AddForce(launchForce, ForceMode.Impulse);
-        //foreach(Rigidbody rb in sceneObject.ActiveRigidbodies)
-        //{
-        //    rb.AddForce(launchForce / sceneObject.ActiveRigidbodies.Count, ForceMode.Impulse);        
-        //}
-        
+        sceneObject.CoreRigidBody.AddForce(launchForce, ForceMode.Impulse);       
 
         //HitStun
         SetHitStun(launchForce.magnitude);              
@@ -217,6 +211,8 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
         sceneObject.AnimationStateHandler.EndCurrentAnimation(ActionState.Admin);
 
         hitStunTimer = null;
+
+        DisableRagdoll();
 
         DestroyKillZones();
     }
