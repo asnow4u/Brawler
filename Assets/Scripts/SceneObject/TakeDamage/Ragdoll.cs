@@ -43,7 +43,7 @@ public class Ragdoll
         foreach (RagdollPart part in ragdollParts)
         {
             part.Collider.isTrigger = false;            
-            //part.Joint.connectedBody = part.JointConnectedRb;
+            part.Rb.useGravity = true;
         }
     }
 
@@ -53,7 +53,7 @@ public class Ragdoll
         foreach (RagdollPart part in ragdollParts)
         {
             part.Collider.isTrigger = true;
-            //part.Joint.connectedBody = null;
+            part.Rb.useGravity = false;
             part.Rb.velocity = Vector3.zero;
         }
     }

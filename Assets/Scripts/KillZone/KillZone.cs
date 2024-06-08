@@ -71,13 +71,18 @@ public class KillZone : MonoBehaviour
         return (leftSide, rightSide);
     }
 
+
     #region Collision
-    
+
     private void OnTriggerEnter(Collider col)
     {
-        if (col.transform.TryGetComponent(out SceneObject sceneObj))
+        if (col.gameObject.layer == LayerMask.NameToLayer("Ragdoll"))
         {
-            CollisionWithSceneObject(sceneObj);
+            Debug.LogError(col.gameObject, col.gameObject);
+            
+            SceneObject hitSceneObject = col.gameObject.GetComponentInParent<SceneObject>();
+            if (hitSceneObject != null)
+                CollisionWithSceneObject(hitSceneObject);
         }
     }
 

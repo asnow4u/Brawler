@@ -59,8 +59,8 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
             ragdoll = new Ragdoll(ragdollParts);
         }
 
-        EnableRagdoll();
-        //DisableRagdoll();        
+        //EnableRagdoll();
+        DisableRagdoll();        
     }
 
     #endregion
