@@ -48,15 +48,10 @@ public class AttackPoint : MonoBehaviour
     }
 
 
-    private void OnCollisionEnter(Collision collision)
-    {
-       //TODO: Target in hitstun 
-    }
-
-
     private void OnTriggerEnter(Collider col)
     {        
-        if (col.gameObject.layer == LayerMask.NameToLayer("Ragdoll"))
+        if (col.gameObject.layer == LayerMask.NameToLayer("Ragdoll") &&
+            col.gameObject.TryGetComponent(out Rigidbody targetRB))
         {
             ITakeDamage hitTarget = col.GetComponentInParent<ITakeDamage>();
 
@@ -68,16 +63,18 @@ public class AttackPoint : MonoBehaviour
                 if (sceneObject != null)
                 {
                     int curFrame = sceneObject.AnimationStateHandler.GetCurrentFrameOfCurAnimation();
-                    float launchAngle = curAttackData.GetAttackLaunchAngle(curFrame);
+                    float launchAngle = curAttackData.GetAttackLaunchAngle(curFrame);                    
 
                     //Reverse launch angle
                     if (!sceneObject.IsFacingRightDirection())
                         launchAngle = 180 - launchAngle;
 
-                    hitTarget.HitByAttack(attackType, curAttackData.GetAttackDamage(curFrame), launchAngle);
+                    hitTarget.HitByAttack(attackType, targetRB, curAttackData.GetAttackDamage(curFrame), launchAngle);
 
                     //Damage bubble                    
                     UIFactory.Instance.SpawnDamageBubble(col.ClosestPoint(transform.position), curAttackData.GetAttackDamage(curFrame));
+
+                    Debug.Log(sceneObject.gameObject.name + " hit " + targetRB.gameObject.name + " with " + attackType);
                 }
             }
         }

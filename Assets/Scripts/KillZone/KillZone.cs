@@ -77,9 +77,7 @@ public class KillZone : MonoBehaviour
     private void OnTriggerEnter(Collider col)
     {
         if (col.gameObject.layer == LayerMask.NameToLayer("Ragdoll"))
-        {
-            Debug.LogError(col.gameObject, col.gameObject);
-            
+        {            
             SceneObject hitSceneObject = col.gameObject.GetComponentInParent<SceneObject>();
             if (hitSceneObject != null)
                 CollisionWithSceneObject(hitSceneObject);

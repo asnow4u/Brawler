@@ -5,6 +5,7 @@ using UnityEngine;
 
 public enum HitStunState { Movement, PredictedBounce, Bounce }
 
+
 public class DamageHandler : MonoBehaviour, ITakeDamage
 {
     [Header("Damage")]
@@ -21,6 +22,7 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
 
     [Header("RagDoll")]
     [SerializeField] private GameObject ragdollRoot;
+    private Vector3 ragdollRootOffset;
 
     //RagDoll
     private Ragdoll ragdoll = null;
@@ -30,7 +32,6 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
 
     //Getters
     private SceneObject sceneObject => GetComponent<SceneObject>();
-    private Rigidbody rb => GetComponent<Rigidbody>();
     private Collider collider => GetComponent<Collider>();
 
 
@@ -48,6 +49,8 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     {
         if (ragdollRoot != null)
         {
+            ragdollRootOffset = ragdollRoot.transform.localPosition;
+
             List<GameObject> ragdollParts = new List<GameObject>();
 
             foreach (Joint joint in ragdollRoot.GetComponentsInChildren<Joint>())
@@ -109,7 +112,7 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     /// <param name="attackType"></param>
     /// <param name="attackDamage"></param>
     /// <param name="launchAngle"></param>
-    public void HitByAttack(AttackColliderType attackType, float attackDamage, float launchAngle)
+    public void HitByAttack(AttackColliderType attackType, Rigidbody hitRb, float attackDamage, float launchAngle)
     {
         //Ragdoll
         EnableRagdoll();
@@ -118,11 +121,13 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
         AddDamage(attackDamage);
 
         //Launch knockback
-        Vector3 launchForce = knockbackHandler.CalculateForceKnockBack(attackType, damageTaken, rb.mass, launchAngle);
+        Vector3 launchForce = knockbackHandler.CalculateForceKnockBack(attackType, damageTaken, sceneObject.Rb.mass, launchAngle);
 
         launchForce = CheckForImmediateBounce(launchForce);
 
-        sceneObject.CoreRigidBody.AddForce(launchForce, ForceMode.Impulse);       
+        //sceneObject.CoreRigidBody.AddForce(launchForce, ForceMode.Impulse);       
+        //ragdollRoot.GetComponent<Rigidbody>().AddForce(launchForce, ForceMode.Impulse);
+        hitRb.AddForce(launchForce, ForceMode.Impulse);
 
         //HitStun
         SetHitStun(launchForce.magnitude);              
@@ -189,7 +194,7 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
             StopCoroutine(hitStunTimer);
         }
 
-        hitStunTimer = StartCoroutine(HitStunTimer(launchForce / 1000));
+        hitStunTimer = StartCoroutine(HitStunTimer(launchForce / 500));
     }
 
 
@@ -204,6 +209,8 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
 
         while (timer > 0)
         {
+            CorrectPositionBasedOnRagdollRoot();
+
             timer -= Time.deltaTime;
             yield return null;
         }
@@ -217,32 +224,32 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
         DestroyKillZones();
     }
 
-
+    //TODO: Need to fix for ragdoll
     /// <summary>
     /// Looks ahead to help calculate a bounce
     /// </summary>
     public void PredictHitStunBounce()
     {
-        if (sceneObject.AnimationStateHandler.CurActionState == ActionState.HitStun &&
-            hitStunState == HitStunState.Movement)
-        {
-            float distance = rb.velocity.magnitude * Time.fixedDeltaTime;
-            Vector3 direction = rb.velocity.normalized;
+        //if (sceneObject.AnimationStateHandler.CurActionState == ActionState.HitStun &&
+        //    hitStunState == HitStunState.Movement)
+        //{
+        //    float distance = rb.velocity.magnitude * Time.fixedDeltaTime;
+        //    Vector3 direction = rb.velocity.normalized;
 
-            RaycastHit[] hits = rb.SweepTestAll(direction, distance);
+        //    RaycastHit[] hits = rb.SweepTestAll(direction, distance);
 
-            foreach (RaycastHit hit in hits)
-            {
-                if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Environment"))
-                {
-                    Debug.Log("HitStun Perdicted", hit.collider.gameObject);
-                    predictedBounceVelocity = Vector3.Reflect(rb.velocity, hit.normal) * bounceDegrade;
-                    hitStunState = HitStunState.PredictedBounce;
+        //    foreach (RaycastHit hit in hits)
+        //    {
+        //        if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Environment"))
+        //        {
+        //            Debug.Log("HitStun Perdicted", hit.collider.gameObject);
+        //            predictedBounceVelocity = Vector3.Reflect(rb.velocity, hit.normal) * bounceDegrade;
+        //            hitStunState = HitStunState.PredictedBounce;
 
-                    break;
-                }
-            }
-        }
+        //            break;
+        //        }
+        //    }
+        //}
     }
 
     
@@ -250,48 +257,60 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     /// Used to slow down the bounce effect when a scene object hits a environment surface
     /// </summary>
     /// <returns></returns>
-    private IEnumerator BounceTimer()
-    {
-        hitStunState = HitStunState.Bounce;
-        Debug.Log("HitStun BounceTimer started");
+    //private IEnumerator BounceTimer()
+    //{
+        //hitStunState = HitStunState.Bounce;
+        //Debug.Log("HitStun BounceTimer started");
 
-        int frameCount = 0;
+        //int frameCount = 0;
 
-        while (frameCount <= bounceFrameTimer)
-        {
-            frameCount++;
-            yield return null;
-        }
+        //while (frameCount <= bounceFrameTimer)
+        //{
+        //    frameCount++;
+        //    yield return null;
+        //}
 
-        Debug.Log("HitStun BounceTimer ended");
+        //Debug.Log("HitStun BounceTimer ended");
 
-        rb.velocity = predictedBounceVelocity;
+        //rb.velocity = predictedBounceVelocity;
 
-        hitStunState = HitStunState.Movement;
-    }
+        //hitStunState = HitStunState.Movement;
+    //}
 
     #endregion
 
 
     #region Collision
 
-    private void OnCollisionEnter(Collision col)
-    {
-        //Environment
-        if (col.gameObject.layer == LayerMask.NameToLayer("Environment"))
-        {
-            if (sceneObject.AnimationStateHandler.CurActionState == ActionState.HitStun)
-            {
-                Debug.Log("HitStun Collided");
-                StartCoroutine(BounceTimer());
-            }
-        }
-    }
+    //private void OnCollisionEnter(Collision col)
+    //{
+    //    //Environment
+    //    if (col.gameObject.layer == LayerMask.NameToLayer("Environment"))
+    //    {
+    //        if (sceneObject.AnimationStateHandler.CurActionState == ActionState.HitStun)
+    //        {
+    //            Debug.Log("HitStun Collided");
+    //            StartCoroutine(BounceTimer());
+    //        }
+    //    }
+    //}
 
     #endregion
 
 
     #region Ragdoll
+
+    private void CorrectPositionBasedOnRagdollRoot()
+    {
+        Vector3 currentHipPos = ragdollRoot.transform.position;
+
+        //Move transform to ragdoll root
+        transform.position = ragdollRoot.transform.position - ragdollRootOffset;
+
+        ragdollRoot.transform.position = currentHipPos;
+
+    }
+
 
     private void EnableRagdoll()
     {        
@@ -304,7 +323,7 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
         }
     }
 
-    [ContextMenu("DisableRagDoll")]
+    
     private void DisableRagdoll()
     {
         if (ragdoll != null)

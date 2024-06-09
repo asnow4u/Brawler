@@ -8,6 +8,6 @@ public interface ITakeDamage
     public void AddDamage(float percent);
     public void RemoveDamage(float percent);
     public void ResetDamage();
-    public void HitByAttack(AttackColliderType attackType, float attackDamage, float launchAngle);    
+    public void HitByAttack(AttackColliderType attackType, Rigidbody rb, float attackDamage, float launchAngle);    
 }
 

@@ -110,7 +110,7 @@ public abstract class SceneObject : MonoBehaviour
     {  
         MovementInputHandler.UpdateMovement();
         
-        DamageHandler.PredictHitStunBounce();
+        //DamageHandler.PredictHitStunBounce();
 
         //Grounded Status
         CheckGroundedStatus();

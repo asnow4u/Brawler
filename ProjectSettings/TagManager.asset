@@ -8,7 +8,6 @@ TagManager:
   - PlayerFist
   - Item
   - AttackSword
-  - UIDamageDisplay
   layers:
   - Default
   - TransparentFX
@@ -19,7 +18,7 @@ TagManager:
   - Environment
   - SceneObject
   - AttackHitBox
-  - DamageHitBox
+  - Ragdoll
   - PickUp
   - PlayerEvent
   - KillZone
