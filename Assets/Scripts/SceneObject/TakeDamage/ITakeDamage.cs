@@ -5,6 +5,7 @@ using UnityEngine;
 
 public interface ITakeDamage 
 {
+    public bool IsHitable { get; }
     public void AddDamage(float percent);
     public void RemoveDamage(float percent);
     public void ResetDamage();

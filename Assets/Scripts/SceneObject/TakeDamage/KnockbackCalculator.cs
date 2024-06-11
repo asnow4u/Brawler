@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 
 public class KnockbackCalculator
 {
-    const float minKnockBackForce = 500f;
+    const float minKnockBackForce = 700f;
 
     public Vector3 CalculateForceKnockBack(AttackColliderType attackType, float totalDamage, float mass, float launchAngle)
     {        
@@ -28,7 +28,7 @@ public class KnockbackCalculator
             case AttackColliderType.PlayerRightFoot:
             case AttackColliderType.PlayerLeftFoot:
 
-                return 0.1f;
+                return 1f;
 
             case AttackColliderType.Sword:
 

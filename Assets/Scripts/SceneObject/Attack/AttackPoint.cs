@@ -55,26 +55,29 @@ public class AttackPoint : MonoBehaviour
         {
             ITakeDamage hitTarget = col.GetComponentInParent<ITakeDamage>();
 
-            //Current Attack
-            if (curAttackData != null)
+            if (hitTarget.IsHitable)
             {
-                //Get SceneObject
-                SceneObject sceneObject = GetComponentInParent<SceneObject>();
-                if (sceneObject != null)
+                //Current Attack
+                if (curAttackData != null)
                 {
-                    int curFrame = sceneObject.AnimationStateHandler.GetCurrentFrameOfCurAnimation();
-                    float launchAngle = curAttackData.GetAttackLaunchAngle(curFrame);                    
+                    //Get SceneObject
+                    SceneObject sceneObject = GetComponentInParent<SceneObject>();
+                    if (sceneObject != null)
+                    {
+                        int curFrame = sceneObject.AnimationStateHandler.GetCurrentFrameOfCurAnimation();
+                        float launchAngle = curAttackData.GetAttackLaunchAngle(curFrame);
 
-                    //Reverse launch angle
-                    if (!sceneObject.IsFacingRightDirection())
-                        launchAngle = 180 - launchAngle;
+                        //Reverse launch angle
+                        if (!sceneObject.IsFacingRightDirection())
+                            launchAngle = 180 - launchAngle;
 
-                    hitTarget.HitByAttack(attackType, targetRB, curAttackData.GetAttackDamage(curFrame), launchAngle);
+                        hitTarget.HitByAttack(attackType, targetRB, curAttackData.GetAttackDamage(curFrame), launchAngle);
 
-                    //Damage bubble                    
-                    UIFactory.Instance.SpawnDamageBubble(col.ClosestPoint(transform.position), curAttackData.GetAttackDamage(curFrame));
+                        //Damage bubble                    
+                        UIFactory.Instance.SpawnDamageBubble(col.ClosestPoint(transform.position), curAttackData.GetAttackDamage(curFrame));
 
-                    Debug.Log(sceneObject.gameObject.name + " hit " + targetRB.gameObject.name + " with " + attackType);
+                        Debug.Log(sceneObject.gameObject.name + " hit " + targetRB.gameObject.name + " with " + attackType);
+                    }
                 }
             }
         }

@@ -10,11 +10,15 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
 {
     [Header("Damage")]
     [SerializeField] protected float damageTaken;
-    private KnockbackCalculator knockbackHandler;
+    [SerializeField] private float hitCoolDown;
+    private bool isHitable = true;
+    private KnockbackCalculator knockbackHandler;    
+
 
     [Header("HitStun")]
     [SerializeField] private HitStunState hitStunState;
     [SerializeField] private float bounceDegrade = 0.9f;
+
     //TODO: Bounce timer should be based on damage(more damage = more emphisis on bounce)
     [SerializeField] private float bounceFrameTimer;
     private Coroutine hitStunTimer;
@@ -31,8 +35,11 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     private KillZone[] killZones;
 
     //Getters
+    public bool IsHitable => isHitable;
     private SceneObject sceneObject => GetComponent<SceneObject>();
     private Collider collider => GetComponent<Collider>();
+
+    
 
 
     #region Initialize
@@ -114,24 +121,44 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     /// <param name="launchAngle"></param>
     public void HitByAttack(AttackColliderType attackType, Rigidbody hitRb, float attackDamage, float launchAngle)
     {
-        //Ragdoll
-        EnableRagdoll();
-
         //Damage
         AddDamage(attackDamage);
 
         //Launch knockback
         Vector3 launchForce = knockbackHandler.CalculateForceKnockBack(attackType, damageTaken, sceneObject.Rb.mass, launchAngle);
-
         launchForce = CheckForImmediateBounce(launchForce);
 
-        //sceneObject.CoreRigidBody.AddForce(launchForce, ForceMode.Impulse);       
+        //Ragdoll
+        EnableRagdoll();
+     
         //ragdollRoot.GetComponent<Rigidbody>().AddForce(launchForce, ForceMode.Impulse);
         hitRb.AddForce(launchForce, ForceMode.Impulse);
 
         //HitStun
-        SetHitStun(launchForce.magnitude);              
+        SetHitStun(launchForce.magnitude);
+
+        StartCoroutine(HitCoolDown());
     }
+
+
+    /// <summary>
+    /// Provide a time in which the sceneObject cant be hit
+    /// </summary>
+    /// <returns></returns>
+    private IEnumerator HitCoolDown()
+    {
+        int frameCount = 0;
+        isHitable = false;
+
+        while (frameCount < hitCoolDown)
+        {
+            frameCount++;
+            yield return null;            
+        }
+
+        isHitable = true;
+    }
+
 
 
     private Vector3 CheckForImmediateBounce(Vector3 initialForce)
