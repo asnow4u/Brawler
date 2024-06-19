@@ -10,6 +10,7 @@ public interface IAnimator
 
     public void SetUp();
 
+    public Animator Animator { get; }
     public ActionState CurActionState { get; }
 
     public bool IsStatePossible(ActionState requestedState);

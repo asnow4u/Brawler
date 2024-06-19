@@ -21,6 +21,8 @@ public class AnimationStateHandler : MonoBehaviour, IAnimator
     private Animator animator => GetComponentInChildren<Animator>();
     private SceneObject sceneObject => GetComponent<SceneObject>();
 
+    public Animator Animator => animator;
+
 
     //Events
     public event Action<string, AnimationTrigger.Type> OnAnimationUpdateEvent;

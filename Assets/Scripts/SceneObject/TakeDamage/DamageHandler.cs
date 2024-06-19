@@ -3,41 +3,47 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum HitStunState { Movement, PredictedBounce, Bounce }
+public enum HitStunState { None, StartUp, Base, Ending}
 
 
 public class DamageHandler : MonoBehaviour, ITakeDamage
 {
     [Header("Damage")]
     [SerializeField] protected float damageTaken;
-    [SerializeField] private float hitCoolDown;
-    private bool isHitable = true;
-    private KnockbackCalculator knockbackHandler;    
 
+    [Tooltip("How many frames pass before this sceneobject can be hit again")]
+    [SerializeField] private float hitPreventionFrameCount;
+    private float hitPreventionFrameTimer;    
+
+    [Header("Knockback")]
+    private KnockbackCalculator knockbackHandler;    
 
     [Header("HitStun")]
     [SerializeField] private HitStunState hitStunState;
-    [SerializeField] private float bounceDegrade = 0.9f;
-
-    //TODO: Bounce timer should be based on damage(more damage = more emphisis on bounce)
-    [SerializeField] private float bounceFrameTimer;
-    private Coroutine hitStunTimer;
-    private Vector3 predictedBounceVelocity;
+    private float hitStunTimer;
 
     [Header("RagDoll")]
-    [SerializeField] private GameObject ragdollRoot;
-    private Vector3 ragdollRootOffset;
+    [SerializeField] private GameObject boneRoot;    
+    private Ragdoll ragdoll;
 
-    //RagDoll
-    private Ragdoll ragdoll = null;
 
     //KillZones
     private KillZone[] killZones;
 
+
     //Getters
-    public bool IsHitable => isHitable;
+    public bool IsHitable => hitPreventionFrameTimer > 0;
     private SceneObject sceneObject => GetComponent<SceneObject>();
     private Collider collider => GetComponent<Collider>();
+
+
+
+
+
+    //[SerializeField] private float bounceDegrade = 0.9f;
+    ////TODO: Bounce timer should be based on damage(more damage = more emphisis on bounce)
+    //[SerializeField] private float bounceFrameTimer;
+    //private Vector3 predictedBounceVelocity;
 
     
 
@@ -48,29 +54,23 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     {
         knockbackHandler = new KnockbackCalculator();
 
-        SetUpRagdoll();
+        if (boneRoot != null)
+        {
+            ragdoll = boneRoot.AddComponent<Ragdoll>();
+            ragdoll.Initialize(sceneObject);            
+        }        
     }
 
+    #endregion
 
-    private void SetUpRagdoll()
+
+    #region Update
+
+    public void HandleUpdate()
     {
-        if (ragdollRoot != null)
-        {
-            ragdollRootOffset = ragdollRoot.transform.localPosition;
-
-            List<GameObject> ragdollParts = new List<GameObject>();
-
-            foreach (Joint joint in ragdollRoot.GetComponentsInChildren<Joint>())
-            {
-                joint.gameObject.layer = LayerMask.NameToLayer("Ragdoll");
-                ragdollParts.Add(joint.gameObject);            
-            }
-
-            ragdoll = new Ragdoll(ragdollParts);
-        }
-
-        //EnableRagdoll();
-        DisableRagdoll();        
+        HitCoolDownUpdate();
+        HitStunStateUpdate();
+        RagdollUpdate();
     }
 
     #endregion
@@ -121,23 +121,20 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     /// <param name="launchAngle"></param>
     public void HitByAttack(AttackColliderType attackType, Rigidbody hitRb, float attackDamage, float launchAngle)
     {
+        hitPreventionFrameTimer = hitPreventionFrameCount;
+
         //Damage
         AddDamage(attackDamage);
 
         //Launch knockback
         Vector3 launchForce = knockbackHandler.CalculateForceKnockBack(attackType, damageTaken, sceneObject.Rb.mass, launchAngle);
-        launchForce = CheckForImmediateBounce(launchForce);
-
-        //Ragdoll
-        EnableRagdoll();
+        //launchForce = CheckForImmediateBounce(launchForce);
      
         //ragdollRoot.GetComponent<Rigidbody>().AddForce(launchForce, ForceMode.Impulse);
         hitRb.AddForce(launchForce, ForceMode.Impulse);
 
         //HitStun
-        SetHitStun(launchForce.magnitude);
-
-        StartCoroutine(HitCoolDown());
+        StartHitStun(launchForce.magnitude);
     }
 
 
@@ -145,60 +142,52 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     /// Provide a time in which the sceneObject cant be hit
     /// </summary>
     /// <returns></returns>
-    private IEnumerator HitCoolDown()
+    private void HitCoolDownUpdate()
     {
-        int frameCount = 0;
-        isHitable = false;
-
-        while (frameCount < hitCoolDown)
-        {
-            frameCount++;
-            yield return null;            
-        }
-
-        isHitable = true;
+        if (hitPreventionFrameTimer > 0)
+            hitPreventionFrameCount--;
     }
 
 
 
-    private Vector3 CheckForImmediateBounce(Vector3 initialForce)
-    {
-        //Check for bounce
-        if (initialForce.x > 0 &&
-            Physics.Raycast(collider.bounds.center, transform.right, collider.bounds.extents.x + 0.01f, LayerMask.GetMask("Environment")))
-        {
-            Debug.Log("LaunchForce Bounce on right side");
-            initialForce *= bounceDegrade;
-            initialForce.x *= -1;
-        }
+    //private Vector3 CheckForImmediateBounce(Vector3 initialForce)
+    //{
+    //    //Check for bounce
+    //    if (initialForce.x > 0 &&
+    //        Physics.Raycast(collider.bounds.center, transform.right, collider.bounds.extents.x + 0.01f, LayerMask.GetMask("Environment")))
+    //    {
+    //        Debug.Log("LaunchForce Bounce on right side");
+    //        initialForce *= bounceDegrade;
+    //        initialForce.x *= -1;
+    //    }
 
-        if (initialForce.x < 0 &&
-            Physics.Raycast(collider.bounds.center, -transform.right, collider.bounds.extents.x + 0.01f, LayerMask.GetMask("Environment")))
-        {
-            Debug.Log("LaunchForce Bounce on left side");
-            initialForce *= bounceDegrade;
-            initialForce.x *= -1;
-        }
+    //    if (initialForce.x < 0 &&
+    //        Physics.Raycast(collider.bounds.center, -transform.right, collider.bounds.extents.x + 0.01f, LayerMask.GetMask("Environment")))
+    //    {
+    //        Debug.Log("LaunchForce Bounce on left side");
+    //        initialForce *= bounceDegrade;
+    //        initialForce.x *= -1;
+    //    }
 
-        if (initialForce.y > 0 &&
-            Physics.Raycast(collider.bounds.center, transform.up, collider.bounds.extents.y + 0.01f, LayerMask.GetMask("Environment")))
-        {
-            Debug.Log("LaunchForce Bounce on top side");
-            initialForce *= bounceDegrade;
-            initialForce.y *= -1;
-        }
+    //    if (initialForce.y > 0 &&
+    //        Physics.Raycast(collider.bounds.center, transform.up, collider.bounds.extents.y + 0.01f, LayerMask.GetMask("Environment")))
+    //    {
+    //        Debug.Log("LaunchForce Bounce on top side");
+    //        initialForce *= bounceDegrade;
+    //        initialForce.y *= -1;
+    //    }
 
-        if (initialForce.y < 0 &&
-            Physics.Raycast(collider.bounds.center, -transform.up, collider.bounds.extents.y + 0.01f, LayerMask.GetMask("Environment")))
-        {
-            Debug.Log("LaunchForce Bounce on bottom side");
-            initialForce *= bounceDegrade;
-            initialForce.y *= -1;
-        }
+    //    if (initialForce.y < 0 &&
+    //        Physics.Raycast(collider.bounds.center, -transform.up, collider.bounds.extents.y + 0.01f, LayerMask.GetMask("Environment")))
+    //    {
+    //        Debug.Log("LaunchForce Bounce on bottom side");
+    //        initialForce *= bounceDegrade;
+    //        initialForce.y *= -1;
+    //    }
 
 
-        return initialForce;
-    }
+    //    return initialForce;
+    //}
 
 
     #endregion
@@ -210,46 +199,107 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     /// Change ActionState and start timer
     /// </summary>
     /// <param name="launchForce"></param>
-    private void SetHitStun(float launchForce)
-    {
+    private void StartHitStun(float launchForce)
+    {    
+        hitStunState = HitStunState.StartUp;
+
         //TODO: This does not incorperate different weapons yet
         sceneObject.AnimationStateHandler.PlayAnimation(new AnimationStateData(gameObject.name + "BaseHit", ActionState.HitStun, null));
 
-        if (hitStunTimer != null)
-        {
-            Debug.LogWarning("Combo");
-            StopCoroutine(hitStunTimer);
-        }
-
-        hitStunTimer = StartCoroutine(HitStunTimer(launchForce / 500));
-    }
-
-
-    /// <summary>
-    /// Timer for hitStun
-    /// </summary>
-    /// <param name="timer"></param>
-    /// <returns></returns>
-    private IEnumerator HitStunTimer(float timer)
-    {        
         SetUpKillZone();
 
-        while (timer > 0)
-        {
-            CorrectPositionBasedOnRagdollRoot();
+        hitStunTimer = launchForce / 500;
+    }
 
-            timer -= Time.deltaTime;
-            yield return null;
-        }
 
+    private void EndHitStun()
+    {
+        hitStunState = HitStunState.None;
         sceneObject.AnimationStateHandler.EndCurrentAnimation(ActionState.Admin);
-
-        hitStunTimer = null;
-
-        DisableRagdoll();
-
         DestroyKillZones();
     }
+    
+
+    /// <summary>
+    /// Updates everything based on the state of hitstun
+    /// </summary>
+    private void HitStunStateUpdate()
+    {
+        if (hitStunState != HitStunState.None)
+        {
+            switch (hitStunState)
+            {
+                case HitStunState.StartUp:
+
+                    //TODO: IDEA: Check if hit animation is finished (should go to idle). once finished start ragdoll 
+                    // Want to see how this feels vs just enabling ragdoll strait up
+                    EnableRagdoll();
+                    hitStunState = HitStunState.Base;
+
+                    break;
+
+                case HitStunState.Base:
+
+                    if (hitStunTimer < ragdoll.ExitTransitionTime)
+                        hitStunState = HitStunState.Ending;
+
+                    break;
+
+                case HitStunState.Ending:
+
+                    DisableRagdoll();
+                    break;
+            }
+              
+
+            //Update Timer
+            hitStunTimer -= Time.deltaTime;
+
+            if (hitStunTimer <= 0)
+            {
+                EndHitStun();                
+            }
+        }
+    }
+
+  
+    //NOTE: Want to restructure how the ragdoll is created and manipulated!!!
+
+
+    //private void PopulateRagdollTransition()
+    //{
+    //    foreach (RagdollPart part in ragdoll.RagdollParts)
+    //        ragdollStartTransition.Add(new RagdollBone(part.Transform.position, part.Transform.rotation));                    
+
+    //    foreach (AnimationClip clip in sceneObject.AnimationStateHandler.Animator.runtimeAnimatorController.animationClips)
+    //    {
+    //        if (sceneObject.GroundedState == GroundedState.Airborn && clip.name == gameObject.name + "BaseAirIdle")
+    //        {
+    //            clip.SampleAnimation(gameObject, 0);
+    //            break;
+    //        }
+                
+    //        else if (clip.name == gameObject.name + "BaseIdle")
+    //        {
+    //            clip.SampleAnimation(gameObject, 0);
+    //            break;
+    //        }
+    //    }
+
+    //    foreach (RagdollPart part in ragdoll.RagdollParts)
+    //        ragdollEndTransition.Add(new RagdollBone(part.Transform.position, part.Transform.rotation);
+
+        
+    //    foreach (RagdollPart part in ragdoll.RagdollParts)
+    //    {
+            
+    //    }
+        
+
+
+    //}
+
+
 
     //TODO: Need to fix for ragdoll
     /// <summary>
@@ -326,27 +376,13 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
 
 
     #region Ragdoll
-
-    private void CorrectPositionBasedOnRagdollRoot()
-    {
-        Vector3 currentHipPos = ragdollRoot.transform.position;
-
-        //Move transform to ragdoll root
-        transform.position = ragdollRoot.transform.position - ragdollRootOffset;
-
-        ragdollRoot.transform.position = currentHipPos;
-
-    }
-
-
+       
     private void EnableRagdoll()
     {        
         if (ragdoll != null)
         {
-            GetComponent<Collider>().enabled = false;            
-            GetComponentInChildren<Animator>().enabled = false;
-        
-            ragdoll.Enable();
+            if (!ragdoll.enabled)
+                ragdoll.enabled = true;            
         }
     }
 
@@ -355,12 +391,36 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     {
         if (ragdoll != null)
         {
-            GetComponent<Collider>().enabled = true;
-            GetComponentInChildren<Animator>().enabled = true;
-
-            ragdoll.Disable();  
+            if (ragdoll.enabled)
+                ragdoll.enabled = false;          
         }
     }
+
+
+    private void RagdollUpdate()
+    {
+        if (ragdoll != null)
+        {
+            if (ragdoll.enabled)
+                RepositionToRagDoll();
+        }
+    }
+
+
+    /// <summary>
+    /// Position sceneObject to realign with moving ragdoll
+    /// </summary>
+    private void RepositionToRagDoll()
+    {
+        Vector3 currentHipPos = boneRoot.transform.position;
+
+        //Move transform to ragdoll root
+        transform.position = boneRoot.transform.position - ragdoll.PosOffset;
+
+        boneRoot.transform.position = currentHipPos;
+    }
+
+
 
     #endregion
 

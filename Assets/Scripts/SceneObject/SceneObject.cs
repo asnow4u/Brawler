@@ -109,8 +109,8 @@ public abstract class SceneObject : MonoBehaviour
     protected virtual void FixedUpdate()
     {  
         MovementInputHandler.UpdateMovement();
-        
-        //DamageHandler.PredictHitStunBounce();
+
+        DamageHandler.HandleUpdate();
 
         //Grounded Status
         CheckGroundedStatus();

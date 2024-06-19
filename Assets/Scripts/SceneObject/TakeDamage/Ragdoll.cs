@@ -1,60 +1,188 @@
+using RayAssets;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 
-public struct RagdollPart
+
+public struct RagdollBone
 {
-    public GameObject GO;
+    public Vector3 Pos;
+    public Quaternion Rot;
 
-    public Collider Collider;
-    public Rigidbody Rb;
-
-    public Joint Joint;
-    public Rigidbody JointConnectedRb;
-
-    public RagdollPart(GameObject go)
+    public RagdollBone(Transform transform)
     {
-        GO = go;
-        Collider = go.GetComponent<Collider>();
-        Rb = go.GetComponent<Rigidbody>();
-        Joint = go.GetComponent<Joint>();
-        JointConnectedRb = Joint.connectedBody;
+        this.Pos = transform.position;
+        this.Rot = transform.rotation;
     }
 }
 
 
-public class Ragdoll
+public class Ragdoll : MonoBehaviour
 {
-    private List<RagdollPart> ragdollParts = new List<RagdollPart>();    
+    private SceneObject sceneObject;    
+    private Vector3 posOffset;
+    
+    private List<GameObject> ragdollParts = new List<GameObject>();
 
-    public Ragdoll(List<GameObject> parts)
+    //Exit transition
+    private float exitTransitionTime = 1f;
+    List<RagdollBone> ragdollStartTransform = new List<RagdollBone>();
+    List<RagdollBone> ragdollEndTransform = new List<RagdollBone>();
+
+
+    //Getter
+    public List<GameObject> RagdollParts => ragdollParts;
+    public Vector3 PosOffset => posOffset;
+    public float ExitTransitionTime => exitTransitionTime;
+
+
+    #region Initialize
+
+    public void Initialize(SceneObject sceneObject)
     {
-        foreach (GameObject part in parts)
+        this.sceneObject = sceneObject;
+        
+        posOffset = gameObject.transform.localPosition;
+
+        ragdollParts.Add(gameObject);
+        foreach (Joint joint in GetComponentsInChildren<Joint>())
         {
-            ragdollParts.Add(new RagdollPart(part));
+            joint.gameObject.layer = LayerMask.NameToLayer("Ragdoll");
+            ragdollParts.Add(joint.gameObject);
+        }
+
+        this.enabled = false;
+    }
+
+    #endregion
+
+
+    #region Enable / Disable
+
+    private void OnEnable()
+    {
+        Debug.Log("RAGDOLL: Enabled");
+        DisableSceneObjectComponents();
+        EnableRagdollParts();
+    }
+
+
+    private async void OnDisable()
+    {
+        Debug.Log("RAGDOLL: Disabled");
+        DisableRagdollParts();
+
+        sceneObject.GetComponent<Collider>().enabled = true;
+
+        await TransitionToAnimation();
+
+        //EnableSceneObjectComponenets();
+    }
+
+
+    private void EnableSceneObjectComponenets()
+    {
+        if (sceneObject != null)
+        {
+            sceneObject.GetComponent<Collider>().enabled = true;   
+            sceneObject.AnimationStateHandler.Animator.enabled = true;
+        }        
+    }
+
+
+    private void DisableSceneObjectComponents()
+    {
+        if (sceneObject != null)
+        {
+            sceneObject.GetComponent<Collider>().enabled = false;
+            sceneObject.AnimationStateHandler.Animator.enabled = false;
         }
     }
 
 
-    public void Enable()
+    private void EnableRagdollParts()
     {
-        foreach (RagdollPart part in ragdollParts)
+        foreach (GameObject part in ragdollParts)
         {
-            part.Collider.isTrigger = false;            
-            part.Rb.useGravity = true;
+            if (part.TryGetComponent(out Collider collider))
+                collider.isTrigger = false;
+
+            if (part.TryGetComponent(out Rigidbody rb))
+            {
+                rb.useGravity = true;
+            }
         }
     }
 
 
-    public void Disable()
+    private void DisableRagdollParts()
     {
-        foreach (RagdollPart part in ragdollParts)
+        foreach (GameObject part in ragdollParts)
         {
-            part.Collider.isTrigger = true;
-            part.Rb.useGravity = false;
-            part.Rb.velocity = Vector3.zero;
+            if (part.TryGetComponent(out Collider collider))
+                collider.isTrigger = true;
+
+            if (part.TryGetComponent(out Rigidbody rb))
+            {
+                rb.useGravity = false;
+                rb.velocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
         }
+    }
+
+    #endregion
+
+
+    //NOTE: Working on the transition of ragdoll to animation. The current issue is when sampling the animationclip,
+    //there are still forces being applied to the rbs. Need to find a way to remove any force influence on them.
+    //Those forces need to instead be placed on the core rigidbody (Honestly probably just needs to worry about the hips)
+
+    //Once the force issue is resolved and we can sample an animation clip correctly, than we need to lerp to that position from the pos we start in.
+
+    private async Task TransitionToAnimation()
+    {
+        ragdollStartTransform.Clear();
+        ragdollEndTransform.Clear();
+
+        float transitionTimer = 0f;
+
+        AnimationClip clip = GetTransitionAnimationClip();
+
+        if (clip != null)
+        {
+            clip.SampleAnimation(sceneObject.AnimationStateHandler.Animator.gameObject, 0);
+            Debug.Log("RAGDOLL: Animation Clip " + clip.name + " Sampled");
+        }                 
+
+        while (transitionTimer < exitTransitionTime)
+        {
+            transitionTimer += Time.deltaTime;
+            
+            await Task.Yield();
+        }
+    }
+
+
+    private AnimationClip GetTransitionAnimationClip()
+    {
+        foreach (AnimationClip clip in sceneObject.AnimationStateHandler.Animator.runtimeAnimatorController.animationClips)
+        {
+
+            //TODO: Need to fix dummy animations to match correct flow
+            if (clip.name == "BaseIdle")
+                return clip;
+
+            //if (sceneObject.GroundedState == GroundedState.Airborn && clip.name == gameObject.name + "BaseAirIdle")
+            //    return clip;
+
+            //else if (clip.name == gameObject.name + "BaseIdle")
+            //    return clip;
+        }
+
+        return null;
     }
 }
