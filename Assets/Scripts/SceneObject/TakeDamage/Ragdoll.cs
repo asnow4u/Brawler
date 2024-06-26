@@ -9,26 +9,27 @@ using UnityEngine;
 
 public struct RagdollBone
 {
-    public Vector3 Pos;
-    public Quaternion Rot;
+    public Vector3 LocalPos;
+    public Quaternion LocalRot;
 
-    public RagdollBone(Transform transform)
+    public RagdollBone(Vector3 pos, Quaternion rot)
     {
-        this.Pos = transform.position;
-        this.Rot = transform.rotation;
+        this.LocalPos = pos;
+        this.LocalRot = rot;
     }
 }
 
 
 public class Ragdoll : MonoBehaviour
 {
+    private bool isInitialized;
     private SceneObject sceneObject;    
     private Vector3 posOffset;
     
     private List<GameObject> ragdollParts = new List<GameObject>();
 
     //Exit transition
-    private float exitTransitionTime = 1f;
+    private float exitTransitionTime = 0.5f;
     List<RagdollBone> ragdollStartTransform = new List<RagdollBone>();
     List<RagdollBone> ragdollEndTransform = new List<RagdollBone>();
 
@@ -42,7 +43,7 @@ public class Ragdoll : MonoBehaviour
     #region Initialize
 
     public void Initialize(SceneObject sceneObject)
-    {
+    {        
         this.sceneObject = sceneObject;
         
         posOffset = gameObject.transform.localPosition;
@@ -53,8 +54,10 @@ public class Ragdoll : MonoBehaviour
             joint.gameObject.layer = LayerMask.NameToLayer("Ragdoll");
             ragdollParts.Add(joint.gameObject);
         }
-
+     
         this.enabled = false;
+
+        isInitialized = true;
     }
 
     #endregion
@@ -64,22 +67,28 @@ public class Ragdoll : MonoBehaviour
 
     private void OnEnable()
     {
-        Debug.Log("RAGDOLL: Enabled");
-        DisableSceneObjectComponents();
-        EnableRagdollParts();
+        if (isInitialized)
+        {
+            Debug.Log("RAGDOLL: Enabled");
+            DisableSceneObjectComponents();
+            EnableRagdollParts();
+        }
     }
 
 
     private async void OnDisable()
     {
-        Debug.Log("RAGDOLL: Disabled");
-        DisableRagdollParts();
+        if ( isInitialized)
+        {            
+            Debug.Log("RAGDOLL: Disabled");
+            DisableRagdollParts();
 
-        sceneObject.GetComponent<Collider>().enabled = true;
+            sceneObject.GetComponent<Collider>().enabled = true;
 
-        await TransitionToAnimation();
+            await TransitionToAnimation();
 
-        //EnableSceneObjectComponenets();
+            EnableSceneObjectComponenets();
+        }
     }
 
 
@@ -87,7 +96,8 @@ public class Ragdoll : MonoBehaviour
     {
         if (sceneObject != null)
         {
-            sceneObject.GetComponent<Collider>().enabled = true;   
+            sceneObject.GetComponent<Collider>().enabled = true;
+            sceneObject.CoreRigidBody.velocity = Vector3.zero;
             sceneObject.AnimationStateHandler.Animator.enabled = true;
         }        
     }
@@ -112,6 +122,7 @@ public class Ragdoll : MonoBehaviour
 
             if (part.TryGetComponent(out Rigidbody rb))
             {
+                rb.isKinematic = false;
                 rb.useGravity = true;
             }
         }
@@ -127,6 +138,7 @@ public class Ragdoll : MonoBehaviour
 
             if (part.TryGetComponent(out Rigidbody rb))
             {
+                rb.isKinematic = true;
                 rb.useGravity = false;
                 rb.velocity = Vector3.zero;
                 rb.angularVelocity = Vector3.zero;
@@ -136,32 +148,31 @@ public class Ragdoll : MonoBehaviour
 
     #endregion
 
-
-    //NOTE: Working on the transition of ragdoll to animation. The current issue is when sampling the animationclip,
-    //there are still forces being applied to the rbs. Need to find a way to remove any force influence on them.
-    //Those forces need to instead be placed on the core rigidbody (Honestly probably just needs to worry about the hips)
-
-    //Once the force issue is resolved and we can sample an animation clip correctly, than we need to lerp to that position from the pos we start in.
-
+    
     private async Task TransitionToAnimation()
     {
         ragdollStartTransform.Clear();
         ragdollEndTransform.Clear();
 
-        float transitionTimer = 0f;
+        PopulateRagdollBones(ref ragdollStartTransform);
 
         AnimationClip clip = GetTransitionAnimationClip();
-
         if (clip != null)
         {
-            clip.SampleAnimation(sceneObject.AnimationStateHandler.Animator.gameObject, 0);
-            Debug.Log("RAGDOLL: Animation Clip " + clip.name + " Sampled");
+            clip.SampleAnimation(sceneObject.AnimationStateHandler.Animator.gameObject, 0);     
+            PopulateRagdollBones(ref ragdollEndTransform);
         }                 
 
+        float transitionTimer = 0f;
         while (transitionTimer < exitTransitionTime)
         {
-            transitionTimer += Time.deltaTime;
+            for (int i = 0; i < ragdollParts.Count; i++)
+            {                
+                ragdollParts[i].transform.localPosition = Vector3.Lerp(ragdollStartTransform[i].LocalPos, ragdollEndTransform[i].LocalPos, transitionTimer / exitTransitionTime);
+                RagdollParts[i].transform.localRotation = Quaternion.Lerp(ragdollStartTransform[i].LocalRot, ragdollEndTransform[i].LocalRot, transitionTimer / exitTransitionTime);
+            }
             
+            transitionTimer += Time.deltaTime;
             await Task.Yield();
         }
     }
@@ -185,4 +196,24 @@ public class Ragdoll : MonoBehaviour
 
         return null;
     }
+
+
+    private void PopulateRagdollBones(ref List<RagdollBone> ragdollBoneList)
+    {
+        foreach (GameObject part in ragdollParts)
+        {
+            RagdollBone bone = new RagdollBone(part.transform.localPosition, part.transform.localRotation);
+            ragdollBoneList.Add(bone);
+        }
+    }
 }
+
+
+
+
+/*NOTE:
+ *  Need to have lerping pos move with root
+ *  Forces need to be transfered to sceneobject on disable
+ *  
+ *  When disabled the ragdoll moves before lerping
+*/
