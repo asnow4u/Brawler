@@ -9,14 +9,11 @@ public enum HitStunState { None, StartUp, Base, Ending}
 public class DamageHandler : MonoBehaviour, ITakeDamage
 {
     [Header("Damage")]
-    [SerializeField] protected float damageTaken;
-
-    [Tooltip("How many frames pass before this sceneobject can be hit again")]
-    [SerializeField] private float hitPreventionFrameCount;
-    private float hitPreventionFrameTimer;    
+    [SerializeField] protected float damageTaken; 
 
     [Header("Knockback")]
-    private KnockbackCalculator knockbackHandler;    
+    private KnockbackCalculator knockbackHandler;
+    private Vector3 storedLaunchForce;
 
     [Header("HitStun")]
     [SerializeField] private HitStunState hitStunState;
@@ -32,7 +29,6 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
 
 
     //Getters
-    public bool IsHitable => hitPreventionFrameTimer > 0;
     private SceneObject sceneObject => GetComponent<SceneObject>();
     private Collider collider => GetComponent<Collider>();
 
@@ -68,7 +64,6 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
 
     public void HandleUpdate()
     {
-        HitCoolDownUpdate();
         HitStunStateUpdate();
         RagdollUpdate();
     }
@@ -114,41 +109,51 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
 
 
     /// <summary>
-    /// Hit by an attack, apply damage and force
+    /// Hit by an attack, apply damage and store force
     /// </summary>
     /// <param name="attackType"></param>
     /// <param name="attackDamage"></param>
     /// <param name="launchAngle"></param>
     public void HitByAttack(AttackColliderType attackType, Rigidbody hitRb, float attackDamage, float launchAngle)
-    {
-        hitPreventionFrameTimer = hitPreventionFrameCount;
+    {        
+        if (storedLaunchForce == Vector3.zero)
+        {
+            //Damage
+            AddDamage(attackDamage);
 
-        //Damage
-        AddDamage(attackDamage);
-
-        //Launch knockback
-        Vector3 launchForce = knockbackHandler.CalculateForceKnockBack(attackType, damageTaken, sceneObject.Rb.mass, launchAngle);
-        //launchForce = CheckForImmediateBounce(launchForce);
+            //Launch knockback
+            storedLaunchForce = knockbackHandler.CalculateForceKnockBack(attackType, damageTaken, sceneObject.Rb.mass, launchAngle);
+            //launchForce = CheckForImmediateBounce(launchForce);
+        
+            //HitStun
+            StartHitStun();
      
-        //ragdollRoot.GetComponent<Rigidbody>().AddForce(launchForce, ForceMode.Impulse);
-        hitRb.AddForce(launchForce, ForceMode.Impulse);
-
-        //HitStun
-        StartHitStun(launchForce.magnitude);
-    }
+            
+        }
+    }  
 
 
     /// <summary>
-    /// Provide a time in which the sceneObject cant be hit
+    /// Apply the stored force
     /// </summary>
-    /// <returns></returns>
-    private void HitCoolDownUpdate()
-    {
-        if (hitPreventionFrameTimer > 0)
-            hitPreventionFrameCount--;
+    private void ApplyLaunchForce()
+    {        
+        if (ragdoll != null)
+        {
+            //Set mass to coreRigidbody to get similar force effect
+            float mass = ragdoll.RB.mass;
+            ragdoll.RB.mass = sceneObject.CoreRigidBody.mass;
+
+            ragdoll.RB.AddForce(storedLaunchForce, ForceMode.Impulse);
+
+            ragdoll.RB.mass = mass;
+        }
+
+        else
+            sceneObject.CoreRigidBody.AddForce(storedLaunchForce, ForceMode.Impulse);
+
+        storedLaunchForce = Vector3.zero;
     }
-
-
 
     //private Vector3 CheckForImmediateBounce(Vector3 initialForce)
     //{
@@ -194,12 +199,12 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
 
 
     #region HitStun
-    
+
     /// <summary>
     /// Change ActionState and start timer
     /// </summary>
     /// <param name="launchForce"></param>
-    private void StartHitStun(float launchForce)
+    private void StartHitStun()
     {    
         hitStunState = HitStunState.StartUp;
 
@@ -208,7 +213,7 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
 
         SetUpKillZone();
 
-        hitStunTimer = launchForce / 500;
+        hitStunTimer = storedLaunchForce.magnitude / 500;
     }
 
 
@@ -234,6 +239,8 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
                     //TODO: IDEA: Check if hit animation is finished (should go to idle). once finished start ragdoll 
                     // Want to see how this feels vs just enabling ragdoll strait up
                     EnableRagdoll();
+                    ApplyLaunchForce();
+
                     hitStunState = HitStunState.Base;
 
                     break;
@@ -261,44 +268,6 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
             }
         }
     }
-
-  
-    //NOTE: Want to restructure how the ragdoll is created and manipulated!!!
-
-
-    //private void PopulateRagdollTransition()
-    //{
-    //    foreach (RagdollPart part in ragdoll.RagdollParts)
-    //        ragdollStartTransition.Add(new RagdollBone(part.Transform.position, part.Transform.rotation));                    
-
-    //    foreach (AnimationClip clip in sceneObject.AnimationStateHandler.Animator.runtimeAnimatorController.animationClips)
-    //    {
-    //        if (sceneObject.GroundedState == GroundedState.Airborn && clip.name == gameObject.name + "BaseAirIdle")
-    //        {
-    //            clip.SampleAnimation(gameObject, 0);
-    //            break;
-    //        }
-                
-    //        else if (clip.name == gameObject.name + "BaseIdle")
-    //        {
-    //            clip.SampleAnimation(gameObject, 0);
-    //            break;
-    //        }
-    //    }
-
-    //    foreach (RagdollPart part in ragdoll.RagdollParts)
-    //        ragdollEndTransition.Add(new RagdollBone(part.Transform.position, part.Transform.rotation);
-
-        
-    //    foreach (RagdollPart part in ragdoll.RagdollParts)
-    //    {
-            
-    //    }
-        
-
-
-    //}
-
 
 
     //TODO: Need to fix for ragdoll
@@ -419,8 +388,6 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
 
         boneRoot.transform.position = currentHipPos;
     }
-
-
 
     #endregion
 

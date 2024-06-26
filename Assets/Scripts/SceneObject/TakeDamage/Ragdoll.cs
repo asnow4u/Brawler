@@ -38,6 +38,7 @@ public class Ragdoll : MonoBehaviour
     public List<GameObject> RagdollParts => ragdollParts;
     public Vector3 PosOffset => posOffset;
     public float ExitTransitionTime => exitTransitionTime;
+    public Rigidbody RB => GetComponent<Rigidbody>();
 
 
     #region Initialize
@@ -45,10 +46,13 @@ public class Ragdoll : MonoBehaviour
     public void Initialize(SceneObject sceneObject)
     {        
         this.sceneObject = sceneObject;
-        
         posOffset = gameObject.transform.localPosition;
-
+        
+        //Root
+        gameObject.layer = LayerMask.NameToLayer("Ragdoll");
         ragdollParts.Add(gameObject);
+
+        //Parts
         foreach (Joint joint in GetComponentsInChildren<Joint>())
         {
             joint.gameObject.layer = LayerMask.NameToLayer("Ragdoll");
@@ -67,9 +71,10 @@ public class Ragdoll : MonoBehaviour
 
     private void OnEnable()
     {
+        Debug.Log("RAGDOLL: Enabled");
+        
         if (isInitialized)
         {
-            Debug.Log("RAGDOLL: Enabled");
             DisableSceneObjectComponents();
             EnableRagdollParts();
         }
@@ -78,13 +83,16 @@ public class Ragdoll : MonoBehaviour
 
     private async void OnDisable()
     {
+        Debug.Log("RAGDOLL: Disabled");
+    
+        DisableRagdollParts();
+        
         if ( isInitialized)
         {            
-            Debug.Log("RAGDOLL: Disabled");
-            DisableRagdollParts();
-
             sceneObject.GetComponent<Collider>().enabled = true;
-
+            sceneObject.CoreRigidBody.isKinematic = false;
+            //TODO: apply forces
+            
             await TransitionToAnimation();
 
             EnableSceneObjectComponenets();
@@ -96,8 +104,7 @@ public class Ragdoll : MonoBehaviour
     {
         if (sceneObject != null)
         {
-            sceneObject.GetComponent<Collider>().enabled = true;
-            sceneObject.CoreRigidBody.velocity = Vector3.zero;
+            sceneObject.GetComponent<Collider>().enabled = true;                        
             sceneObject.AnimationStateHandler.Animator.enabled = true;
         }        
     }
@@ -107,6 +114,7 @@ public class Ragdoll : MonoBehaviour
     {
         if (sceneObject != null)
         {
+            sceneObject.CoreRigidBody.isKinematic = true;
             sceneObject.GetComponent<Collider>().enabled = false;
             sceneObject.AnimationStateHandler.Animator.enabled = false;
         }
@@ -120,11 +128,7 @@ public class Ragdoll : MonoBehaviour
             if (part.TryGetComponent(out Collider collider))
                 collider.isTrigger = false;
 
-            if (part.TryGetComponent(out Rigidbody rb))
-            {
-                rb.isKinematic = false;
-                rb.useGravity = true;
-            }
+            RB.isKinematic = false;            
         }
     }
 
@@ -135,14 +139,8 @@ public class Ragdoll : MonoBehaviour
         {
             if (part.TryGetComponent(out Collider collider))
                 collider.isTrigger = true;
-
-            if (part.TryGetComponent(out Rigidbody rb))
-            {
-                rb.isKinematic = true;
-                rb.useGravity = false;
-                rb.velocity = Vector3.zero;
-                rb.angularVelocity = Vector3.zero;
-            }
+            
+            RB.isKinematic = true;            
         }
     }
 
@@ -207,13 +205,3 @@ public class Ragdoll : MonoBehaviour
         }
     }
 }
-
-
-
-
-/*NOTE:
- *  Need to have lerping pos move with root
- *  Forces need to be transfered to sceneobject on disable
- *  
- *  When disabled the ragdoll moves before lerping
-*/

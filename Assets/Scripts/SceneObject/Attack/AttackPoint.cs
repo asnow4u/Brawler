@@ -48,6 +48,10 @@ public class AttackPoint : MonoBehaviour
     }
 
 
+    //TODO: 
+    //Not every sceneobject will have a ragdoll, thus cant only search for ragdoll layer
+    //Avoid doing anything other than sending data over to ITakeDamage. (DamageBubble included)
+
     private void OnTriggerEnter(Collider col)
     {        
         if (col.gameObject.layer == LayerMask.NameToLayer("Ragdoll") &&
@@ -55,7 +59,7 @@ public class AttackPoint : MonoBehaviour
         {
             ITakeDamage hitTarget = col.GetComponentInParent<ITakeDamage>();
 
-            if (hitTarget.IsHitable)
+            if (hitTarget != null)
             {
                 //Current Attack
                 if (curAttackData != null)
