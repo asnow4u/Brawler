@@ -13,7 +13,8 @@ public class KillZone : MonoBehaviour
     [SerializeField] private KillZoneType type;
     [SerializeField] private string killID;
 
-    private const float minVelocity = 20f;
+    private const float OFFSCREENDISTANCE = 1.5f;
+    private const float MINVELOCITY = 20f;
 
 
     #region Initialize
@@ -65,8 +66,8 @@ public class KillZone : MonoBehaviour
         float depth = Mathf.Abs(cam.transform.position.z);
         float cameraWidth = depth * Mathf.Tan((Camera.main.fieldOfView / 2) * Mathf.Deg2Rad) * Camera.main.aspect;
 
-        Vector3 leftSide = new Vector3(cam.transform.position.x - cameraWidth, cam.transform.position.y, 0);
-        Vector3 rightSide = new Vector3(cam.transform.position.x + cameraWidth, cam.transform.position.y, 0);
+        Vector3 leftSide = new Vector3(cam.transform.position.x - cameraWidth, cam.transform.position.y, 0) - Vector3.one * OFFSCREENDISTANCE;
+        Vector3 rightSide = new Vector3(cam.transform.position.x + cameraWidth, cam.transform.position.y, 0) + Vector3.one * OFFSCREENDISTANCE;
 
         return (leftSide, rightSide);
     }
