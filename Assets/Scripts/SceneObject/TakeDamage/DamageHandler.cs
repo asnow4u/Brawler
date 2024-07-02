@@ -114,10 +114,13 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     /// <param name="attackType"></param>
     /// <param name="attackDamage"></param>
     /// <param name="launchAngle"></param>
-    public void HitByAttack(AttackColliderType attackType, Rigidbody hitRb, float attackDamage, float launchAngle)
+    public void HitByAttack(AttackColliderType attackType, Vector3 attackPoint, float attackDamage, float launchAngle)
     {        
         if (storedLaunchForce == Vector3.zero)
         {
+            //Damage bubble                    
+            UIFactory.Instance.SpawnDamageBubble(attackPoint, attackDamage);
+
             //Damage
             AddDamage(attackDamage);
 
@@ -126,9 +129,7 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
             //launchForce = CheckForImmediateBounce(launchForce);
         
             //HitStun
-            StartHitStun();
-     
-            
+            StartHitStun();                
         }
     }  
 

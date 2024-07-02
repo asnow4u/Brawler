@@ -19,6 +19,11 @@ public class KnockbackCalculator
     }
 
 
+    /// <summary>
+    /// Determine how much influence damage and mass matter when calculating launchForce based on attack
+    /// </summary>
+    /// <param name="attackType"></param>
+    /// <returns></returns>
     private float GetForceInfluence(AttackColliderType attackType)
     {
         switch (attackType)

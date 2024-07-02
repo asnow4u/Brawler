@@ -46,42 +46,30 @@ public class AttackPoint : MonoBehaviour
         collider.enabled = false;
         curAttackData = null;
     }
-
-
-    //TODO: 
-    //Not every sceneobject will have a ragdoll, thus cant only search for ragdoll layer
-    //Avoid doing anything other than sending data over to ITakeDamage. (DamageBubble included)
+   
 
     private void OnTriggerEnter(Collider col)
     {        
-        if (col.gameObject.layer == LayerMask.NameToLayer("Ragdoll") &&
-            col.gameObject.TryGetComponent(out Rigidbody targetRB))
-        {
-            ITakeDamage hitTarget = col.GetComponentInParent<ITakeDamage>();
-
-            if (hitTarget != null)
+        if (col.gameObject.layer == LayerMask.NameToLayer("Ragdoll") ||
+            col.gameObject.layer == LayerMask.NameToLayer("DamageHitBox"))
+        {            
+            //Current Attack
+            if (curAttackData != null)
             {
-                //Current Attack
-                if (curAttackData != null)
-                {
-                    //Get SceneObject
-                    SceneObject sceneObject = GetComponentInParent<SceneObject>();
-                    if (sceneObject != null)
-                    {
-                        int curFrame = sceneObject.AnimationStateHandler.GetCurrentFrameOfCurAnimation();
-                        float launchAngle = curAttackData.GetAttackLaunchAngle(curFrame);
+                //Attack Details
+                SceneObject sceneObject = GetComponentInParent<SceneObject>();
+                int curFrame = sceneObject.AnimationStateHandler.GetCurrentFrameOfCurAnimation();
+                float launchAngle = curAttackData.GetAttackLaunchAngle(curFrame);
 
-                        //Reverse launch angle
-                        if (!sceneObject.IsFacingRightDirection())
-                            launchAngle = 180 - launchAngle;
+                //Reverse launch angle
+                if (!sceneObject.IsFacingRightDirection())
+                    launchAngle = 180 - launchAngle;
 
-                        hitTarget.HitByAttack(attackType, targetRB, curAttackData.GetAttackDamage(curFrame), launchAngle);
 
-                        //Damage bubble                    
-                        UIFactory.Instance.SpawnDamageBubble(col.ClosestPoint(transform.position), curAttackData.GetAttackDamage(curFrame));
-
-                        Debug.Log(sceneObject.gameObject.name + " hit " + targetRB.gameObject.name + " with " + attackType);
-                    }
+                ITakeDamage hitTarget = col.GetComponentInParent<ITakeDamage>();
+                if (hitTarget != null)
+                {                        
+                    hitTarget.HitByAttack(attackType, col.ClosestPoint(col.transform.position), curAttackData.GetAttackDamage(curFrame), launchAngle);                    
                 }
             }
         }
