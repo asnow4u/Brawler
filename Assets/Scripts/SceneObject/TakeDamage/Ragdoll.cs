@@ -83,16 +83,16 @@ public class Ragdoll : MonoBehaviour
 
     private async void OnDisable()
     {
-        Debug.Log("RAGDOLL: Disabled");
-    
-        DisableRagdollParts();
+        Debug.Log("RAGDOLL: Disabled");           
         
-        if ( isInitialized)
+        if (isInitialized)
         {            
             sceneObject.GetComponent<Collider>().enabled = true;
             sceneObject.CoreRigidBody.isKinematic = false;
-            //TODO: apply forces
-            
+            sceneObject.CoreRigidBody.velocity = RB.velocity;                 
+
+            DisableRagdollParts();
+
             await TransitionToAnimation();
 
             EnableSceneObjectComponenets();

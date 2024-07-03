@@ -20,7 +20,7 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     private float hitStunTimer;
 
     [Header("RagDoll")]
-    [SerializeField] private GameObject boneRoot;    
+    [SerializeField] private GameObject ragdollRoot;    
     private Ragdoll ragdoll;
 
 
@@ -50,9 +50,9 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     {
         knockbackHandler = new KnockbackCalculator();
 
-        if (boneRoot != null)
+        if (ragdollRoot != null)
         {
-            ragdoll = boneRoot.AddComponent<Ragdoll>();
+            ragdoll = ragdollRoot.AddComponent<Ragdoll>();
             ragdoll.Initialize(sceneObject);            
         }        
     }
@@ -214,7 +214,7 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
 
         SetUpKillZone();
 
-        hitStunTimer = storedLaunchForce.magnitude / 500;
+        hitStunTimer = storedLaunchForce.magnitude / 1500;
     }
 
 
@@ -238,7 +238,7 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
                 case HitStunState.StartUp:
 
                     //TODO: IDEA: Check if hit animation is finished (should go to idle). once finished start ragdoll 
-                    // Want to see how this feels vs just enabling ragdoll strait up
+                    // Want to see how this feels vs just enabling ragdoll strait up                    
                     EnableRagdoll();
                     ApplyLaunchForce();
 
@@ -382,12 +382,12 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     /// </summary>
     private void RepositionToRagDoll()
     {
-        Vector3 currentHipPos = boneRoot.transform.position;
+        Vector3 currentHipPos = ragdollRoot.transform.position;
 
         //Move transform to ragdoll root
-        transform.position = boneRoot.transform.position - ragdoll.PosOffset;
+        transform.position = ragdollRoot.transform.position - ragdoll.PosOffset;
 
-        boneRoot.transform.position = currentHipPos;
+        ragdollRoot.transform.position = currentHipPos;
     }
 
     #endregion
