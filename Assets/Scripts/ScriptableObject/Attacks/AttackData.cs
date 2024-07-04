@@ -9,9 +9,10 @@ public class AttackData : ScriptableObject
     public AnimationClip AttackAnimation;
 
     [Header("Attack Details")]
+    [SerializeField] private float influence;
     [SerializeField] private AnimationCurve damageCurve;
-    [SerializeField] private AnimationCurve launchAngleCurve;
-    
+    [SerializeField] private AnimationCurve launchAngleCurve;    
+
     [Header("Triggers")]
     [Tooltip("Trigger to be fired when attack colliders should be enabled")]
     [SerializeField] private AnimationTrigger enableCollider;
@@ -30,6 +31,12 @@ public class AttackData : ScriptableObject
 
     [Header("Colliders")]
     public List<AttackColliderType> ColliderType;
+
+
+    public float GetInfluence()
+    {
+        return influence;
+    }
 
 
     public float GetAttackDamage(float frameNumber)

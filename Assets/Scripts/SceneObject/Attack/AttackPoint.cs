@@ -69,7 +69,7 @@ public class AttackPoint : MonoBehaviour
                 ITakeDamage hitTarget = col.GetComponentInParent<ITakeDamage>();
                 if (hitTarget != null)
                 {                        
-                    hitTarget.HitByAttack(attackType, col.ClosestPoint(col.transform.position), curAttackData.GetAttackDamage(curFrame), launchAngle);                    
+                    hitTarget.HitByAttack(curAttackData.GetInfluence(), col.ClosestPoint(col.transform.position), curAttackData.GetAttackDamage(curFrame), launchAngle);                    
                 }
             }
         }

@@ -127,6 +127,8 @@ public class AnimationStateHandler : MonoBehaviour, IAnimator
 
     #region Play Animation
     
+    //TODO: Will need to determine weapon
+    //TODO: Debate on using layers for different weapon animations or states (Will need to look into adjusting priority)
     private void PlayIdleAnimation()
     {
         if (sceneObject.GroundedState == GroundedState.Airborn)

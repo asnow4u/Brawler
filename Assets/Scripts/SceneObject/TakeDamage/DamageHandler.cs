@@ -114,7 +114,7 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     /// <param name="attackType"></param>
     /// <param name="attackDamage"></param>
     /// <param name="launchAngle"></param>
-    public void HitByAttack(AttackColliderType attackType, Vector3 attackPoint, float attackDamage, float launchAngle)
+    public void HitByAttack(float influence, Vector3 attackPoint, float attackDamage, float launchAngle)
     {        
         if (storedLaunchForce == Vector3.zero)
         {
@@ -125,7 +125,7 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
             AddDamage(attackDamage);
 
             //Launch knockback
-            storedLaunchForce = knockbackHandler.CalculateForceKnockBack(attackType, damageTaken, sceneObject.Rb.mass, launchAngle);
+            storedLaunchForce = knockbackHandler.CalculateForceKnockBack(influence, damageTaken, sceneObject.Rb.mass, launchAngle);
             //launchForce = CheckForImmediateBounce(launchForce);
         
             //HitStun

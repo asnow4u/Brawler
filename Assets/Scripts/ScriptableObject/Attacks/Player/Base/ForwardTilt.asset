@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: ForwardTilt
   m_EditorClassIdentifier: 
   AttackAnimation: {fileID: 7400000, guid: 50e19dd155be02d42923a5d13c575db3, type: 2}
+  influence: 1
   damageCurve:
     serializedVersion: 2
     m_Curve:

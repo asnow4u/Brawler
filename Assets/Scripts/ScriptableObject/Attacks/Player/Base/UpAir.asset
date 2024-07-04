@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: UpAir
   m_EditorClassIdentifier: 
   AttackAnimation: {fileID: 7400000, guid: a7620b08dbd158a4e997b26aedc67215, type: 2}
+  influence: 1
   damageCurve:
     serializedVersion: 2
     m_Curve:
@@ -46,48 +47,6 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 10
       value: 3
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  knockbackCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 5
-      value: 650
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 7
-      value: 700
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 8
-      value: 650
-      inSlope: -66.666664
-      outSlope: -66.666664
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 10
-      value: 300
       inSlope: 0
       outSlope: 0
       tangentMode: 136
@@ -148,7 +107,6 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  damageInfluence: 1
   enableCollider:
     TriggerFrame: 5
     TriggerType: 2
@@ -156,7 +114,7 @@ MonoBehaviour:
   disableCollider:
     TriggerFrame: 10
     TriggerType: 3
-    WasTriggered: 0
+    WasTriggered: 1
   end:
     TriggerFrame: 48
     TriggerType: 1

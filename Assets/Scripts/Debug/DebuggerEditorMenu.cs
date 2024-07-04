@@ -14,6 +14,7 @@ public class DebuggerEditorMenu : EditorWindow
     //Damage Menu
     [SerializeField] private List<SceneObject> sceneObjects = new List<SceneObject>();
     private UnityEngine.Object targetObject;
+    private float launchInfluence;
     private float launchDamage;
     private float launchAngle;
     
@@ -73,6 +74,7 @@ public class DebuggerEditorMenu : EditorWindow
         GUILayout.Space(10f);
 
         targetObject = EditorGUILayout.ObjectField(targetObject, typeof(SceneObject), true);
+        launchInfluence = EditorGUILayout.FloatField("Influence", launchInfluence);
         launchDamage = EditorGUILayout.FloatField("Damage: ", launchDamage);
         launchAngle = EditorGUILayout.FloatField("Angle: ", launchAngle);
 
@@ -83,7 +85,7 @@ public class DebuggerEditorMenu : EditorWindow
             {
                 if (targetSceneObject.TryGetComponent(out ITakeDamage damageHandler))
                 {
-                    damageHandler.HitByAttack(AttackColliderType.PlayerRightFist, targetSceneObject.transform.position, launchDamage, launchAngle);
+                    damageHandler.HitByAttack(launchInfluence, targetSceneObject.transform.position, launchDamage, launchAngle);
                 }
             }
         }

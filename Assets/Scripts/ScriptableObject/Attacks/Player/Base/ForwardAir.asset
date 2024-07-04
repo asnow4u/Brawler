@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: ForwardAir
   m_EditorClassIdentifier: 
   AttackAnimation: {fileID: 7400000, guid: 0a345bb362d58b647bc8d48a22dbd1df, type: 2}
+  influence: 1
   damageCurve:
     serializedVersion: 2
     m_Curve:
@@ -46,39 +47,6 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  knockbackCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 3
-      value: 200
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 4
-      value: 600
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 14
-      value: 200
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   launchAngleCurve:
     serializedVersion: 2
     m_Curve:
@@ -103,7 +71,6 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  damageInfluence: 1
   enableCollider:
     TriggerFrame: 3
     TriggerType: 2
@@ -111,10 +78,10 @@ MonoBehaviour:
   disableCollider:
     TriggerFrame: 14
     TriggerType: 3
-    WasTriggered: 1
+    WasTriggered: 0
   end:
     TriggerFrame: 40
     TriggerType: 1
-    WasTriggered: 1
+    WasTriggered: 0
   otherTriggers: []
   ColliderType: 0000000002000000

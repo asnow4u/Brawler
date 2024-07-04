@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: UpTilt
   m_EditorClassIdentifier: 
   AttackAnimation: {fileID: 7400000, guid: ef98807cec67b93429e7d2b4cc363546, type: 2}
+  influence: 1
   damageCurve:
     serializedVersion: 2
     m_Curve:

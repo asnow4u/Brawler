@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: DownTilt
   m_EditorClassIdentifier: 
   AttackAnimation: {fileID: 7400000, guid: 324f22c1166c48041b791155b80b801f, type: 2}
+  influence: 1
   damageCurve:
     serializedVersion: 2
     m_Curve:
