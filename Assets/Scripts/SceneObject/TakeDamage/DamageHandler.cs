@@ -13,11 +13,10 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
 
     [Header("Knockback")]
     private KnockbackCalculator knockbackHandler;
-    private Vector3 storedLaunchForce;
 
     [Header("HitStun")]
     [SerializeField] private HitStunState hitStunState;
-    private float hitStunTimer;
+    [SerializeField] private float hitStunTimer;
 
     [Header("RagDoll")]
     [SerializeField] private GameObject ragdollRoot;    
@@ -48,6 +47,8 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
 
     public void Initialize()
     {
+        SetUpEvents();
+
         knockbackHandler = new KnockbackCalculator();
 
         if (ragdollRoot != null)
@@ -55,6 +56,35 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
             ragdoll = ragdollRoot.AddComponent<Ragdoll>();
             ragdoll.Initialize(sceneObject);            
         }        
+    }
+
+    #endregion
+
+
+    #region Events
+
+    private void SetUpEvents()
+    {
+        sceneObject.AnimationStateHandler.OnAnimationUpdateEvent += OnAnimationUpdated;
+    }
+
+
+    private void OnAnimationUpdated(string animation, AnimationTrigger.Type triggerType)
+    {
+        if (animation.Contains("Hit"))
+        {
+            if (triggerType == AnimationTrigger.Type.Start)
+            {
+                hitStunState = HitStunState.StartUp;
+            }
+
+            else if (triggerType == AnimationTrigger.Type.End)
+            {
+                Debug.Log("HITSTUN Animation ended");
+                EnableRagdoll();
+                hitStunState = HitStunState.Base;
+            }
+        }
     }
 
     #endregion
@@ -115,45 +145,40 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     /// <param name="attackDamage"></param>
     /// <param name="launchAngle"></param>
     public void HitByAttack(float influence, Vector3 attackPoint, float attackDamage, float launchAngle)
-    {        
-        if (storedLaunchForce == Vector3.zero)
-        {
-            //Damage bubble                    
-            UIFactory.Instance.SpawnDamageBubble(attackPoint, attackDamage);
+    {                
+        //Damage bubble                    
+        UIFactory.Instance.SpawnDamageBubble(attackPoint, attackDamage);
 
-            //Damage
-            AddDamage(attackDamage);
+        //Damage
+        AddDamage(attackDamage);
 
-            //Launch knockback
-            storedLaunchForce = knockbackHandler.CalculateForceKnockBack(influence, damageTaken, sceneObject.Rb.mass, launchAngle);
-            //launchForce = CheckForImmediateBounce(launchForce);
-        
-            //HitStun
-            StartHitStun();                
-        }
+        //Launch knockback
+        Vector3 launchForce = knockbackHandler.CalculateForceKnockBack(influence, damageTaken, sceneObject.Rb.mass, launchAngle);
+        ApplyLaunchForce(launchForce);
+
+        //HitStun
+        ApplyHitStun(launchForce.magnitude);                        
     }  
 
 
     /// <summary>
     /// Apply the stored force
     /// </summary>
-    private void ApplyLaunchForce()
+    private void ApplyLaunchForce(Vector3 launchForce)
     {        
-        if (ragdoll != null)
+        if (ragdoll != null && ragdoll.enabled)
         {
             //Set mass to coreRigidbody to get similar force effect
             float mass = ragdoll.RB.mass;
             ragdoll.RB.mass = sceneObject.CoreRigidBody.mass;
 
-            ragdoll.RB.AddForce(storedLaunchForce, ForceMode.Impulse);
+            ragdoll.RB.AddForce(launchForce, ForceMode.Impulse);
 
             ragdoll.RB.mass = mass;
         }
 
         else
-            sceneObject.CoreRigidBody.AddForce(storedLaunchForce, ForceMode.Impulse);
-
-        storedLaunchForce = Vector3.zero;
+            sceneObject.CoreRigidBody.AddForce(launchForce, ForceMode.Impulse);
     }
 
     //private Vector3 CheckForImmediateBounce(Vector3 initialForce)
@@ -205,23 +230,32 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     /// Change ActionState and start timer
     /// </summary>
     /// <param name="launchForce"></param>
-    private void StartHitStun()
+    private void ApplyHitStun(float launchForceMagnitude)
     {    
-        hitStunState = HitStunState.StartUp;
+        if (hitStunState == HitStunState.None)
+        {
+            //TODO: This does not incorperate different weapons yet
+            sceneObject.AnimationStateHandler.PlayAnimation(new AnimationStateData(gameObject.name + "BaseHit", ActionState.HitStun, null));
 
-        //TODO: This does not incorperate different weapons yet
-        sceneObject.AnimationStateHandler.PlayAnimation(new AnimationStateData(gameObject.name + "BaseHit", ActionState.HitStun, null));
+            SetUpKillZone();
 
-        SetUpKillZone();
+            //TODO: Determine equation for hitstun time
+            hitStunTimer = launchForceMagnitude / 1500;
+        }
 
-        hitStunTimer = storedLaunchForce.magnitude / 1500;
+        else
+        {
+            //TODO: Determine equation for hitstun time
+            hitStunTimer = launchForceMagnitude / 1500;
+        }
     }
 
 
     private void EndHitStun()
     {
         hitStunState = HitStunState.None;
-        sceneObject.AnimationStateHandler.EndCurrentAnimation(ActionState.Admin);
+        DisableRagdoll();
+        //sceneObject.AnimationStateHandler.EndCurrentAnimation(ActionState.Admin);
         DestroyKillZones();
     }
     
@@ -236,14 +270,6 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
             switch (hitStunState)
             {
                 case HitStunState.StartUp:
-
-                    //TODO: IDEA: Check if hit animation is finished (should go to idle). once finished start ragdoll 
-                    // Want to see how this feels vs just enabling ragdoll strait up                    
-                    EnableRagdoll();
-                    ApplyLaunchForce();
-
-                    hitStunState = HitStunState.Base;
-
                     break;
 
                 case HitStunState.Base:
@@ -254,19 +280,12 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
                     break;
 
                 case HitStunState.Ending:
-
-                    DisableRagdoll();
+                    
+                    EndHitStun();                
                     break;
-            }
-              
+            }             
 
-            //Update Timer
             hitStunTimer -= Time.deltaTime;
-
-            if (hitStunTimer <= 0)
-            {
-                EndHitStun();                
-            }
         }
     }
 
@@ -360,7 +379,7 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     private void DisableRagdoll()
     {
         if (ragdoll != null)
-        {
+        {            
             if (ragdoll.enabled)
                 ragdoll.enabled = false;          
         }

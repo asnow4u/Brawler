@@ -75,8 +75,10 @@ public class Ragdoll : MonoBehaviour
         
         if (isInitialized)
         {
-            DisableSceneObjectComponents();
             EnableRagdollParts();
+            RB.velocity = sceneObject.CoreRigidBody.velocity;
+
+            DisableSceneObjectComponents();
         }
     }
 
@@ -127,6 +129,9 @@ public class Ragdoll : MonoBehaviour
         {
             if (part.TryGetComponent(out Collider collider))
                 collider.isTrigger = false;
+
+            if (part.TryGetComponent(out Rigidbody rb))
+                rb.velocity = Vector3.zero;
 
             RB.isKinematic = false;            
         }
