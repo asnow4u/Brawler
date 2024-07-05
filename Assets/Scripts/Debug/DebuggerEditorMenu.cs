@@ -37,10 +37,12 @@ public class DebuggerEditorMenu : EditorWindow
 
     private void DisplayMenuSelection()
     {
-        GUILayout.BeginHorizontal("Menus", "window");
+        GUILayout.BeginVertical("Menus", "window");
 
-        GUILayout.Label("SelectedMenu: " + selectedType);
+        GUILayout.Label("Selected Menu: " + selectedType);
         GUILayout.Space(15f);
+
+        GUILayout.BeginHorizontal();
 
         foreach (DebuggerMenuType menuType in Enum.GetValues(typeof(DebuggerMenuType)))
         {
@@ -54,6 +56,7 @@ public class DebuggerEditorMenu : EditorWindow
         }
 
         GUILayout.EndHorizontal();
+        GUILayout.EndVertical();
     }
 
 
