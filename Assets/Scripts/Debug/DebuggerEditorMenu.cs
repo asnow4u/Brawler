@@ -76,6 +76,10 @@ public class DebuggerEditorMenu : EditorWindow
         GUILayout.BeginVertical("Damage", "window");
         GUILayout.Space(10f);
 
+        //Return to "none" when object is destroyed
+        if (targetObject == null)
+            targetObject = null;
+
         targetObject = EditorGUILayout.ObjectField(targetObject, typeof(SceneObject), true);
         launchInfluence = EditorGUILayout.Slider("Influence", launchInfluence, 0, 1f);
         launchDamage = EditorGUILayout.Slider("Damage: ", launchDamage, 0, 100f);
