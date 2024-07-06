@@ -77,9 +77,9 @@ public class DebuggerEditorMenu : EditorWindow
         GUILayout.Space(10f);
 
         targetObject = EditorGUILayout.ObjectField(targetObject, typeof(SceneObject), true);
-        launchInfluence = EditorGUILayout.FloatField("Influence", launchInfluence);
-        launchDamage = EditorGUILayout.FloatField("Damage: ", launchDamage);
-        launchAngle = EditorGUILayout.FloatField("Angle: ", launchAngle);
+        launchInfluence = EditorGUILayout.Slider("Influence", launchInfluence, 0, 1f);
+        launchDamage = EditorGUILayout.Slider("Damage: ", launchDamage, 0, 100f);
+        launchAngle = EditorGUILayout.Slider("Angle: ", launchAngle, 0, 360f);
 
         GUILayout.Space(10f);
         if (GUILayout.Button("Apply Damage To SceneObjects"))
