@@ -47,7 +47,7 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
 
     public void Initialize()
     {
-        SetUpEvents();
+        //SetUpEvents();
 
         knockbackHandler = new KnockbackCalculator();
 
@@ -63,29 +63,29 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
 
     #region Events
 
-    private void SetUpEvents()
-    {
-        sceneObject.AnimationStateHandler.OnAnimationUpdateEvent += OnAnimationUpdated;
-    }
+    //private void SetUpEvents()
+    //{
+    //    sceneObject.AnimationStateHandler.OnAnimationUpdateEvent += OnAnimationUpdated;
+    //}
 
 
-    private void OnAnimationUpdated(string animation, AnimationTrigger.Type triggerType)
-    {
-        if (animation.Contains("Hit"))
-        {
-            if (triggerType == AnimationTrigger.Type.Start)
-            {
-                hitStunState = HitStunState.StartUp;
-            }
+    //private void OnAnimationUpdated(string animation, AnimationTrigger.Type triggerType)
+    //{
+    //    if (animation.Contains("Hit"))
+    //    {
+    //        if (triggerType == AnimationTrigger.Type.Start)
+    //        {
+    //            hitStunState = HitStunState.StartUp;
+    //        }
 
-            else if (triggerType == AnimationTrigger.Type.End)
-            {
-                Debug.Log("HITSTUN Animation ended");
-                EnableRagdoll();
-                hitStunState = HitStunState.Base;
-            }
-        }
-    }
+    //        else if (triggerType == AnimationTrigger.Type.End)
+    //        {
+    //            Debug.Log("HITSTUN Animation ended");
+    //            EnableRagdoll();
+    //            hitStunState = HitStunState.Base;
+    //        }
+    //    }
+    //}
 
     #endregion
 
@@ -241,6 +241,8 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
 
             //TODO: Determine equation for hitstun time
             hitStunTimer = launchForceMagnitude / 1500;
+
+            hitStunState = HitStunState.Base;
         }
 
         else
@@ -253,9 +255,7 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
 
     private void EndHitStun()
     {
-        hitStunState = HitStunState.None;
-        DisableRagdoll();
-        //sceneObject.AnimationStateHandler.EndCurrentAnimation(ActionState.Admin);
+        hitStunState = HitStunState.None;       
         DestroyKillZones();
     }
     
@@ -269,13 +269,19 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
         {
             switch (hitStunState)
             {
-                case HitStunState.StartUp:
-                    break;
-
                 case HitStunState.Base:
 
-                    if (hitStunTimer < ragdoll.ExitTransitionTime)
-                        hitStunState = HitStunState.Ending;
+                    if (ragdoll != null)
+                    {
+                        if (!ragdoll.enabled && sceneObject.CoreRigidBody.velocity.magnitude > 10)
+                            EnableRagdoll();
+
+                        if (hitStunTimer < ragdoll.ExitTransitionTime)
+                            DisableRagdoll();
+                    }
+
+                    if (hitStunTimer < 0)
+                        hitStunState = HitStunState.Ending;                    
 
                     break;
 
