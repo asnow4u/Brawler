@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using UnityEditorInternal;
 using UnityEngine;
 
 
@@ -75,9 +76,7 @@ public class Ragdoll : MonoBehaviour
         
         if (isInitialized)
         {
-            EnableRagdollParts();
-            RB.velocity = sceneObject.CoreRigidBody.velocity;
-
+            EnableRagdollParts();           
             DisableSceneObjectComponents();
         }
     }
@@ -131,7 +130,7 @@ public class Ragdoll : MonoBehaviour
                 collider.isTrigger = false;
 
             if (part.TryGetComponent(out Rigidbody rb))
-                rb.velocity = Vector3.zero;
+                rb.velocity = sceneObject.CoreRigidBody.velocity;            
 
             RB.isKinematic = false;            
         }
