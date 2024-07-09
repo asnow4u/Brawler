@@ -150,7 +150,32 @@ public class Ragdoll : MonoBehaviour
 
     #endregion
 
-    
+
+    /// <summary>
+    /// Determine if a bounce is going to occure and adjust velocity accordingly
+    /// </summary>
+    /// <param name="bounds"></param>
+    /// <param name="bounceDegrade"></param>
+    public void CheckRagdollBounce(Bounds bounds, float bounceDegrade)
+    {
+        Vector3 velocity = RB.velocity;
+        float distance = velocity.magnitude * Time.fixedDeltaTime;
+        Vector3 direction = velocity.normalized;
+
+        if (Physics.BoxCast(bounds.center, bounds.extents, direction, out RaycastHit hit, Quaternion.identity, distance, LayerMask.GetMask("Environment")))
+        {
+            Vector3 bounceVelocity = Vector3.Reflect(velocity, hit.normal) * bounceDegrade;
+
+            foreach (GameObject part in ragdollParts)
+            {
+                if (part.TryGetComponent(out Rigidbody rigidbody))
+                    rigidbody.velocity = bounceVelocity;
+            }            
+        }
+    }
+
+
+
     private async Task TransitionToAnimation()
     {
         ragdollStartTransform.Clear();

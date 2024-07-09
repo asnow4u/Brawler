@@ -22,6 +22,9 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     [SerializeField] private GameObject ragdollRoot;    
     private Ragdoll ragdoll;
 
+    [Header("Bounce")]
+    [SerializeField] private float bounceDegrade = 0.9f;
+
 
     //KillZones
     private KillZone[] killZones;
@@ -35,7 +38,6 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
 
 
 
-    //[SerializeField] private float bounceDegrade = 0.9f;
     ////TODO: Bounce timer should be based on damage(more damage = more emphisis on bounce)
     //[SerializeField] private float bounceFrameTimer;
     //private Vector3 predictedBounceVelocity;
@@ -271,6 +273,10 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
             {
                 case HitStunState.Base:
 
+                    //Bounce
+                    PerdictHitStunBounce();
+
+                    //Ragdoll
                     if (ragdoll != null)
                     {
                         if (!ragdoll.enabled && sceneObject.CoreRigidBody.velocity.magnitude > 10)
@@ -280,6 +286,7 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
                             DisableRagdoll();
                     }
 
+                    //Timer
                     if (hitStunTimer < 0)
                         hitStunState = HitStunState.Ending;                    
 
@@ -295,77 +302,36 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
         }
     }
 
-
-    //TODO: Need to fix for ragdoll
+    
     /// <summary>
     /// Looks ahead to help calculate a bounce
     /// </summary>
-    public void PredictHitStunBounce()
+    public void PerdictHitStunBounce()
     {
-        //if (sceneObject.AnimationStateHandler.CurActionState == ActionState.HitStun &&
-        //    hitStunState == HitStunState.Movement)
-        //{
-        //    float distance = rb.velocity.magnitude * Time.fixedDeltaTime;
-        //    Vector3 direction = rb.velocity.normalized;
+        if (ragdoll != null && ragdoll.enabled)
+            ragdoll.CheckRagdollBounce(collider.bounds, bounceDegrade);
 
-        //    RaycastHit[] hits = rb.SweepTestAll(direction, distance);
-
-        //    foreach (RaycastHit hit in hits)
-        //    {
-        //        if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Environment"))
-        //        {
-        //            Debug.Log("HitStun Perdicted", hit.collider.gameObject);
-        //            predictedBounceVelocity = Vector3.Reflect(rb.velocity, hit.normal) * bounceDegrade;
-        //            hitStunState = HitStunState.PredictedBounce;
-
-        //            break;
-        //        }
-        //    }
-        //}
+        else
+            CheckCoreBounce(collider.bounds);        
     }
 
-    
+
     /// <summary>
-    /// Used to slow down the bounce effect when a scene object hits a environment surface
+    /// Check if a bounce is going to occure. Adjust velocity accordingly
     /// </summary>
-    /// <returns></returns>
-    //private IEnumerator BounceTimer()
-    //{
-        //hitStunState = HitStunState.Bounce;
-        //Debug.Log("HitStun BounceTimer started");
+    /// <param name="bounds"></param>
+    private void CheckCoreBounce(Bounds bounds)
+    {
+        Vector3 velocity = sceneObject.CoreRigidBody.velocity;
+        float distance = velocity.magnitude * Time.fixedDeltaTime;
+        Vector3 direction = velocity.normalized;
 
-        //int frameCount = 0;
-
-        //while (frameCount <= bounceFrameTimer)
-        //{
-        //    frameCount++;
-        //    yield return null;
-        //}
-
-        //Debug.Log("HitStun BounceTimer ended");
-
-        //rb.velocity = predictedBounceVelocity;
-
-        //hitStunState = HitStunState.Movement;
-    //}
-
-    #endregion
-
-
-    #region Collision
-
-    //private void OnCollisionEnter(Collision col)
-    //{
-    //    //Environment
-    //    if (col.gameObject.layer == LayerMask.NameToLayer("Environment"))
-    //    {
-    //        if (sceneObject.AnimationStateHandler.CurActionState == ActionState.HitStun)
-    //        {
-    //            Debug.Log("HitStun Collided");
-    //            StartCoroutine(BounceTimer());
-    //        }
-    //    }
-    //}
+        if (Physics.BoxCast(bounds.center, bounds.extents, direction, out RaycastHit hit, Quaternion.identity, distance, LayerMask.GetMask("Environment")))
+        {
+            Vector3 bounceVelocity = Vector3.Reflect(velocity, hit.normal) * bounceDegrade;
+            sceneObject.CoreRigidBody.velocity = bounceVelocity;
+        }
+    }
 
     #endregion
 
