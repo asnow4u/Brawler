@@ -155,7 +155,7 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
         AddDamage(attackDamage);
 
         //Launch knockback
-        Vector3 launchForce = knockbackHandler.CalculateForceKnockBack(influence, damageTaken, sceneObject.Rb.mass, launchAngle);
+        Vector3 launchForce = knockbackHandler.CalculateForceKnockBack(influence, damageTaken, launchAngle, sceneObject.Rb);
         ApplyLaunchForce(launchForce);
 
         //HitStun
@@ -182,46 +182,6 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
         else
             sceneObject.CoreRigidBody.AddForce(launchForce, ForceMode.Impulse);
     }
-
-    //private Vector3 CheckForImmediateBounce(Vector3 initialForce)
-    //{
-    //    //Check for bounce
-    //    if (initialForce.x > 0 &&
-    //        Physics.Raycast(collider.bounds.center, transform.right, collider.bounds.extents.x + 0.01f, LayerMask.GetMask("Environment")))
-    //    {
-    //        Debug.Log("LaunchForce Bounce on right side");
-    //        initialForce *= bounceDegrade;
-    //        initialForce.x *= -1;
-    //    }
-
-    //    if (initialForce.x < 0 &&
-    //        Physics.Raycast(collider.bounds.center, -transform.right, collider.bounds.extents.x + 0.01f, LayerMask.GetMask("Environment")))
-    //    {
-    //        Debug.Log("LaunchForce Bounce on left side");
-    //        initialForce *= bounceDegrade;
-    //        initialForce.x *= -1;
-    //    }
-
-    //    if (initialForce.y > 0 &&
-    //        Physics.Raycast(collider.bounds.center, transform.up, collider.bounds.extents.y + 0.01f, LayerMask.GetMask("Environment")))
-    //    {
-    //        Debug.Log("LaunchForce Bounce on top side");
-    //        initialForce *= bounceDegrade;
-    //        initialForce.y *= -1;
-    //    }
-
-    //    if (initialForce.y < 0 &&
-    //        Physics.Raycast(collider.bounds.center, -transform.up, collider.bounds.extents.y + 0.01f, LayerMask.GetMask("Environment")))
-    //    {
-    //        Debug.Log("LaunchForce Bounce on bottom side");
-    //        initialForce *= bounceDegrade;
-    //        initialForce.y *= -1;
-    //    }
-
-
-    //    return initialForce;
-    //}
-
 
     #endregion
 
