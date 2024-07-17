@@ -35,16 +35,6 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     private Collider collider => GetComponent<Collider>();
 
 
-
-
-
-    ////TODO: Bounce timer should be based on damage(more damage = more emphisis on bounce)
-    //[SerializeField] private float bounceFrameTimer;
-    //private Vector3 predictedBounceVelocity;
-
-    
-
-
     #region Initialize
 
     public void Initialize()
@@ -59,35 +49,6 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
             ragdoll.Initialize(sceneObject);            
         }        
     }
-
-    #endregion
-
-
-    #region Events
-
-    //private void SetUpEvents()
-    //{
-    //    sceneObject.AnimationStateHandler.OnAnimationUpdateEvent += OnAnimationUpdated;
-    //}
-
-
-    //private void OnAnimationUpdated(string animation, AnimationTrigger.Type triggerType)
-    //{
-    //    if (animation.Contains("Hit"))
-    //    {
-    //        if (triggerType == AnimationTrigger.Type.Start)
-    //        {
-    //            hitStunState = HitStunState.StartUp;
-    //        }
-
-    //        else if (triggerType == AnimationTrigger.Type.End)
-    //        {
-    //            Debug.Log("HITSTUN Animation ended");
-    //            EnableRagdoll();
-    //            hitStunState = HitStunState.Base;
-    //        }
-    //    }
-    //}
 
     #endregion
 
