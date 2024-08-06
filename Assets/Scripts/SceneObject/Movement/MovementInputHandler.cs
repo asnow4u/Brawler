@@ -43,8 +43,8 @@ public class MovementInputHandler : MonoBehaviour
 
 
     //Events
-    public Action<MovementCollection> MovementCollectionChanged;
-
+    public event Action<MovementCollection> MovementCollectionChangedEvent;
+    public event Action<MovementType> MoveStateChangedEvent;
 
     #region Initialize
 
@@ -85,7 +85,7 @@ public class MovementInputHandler : MonoBehaviour
         else
             CurMovementCollection = weapon.MovementCollection;
 
-        MovementCollectionChanged?.Invoke(CurMovementCollection);
+        MovementCollectionChangedEvent?.Invoke(CurMovementCollection);
     }
 
     private void OnAnimationUpdate(string animationState, AnimationTrigger.Type triggerType)
@@ -136,6 +136,8 @@ public class MovementInputHandler : MonoBehaviour
     {
         Debug.Log("MOVEMENT: CurMoveState => " + moveState);
         curMoveState = moveState;
+
+        MoveStateChangedEvent?.Invoke(moveState);
     }
 
 
@@ -540,10 +542,10 @@ public class MovementInputHandler : MonoBehaviour
     /// <param name="moveType"></param>
     private void PlayTransitionAnimation(MovementType moveType)
     {
-        if (CurMovementCollection.TryGetMovementByType(moveType, out MovementData move))
-        {
-            sceneObj.AnimationStateHandler.PlayAnimation(new AnimationStateData(move.Animation.name, ActionState.MoveTransition, move.Triggers.ToArray()));
-        }
+        //if (CurMovementCollection.TryGetMovementByType(moveType, out MovementData move))
+        //{
+        //    sceneObj.AnimationStateHandler.PlayAnimation(new AnimationStateData(move.Animation.name, ActionState.MoveTransition, move.Triggers.ToArray()));
+        //}
     }
 
     #endregion

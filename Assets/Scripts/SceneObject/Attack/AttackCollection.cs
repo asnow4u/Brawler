@@ -19,7 +19,7 @@ public class AttackCollection
 
     #region Attack Data
 
-    public bool GetAttackByType(AttackType attackType, out AttackData attack)
+    public bool TryGetAttackByType(AttackType attackType, out AttackData attack)
     {
         switch (attackType)
         {

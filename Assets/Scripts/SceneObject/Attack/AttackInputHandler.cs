@@ -20,13 +20,22 @@ public class AttackInputHandler : MonoBehaviour
     //Equipment handler will pass the correct attack collection
     [SerializeField] private AttackCollection BaseAttackCollection;
 
-
     //Attack Data
     private AttackData curAttackData;
     private Action bufferedAttackAction = null;
 
     //SceneObject
     private SceneObject sceneObj => GetComponent<SceneObject>();
+
+    //Events
+    public event Action<AttackType> AttackStateChangedEvent;
+
+    #region Getters
+
+    public AttackCollection CurAttackCollection => curAttackCollection;
+
+    #endregion
+
 
     #region Initialize
 
@@ -128,7 +137,7 @@ public class AttackInputHandler : MonoBehaviour
 
     private void PlayAttackAnimation(AttackType attackType)
     {
-        if (curAttackData == null && curAttackCollection.GetAttackByType(attackType, out AttackData attack))
+        if (curAttackData == null && curAttackCollection.TryGetAttackByType(attackType, out AttackData attack))
         {
             sceneObj.AnimationStateHandler.PlayAnimation(new AnimationStateData(attack.AttackAnimation.name, ATTACKSTATE, attack.GetAttackTriggers()));
         }

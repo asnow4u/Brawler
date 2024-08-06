@@ -50,7 +50,7 @@ public static class DebugSceneObject
     {
         GameObject mesh = new GameObject("Mesh");
         mesh.transform.SetParent(parent);
-        mesh.AddComponent<AnimationStateHandler>();
+        mesh.AddComponent<ActionStateHandler>();
 
         return mesh;
     }

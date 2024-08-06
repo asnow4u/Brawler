@@ -9,7 +9,8 @@ public enum GroundedState { Airborn, Grounded, Sliding }
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(MovementInputHandler))]
 [RequireComponent(typeof(AttackInputHandler))]
-[RequireComponent(typeof(AnimationStateHandler))]
+[RequireComponent(typeof(ActionStateHandler))]
+[RequireComponent(typeof(AnimationPlayableHandler))]
 [RequireComponent(typeof(UIHandler))]
 [RequireComponent(typeof(DamageHandler))]
 public abstract class SceneObject : MonoBehaviour
@@ -20,18 +21,27 @@ public abstract class SceneObject : MonoBehaviour
 
     [Header("Ground Status")]
     [SerializeField] private GroundedState curGroundedState;
-    [SerializeField] private float maxSlopeAngle; 
+    [SerializeField] private float maxSlopeAngle;
 
     //Handlers
+    private ActionStateHandler actionStateHandler;
+    private MovementInputHandler movementInputHandler;
+    private AttackInputHandler attackInputHandler;
+    private AnimationPlayableHandler animationHandler;
+    private UIHandler uiHandler;
+    private DamageHandler damageHandler;
+
     public IEquipment EquipmentHandler;
     public IInteraction InteractionHandler;
 
     //Getters
-    public IAnimator AnimationStateHandler => GetComponentInChildren<IAnimator>();
-    public MovementInputHandler MovementInputHandler => GetComponent<MovementInputHandler>();
-    public AttackInputHandler AttackInputHandler => GetComponent<AttackInputHandler>();
-    public UIHandler UIHandler => GetComponent<UIHandler>();
-    public DamageHandler DamageHandler => GetComponent<DamageHandler>();
+    public ActionStateHandler ActionStateHandler => actionStateHandler;
+    public MovementInputHandler MovementInputHandler => movementInputHandler;
+    public AttackInputHandler AttackInputHandler => attackInputHandler;
+    public AnimationPlayableHandler AnimationHandler => animationHandler;
+    public UIHandler UIHandler => uiHandler;
+    public DamageHandler DamageHandler => damageHandler;
+
     
     public GroundedState GroundedState => curGroundedState;   
     public Rigidbody Rb => GetComponent<Rigidbody>();
@@ -47,7 +57,7 @@ public abstract class SceneObject : MonoBehaviour
     private void Start()
     {
         InspectorCheck();
-        Initialize();
+        Initialize();        
     }
 
 
@@ -78,15 +88,23 @@ public abstract class SceneObject : MonoBehaviour
 
         InitializeEquipmentHandler();
 
-        MovementInputHandler.Setup();
+        if (TryGetComponent(out actionStateHandler))
+            actionStateHandler.SetUp();
 
-        AttackInputHandler.Setup();
+        if (TryGetComponent(out movementInputHandler))
+            movementInputHandler.Setup();        
 
-        AnimationStateHandler.SetUp();
+        if (TryGetComponent(out attackInputHandler))
+            attackInputHandler.Setup();
 
-        UIHandler.Initialize();
+        if (TryGetComponent(out damageHandler))
+            damageHandler.Initialize();
 
-        DamageHandler.Initialize();
+        if (TryGetComponent(out uiHandler))
+            uiHandler.Initialize();
+
+        if (TryGetComponent(out animationHandler))
+            animationHandler.Initialize();                
     }
 
 
