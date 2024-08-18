@@ -10,7 +10,7 @@ public class MovementInputHandler : MonoBehaviour
     //Movement State Data
     [Header("State")]
     [SerializeField] private MovementType curMoveState = MovementType.Move;
-    [SerializeField] private string curMoveAnimationState;
+    private MovementData curMoveData;
 
     //Jump Properties
     private int numJumpsPerformed;
@@ -51,8 +51,7 @@ public class MovementInputHandler : MonoBehaviour
     public void Setup()
     {
         sceneObj.GroundedStateChangeEvent += OnGroundedStateChanged;
-        sceneObj.AnimationStateHandler.OnAnimationUpdateEvent += OnAnimationUpdate;
-        //sceneObj.EquipmentHandler.Weapons.WeaponChangedEvent += OnWeaponChanged;
+        sceneObj.AnimationHandler.OnAnimationUpdateEvent += OnAnimationUpdate;
 
         OnWeaponChanged(null);        
     }
@@ -88,14 +87,20 @@ public class MovementInputHandler : MonoBehaviour
         MovementCollectionChangedEvent?.Invoke(CurMovementCollection);
     }
 
+
+    /// <summary>
+    /// Animation trigger event
+    /// </summary>
+    /// <param name="animationState"></param>
+    /// <param name="triggerType"></param>
     private void OnAnimationUpdate(string animationState, AnimationTrigger.Type triggerType)
     {
         if (CurMovementCollection.TryGetMovementFromAnimation(animationState, out MovementData move))
         {
             switch (triggerType)
             {
-                case AnimationTrigger.Type.Start:
-                    OnMovementAnimationStarted(animationState, move.Type);
+                case AnimationTrigger.Type.Start:                    
+                    OnMovementAnimationStarted(animationState, move);
                     break;
 
                 case AnimationTrigger.Type.End:
@@ -105,10 +110,21 @@ public class MovementInputHandler : MonoBehaviour
         }
     }
 
-    private void OnMovementAnimationStarted(string animationState, MovementType type)
+
+    /// <summary>
+    /// Movement animation started
+    /// </summary>
+    /// <param name="animationState"></param>
+    /// <param name="type"></param>
+    private void OnMovementAnimationStarted(string animationState, MovementData moveData)
     {
-        curMoveAnimationState = animationState;                
+        curMoveData = moveData;
+
+        foreach (AnimationTrigger trigger in moveData.Triggers)
+            trigger.Reset();
     }
+
+
 
     private void OnMovementAnimationEnded(string animationState, MovementType type) 
     {        

@@ -115,10 +115,11 @@ public class Player : SceneObject
 
     private void SwitchWeaponTo(int index)
     {
-        if (AnimationStateHandler.IsStatePossible(ActionState.Moving))
-        {
-            EquipmentHandler.Weapons.SwapWeaponTo(index);
-        }
+        throw new System.NotImplementedException();
+        //if (AnimationStateHandler.IsStatePossible(ActionState.Moving))
+        //{
+        //    EquipmentHandler.Weapons.SwapWeaponTo(index);
+        //}
     }
 
     private void SwitchWeapon1(InputAction.CallbackContext obj)

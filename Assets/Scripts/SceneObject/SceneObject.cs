@@ -10,7 +10,7 @@ public enum GroundedState { Airborn, Grounded, Sliding }
 [RequireComponent(typeof(MovementInputHandler))]
 [RequireComponent(typeof(AttackInputHandler))]
 [RequireComponent(typeof(ActionStateHandler))]
-[RequireComponent(typeof(AnimationPlayableHandler))]
+[RequireComponent(typeof(AnimationHandler))]
 [RequireComponent(typeof(UIHandler))]
 [RequireComponent(typeof(DamageHandler))]
 public abstract class SceneObject : MonoBehaviour
@@ -27,7 +27,7 @@ public abstract class SceneObject : MonoBehaviour
     private ActionStateHandler actionStateHandler;
     private MovementInputHandler movementInputHandler;
     private AttackInputHandler attackInputHandler;
-    private AnimationPlayableHandler animationHandler;
+    private AnimationHandler animationHandler;
     private UIHandler uiHandler;
     private DamageHandler damageHandler;
 
@@ -38,7 +38,7 @@ public abstract class SceneObject : MonoBehaviour
     public ActionStateHandler ActionStateHandler => actionStateHandler;
     public MovementInputHandler MovementInputHandler => movementInputHandler;
     public AttackInputHandler AttackInputHandler => attackInputHandler;
-    public AnimationPlayableHandler AnimationHandler => animationHandler;
+    public AnimationHandler AnimationHandler => animationHandler;
     public UIHandler UIHandler => uiHandler;
     public DamageHandler DamageHandler => damageHandler;
 
@@ -95,7 +95,7 @@ public abstract class SceneObject : MonoBehaviour
             movementInputHandler.Setup();        
 
         if (TryGetComponent(out attackInputHandler))
-            attackInputHandler.Setup();
+            attackInputHandler.Initialize();
 
         if (TryGetComponent(out damageHandler))
             damageHandler.Initialize();
@@ -182,7 +182,7 @@ public abstract class SceneObject : MonoBehaviour
                         curGroundedState = GroundedState.Grounded;
 
                     //End animation at or below attacking state
-                    AnimationStateHandler.EndCurrentAnimation(ActionState.Attacking);
+                    AnimationHandler.EndCurrentAnimation(ActionState.Attacking);
 
                     GroundedStateChangeEvent?.Invoke(curGroundedState);
                     
@@ -197,7 +197,7 @@ public abstract class SceneObject : MonoBehaviour
                 curGroundedState = GroundedState.Airborn;
 
                 //End animation at or below attacking state
-                AnimationStateHandler.EndCurrentAnimation(ActionState.Attacking);
+                AnimationHandler.EndCurrentAnimation(ActionState.Attacking);
 
                 GroundedStateChangeEvent?.Invoke(curGroundedState);
             }

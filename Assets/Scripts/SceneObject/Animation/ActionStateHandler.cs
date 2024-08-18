@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum ActionState //TODO: come up with a better name for moveTransition (Landing)
-{
-    Null, Idle, Moving, Attacking, MoveTransition, HitStun
+public enum ActionState 
+{ 
+    Idle, Moving, Attacking, HitStun
 };
 
 

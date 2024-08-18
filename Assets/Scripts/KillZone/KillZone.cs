@@ -90,7 +90,7 @@ public class KillZone : MonoBehaviour
     {
         if (sceneObject.UniqueId == killID)
         {                        
-            if (sceneObject.AnimationStateHandler.CurActionState == ActionState.HitStun)
+            if (sceneObject.ActionStateHandler.CurActionState == ActionState.HitStun)
             {                                
                 //TODO: Spawn partical effect
                 //TODO: Determine if player

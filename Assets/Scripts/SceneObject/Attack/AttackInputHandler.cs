@@ -30,6 +30,7 @@ public class AttackInputHandler : MonoBehaviour
     //Events
     public event Action<AttackType> AttackStateChangedEvent;
 
+
     #region Getters
 
     public AttackCollection CurAttackCollection => curAttackCollection;
@@ -37,9 +38,7 @@ public class AttackInputHandler : MonoBehaviour
     #endregion
 
 
-    #region Initialize
-
-    public void Setup()
+    public void Initialize()
     {
         //TODO: Remove this with the implementation of equipmenthandler
         //Equipment handler should handle updating the current weapon
@@ -51,15 +50,21 @@ public class AttackInputHandler : MonoBehaviour
     }
 
 
-    #endregion
+    private void Update()
+    {
+        CheckForAnimationTriggers();
+    }
+
 
     #region Events
 
     private void SetUpEvents()
     {
-        //sceneObj.EquipmentHandler.Weapons.WeaponChangedEvent += OnWeaponChanged;
-        sceneObj.AnimationStateHandler.OnAnimationUpdateEvent += OnAnimationUpdated;
+        //Animation Events
+        sceneObj.AnimationHandler.AnimationStartedEvent += OnAnimationStarted;
+        sceneObj.AnimationHandler.AnimationEndedEvent += OnAnimationEnded;
     }
+
 
     private void OnWeaponChanged(Weapon weapon)
     {
@@ -67,79 +72,25 @@ public class AttackInputHandler : MonoBehaviour
         //Should always get the attackCollection even for base
         if (weapon == null)
             curAttackCollection = BaseAttackCollection;
-
         else
             curAttackCollection = weapon.AttackCollection;
     }
 
 
-    #region Attack Performed Events
-
-    private void OnAnimationUpdated(string animationState, AnimationTrigger.Type triggerType)
-    {
-        if (curAttackCollection.TryGetAttackByAnimation(animationState, out AttackData attackData))
-        {
-            switch (triggerType)
-            {
-                case AnimationTrigger.Type.Start:
-                    OnAttackAnimationStarted(attackData);
-                    break;
-
-                case AnimationTrigger.Type.EnableCollider:
-                    SetUpAttackPoints(attackData);
-                    break;
-
-                case AnimationTrigger.Type.DisableCollider:
-                    ResetAttackPoints(attackData);
-                    break;
-
-                case AnimationTrigger.Type.End:
-                    OnAttackAnimationEnded(attackData);
-                    break;
-            }
-        }
-    }
-
-
-    private void OnAttackAnimationStarted(AttackData attackData)
-    {
-        curAttackData = attackData;
-    }
-
-
-    private void SetUpAttackPoints(AttackData attackData)
-    {
-        curAttackPointCollection.SetupAttackPointsForAttack(attackData);
-    }
-
-
-    private void ResetAttackPoints(AttackData attackData)
-    {
-        curAttackPointCollection.ResetAttackPoints(attackData);
-    }
-
-
-    private void OnAttackAnimationEnded(AttackData attackData)
-    {
-        if (curAttackData != null && curAttackData.AttackAnimation.name == attackData.AttackAnimation.name)
-        {
-            ResetAttackPoints(attackData);
-
-            curAttackData = null;
-        }
-    }
-
     #endregion
 
-    #endregion
 
     #region Perform Attack
 
     private void PlayAttackAnimation(AttackType attackType)
     {
-        if (curAttackData == null && curAttackCollection.TryGetAttackByType(attackType, out AttackData attack))
+        //Check not currently attacking
+        //Check that attack exists
+        if (curAttackData == null && 
+            curAttackCollection.TryGetAttackByType(attackType, out AttackData attack))
         {
-            sceneObj.AnimationStateHandler.PlayAnimation(new AnimationStateData(attack.AttackAnimation.name, ATTACKSTATE, attack.GetAttackTriggers()));
+            if (sceneObj.ActionStateHandler.TryChangeState(ATTACKSTATE))
+               AttackStateChangedEvent?.Invoke(attackType);            
         }
     }
 
@@ -149,11 +100,12 @@ public class AttackInputHandler : MonoBehaviour
     /// </summary>
     public void ExecuteBufferedAttack()
     {
-        if (bufferedAttackAction != null)
-        {
-            bufferedAttackAction.Invoke();
-            bufferedAttackAction = null;
-        }
+        //TODO: ReImplement
+        //if (bufferedAttackAction != null)
+        //{
+        //    bufferedAttackAction.Invoke();
+        //    bufferedAttackAction = null;
+        //}
     }
 
 
@@ -164,10 +116,11 @@ public class AttackInputHandler : MonoBehaviour
     /// <param name="attackType"></param>
     private void BufferAttack(Action bufferedAttackAction)
     {
-        if (sceneObj.AnimationStateHandler.CurActionState == ActionState.MoveTransition)
-        {
-            this.bufferedAttackAction = bufferedAttackAction;
-        }
+        //TODO: ReImplement
+        //if (sceneObj.ActionStateHandler.CurActionState == ActionState.MoveTransition)
+        //{
+        //    this.bufferedAttackAction = bufferedAttackAction;
+        //}
     }
 
 
@@ -175,21 +128,13 @@ public class AttackInputHandler : MonoBehaviour
     /// Try to perform a grounded / Air Up attack
     /// </summary>
     public void PerformUpAttack()
-    {
-        if (sceneObj.AnimationStateHandler.IsStatePossible(ATTACKSTATE))
-        {
-            //TODO: What attack would happen when sliding
-            if (sceneObj.GroundedState == GroundedState.Airborn)
-                PlayAttackAnimation(AttackType.UpAir);
-
-            else
-                PlayAttackAnimation(AttackType.UpTilt);
-        }
+    {        
+        //TODO: What attack would happen when sliding
+        if (sceneObj.GroundedState == GroundedState.Airborn)
+            PlayAttackAnimation(AttackType.UpAir);
 
         else
-        {
-            BufferAttack(this.PerformUpAttack);
-        }
+            PlayAttackAnimation(AttackType.UpTilt);              
     }
 
 
@@ -198,7 +143,7 @@ public class AttackInputHandler : MonoBehaviour
     /// </summary>
     public void PerformDownAttack()
     {
-        if (sceneObj.AnimationStateHandler.IsStatePossible(ATTACKSTATE))
+        if (sceneObj.ActionStateHandler.TryChangeState(ATTACKSTATE))
         {
             if (sceneObj.GroundedState == GroundedState.Airborn)
                 PlayAttackAnimation(AttackType.DownAir);
@@ -208,9 +153,7 @@ public class AttackInputHandler : MonoBehaviour
         }
 
         else
-        {
-            BufferAttack(this.PerformDownAttack);
-        }
+            BufferAttack(this.PerformDownAttack);        
     }
 
 
@@ -220,7 +163,7 @@ public class AttackInputHandler : MonoBehaviour
     /// </summary>
     public void PerformRightAttack()
     {
-        if (sceneObj.AnimationStateHandler.IsStatePossible(ATTACKSTATE))
+        if (sceneObj.ActionStateHandler.TryChangeState(ATTACKSTATE))
         {
             if (sceneObj.GroundedState == GroundedState.Airborn)
             {
@@ -244,9 +187,7 @@ public class AttackInputHandler : MonoBehaviour
         }
 
         else
-        {
-            BufferAttack(this.PerformRightAttack);            
-        }
+            BufferAttack(this.PerformRightAttack);                    
     }
 
 
@@ -256,7 +197,7 @@ public class AttackInputHandler : MonoBehaviour
     /// </summary>
     public void PerformLeftAttack()
     {
-        if (sceneObj.AnimationStateHandler.IsStatePossible(ATTACKSTATE))
+        if (sceneObj.ActionStateHandler.TryChangeState(ATTACKSTATE))
         {
             if (sceneObj.GroundedState == GroundedState.Airborn)
             {
@@ -279,11 +220,88 @@ public class AttackInputHandler : MonoBehaviour
         }
 
         else
-        {
-            BufferAttack(this.PerformLeftAttack);           
-        }
+            BufferAttack(this.PerformLeftAttack);                   
     }
 
     #endregion
 
+
+    #region Animation
+
+
+    /// <summary>
+    /// Check for attack animation
+    /// </summary>
+    /// <param name="clip"></param>
+    private void OnAnimationStarted(AnimationClip clip)
+    {
+        if (curAttackCollection.TryGetAttackByAnimation(clip.name, out AttackData attackData))
+        {
+            curAttackData = attackData;
+
+            foreach (AnimationTrigger trigger in attackData.GetAttackTriggers())
+                trigger.Reset();
+        }
+    }
+
+
+    /// <summary>
+    /// Check if attack animation ended
+    /// </summary>
+    /// <param name="clip"></param>
+    /// <exception cref="NotImplementedException"></exception>
+    private void OnAnimationEnded(AnimationClip clip)
+    {
+        if (curAttackCollection.TryGetAttackByAnimation(clip.name, out AttackData attackData))
+        {
+            if (curAttackData != null)
+            {
+                curAttackData = null;
+                curAttackPointCollection.ResetAttackPoints(attackData);
+            }
+        }
+    }
+
+
+    /// <summary>
+    /// Check for animation triggers that need to fire
+    /// </summary>
+    private void CheckForAnimationTriggers()
+    {
+        if (sceneObj.ActionStateHandler.CurActionState == ActionState.Attacking)
+        {
+            int curAnimationFrame = sceneObj.AnimationHandler.GetFrameOfCurrentAnimation();
+            
+            foreach (AnimationTrigger trigger in curAttackData.GetAttackTriggers())
+            {
+                if (!trigger.WasTriggered && curAnimationFrame >= trigger.TriggerFrame)
+                {
+                    ExecuteTrigger(trigger);
+                }
+            }
+        }
+    }
+
+
+    /// <summary>
+    /// Execute animation trigger
+    /// </summary>
+    /// <param name="trigger"></param>
+    private void ExecuteTrigger(AnimationTrigger trigger)
+    {
+        trigger.WasTriggered = true;
+
+        switch (trigger.TriggerType) 
+        {
+            case AnimationTrigger.Type.EnableCollider:
+                curAttackPointCollection.SetupAttackPointsForAttack(curAttackData);
+                break;
+
+            case AnimationTrigger.Type.DisableCollider:
+                curAttackPointCollection.ResetAttackPoints(curAttackData);
+                break;
+        }
+    }
+
+    #endregion
 }
