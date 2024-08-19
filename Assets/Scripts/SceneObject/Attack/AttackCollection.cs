@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public enum AttackType { UpTilt, DownTilt, ForwardTilt, UpAir, DownAir, ForwardAir };
+public enum AttackType { Null, UpTilt, DownTilt, ForwardTilt, UpAir, DownAir, ForwardAir };
 
 [Serializable]
 public class AttackCollection

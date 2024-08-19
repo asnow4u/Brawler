@@ -36,21 +36,36 @@ public class ActionStateHandler : MonoBehaviour
     #region Action State
 
     /// <summary>
-    /// Atempt to change action state
+    /// Change the action state without consideration for priority
     /// </summary>
     /// <param name="newState"></param>
-    /// <returns></returns>
-    public bool TryChangeState(ActionState newState)
-    {   
-        if (newState >= curActionState)
+    public void ChangeState(ActionState newState)
+    {
+        if (newState != curActionState)
         {
             Debug.Log("STATE: " + newState);
             curActionState = newState;
 
             ActionStateChangedEvent?.Invoke(curActionState);
+        }
+    }
 
+
+    /// <summary>
+    /// Atempt to change action state based on if newState takes more priority
+    /// </summary>
+    /// <param name="newState"></param>
+    /// <returns></returns>
+    public bool TryChangeState(ActionState newState)
+    {
+        if (newState > curActionState)
+        {
+            ChangeState(newState);
             return true;
         }
+
+        else if (newState == curActionState)
+            return true;
 
         return false;
     }

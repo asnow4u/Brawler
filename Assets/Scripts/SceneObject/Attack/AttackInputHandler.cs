@@ -21,7 +21,11 @@ public class AttackInputHandler : MonoBehaviour
     [SerializeField] private AttackCollection BaseAttackCollection;
 
     //Attack Data
+    //NOTE: This tracks what attack is currently happening. This prevents multiple attacks from overwriting one another before an attack animation starts
+    [SerializeField] private AttackType curAttackState; 
+    //NOTE: This tracks the current attack data being used
     private AttackData curAttackData;
+    //NOTE: This tracks any buffered attack
     private Action bufferedAttackAction = null;
 
     //SceneObject
@@ -80,20 +84,39 @@ public class AttackInputHandler : MonoBehaviour
     #endregion
 
 
-    #region Perform Attack
+    #region Attack State
 
-    private void PlayAttackAnimation(AttackType attackType)
+    private void SetCurrentAttackState(AttackType attackType)
     {
-        //Check not currently attacking
-        //Check that attack exists
-        if (curAttackData == null && 
-            curAttackCollection.TryGetAttackByType(attackType, out AttackData attack))
+        if (attackType != AttackType.Null)
         {
+            //Change state
             if (sceneObj.ActionStateHandler.TryChangeState(ATTACKSTATE))
-               AttackStateChangedEvent?.Invoke(attackType);            
+            {
+                //Check not currently attacking
+                //Check that attack exists
+                if (curAttackState == AttackType.Null &&
+                    curAttackCollection.TryGetAttackByType(attackType, out AttackData attack))
+                {
+                    Debug.Log("ATTACK: CurAttackState Set To: " + attackType);
+                    curAttackState = attackType;
+                    AttackStateChangedEvent?.Invoke(attackType);
+                }
+            }
+        }
+
+        else
+        {
+            curAttackState = AttackType.Null;
+            curAttackData = null;
+            AttackStateChangedEvent?.Invoke(AttackType.Null);
         }
     }
 
+    #endregion
+
+
+    #region Perform Attack
 
     /// <summary>
     /// Play the animation for a buffered attack
@@ -131,10 +154,9 @@ public class AttackInputHandler : MonoBehaviour
     {        
         //TODO: What attack would happen when sliding
         if (sceneObj.GroundedState == GroundedState.Airborn)
-            PlayAttackAnimation(AttackType.UpAir);
-
+            SetCurrentAttackState(AttackType.UpAir);
         else
-            PlayAttackAnimation(AttackType.UpTilt);              
+            SetCurrentAttackState(AttackType.UpTilt);              
     }
 
 
@@ -143,17 +165,10 @@ public class AttackInputHandler : MonoBehaviour
     /// </summary>
     public void PerformDownAttack()
     {
-        if (sceneObj.ActionStateHandler.TryChangeState(ATTACKSTATE))
-        {
-            if (sceneObj.GroundedState == GroundedState.Airborn)
-                PlayAttackAnimation(AttackType.DownAir);
-
-            else
-                PlayAttackAnimation(AttackType.DownTilt);
-        }
-
+        if (sceneObj.GroundedState == GroundedState.Airborn)
+            SetCurrentAttackState(AttackType.DownAir);
         else
-            BufferAttack(this.PerformDownAttack);        
+            SetCurrentAttackState(AttackType.DownTilt); 
     }
 
 
@@ -163,31 +178,25 @@ public class AttackInputHandler : MonoBehaviour
     /// </summary>
     public void PerformRightAttack()
     {
-        if (sceneObj.ActionStateHandler.TryChangeState(ATTACKSTATE))
+        if (sceneObj.GroundedState == GroundedState.Airborn)
         {
-            if (sceneObj.GroundedState == GroundedState.Airborn)
-            {
-                if (!sceneObj.IsFacingRightDirection())
-                    sceneObj.TurnAround();
+            if (!sceneObj.IsFacingRightDirection())
+                sceneObj.TurnAround();
 
-                PlayAttackAnimation(AttackType.ForwardAir);
-            }
-
-            else
-            {
-                if (!sceneObj.IsFacingRightDirection())
-                {
-                    //Check not sliding
-                    if (sceneObj.GroundedState == GroundedState.Grounded)
-                        sceneObj.TurnAround();
-                }
-
-                PlayAttackAnimation(AttackType.ForwardTilt);
-            }
+            SetCurrentAttackState(AttackType.ForwardAir);
         }
 
         else
-            BufferAttack(this.PerformRightAttack);                    
+        {
+            if (!sceneObj.IsFacingRightDirection())
+            {
+                //Check not sliding
+                if (sceneObj.GroundedState == GroundedState.Grounded)
+                    sceneObj.TurnAround();
+            }
+
+            SetCurrentAttackState(AttackType.ForwardTilt);
+        }                
     }
 
 
@@ -196,38 +205,31 @@ public class AttackInputHandler : MonoBehaviour
     /// Turn around if facing the wrong direction
     /// </summary>
     public void PerformLeftAttack()
-    {
-        if (sceneObj.ActionStateHandler.TryChangeState(ATTACKSTATE))
+    { 
+        if (sceneObj.GroundedState == GroundedState.Airborn)
         {
-            if (sceneObj.GroundedState == GroundedState.Airborn)
-            {
-                if (sceneObj.IsFacingRightDirection())
-                    sceneObj.TurnAround();
+            if (sceneObj.IsFacingRightDirection())
+                sceneObj.TurnAround();
 
-                PlayAttackAnimation(AttackType.ForwardAir);
-            }
-
-            else
-            {
-                if (sceneObj.IsFacingRightDirection())
-                {
-                    if (sceneObj.GroundedState == GroundedState.Grounded)
-                        sceneObj.TurnAround();
-                }
-
-                PlayAttackAnimation(AttackType.ForwardTilt);
-            }
+            SetCurrentAttackState(AttackType.ForwardAir);
         }
 
         else
-            BufferAttack(this.PerformLeftAttack);                   
+        {
+            if (sceneObj.IsFacingRightDirection())
+            {
+                if (sceneObj.GroundedState == GroundedState.Grounded)
+                    sceneObj.TurnAround();
+            }
+
+            SetCurrentAttackState(AttackType.ForwardTilt);
+        }        
     }
 
     #endregion
 
 
     #region Animation
-
 
     /// <summary>
     /// Check for attack animation
@@ -256,7 +258,7 @@ public class AttackInputHandler : MonoBehaviour
         {
             if (curAttackData != null)
             {
-                curAttackData = null;
+                SetCurrentAttackState(AttackType.Null);
                 curAttackPointCollection.ResetAttackPoints(attackData);
             }
         }

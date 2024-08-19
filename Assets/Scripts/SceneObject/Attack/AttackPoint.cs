@@ -58,7 +58,7 @@ public class AttackPoint : MonoBehaviour
             {
                 //Attack Details
                 SceneObject sceneObject = GetComponentInParent<SceneObject>();
-                int curFrame = sceneObject.AnimationStateHandler.GetCurrentFrameOfCurAnimation();
+                int curFrame = sceneObject.AnimationHandler.GetFrameOfCurrentAnimation();
                 float launchAngle = curAttackData.GetAttackLaunchAngle(curFrame);
 
                 //Reverse launch angle

@@ -65,8 +65,8 @@ public class AnimationGraph
     /// </summary>
     /// <param name="moveCollection"></param>
     private void SetupMovementMixer()
-    {
-        movementAnimationMixer = AnimationMixerPlayable.Create(animationGraph, 4);
+    {       
+        movementAnimationMixer = AnimationMixerPlayable.Create(animationGraph, Enum.GetValues(typeof(MovementType)).Length);
         stateAnimationMixer.ConnectInput((int)ActionState.Moving, movementAnimationMixer, 0);        
     }
 
@@ -78,7 +78,7 @@ public class AnimationGraph
     /// <param name="attackCollection"></param>
     private void SetupAttackMixer()
     {
-        attackAnimationMixer = AnimationMixerPlayable.Create(animationGraph, 6);
+        attackAnimationMixer = AnimationMixerPlayable.Create(animationGraph, Enum.GetValues(typeof(AttackType)).Length);
         stateAnimationMixer.ConnectInput((int)ActionState.Attacking, attackAnimationMixer, 0);
     }
 

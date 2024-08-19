@@ -241,8 +241,9 @@ public class AnimationHandler : MonoBehaviour
 
    
 
-    public void EndCurrentAnimation()
+    public void EndAnimation(AnimationClip clip)
     {
-
+        //TODO: Compair animation clip
+        //if match reset to idle state
     }
 }

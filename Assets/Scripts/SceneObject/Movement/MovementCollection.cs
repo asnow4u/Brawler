@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using static UnityEngine.UI.ScrollRect;
 
-public enum MovementType { Move, Jump, AirJump, FreeFall, Landing }
+public enum MovementType { Null, Move, Jump, AirJump, FreeFall, Landing }
 
 [Serializable]
 public class MovementCollection
