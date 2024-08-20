@@ -29,7 +29,7 @@ public class AttackInputHandler : MonoBehaviour
     private Action bufferedAttackAction = null;
 
     //SceneObject
-    private SceneObject sceneObj => GetComponent<SceneObject>();
+    private SceneObject sceneObject;
 
     //Events
     public event Action<AttackType> AttackStateChangedEvent;
@@ -42,16 +42,27 @@ public class AttackInputHandler : MonoBehaviour
     #endregion
 
 
+    #region Initialize
+
+    public void Setup()
+    {
+        sceneObject = GetComponent<SceneObject>();
+        curAttackPointCollection = new AttackPointCollection(gameObject);
+
+        SetUpEvents();
+
+        Debug.Assert(BaseAttackCollection != null, "BaseAttackCollection is Null", this);
+    }
+
+
     public void Initialize()
     {
         //TODO: Remove this with the implementation of equipmenthandler
         //Equipment handler should handle updating the current weapon
         OnWeaponChanged(null);
-
-        curAttackPointCollection = new AttackPointCollection(gameObject);
-
-        SetUpEvents();
     }
+
+    #endregion
 
 
     private void Update()
@@ -65,8 +76,8 @@ public class AttackInputHandler : MonoBehaviour
     private void SetUpEvents()
     {
         //Animation Events
-        sceneObj.AnimationHandler.AnimationStartedEvent += OnAnimationStarted;
-        sceneObj.AnimationHandler.AnimationEndedEvent += OnAnimationEnded;
+        sceneObject.AnimationHandler.AnimationStartedEvent += OnAnimationStarted;
+        sceneObject.AnimationHandler.AnimationEndedEvent += OnAnimationEnded;
     }
 
 
@@ -91,7 +102,7 @@ public class AttackInputHandler : MonoBehaviour
         if (attackType != AttackType.Null)
         {
             //Change state
-            if (sceneObj.ActionStateHandler.TryChangeState(ATTACKSTATE))
+            if (sceneObject.ActionStateHandler.TryChangeState(ATTACKSTATE))
             {
                 //Check not currently attacking
                 //Check that attack exists
@@ -153,7 +164,7 @@ public class AttackInputHandler : MonoBehaviour
     public void PerformUpAttack()
     {        
         //TODO: What attack would happen when sliding
-        if (sceneObj.GroundedState == GroundedState.Airborn)
+        if (sceneObject.GroundedState == GroundedState.Airborn)
             SetCurrentAttackState(AttackType.UpAir);
         else
             SetCurrentAttackState(AttackType.UpTilt);              
@@ -165,7 +176,7 @@ public class AttackInputHandler : MonoBehaviour
     /// </summary>
     public void PerformDownAttack()
     {
-        if (sceneObj.GroundedState == GroundedState.Airborn)
+        if (sceneObject.GroundedState == GroundedState.Airborn)
             SetCurrentAttackState(AttackType.DownAir);
         else
             SetCurrentAttackState(AttackType.DownTilt); 
@@ -178,21 +189,21 @@ public class AttackInputHandler : MonoBehaviour
     /// </summary>
     public void PerformRightAttack()
     {
-        if (sceneObj.GroundedState == GroundedState.Airborn)
+        if (sceneObject.GroundedState == GroundedState.Airborn)
         {
-            if (!sceneObj.IsFacingRightDirection())
-                sceneObj.TurnAround();
+            if (!sceneObject.IsFacingRightDirection())
+                sceneObject.TurnAround();
 
             SetCurrentAttackState(AttackType.ForwardAir);
         }
 
         else
         {
-            if (!sceneObj.IsFacingRightDirection())
+            if (!sceneObject.IsFacingRightDirection())
             {
                 //Check not sliding
-                if (sceneObj.GroundedState == GroundedState.Grounded)
-                    sceneObj.TurnAround();
+                if (sceneObject.GroundedState == GroundedState.Grounded)
+                    sceneObject.TurnAround();
             }
 
             SetCurrentAttackState(AttackType.ForwardTilt);
@@ -206,20 +217,20 @@ public class AttackInputHandler : MonoBehaviour
     /// </summary>
     public void PerformLeftAttack()
     { 
-        if (sceneObj.GroundedState == GroundedState.Airborn)
+        if (sceneObject.GroundedState == GroundedState.Airborn)
         {
-            if (sceneObj.IsFacingRightDirection())
-                sceneObj.TurnAround();
+            if (sceneObject.IsFacingRightDirection())
+                sceneObject.TurnAround();
 
             SetCurrentAttackState(AttackType.ForwardAir);
         }
 
         else
         {
-            if (sceneObj.IsFacingRightDirection())
+            if (sceneObject.IsFacingRightDirection())
             {
-                if (sceneObj.GroundedState == GroundedState.Grounded)
-                    sceneObj.TurnAround();
+                if (sceneObject.GroundedState == GroundedState.Grounded)
+                    sceneObject.TurnAround();
             }
 
             SetCurrentAttackState(AttackType.ForwardTilt);
@@ -270,9 +281,9 @@ public class AttackInputHandler : MonoBehaviour
     /// </summary>
     private void CheckForAnimationTriggers()
     {
-        if (sceneObj.ActionStateHandler.CurActionState == ActionState.Attacking)
+        if (sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking)
         {
-            int curAnimationFrame = sceneObj.AnimationHandler.GetFrameOfCurrentAnimation();
+            int curAnimationFrame = sceneObject.AnimationHandler.GetFrameOfCurrentAnimation();
             
             foreach (AnimationTrigger trigger in curAttackData.GetAttackTriggers())
             {

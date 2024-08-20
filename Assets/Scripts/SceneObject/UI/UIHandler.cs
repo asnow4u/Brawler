@@ -7,12 +7,20 @@ public class UIHandler : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI damageDisplay;
 
-
-    public void Initialize()
-    {        
+    #region Initialize
+    
+    public void Setup()
+    {
         Debug.Assert(damageDisplay != null, "Damage display not hooked up.", gameObject);
     }
 
+
+    public void Initialize()
+    {        
+
+    }
+
+    #endregion
 
     public void RotateDisplayText()
     {

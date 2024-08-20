@@ -11,6 +11,8 @@ public class AnimationHandler : MonoBehaviour
     private Animator animator;
     private AnimationGraph animationGraph;
 
+    private SceneObject sceneObject;
+
     [SerializeField] private AnimationClip groundIdleAnimation;
     [SerializeField] private AnimationClip airIdleAnimation;
 
@@ -75,8 +77,9 @@ public class AnimationHandler : MonoBehaviour
 
     #endregion
 
+    #region Initialize
 
-    public void Initialize()
+    public void Setup()
     {
         //Animator
         animator = GetComponentInChildren<Animator>();
@@ -84,20 +87,27 @@ public class AnimationHandler : MonoBehaviour
         Debug.Assert(groundIdleAnimation != null, "Ground Idle Animation not set!", gameObject);
         Debug.Assert(airIdleAnimation != null, "Air Idle Animation not set!", gameObject);
 
-        SetupAnimationGraph();       
+        sceneObject = GetComponent<SceneObject>();
+        animationGraph = new AnimationGraph(animator);
+
         SetUpEvents();
     }
 
+
+    public void Initialize()
+    {
+        SetAnimationGraph();       
+    }
+
+    #endregion
 
     #region AnimationGraph
 
     /// <summary>
     /// Create animationGraph and set animations
     /// </summary>
-    private void SetupAnimationGraph()
-    {
-        animationGraph = new AnimationGraph(animator);
-
+    private void SetAnimationGraph()
+    {       
         SetIdleAnimations();
         SetMovementAnimations();
         SetAttackAnimations();
@@ -158,21 +168,17 @@ public class AnimationHandler : MonoBehaviour
     /// </summary>
     private void SetUpEvents()
     {
-        //Action State Change
-        if (TryGetComponent(out ActionStateHandler actionStateHandler))
-            actionStateHandler.ActionStateChangedEvent += OnActionStateChanged;
+        //Action State Change        
+        sceneObject.ActionStateHandler.ActionStateChangedEvent += OnActionStateChanged;
 
         //Ground State Changed
-        SceneObject sceneObject = GetComponent<SceneObject>();
         sceneObject.GroundedStateChangeEvent += OnGroundedStateChanged;
 
-        //Move State Changed
-        if (TryGetComponent(out MovementInputHandler movementHandler))
-            movementHandler.MoveStateChangedEvent += OnMovementStateChanged;
+        //Move State Changed        
+        sceneObject.MovementInputHandler.MoveStateChangedEvent += OnMovementStateChanged;
 
         //Attack State Changed
-        if (TryGetComponent(out AttackInputHandler attackHandler))
-            attackHandler.AttackStateChangedEvent += OnAttackStateChanged;
+        sceneObject.AttackInputHandler.AttackStateChangedEvent += OnAttackStateChanged;
     }
 
 

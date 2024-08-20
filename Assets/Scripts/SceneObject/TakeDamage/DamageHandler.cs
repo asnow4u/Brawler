@@ -31,23 +31,28 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
 
 
     //Getters
-    private SceneObject sceneObject => GetComponent<SceneObject>();
+    private SceneObject sceneObject;
     private Collider collider => GetComponent<Collider>();
 
 
     #region Initialize
 
-    public void Initialize()
+    public void Setup()
     {
-        //SetUpEvents();
-
+        sceneObject = GetComponent<SceneObject>();
         knockbackHandler = new KnockbackCalculator();
 
         if (ragdollRoot != null)
         {
             ragdoll = ragdollRoot.AddComponent<Ragdoll>();
-            ragdoll.Initialize(sceneObject);            
-        }        
+            ragdoll.Initialize(sceneObject);
+        }
+    }
+
+
+    public void Initialize()
+    {
+           
     }
 
     #endregion

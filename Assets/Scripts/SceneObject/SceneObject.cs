@@ -78,46 +78,63 @@ public abstract class SceneObject : MonoBehaviour
     {               
         UniqueId = Guid.NewGuid().ToString();
 
-        SetUpHandlers();              
+        GetHandlers();
+        SetUpHandlers();
+        InitializeHandlers();        
     }
 
 
-    private void SetUpHandlers()
-    {
-        InitializeInteractionHandler();
-
-        InitializeEquipmentHandler();
-
-        if (TryGetComponent(out actionStateHandler))
-            actionStateHandler.SetUp();
-
-        if (TryGetComponent(out movementInputHandler))
-            movementInputHandler.Setup();        
-
-        if (TryGetComponent(out attackInputHandler))
-            attackInputHandler.Initialize();
-
-        if (TryGetComponent(out damageHandler))
-            damageHandler.Initialize();
-
-        if (TryGetComponent(out uiHandler))
-            uiHandler.Initialize();
-
-        if (TryGetComponent(out animationHandler))
-            animationHandler.Initialize();                
-    }
-
-
-    private void InitializeInteractionHandler()
+    /// <summary>
+    /// Grab all handlers from gameobject
+    /// </summary>
+    private void GetHandlers()
     {
         InteractionHandler = new InteractionHandler();
+
+        actionStateHandler = GetComponent<ActionStateHandler>();
+        animationHandler = GetComponent<AnimationHandler>();
+        uiHandler = GetComponent<UIHandler>();
+        movementInputHandler = GetComponent<MovementInputHandler>();
+        attackInputHandler = GetComponent<AttackInputHandler>();
+        damageHandler = GetComponent<DamageHandler>();
+
+        Debug.Assert(actionStateHandler != null, "ActionStateHandler Not Present On SceneObject", this);
+        Debug.Assert(animationHandler != null, "AnimationHandler Not Present On SceneObject", this);
+        Debug.Assert(uiHandler != null, "UIHandler Not Present On SceneObject", this);
+        Debug.Assert(movementInputHandler != null, "MovementInputHandler Not Present On SceneObject", this);
+        Debug.Assert(attackInputHandler != null, "AttackInputHandler Not Present On SceneObject", this);
+        Debug.Assert(damageHandler != null, "DamageHandler Not Present On SceneObject", this);
     }
 
-    private void InitializeEquipmentHandler()
+
+    /// <summary>
+    /// Set up all handlers <br/>
+    /// Set up events before performing actions
+    /// </summary>
+    private void SetUpHandlers()
     {
-        //TODO: Rework
-        //EquipmentHandler = new EquipmentHandler(this);
+        actionStateHandler.SetUp();    
+        animationHandler.Setup();                
+        uiHandler.Setup();
+        movementInputHandler.Setup();        
+        attackInputHandler.Setup();
+        damageHandler.Setup();
     }
+
+
+    /// <summary>
+    /// Initialize all handlers
+    /// </summary>
+    private void InitializeHandlers()
+    {
+        actionStateHandler.Initialize();
+        uiHandler.Initialize();
+        movementInputHandler.Initialize();
+        attackInputHandler.Initialize();        
+        animationHandler.Initialize(); //NOTE: needs to happen after move and attack handlers
+        damageHandler.Initialize();
+    }
+
   
     #endregion
 

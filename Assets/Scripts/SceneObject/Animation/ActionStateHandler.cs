@@ -23,12 +23,11 @@ public class ActionStateHandler : MonoBehaviour
         curActionState = ActionState.Idle;
     }
 
-    #endregion
 
+    public void Initialize()
+    {
 
-    #region Events
-
-    //TODO:
+    }
 
     #endregion
 
