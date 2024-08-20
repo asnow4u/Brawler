@@ -26,6 +26,10 @@ public class AnimationHandler : MonoBehaviour
 
     #region Getters
 
+    public Animator Animator => animator;
+    public AnimationClip GroundIdleAnimation => groundIdleAnimation;
+    public AnimationClip AirIdleAnimation => airIdleAnimation;
+
     /// <summary>
     /// Return the current running animation clip info
     /// </summary>
@@ -45,7 +49,7 @@ public class AnimationHandler : MonoBehaviour
     /// Returns the normalized percentage of the animation playtime (0-1)
     /// </summary>
     /// <returns></returns>
-    public float GetCurAnimationNormalizedTime()
+    public float GetCurrentAnimationNormalizedTime()
     {
         AnimatorStateInfo animationInfo = animator.GetCurrentAnimatorStateInfo(0);
         return animationInfo.normalizedTime;
@@ -232,18 +236,24 @@ public class AnimationHandler : MonoBehaviour
                 AnimationStartedEvent?.Invoke(curPlayingAnimation);
             }
 
-
-
-            //TODO: Check if at the end of an animation clip
-            //TODO: dont end if looping
+            if (!IsCurrentAnimationLooping())
+            {
+                if (GetCurrentAnimationNormalizedTime() == 1)
+                {
+                    EndAnimation(curPlayingAnimation);
+                }
+            }
         }
     }
 
    
 
     public void EndAnimation(AnimationClip clip)
-    {
-        //TODO: Compair animation clip
-        //if match reset to idle state
+    {        
+        if (curPlayingAnimation != null &&
+            curPlayingAnimation == clip)
+        {
+            GetComponent<ActionStateHandler>().ChangeState(ActionState.Idle);
+        }
     }
 }

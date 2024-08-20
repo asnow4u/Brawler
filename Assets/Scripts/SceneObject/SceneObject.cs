@@ -179,10 +179,7 @@ public abstract class SceneObject : MonoBehaviour
                     if (angle > maxSlopeAngle)
                         curGroundedState = GroundedState.Sliding;
                     else
-                        curGroundedState = GroundedState.Grounded;
-
-                    //End animation at or below attacking state
-                    AnimationHandler.EndCurrentAnimation(ActionState.Attacking);
+                        curGroundedState = GroundedState.Grounded;                    
 
                     GroundedStateChangeEvent?.Invoke(curGroundedState);
                     
@@ -195,9 +192,6 @@ public abstract class SceneObject : MonoBehaviour
             if (curGroundedState != GroundedState.Airborn)
             {
                 curGroundedState = GroundedState.Airborn;
-
-                //End animation at or below attacking state
-                AnimationHandler.EndCurrentAnimation(ActionState.Attacking);
 
                 GroundedStateChangeEvent?.Invoke(curGroundedState);
             }

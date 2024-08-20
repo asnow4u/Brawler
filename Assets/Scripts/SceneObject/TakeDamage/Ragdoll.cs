@@ -106,7 +106,7 @@ public class Ragdoll : MonoBehaviour
         if (sceneObject != null)
         {
             sceneObject.GetComponent<Collider>().enabled = true;                        
-            sceneObject.AnimationStateHandler.Animator.enabled = true;
+            sceneObject.AnimationHandler.Animator.enabled = true;
         }        
     }
 
@@ -117,7 +117,7 @@ public class Ragdoll : MonoBehaviour
         {
             sceneObject.CoreRigidBody.isKinematic = true;
             sceneObject.GetComponent<Collider>().enabled = false;
-            sceneObject.AnimationStateHandler.Animator.enabled = false;
+            sceneObject.AnimationHandler.Animator.enabled = false;
         }
     }
 
@@ -186,7 +186,7 @@ public class Ragdoll : MonoBehaviour
         AnimationClip clip = GetTransitionAnimationClip();
         if (clip != null)
         {
-            clip.SampleAnimation(sceneObject.AnimationStateHandler.Animator.gameObject, 0);     
+            clip.SampleAnimation(sceneObject.AnimationHandler.Animator.gameObject, 0);     
             PopulateRagdollBones(ref ragdollEndTransform);
         }                 
 
@@ -207,21 +207,12 @@ public class Ragdoll : MonoBehaviour
 
     private AnimationClip GetTransitionAnimationClip()
     {
-        foreach (AnimationClip clip in sceneObject.AnimationStateHandler.Animator.runtimeAnimatorController.animationClips)
-        {
+        //TODO: Need to fix dummy animations to match correct flow
 
-            //TODO: Need to fix dummy animations to match correct flow
-            if (clip.name == "BaseIdle")
-                return clip;
-
-            //if (sceneObject.GroundedState == GroundedState.Airborn && clip.name == gameObject.name + "BaseAirIdle")
-            //    return clip;
-
-            //else if (clip.name == gameObject.name + "BaseIdle")
-            //    return clip;
-        }
-
-        return null;
+        if (sceneObject.GroundedState == GroundedState.Grounded)
+            return sceneObject.AnimationHandler.GroundIdleAnimation;
+        else
+            return sceneObject.AnimationHandler.AirIdleAnimation;            
     }
 
 

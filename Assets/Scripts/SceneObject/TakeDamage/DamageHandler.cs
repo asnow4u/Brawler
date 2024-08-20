@@ -158,7 +158,7 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
         if (hitStunState == HitStunState.None)
         {
             //TODO: This does not incorperate different weapons yet
-            sceneObject.AnimationStateHandler.PlayAnimation(new AnimationStateData(gameObject.name + "BaseHit", ActionState.HitStun, null));
+            sceneObject.ActionStateHandler.ChangeState(ActionState.HitStun);
 
             SetUpKillZone();
 
