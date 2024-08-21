@@ -1,24 +1,20 @@
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.Android;
+
+public enum AttackType { Null, UpTilt, DownTilt, ForwardTilt, UpAir, DownAir, ForwardAir };
 
 public class AttackInputHandler : MonoBehaviour
 {
     const ActionState ATTACKSTATE = ActionState.Attacking;
 
     [Header("Collection")]
+    //TODO: This should be replaced when weapons are fully integrated.
+    //Equipment handler will pass the correct attack collection
+    [SerializeField] private AttackCollection BaseAttackCollection;
     [SerializeField] private AttackCollection curAttackCollection;
 
     [Header("Attack Points")]
     [SerializeField] private AttackPointCollection curAttackPointCollection;
-
-    [Header("Base Collection (To be removed with Weapon integration)")]
-    //TODO: This should be replaced when weapons are fully integrated.
-    //Equipment handler will pass the correct attack collection
-    [SerializeField] private AttackCollection BaseAttackCollection;
 
     //Attack Data
     //NOTE: This tracks what attack is currently happening. This prevents multiple attacks from overwriting one another before an attack animation starts
@@ -50,8 +46,6 @@ public class AttackInputHandler : MonoBehaviour
         curAttackPointCollection = new AttackPointCollection(gameObject);
 
         SetUpEvents();
-
-        Debug.Assert(BaseAttackCollection != null, "BaseAttackCollection is Null", this);
     }
 
 
@@ -99,28 +93,31 @@ public class AttackInputHandler : MonoBehaviour
 
     private void SetCurrentAttackState(AttackType attackType)
     {
-        if (attackType != AttackType.Null)
+        if (curAttackCollection != null)
         {
-            //Change state
-            if (sceneObject.ActionStateHandler.TryChangeState(ATTACKSTATE))
+            if (attackType != AttackType.Null)
             {
                 //Check not currently attacking
                 //Check that attack exists
                 if (curAttackState == AttackType.Null &&
                     curAttackCollection.TryGetAttackByType(attackType, out AttackData attack))
                 {
-                    Debug.Log("ATTACK: CurAttackState Set To: " + attackType);
-                    curAttackState = attackType;
-                    AttackStateChangedEvent?.Invoke(attackType);
+                    //Change state
+                    if (sceneObject.ActionStateHandler.TryChangeState(ATTACKSTATE))
+                    {
+                        Debug.Log("ATTACK: CurAttackState Set To: " + attackType);
+                        curAttackState = attackType;
+                        AttackStateChangedEvent?.Invoke(attackType);
+                    }
                 }
             }
-        }
 
-        else
-        {
-            curAttackState = AttackType.Null;
-            curAttackData = null;
-            AttackStateChangedEvent?.Invoke(AttackType.Null);
+            else
+            {
+                curAttackState = AttackType.Null;
+                curAttackData = null;
+                AttackStateChangedEvent?.Invoke(AttackType.Null);
+            }
         }
     }
 

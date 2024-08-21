@@ -298,12 +298,13 @@ GameObject:
   - component: {fileID: 6533080229533676564}
   - component: {fileID: 6533080229536739736}
   - component: {fileID: 7769173568030621610}
-  - component: {fileID: 6965792062615536061}
+  - component: {fileID: 5151831792701949217}
+  - component: {fileID: 8318219785822243922}
+  - component: {fileID: 4936789977502989988}
   - component: {fileID: 5339731187066271464}
   - component: {fileID: 8984696060330667455}
   - component: {fileID: 1637262306655890345}
-  - component: {fileID: 4936789977502989988}
-  m_Layer: 7
+  m_Layer: 14
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -375,7 +376,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 120
   m_CollisionDetection: 2
---- !u!114 &6965792062615536061
+--- !u!114 &5151831792701949217
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -384,11 +385,38 @@ MonoBehaviour:
   m_GameObject: {fileID: 6533080229533676560}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2dd9e1c0037d8ff4d87c608e210e1f16, type: 3}
+  m_Script: {fileID: 11500000, guid: 6a149b4aae2e3d2488fd457d8ab7431b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   curActionState: 0
-  curPlayingAnimation: 
+--- !u!114 &8318219785822243922
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6533080229533676560}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5c7f17dd716bd7489abdda9a04acf61, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  groundIdleAnimation: {fileID: 7400000, guid: 608859d4aa8996e4da313b9fd8a3f18f, type: 2}
+  airIdleAnimation: {fileID: 7400000, guid: 3dde231bf3aca7541a1b3c02353a6f40, type: 2}
+  curPlayingAnimation: {fileID: 0}
+--- !u!114 &4936789977502989988
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6533080229533676560}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1322150aebb5634680973534bacc38c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damageDisplay: {fileID: 9085548217804773088}
 --- !u!114 &5339731187066271464
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -402,17 +430,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   curMoveState: 0
-  curMoveAnimationState: 
   slidingMaxVelocity: 5
   slidingAcceleration: 0.4
-  BaseMovementCollection:
-    Movements:
-    - {fileID: 11400000, guid: c6e4537fdd246cd4fa029b74b114baf9, type: 2}
-    - {fileID: 11400000, guid: c6d7eb9d32e5b9143beb4473fcc06210, type: 2}
-    - {fileID: 11400000, guid: aceefa5ca3bfa9349bdaaae42ab3fb2f, type: 2}
-    - {fileID: 11400000, guid: 7d733cdae57263244b8304dafaf4e76a, type: 2}
-  CurMovementCollection:
-    Movements: []
+  baseMovementCollection: {fileID: 11400000, guid: b72ca08d1928bde4ba0d77f99d78ba09, type: 2}
+  curMovementCollection: {fileID: 0}
 --- !u!114 &8984696060330667455
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -425,25 +446,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 323b280502324d249af0cae379a4e74d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  curAttackCollection:
-    WeaponData:
-      UpTilt: {fileID: 0}
-      UpAir: {fileID: 0}
-      DownTilt: {fileID: 0}
-      DownAir: {fileID: 0}
-      ForwardTilt: {fileID: 0}
-      ForwardAir: {fileID: 0}
+  BaseAttackCollection: {fileID: 11400000, guid: dab4243fa382bf04490f8bbe5654859b, type: 2}
+  curAttackCollection: {fileID: 0}
   curAttackPointCollection:
     curAttackPoints: []
     baseAttackPoints: []
-  BaseAttackCollection:
-    WeaponData:
-      UpTilt: {fileID: 11400000, guid: 57e4b90f1010ea741adf23b3539e025d, type: 2}
-      UpAir: {fileID: 11400000, guid: b7ced934e1ed1c04598fb29874fdc0cb, type: 2}
-      DownTilt: {fileID: 11400000, guid: 379d522955841e14a8653920764927cb, type: 2}
-      DownAir: {fileID: 11400000, guid: 2ded7fc922e4f074b8d758dcef842c78, type: 2}
-      ForwardTilt: {fileID: 11400000, guid: 540c64e2f33198f409d16180c1d0586f, type: 2}
-      ForwardAir: {fileID: 11400000, guid: 9bf6cf8b1b312e94c8eb0dcfe57f3617, type: 2}
+  curAttackState: 0
 --- !u!114 &1637262306655890345
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -458,22 +466,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damageTaken: 0
   hitStunState: 0
-  bounceDegrade: 0.9
-  bounceFrameTimer: 0
+  hitStunTimer: 0
   ragdollRoot: {fileID: 0}
---- !u!114 &4936789977502989988
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6533080229533676560}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d1322150aebb5634680973534bacc38c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  damageDisplay: {fileID: 9085548217804773088}
+  bounceDegrade: 0.9
 --- !u!1 &6698363928555218558
 GameObject:
   m_ObjectHideFlags: 0
@@ -484,7 +479,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3087263906494233114}
   - component: {fileID: 200006956}
-  m_Layer: 11
+  m_Layer: 0
   m_Name: EventCollider
   m_TagString: Untagged
   m_Icon: {fileID: 0}

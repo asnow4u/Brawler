@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "Attack", menuName = "ScriptableObject/Attack")]
+[CreateAssetMenu(fileName = "Attack", menuName = "ScriptableObject/Attack/Attack")]
 public class AttackData : ScriptableObject
 {
     [Header("Animation")]

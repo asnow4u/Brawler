@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f56f75752c1d1ec47ab2b7efc90b0fda, type: 3}
+  m_Name: RushDownMovementCollection
+  m_EditorClassIdentifier: 
+  Movements:
+  - {fileID: 11400000, guid: e0f27305a9687e74e871bc1b8c81f5fd, type: 2}

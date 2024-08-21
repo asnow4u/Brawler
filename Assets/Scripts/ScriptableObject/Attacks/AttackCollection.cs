@@ -1,13 +1,9 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 
-public enum AttackType { Null, UpTilt, DownTilt, ForwardTilt, UpAir, DownAir, ForwardAir };
-
-[Serializable]
-public class AttackCollection
+[CreateAssetMenu(fileName = "AttackCollection", menuName = "ScriptableObject/Attack/Collection")]
+public class AttackCollection : ScriptableObject
 {
     public WeaponData WeaponData;
 

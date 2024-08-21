@@ -1,13 +1,9 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.UI.ScrollRect;
 
-public enum MovementType { Null, Move, Jump, AirJump, FreeFall, Landing }
 
-[Serializable]
-public class MovementCollection
+[CreateAssetMenu(fileName = "MovementCollection", menuName = "ScriptableObject/Movement/Collection")]
+public class MovementCollection : ScriptableObject
 {
     [SerializeField] private List<MovementData> Movements;
 
