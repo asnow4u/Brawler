@@ -196,7 +196,9 @@ public abstract class SceneObject : MonoBehaviour
                     if (angle > maxSlopeAngle)
                         curGroundedState = GroundedState.Sliding;
                     else
-                        curGroundedState = GroundedState.Grounded;                    
+                        curGroundedState = GroundedState.Grounded;
+
+                    Debug.Log("GROUNDSTATE: " + gameObject.name + " " + curGroundedState);
 
                     GroundedStateChangeEvent?.Invoke(curGroundedState);
                     
@@ -209,6 +211,7 @@ public abstract class SceneObject : MonoBehaviour
             if (curGroundedState != GroundedState.Airborn)
             {
                 curGroundedState = GroundedState.Airborn;
+                Debug.Log("GROUNDSTATE: " + gameObject.name + " " + curGroundedState);
 
                 GroundedStateChangeEvent?.Invoke(curGroundedState);
             }

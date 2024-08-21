@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -5,31 +6,53 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "MovementCollection", menuName = "ScriptableObject/Movement/Collection")]
 public class MovementCollection : ScriptableObject
 {
-    [SerializeField] private List<MovementData> Movements;
+    public MoveData MoveData;
+    public JumpData JumpData;
+    public AirJumpData AirJumpData;
+    public LandData LandData;
 
-
-    public bool ContainsMovementType(MovementType type)
-    {
-        foreach (MovementData move in Movements)
-        {
-            if (move.Type == type)
-                return true;
-        }
-
-        return false;
-    }
-
-
-    //TODO: Might remove
+    
+    /// <summary>
+    /// Try get movement data based on type
+    /// </summary>
+    /// <param name="movementType"></param>
+    /// <param name="requestedMovement"></param>
+    /// <returns></returns>
     public bool TryGetMovementByType(MovementType movementType, out MovementData requestedMovement) 
     {
-        foreach (MovementData move in Movements)
+        switch (movementType)
         {
-            if (move.Type == movementType)
-            {
-                requestedMovement = move;
-                return true;
-            }
+            case MovementType.Move:
+                if (MoveData != null)
+                {
+                    requestedMovement = MoveData;
+                    return true;
+                }
+                break;
+
+            case MovementType.Jump:
+                if (JumpData != null)
+                {
+                    requestedMovement = JumpData;
+                    return true;
+                }
+                break;
+
+            case MovementType.AirJump:
+                if (AirJumpData != null)
+                {
+                    requestedMovement = AirJumpData;
+                    return true;
+                }
+                break;
+
+            case MovementType.Landing:
+                if (LandData != null)
+                {
+                    requestedMovement = LandData;
+                    return true;
+                }
+                break;
         }
 
         requestedMovement = null;
@@ -37,116 +60,117 @@ public class MovementCollection : ScriptableObject
     }
 
 
+    /// <summary>
+    /// Get maxVelocity stored in collection
+    /// </summary>
+    /// <returns></returns>
     public float GetMaxXVelocity()
     {
-        foreach (MovementData move in Movements)
-        {
-            if (move.Type == MovementType.Move)
-            {
-                return ((MoveData)move).MaxXVelocity;
-            }
-        }
+        if (MoveData != null) 
+            return MoveData.MaxXVelocity;
 
         return 0;
     }
 
 
+    /// <summary>
+    /// Get ground acceneration in collection
+    /// </summary>
+    /// <returns></returns>
     public float GetGroundedXAcceleration()
     {
-        foreach (MovementData move in Movements)
-        {
-            if (move.Type == MovementType.Move)
-            {
-                return ((MoveData)move).GroundedXAcceleration;
-            }
-        }
+        if (MoveData != null)
+            return MoveData.GroundedXAcceleration;
 
         return 0;
     }
 
 
+    /// <summary>
+    /// Get ground decelleration in collection
+    /// </summary>
+    /// <returns></returns>
     public float GetGroundedXDeceleration()
     {
-        foreach (MovementData move in Movements)
-        {
-            if (move.Type == MovementType.Move)
-            {
-                return ((MoveData)move).GroundedXDeceleration;
-            }
-        }
+        if (MoveData != null)
+            return MoveData.GroundedXDeceleration;
 
         return 0;
     }
 
 
+    /// <summary>
+    /// Get air acceleration in collection
+    /// </summary>
+    /// <returns></returns>
     public float GetArialXAcceleration()
     {
-        foreach (MovementData move in Movements)
-        {
-            if (move.Type == MovementType.Move)
-            {
-                return ((MoveData)move).ArialXAcceleration;
-            }
-        }
+        if (MoveData != null)
+            return MoveData.ArialXAcceleration;
 
         return 0;
     }
 
 
+    /// <summary>
+    /// Get air deceleration
+    /// </summary>
+    /// <returns></returns>
     public float GetArialXDeceleration()
     {
-        foreach (MovementData move in Movements)
-        {
-            if (move.Type == MovementType.Move)
-            {
-                return ((MoveData)move).ArialXDeceleration;
-            }
-        }
+        if (MoveData != null)
+            return MoveData.ArialXDeceleration;
 
         return 0;
     }
 
 
+    //TODO: Change this to TryGetJumpVelocity, Because jump is not required by sceneobjects
     public float GetJumpVelocity()
     {
-        foreach (MovementData move in Movements)
-        {
-            if (move.Type == MovementType.Jump)
-            {
-                return ((JumpData)move).JumpVelocity;
-            }
-        }
+        if (JumpData != null) 
+            return JumpData.JumpVelocity;
 
         return 0;
     }
 
 
-    public float GetGravityScaler()
+    /// <summary>
+    /// Get gravity scaler if jumpData exists
+    /// </summary>
+    /// <param name="gravityScaler"></param>
+    /// <returns></returns>
+    public bool TryGetGravityScaler(out float gravityScaler)
     {
-        foreach (MovementData move in Movements)
+        if (JumpData != null)
         {
-            if (move.Type == MovementType.Jump)
-                return ((JumpData)move).GravityScaler;
+            gravityScaler = JumpData.GravityScaler;
+            return true;
         }
 
-        return 1;
+        gravityScaler = 1;
+        return false;
     }
 
 
-    public bool TryGetMovementFromAnimation(string animationName, out MovementData movement)
+    /// <summary>
+    /// Get movement data from animation
+    /// </summary>
+    /// <param name="animationName"></param>
+    /// <param name="movement"></param>
+    /// <returns></returns>
+    public bool TryGetMovementFromAnimation(AnimationClip animation, out MovementData movement)
     {
-        foreach (MovementData move in Movements)
+        foreach (MovementType type in Enum.GetValues(typeof(MovementType)))
         {
-            if (move.Animation.name == animationName)
+            if (TryGetMovementByType(type, out movement))
             {
-                movement = move;
-                return true;
+                if (movement.Animation == animation)
+                    return true;                
             }
         }
 
         movement = null;
         return false;
     }
-
-
 }

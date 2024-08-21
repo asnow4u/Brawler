@@ -11,7 +11,7 @@ public class AttackInputHandler : MonoBehaviour
     //TODO: This should be replaced when weapons are fully integrated.
     //Equipment handler will pass the correct attack collection
     [SerializeField] private AttackCollection BaseAttackCollection;
-    [SerializeField] private AttackCollection curAttackCollection;
+    private AttackCollection curAttackCollection = null;
 
     [Header("Attack Points")]
     [SerializeField] private AttackPointCollection curAttackPointCollection;
@@ -245,7 +245,8 @@ public class AttackInputHandler : MonoBehaviour
     /// <param name="clip"></param>
     private void OnAnimationStarted(AnimationClip clip)
     {
-        if (curAttackCollection.TryGetAttackByAnimation(clip.name, out AttackData attackData))
+        if (curAttackCollection != null && 
+            curAttackCollection.TryGetAttackByAnimation(clip.name, out AttackData attackData))
         {
             curAttackData = attackData;
 
@@ -262,7 +263,8 @@ public class AttackInputHandler : MonoBehaviour
     /// <exception cref="NotImplementedException"></exception>
     private void OnAnimationEnded(AnimationClip clip)
     {
-        if (curAttackCollection.TryGetAttackByAnimation(clip.name, out AttackData attackData))
+        if (curAttackCollection != null &&
+            curAttackCollection.TryGetAttackByAnimation(clip.name, out AttackData attackData))
         {
             if (curAttackData != null)
             {

@@ -233,8 +233,11 @@ public class AnimationHandler : MonoBehaviour
             //Check if animation changed
             if (curPlayingAnimation != clipInfo[0].clip)
             {
-                Debug.Log("ANIMATION: Ended " + curPlayingAnimation);
-                AnimationEndedEvent?.Invoke(curPlayingAnimation);
+                if (curPlayingAnimation != null)
+                {
+                    Debug.Log("ANIMATION: Ended " + curPlayingAnimation);
+                    AnimationEndedEvent?.Invoke(curPlayingAnimation);
+                }
 
                 curPlayingAnimation = clipInfo[0].clip;                                
 

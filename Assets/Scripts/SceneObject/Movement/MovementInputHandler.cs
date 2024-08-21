@@ -30,7 +30,7 @@ public class MovementInputHandler : MonoBehaviour
     //Movement Collection (NOTE: BaseMovementCollection is Required for all sceneObjects)    
     [Header("Collection")]
     [SerializeField] private MovementCollection baseMovementCollection;
-    [SerializeField] private MovementCollection curMovementCollection;
+    private MovementCollection curMovementCollection = null;
 
     //Infulence
     private float horizontalInfluence;
@@ -62,6 +62,7 @@ public class MovementInputHandler : MonoBehaviour
         SetupEvents();
 
         Debug.Assert(baseMovementCollection != null, "Base Movement Collection is NULL", this);
+        Debug.Assert(baseMovementCollection.MoveData != null, "Base Movement Collection Mode Data is Null", this);
 
         curMovementCollection = baseMovementCollection;
     }
@@ -251,7 +252,7 @@ public class MovementInputHandler : MonoBehaviour
         //Apply Movement only if able to move and influence exists
         if (horizontalInfluence != 0)
         {
-            if (curMovementCollection.ContainsMovementType(MovementType.Move))
+            if (curMovementCollection.MoveData != null)
             {
                 //Update state from null
                 if (curMoveState == MovementType.Null)
@@ -355,7 +356,7 @@ public class MovementInputHandler : MonoBehaviour
         {
             if (horizontalInfluence > 0)
             {
-                if (curMovementCollection.ContainsMovementType(MovementType.Move) &&
+                if (curMovementCollection.MoveData != null &&
                    (curMoveState == MovementType.FreeFall || curMoveState == MovementType.AirJump))
                 {
                     UpdateAirAcceleration(rb);
@@ -529,7 +530,7 @@ public class MovementInputHandler : MonoBehaviour
     /// <param name="clip"></param>
     private void OnAnimationStarted(AnimationClip clip)
     {
-        if (curMovementCollection.TryGetMovementFromAnimation(clip.name, out MovementData moveData))
+        if (curMovementCollection.TryGetMovementFromAnimation(clip, out MovementData moveData))
         {
             curMoveData = moveData;
 
@@ -557,7 +558,7 @@ public class MovementInputHandler : MonoBehaviour
     /// <param name="clip"></param>
     private void OnAnimationEnded(AnimationClip clip)
     {
-        if (curMovementCollection.TryGetMovementFromAnimation(clip.name, out MovementData moveData))
+        if (curMovementCollection.TryGetMovementFromAnimation(clip, out MovementData moveData))
         {
             switch (moveData.Type)
             {
