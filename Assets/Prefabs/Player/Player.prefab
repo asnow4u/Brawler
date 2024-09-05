@@ -344,7 +344,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   UniqueId: 
   ObjectType: 0
-  curGroundedState: 0
+  curGroundedState: 1
   maxSlopeAngle: 45
 --- !u!136 &6533080229536739736
 CapsuleCollider:
@@ -433,7 +433,6 @@ MonoBehaviour:
   slidingMaxVelocity: 5
   slidingAcceleration: 0.4
   baseMovementCollection: {fileID: 11400000, guid: b72ca08d1928bde4ba0d77f99d78ba09, type: 2}
-  curMovementCollection: {fileID: 0}
 --- !u!114 &8984696060330667455
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -447,7 +446,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BaseAttackCollection: {fileID: 11400000, guid: dab4243fa382bf04490f8bbe5654859b, type: 2}
-  curAttackCollection: {fileID: 0}
   curAttackPointCollection:
     curAttackPoints: []
     baseAttackPoints: []
@@ -5529,7 +5527,7 @@ Animator:
   m_GameObject: {fileID: 4646461797713860436}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: e5675d7d346342240a68d06e42dac9c3, type: 2}
+  m_Controller: {fileID: 0}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0

@@ -105,7 +105,6 @@ public class AttackInputHandler : MonoBehaviour
                     //Change state
                     if (sceneObject.ActionStateHandler.TryChangeState(ATTACKSTATE))
                     {
-                        Debug.Log("ATTACK: CurAttackState Set To: " + attackType);
                         curAttackState = attackType;
                         AttackStateChangedEvent?.Invoke(attackType);
                     }
@@ -280,10 +279,10 @@ public class AttackInputHandler : MonoBehaviour
     /// </summary>
     private void CheckForAnimationTriggers()
     {
-        if (sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking)
+        if (sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking && curAttackData != null)
         {
             int curAnimationFrame = sceneObject.AnimationHandler.GetFrameOfCurrentAnimation();
-            
+
             foreach (AnimationTrigger trigger in curAttackData.GetAttackTriggers())
             {
                 if (!trigger.WasTriggered && curAnimationFrame >= trigger.TriggerFrame)

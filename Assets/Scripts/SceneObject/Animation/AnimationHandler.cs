@@ -6,6 +6,13 @@ using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 
+
+/*NOTES: 
+    *   The playable api bypasses the animator controller when playing animations
+        Methods like animator.GetCurrentAnimatorClipInfo() will not work while using the playable api
+*/
+
+
 public class AnimationHandler : MonoBehaviour
 {
     private Animator animator;
@@ -32,48 +39,23 @@ public class AnimationHandler : MonoBehaviour
     public AnimationClip GroundIdleAnimation => groundIdleAnimation;
     public AnimationClip AirIdleAnimation => airIdleAnimation;
 
-    /// <summary>
-    /// Return the current running animation clip info
-    /// </summary>
-    /// <returns></returns>
-    public AnimationClip GetCurrentPlayingAnimation()
-    {
-        AnimatorClipInfo[] clipInfo = animator.GetCurrentAnimatorClipInfo(0);
-
-        if (clipInfo.Length > 0)
-            return clipInfo[0].clip;
-
-        return null;
-    }
-
 
     /// <summary>
-    /// Returns the normalized percentage of the animation playtime (0-1)
-    /// </summary>
-    /// <returns></returns>
-    public float GetCurrentAnimationNormalizedTime()
-    {
-        AnimatorStateInfo animationInfo = animator.GetCurrentAnimatorStateInfo(0);
-        return animationInfo.normalizedTime;
-    }
-
-
-    public bool IsCurrentAnimationLooping()
-    {
-        AnimatorStateInfo animationInfo = animator.GetCurrentAnimatorStateInfo(0);
-        return animationInfo.loop;
-    }
-
-
-    /// <summary>
-    /// Returns the current frame of the playing animation
+    /// Get the current frame that the animation is on
     /// </summary>
     /// <returns></returns>
     public int GetFrameOfCurrentAnimation()
     {
-        AnimatorStateInfo animationInfo = animator.GetCurrentAnimatorStateInfo(0);
-        return Mathf.RoundToInt(animationInfo.normalizedTime * GetCurrentPlayingAnimation().frameRate);
+        AnimationClipPlayable clipPlayable = animationGraph.GetCurrentAnimationPlayable();
+
+        double wrappedTime = clipPlayable.GetTime() % clipPlayable.GetAnimationClip().length;
+        
+        float frameRate = clipPlayable.GetAnimationClip().frameRate; 
+        int currentFrame = Mathf.FloorToInt((float)wrappedTime * frameRate);
+
+        return currentFrame;
     }
+
 
     #endregion
 
@@ -88,30 +70,33 @@ public class AnimationHandler : MonoBehaviour
         Debug.Assert(airIdleAnimation != null, "Air Idle Animation not set!", gameObject);
 
         sceneObject = GetComponent<SceneObject>();
-        animationGraph = new AnimationGraph(animator);
+        animationGraph = animator.gameObject.AddComponent<AnimationGraph>();
 
-        SetUpEvents();
+        SetUpEventListeners();
     }
 
 
     public void Initialize()
     {
-        SetAnimationGraph();       
+        animationGraph.Initialize();
+        SetAnimationToGraph();
+        animationGraph.ResetToIdle(sceneObject.GroundedState);
     }
 
     #endregion
+
 
     #region AnimationGraph
 
     /// <summary>
     /// Create animationGraph and set animations
     /// </summary>
-    private void SetAnimationGraph()
+    private void SetAnimationToGraph()
     {       
         SetIdleAnimations();
         SetMovementAnimations();
         SetAttackAnimations();
-        SetHitStunAnimations();
+        //SetHitStunAnimations();
     }
 
 
@@ -166,7 +151,7 @@ public class AnimationHandler : MonoBehaviour
     /// <summary>
     /// Listen to needed events
     /// </summary>
-    private void SetUpEvents()
+    private void SetUpEventListeners()
     {
         //Action State Change        
         sceneObject.ActionStateHandler.ActionStateChangedEvent += OnActionStateChanged;
@@ -208,7 +193,9 @@ public class AnimationHandler : MonoBehaviour
     /// <param name="movementState"></param>
     private void OnMovementStateChanged(MovementType movementState)
     {
-        animationGraph.ChangeMovementStateInput(movementState);
+        if (movementState == MovementType.Null) return;        
+
+        animationGraph.ChangeMovementStateInput(movementState);        
     }
 
 
@@ -222,40 +209,42 @@ public class AnimationHandler : MonoBehaviour
     }
 
     #endregion
+    
 
-
+    /// <summary>
+    /// Check the current animation playing from graph </br>
+    /// Invoke events on changes to the currentPlayingAnimation </br>
+    /// Determine when an animation ends   
+    /// </summary>
     private void Update()
     {
-        AnimatorClipInfo[] clipInfo = animator.GetCurrentAnimatorClipInfo(0);
+        //Get animationClip from graph
+        AnimationClipPlayable clipPlayable = animationGraph.GetCurrentAnimationPlayable();
 
-        if (clipInfo.Length > 0)
+        if (clipPlayable.GetAnimationClip() != null)
         {
             //Check if animation changed
-            if (curPlayingAnimation != clipInfo[0].clip)
+            if (curPlayingAnimation != clipPlayable.GetAnimationClip())
             {
                 if (curPlayingAnimation != null)
-                {
-                    Debug.Log("ANIMATION: Ended " + curPlayingAnimation);
                     AnimationEndedEvent?.Invoke(curPlayingAnimation);
-                }
 
-                curPlayingAnimation = clipInfo[0].clip;                                
+                curPlayingAnimation = clipPlayable.GetAnimationClip();
 
-                Debug.Log("ANIMATION: Started " + curPlayingAnimation);
                 AnimationStartedEvent?.Invoke(curPlayingAnimation);
             }
 
-            if (!IsCurrentAnimationLooping())
-            {
-                if (GetCurrentAnimationNormalizedTime() == 1)
-                {
-                    EndAnimation(curPlayingAnimation);
-                }
+
+            //Determine when the clip ends
+            if (!curPlayingAnimation.isLooping)
+            {  
+                if (clipPlayable.GetTime() > curPlayingAnimation.length)
+                    EndAnimation(curPlayingAnimation);                
             }
         }
     }
 
-   
+
 
     public void EndAnimation(AnimationClip clip)
     {        

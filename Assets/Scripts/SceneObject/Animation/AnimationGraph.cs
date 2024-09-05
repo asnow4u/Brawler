@@ -5,22 +5,57 @@ using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 
-public class AnimationGraph
+
+//TODO:
+//Want to remove monobehaviour from this class
+
+public class AnimationGraph : MonoBehaviour
 {
     private Animator animator;
 
     //Playables
     private PlayableGraph animationGraph;
+
     private AnimationMixerPlayable stateAnimationMixer;
     private AnimationMixerPlayable idleAnimationMixer;
     private AnimationMixerPlayable movementAnimationMixer;
     private AnimationMixerPlayable attackAnimationMixer;
     private AnimationMixerPlayable hitAnimationMixer;
+    
 
+    #region Getters
 
-    public AnimationGraph(Animator animator)
+    /// <summary>
+    /// Get the current animationClipPlayable that is currently playing
+    /// </summary>
+    /// <returns></returns>
+    public AnimationClipPlayable GetCurrentAnimationPlayable()
     {
-        this.animator = animator;
+        AnimationClipPlayable playable = new AnimationClipPlayable();
+
+        for (int i = 0; i < stateAnimationMixer.GetInputCount(); i++)
+        {
+            if (stateAnimationMixer.GetInputWeight(i) > 0)
+            {
+                AnimationMixerPlayable mixer = (AnimationMixerPlayable)stateAnimationMixer.GetInput(i);
+
+                for (int j = 0; j < mixer.GetInputCount(); j++)
+                {
+                    if (mixer.GetInputWeight(j) > 0)
+                        playable = (AnimationClipPlayable)mixer.GetInput(j);                                            
+                }
+            }
+        }
+
+        return playable;
+    }
+
+    #endregion
+
+
+    public void Initialize()
+    {
+        this.animator = GetComponent<Animator>();
 
         //Graph
         animationGraph = PlayableGraph.Create("AnimationGraph");
@@ -31,8 +66,7 @@ public class AnimationGraph
         output.SetSourcePlayable(stateAnimationMixer);
 
         SetupMixers();
-            
-        stateAnimationMixer.SetInputWeight(0, 1);
+
         animationGraph.Play();
     }
 
@@ -54,7 +88,7 @@ public class AnimationGraph
     /// </summary>
     private void SetupIdleMixer()
     {
-        idleAnimationMixer = AnimationMixerPlayable.Create(animationGraph, 2);
+        idleAnimationMixer = AnimationMixerPlayable.Create(animationGraph, 2);        
         stateAnimationMixer.ConnectInput((int)ActionState.Idle, idleAnimationMixer, 0);
     }
 
@@ -89,7 +123,7 @@ public class AnimationGraph
     /// </summary>
     private void SetupHitStunMixer()
     {
-        hitAnimationMixer = AnimationMixerPlayable.Create(animationGraph, 2);
+        hitAnimationMixer = AnimationMixerPlayable.Create(animationGraph, 2);        
         stateAnimationMixer.ConnectInput((int)ActionState.HitStun, hitAnimationMixer, 0);
     }
 
@@ -122,20 +156,14 @@ public class AnimationGraph
         //Move
         if (moveCollection.TryGetMovementByType(MovementType.Move, out MovementData moveData))
         {
-            //AnimationMixerPlayable walkMixer = AnimationMixerPlayable.Create(animationGraph, 2);
-            //movementAnimationMixer.ConnectInput(0, walkMixer, 0);
-
-            //AnimationClipPlayable walk = AnimationClipPlayable.Create(animationGraph, );
-            //AnimationClipPlayable run = AnimationClipPlayable.Create(animationGraph, );
-
-            //movementAnimationMixer.ConnectInput(0, walk);
-            //movementAnimationMixer.ConnectInput(0, run);
+            AnimationClipPlayable move = AnimationClipPlayable.Create(animationGraph, moveData.Animation);
+            movementAnimationMixer.ConnectInput((int)MovementType.Move, move, 0);
         }
 
         //Jump
         if (moveCollection.TryGetMovementByType(MovementType.Jump, out MovementData jumpData))
-        {
-            AnimationClipPlayable jump = AnimationClipPlayable.Create(animationGraph, jumpData.Animation);
+        {            
+            AnimationClipPlayable jump = AnimationClipPlayable.Create(animationGraph, jumpData.Animation);            
             movementAnimationMixer.ConnectInput((int)MovementType.Jump, jump, 0);
         }
 
@@ -233,13 +261,32 @@ public class AnimationGraph
 
 
     /// <summary>
+    /// Reset all mixers and set weights for idle
+    /// </summary>
+    public void ResetToIdle(GroundedState groundState)
+    {
+        ResetInputWeights(stateAnimationMixer);
+        ResetInputWeights(idleAnimationMixer);
+        ResetInputWeights(movementAnimationMixer);
+        ResetInputWeights(attackAnimationMixer);
+        ResetInputWeights(hitAnimationMixer);
+
+        stateAnimationMixer.SetInputWeight(0, 1);
+
+        if (groundState == GroundedState.Airborn)
+            idleAnimationMixer.SetInputWeight(1, 1);
+        else
+            idleAnimationMixer.SetInputWeight(0, 1);
+    }
+
+
+    /// <summary>
     /// Change stateMixer to prioritize current actionState
     /// </summary>
     /// <param name="actionState"></param>
     public void ChangeActionStateInput(ActionState actionState)
     {
         ResetInputWeights(stateAnimationMixer);
-
         stateAnimationMixer.SetInputWeight((int)actionState, 1);        
     }
 
@@ -257,17 +304,20 @@ public class AnimationGraph
         else
             idleAnimationMixer.SetInputWeight(0, 1);        
     }
-
+   
 
     /// <summary>
     /// Change movement mixer to prioritize current move state
     /// </summary>
     /// <param name="moveState"></param>
     public void ChangeMovementStateInput(MovementType moveState)
-    {
-        ResetInputWeights(movementAnimationMixer);
+    {                              
+        //reset animation clip
+        AnimationClipPlayable clipPlayable = (AnimationClipPlayable)movementAnimationMixer.GetInput((int)moveState);                
+        clipPlayable.SetTime(0);        
 
-        movementAnimationMixer.SetInputWeight((int)moveState, 1);        
+        ResetInputWeights(movementAnimationMixer);
+        movementAnimationMixer.SetInputWeight((int)moveState, 1);                        
     }
 
 
@@ -277,57 +327,39 @@ public class AnimationGraph
     /// <param name="attackState"></param>
     public void ChangeAttackStateInput(AttackType attackState)
     {
-        ResetInputWeights(attackAnimationMixer);
+        if (attackState != AttackType.Null)
+        {
+            //reset animation clip
+            AnimationClipPlayable clipPlayable = (AnimationClipPlayable)attackAnimationMixer.GetInput((int)attackState);
+            clipPlayable.SetTime(0);
 
-        attackAnimationMixer.SetInputWeight((int)attackState, 1);        
+            ResetInputWeights(attackAnimationMixer);
+            attackAnimationMixer.SetInputWeight((int)attackState, 1);
+        }
     }
 
     #endregion
+
+
+
+    //TODO: Implement blending from different animations over a period of time
+    //private IEnumerator AnimationClipBlending(AnimationMixerPlayable mixer, int firstInput, int secondInput, Func<float> GetBlendWeight)
+    //{
+    //    while (true)
+    //    {
+    //        float blendedWeight = Mathf.Clamp01(GetBlendWeight());
+
+    //        mixer.SetInputWeight(firstInput, 1.0f - blendedWeight);
+    //        mixer.SetInputWeight(secondInput, blendedWeight);
+
+    //        yield return null;
+    //    }
+    //}
+
 
 
     private void OnDestroy()
     {
         animationGraph.Destroy();
-    }
-
-
-
-
-
-
-
-
-
-
-    #region Perameter Setting
-
-    public void SetFloatPerameter(string name, float value)
-    {
-        animator.SetFloat(name, value);
-    }
-
-    #endregion
-
-
-    //DEBUG
-    [ContextMenu("SetToIdle")]
-    public void SetToIdle()
-    {
-        ResetInputWeights(stateAnimationMixer);
-        stateAnimationMixer.SetInputWeight(0, 1);
-    }
-
-    [ContextMenu("SetToMovement")]
-    public void SetToMovement()
-    {
-        ResetInputWeights(stateAnimationMixer);
-        stateAnimationMixer.SetInputWeight(1, 1);
-    }
-
-    [ContextMenu("SetToAttack")]
-    public void SetToAttack()
-    {
-        ResetInputWeights(stateAnimationMixer);
-        stateAnimationMixer.SetInputWeight(2, 1);
     }
 }

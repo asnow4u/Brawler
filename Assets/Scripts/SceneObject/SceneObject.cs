@@ -23,6 +23,9 @@ public abstract class SceneObject : MonoBehaviour
     [SerializeField] private GroundedState curGroundedState;
     [SerializeField] private float maxSlopeAngle;
 
+    //Logger
+    private SceneObjectLogger logger;
+
     //Handlers
     private ActionStateHandler actionStateHandler;
     private MovementInputHandler movementInputHandler;
@@ -35,6 +38,7 @@ public abstract class SceneObject : MonoBehaviour
     public IInteraction InteractionHandler;
 
     //Getters
+    public SceneObjectLogger Logger => logger;
     public ActionStateHandler ActionStateHandler => actionStateHandler;
     public MovementInputHandler MovementInputHandler => movementInputHandler;
     public AttackInputHandler AttackInputHandler => attackInputHandler;
@@ -65,7 +69,7 @@ public abstract class SceneObject : MonoBehaviour
     /// Make sure everything has been set within the inspector
     /// </summary>
     private void InspectorCheck()
-    {
+    {        
         Debug.Assert(maxSlopeAngle > 0, "MaxSlopeAngle needs to be > 0." ,gameObject);
     }
     
@@ -77,10 +81,13 @@ public abstract class SceneObject : MonoBehaviour
     protected virtual void Initialize()
     {               
         UniqueId = Guid.NewGuid().ToString();
+        curGroundedState = GroundedState.Grounded;
 
         GetHandlers();
         SetUpHandlers();
-        InitializeHandlers();        
+        InitializeHandlers(); 
+        
+        logger = new SceneObjectLogger(this);
     }
 
 
@@ -198,8 +205,6 @@ public abstract class SceneObject : MonoBehaviour
                     else
                         curGroundedState = GroundedState.Grounded;
 
-                    Debug.Log("GROUNDSTATE: " + gameObject.name + " " + curGroundedState);
-
                     GroundedStateChangeEvent?.Invoke(curGroundedState);
                     
                     break;
@@ -211,8 +216,6 @@ public abstract class SceneObject : MonoBehaviour
             if (curGroundedState != GroundedState.Airborn)
             {
                 curGroundedState = GroundedState.Airborn;
-                Debug.Log("GROUNDSTATE: " + gameObject.name + " " + curGroundedState);
-
                 GroundedStateChangeEvent?.Invoke(curGroundedState);
             }
         }

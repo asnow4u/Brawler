@@ -42,9 +42,7 @@ public class ActionStateHandler : MonoBehaviour
     {
         if (newState != curActionState)
         {
-            Debug.Log("ACTIONSTATE: " + gameObject.name + " " + newState);
             curActionState = newState;
-
             ActionStateChangedEvent?.Invoke(curActionState);
         }
     }

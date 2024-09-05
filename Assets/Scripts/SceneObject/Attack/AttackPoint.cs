@@ -49,10 +49,10 @@ public class AttackPoint : MonoBehaviour
    
 
     private void OnTriggerEnter(Collider col)
-    {        
+    {
         if (col.gameObject.layer == LayerMask.NameToLayer("Ragdoll") ||
             col.gameObject.layer == LayerMask.NameToLayer("DamageHitBox"))
-        {            
+        {
             //Current Attack
             if (curAttackData != null)
             {
@@ -68,8 +68,8 @@ public class AttackPoint : MonoBehaviour
 
                 ITakeDamage hitTarget = col.GetComponentInParent<ITakeDamage>();
                 if (hitTarget != null)
-                {                        
-                    hitTarget.HitByAttack(curAttackData.GetInfluence(), col.ClosestPoint(col.transform.position), curAttackData.GetAttackDamage(curFrame), launchAngle);                    
+                {
+                    hitTarget.HitByAttack(curAttackData.GetInfluence(), col.ClosestPoint(col.transform.position), curAttackData.GetAttackDamage(curFrame), launchAngle);
                 }
             }
         }
