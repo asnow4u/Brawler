@@ -192,10 +192,14 @@ public class AnimationHandler : MonoBehaviour
     /// </summary>
     /// <param name="movementState"></param>
     private void OnMovementStateChanged(MovementType movementState)
-    {
-        if (movementState == MovementType.Null) return;        
-
-        animationGraph.ChangeMovementStateInput(movementState);        
+    {        
+        if (movementState == MovementType.Null)
+        {
+            if (sceneObject.ActionStateHandler.CurActionState == ActionState.Moving)
+               sceneObject.ActionStateHandler.ChangeState(ActionState.Idle);     
+        }
+        else
+            animationGraph.ChangeMovementStateInput(movementState);        
     }
 
 

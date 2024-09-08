@@ -7,6 +7,7 @@ using UnityEngine;
 public class MovementCollection : ScriptableObject
 {
     public MoveData MoveData;
+    public AirMoveData AirMoveData;
     public JumpData JumpData;
     public AirJumpData AirJumpData;
     public LandData LandData;
@@ -26,6 +27,14 @@ public class MovementCollection : ScriptableObject
                 if (MoveData != null)
                 {
                     requestedMovement = MoveData;
+                    return true;
+                }
+                break;
+
+            case MovementType.AirMove:
+                if (AirMoveData != null)
+                {
+                    requestedMovement = AirMoveData;
                     return true;
                 }
                 break;
@@ -64,12 +73,12 @@ public class MovementCollection : ScriptableObject
     /// Get maxVelocity stored in collection
     /// </summary>
     /// <returns></returns>
-    public float GetMaxXVelocity()
+    public float GetGroundedMaxXVelocity()
     {
         if (MoveData != null) 
-            return MoveData.MaxXVelocity;
+            return MoveData.GroundedMaxXVelocity;
 
-        return 0;
+        throw new NullReferenceException("MoveData is not set");
     }
 
 
@@ -82,7 +91,7 @@ public class MovementCollection : ScriptableObject
         if (MoveData != null)
             return MoveData.GroundedXAcceleration;
 
-        return 0;
+        throw new NullReferenceException("MoveData is not set");
     }
 
 
@@ -95,7 +104,20 @@ public class MovementCollection : ScriptableObject
         if (MoveData != null)
             return MoveData.GroundedXDeceleration;
 
-        return 0;
+        throw new NullReferenceException("MoveData is not set");
+    }
+
+
+    /// <summary>
+    /// Get air max velocity
+    /// </summary>
+    /// <returns></returns>
+    public float GetAerialMaxVelocity()
+    {
+        if (AirMoveData != null)
+            return AirMoveData.AerialMaxXVelocity;
+
+        throw new NullReferenceException("AirMoveData is not set");
     }
 
 
@@ -105,10 +127,10 @@ public class MovementCollection : ScriptableObject
     /// <returns></returns>
     public float GetArialXAcceleration()
     {
-        if (MoveData != null)
-            return MoveData.ArialXAcceleration;
+        if (AirMoveData != null)
+            return AirMoveData.AerialXAcceleration;
 
-        return 0;
+        throw new NullReferenceException("AirMoveData is not set");
     }
 
 
@@ -116,12 +138,12 @@ public class MovementCollection : ScriptableObject
     /// Get air deceleration
     /// </summary>
     /// <returns></returns>
-    public float GetArialXDeceleration()
+    public float GetAerialXDeceleration()
     {
-        if (MoveData != null)
-            return MoveData.ArialXDeceleration;
+        if (AirMoveData != null)
+            return AirMoveData.AerialXDeceleration;
 
-        return 0;
+        throw new NullReferenceException("AirMoveData is not set");
     }
 
 

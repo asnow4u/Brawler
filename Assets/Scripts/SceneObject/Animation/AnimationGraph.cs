@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
@@ -153,32 +154,18 @@ public class AnimationGraph : MonoBehaviour
     /// <param name="moveCollection"></param>
     public void SetMovementAnimations(MovementCollection moveCollection)
     {
-        //Move
-        if (moveCollection.TryGetMovementByType(MovementType.Move, out MovementData moveData))
+        foreach (MovementType moveType in Enum.GetValues(typeof(MovementType)))
         {
-            AnimationClipPlayable move = AnimationClipPlayable.Create(animationGraph, moveData.Animation);
-            movementAnimationMixer.ConnectInput((int)MovementType.Move, move, 0);
-        }
+            if (moveCollection.TryGetMovementByType(moveType, out MovementData movementData))
+            {
+                //if (movementData is MoveData moveData)
+                //{
+                //    //TODO: use to build move mixer
+                //}
 
-        //Jump
-        if (moveCollection.TryGetMovementByType(MovementType.Jump, out MovementData jumpData))
-        {            
-            AnimationClipPlayable jump = AnimationClipPlayable.Create(animationGraph, jumpData.Animation);            
-            movementAnimationMixer.ConnectInput((int)MovementType.Jump, jump, 0);
-        }
-
-        //Air Jump
-        if (moveCollection.TryGetMovementByType(MovementType.AirJump, out MovementData airJumpData))
-        {
-            AnimationClipPlayable airJump = AnimationClipPlayable.Create(animationGraph, airJumpData.Animation);
-            movementAnimationMixer.ConnectInput((int)MovementType.AirJump, airJump, 0);
-        }
-
-        //Land
-        if (moveCollection.TryGetMovementByType(MovementType.Landing, out MovementData landData))
-        {
-            AnimationClipPlayable land = AnimationClipPlayable.Create(animationGraph, landData.Animation);
-            movementAnimationMixer.ConnectInput((int)MovementType.Landing, land, 0);
+                AnimationClipPlayable movePlayable = AnimationClipPlayable.Create(animationGraph, movementData.Animation);
+                movementAnimationMixer.ConnectInput((int)moveType, movePlayable, 0);
+            }
         }
     }
 
@@ -189,48 +176,14 @@ public class AnimationGraph : MonoBehaviour
     /// <param name="attackCollection"></param>
     public void SetAttackAnimations(AttackCollection attackCollection)
     {   
-        //Down Tilt
-        if (attackCollection.TryGetAttackByType(AttackType.DownTilt, out AttackData downTiltData))
+        foreach (AttackType attackType in Enum.GetValues(typeof(AttackType)))
         {
-            AnimationClipPlayable downTilt = AnimationClipPlayable.Create(animationGraph,downTiltData.AttackAnimation);
-            attackAnimationMixer.ConnectInput((int)AttackType.DownTilt, downTilt, 0);
+            if (attackCollection.TryGetAttackByType(attackType, out AttackData attackData))
+            {
+                AnimationClipPlayable attackPlayable = AnimationClipPlayable.Create(animationGraph, attackData.AttackAnimation);
+                attackAnimationMixer.ConnectInput((int)attackType, attackPlayable, 0);
+            }
         }
-
-        //Forward Tilt
-        if (attackCollection.TryGetAttackByType(AttackType.ForwardTilt, out AttackData forwardTiltData))
-        {
-            AnimationClipPlayable forwardTilt = AnimationClipPlayable.Create(animationGraph, forwardTiltData.AttackAnimation);
-            attackAnimationMixer.ConnectInput((int)AttackType.ForwardTilt, forwardTilt, 0);
-        }
-
-        //Up Tilt
-        if (attackCollection.TryGetAttackByType(AttackType.UpTilt, out AttackData upTiltData))
-        {
-            AnimationClipPlayable upTilt = AnimationClipPlayable.Create(animationGraph, upTiltData.AttackAnimation);
-            attackAnimationMixer.ConnectInput((int)AttackType.UpTilt, upTilt, 0);
-        }
-
-        //Down Air
-        if (attackCollection.TryGetAttackByType(AttackType.DownAir, out AttackData downAirData))
-        {
-            AnimationClipPlayable downAir = AnimationClipPlayable.Create(animationGraph, downAirData.AttackAnimation);
-            attackAnimationMixer.ConnectInput((int)AttackType.DownAir, downAir, 0);
-        }
-
-        //Forward Air
-        if (attackCollection.TryGetAttackByType(AttackType.ForwardAir, out AttackData forwardAirData))
-        {
-            AnimationClipPlayable forwardAir = AnimationClipPlayable.Create(animationGraph, forwardAirData.AttackAnimation);
-            attackAnimationMixer.ConnectInput((int)AttackType.ForwardAir, forwardAir, 0);
-        }
-
-        //Up Air
-        if (attackCollection.TryGetAttackByType(AttackType.UpAir, out AttackData upAirData))
-        {
-            AnimationClipPlayable upAir = AnimationClipPlayable.Create(animationGraph, upAirData.AttackAnimation);
-            attackAnimationMixer.ConnectInput((int)AttackType.UpAir, upAir, 0);
-        }
-        
     }
 
 

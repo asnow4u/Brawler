@@ -9,14 +9,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e365b02dcde51004da1f1dcd92c6880e, type: 3}
-  m_Name: PlayerBaseMove
+  m_Script: {fileID: 11500000, guid: a8cfbdf80a5a4e84a8666be5b4131b3d, type: 3}
+  m_Name: PlayerBaseAirMove
   m_EditorClassIdentifier: 
-  Animation: {fileID: 7400000, guid: 1bbcb447f8326a540a7edd76c8a1b992, type: 2}
-  Type: 1
+  Animation: {fileID: 0}
+  Type: 2
   Triggers: []
-  GroundedMaxXVelocity: 10
-  GroundedXAcceleration: 50
-  GroundedXDeceleration: 50
+  AirialMaxXVelocity: 10
   ArialXAcceleration: 25
   ArialXDeceleration: 25

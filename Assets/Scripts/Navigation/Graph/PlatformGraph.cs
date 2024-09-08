@@ -296,7 +296,7 @@ public class PlatformGraph : Graph
     /// <returns></returns>
     private bool IsJumpDistancePossible(Vector3 startPos, Vector3 endPos, float jumpTime, out float xVelocity)
     {
-        float xVelocityLimit = moveCollection.GetMaxXVelocity();
+        float xVelocityLimit = moveCollection.GetGroundedMaxXVelocity();
         float jumpDist = endPos.x - startPos.x;
 
         //At what velocity can the jump be made with no acceleration

@@ -6,13 +6,9 @@ using UnityEngine;
 public class MoveData : MovementData
 {
     [Header("Velocity Limit")]
-    public float MaxXVelocity;
+    public float GroundedMaxXVelocity;
 
     [Header("Grounded Movement")]
     public float GroundedXAcceleration;
     public float GroundedXDeceleration;   
-
-    [Header("Arial Movement")]
-    public float ArialXAcceleration;
-    public float ArialXDeceleration;
 }

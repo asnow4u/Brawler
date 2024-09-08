@@ -4,7 +4,7 @@ using UnityEditor.Animations;
 using UnityEngine;
 
 
-public enum MovementType { Null, Move, Jump, AirJump, Landing }
+public enum MovementType { Null, Move, AirMove, Jump, AirJump, Landing }
 
 public class MovementInputHandler : MonoBehaviour
 {
@@ -61,8 +61,9 @@ public class MovementInputHandler : MonoBehaviour
         sceneObject = GetComponent<SceneObject>();
         SetupEventListeners();
 
-        Debug.Assert(baseMovementCollection != null, "Base Movement Collection is NULL", this);
-        Debug.Assert(baseMovementCollection.MoveData != null, "Base Movement Collection Mode Data is Null", this);
+        Debug.Assert(baseMovementCollection != null, "BaseMovementCollection is NULL", this);
+        Debug.Assert(baseMovementCollection.MoveData != null, "BaseMovementCollection Move Data is Null", this);
+        Debug.Assert(baseMovementCollection.AirMoveData != null, "BaseMovementCollection AirMove Data is Null", this);
 
         curMovementCollection = baseMovementCollection;
     }
@@ -81,7 +82,6 @@ public class MovementInputHandler : MonoBehaviour
     private void SetupEventListeners()
     {
         sceneObject.GroundedStateChangeEvent += OnGroundedStateChanged;
-        //sceneObject.AnimationHandler.AnimationStartedEvent += OnAnimationStarted;
         sceneObject.AnimationHandler.AnimationEndedEvent += OnAnimationEnded;
     }
 
@@ -114,7 +114,7 @@ public class MovementInputHandler : MonoBehaviour
     {
         if (curMovementCollection.TryGetMovementFromAnimation(clip, out MovementData moveData))
         {
-            if (moveData.Type != MovementType.Move)
+            if (moveData.Type != MovementType.Move && moveData.Type != MovementType.AirMove)
                 SetCurrentMoveState(MovementType.Null);
         }
     }
@@ -220,12 +220,8 @@ public class MovementInputHandler : MonoBehaviour
     /// <param name="inputInfluence"></param>
     public void PerformMovement(Vector2 inputInfluence)
     {       
-        //Check that moveData exists
-        if (curMovementCollection.TryGetMovementByType(MovementType.Move, out MovementData movement))
-        {          
-            horizontalInfluence = Mathf.Clamp(inputInfluence.x, -1, 1);
-            verticalInfluence = Mathf.Clamp(inputInfluence.y, -1, 1);               
-        }                           
+        horizontalInfluence = Mathf.Clamp(inputInfluence.x, -1, 1);
+        verticalInfluence = Mathf.Clamp(inputInfluence.y, -1, 1);                                                  
     }
 
 
@@ -237,7 +233,12 @@ public class MovementInputHandler : MonoBehaviour
         if (horizontalInfluence != 0)
         {
             if (curMoveState == MovementType.Null)
-                SetCurrentMoveState(MovementType.Move);
+            {
+                if (sceneObject.GroundedState == GroundedState.Grounded) 
+                    SetCurrentMoveState(MovementType.Move);
+                else
+                    SetCurrentMoveState(MovementType.AirMove);
+            }
 
             UpdateAccelerationMovement();
         }
@@ -268,7 +269,7 @@ public class MovementInputHandler : MonoBehaviour
 
             case GroundedState.Airborn:
 
-                if (curMoveState == MovementType.Move || 
+                if (curMoveState == MovementType.AirMove || 
                     curMoveState == MovementType.Jump || 
                     curMoveState == MovementType.AirJump)
                 {
@@ -291,7 +292,7 @@ public class MovementInputHandler : MonoBehaviour
             sceneObject.CoreRigidBody.drag = 0;
 
             //Cap Velocity based on horizontal influence
-            float targetXVelocity = curMovementCollection.GetMaxXVelocity() * Mathf.Abs(horizontalInfluence);
+            float targetXVelocity = curMovementCollection.GetGroundedMaxXVelocity() * Mathf.Abs(horizontalInfluence);
 
             //Update velocity based on slope
             sceneObject.CoreRigidBody.velocity += slope * Mathf.Abs(horizontalInfluence) * curMovementCollection.GetGroundedXAcceleration() * Time.fixedDeltaTime;
@@ -310,7 +311,7 @@ public class MovementInputHandler : MonoBehaviour
     private void UpdateAirAcceleration()
     {
         //Cap Velocity based on horizontal influence
-        float targetXVelocity = curMovementCollection.GetMaxXVelocity() * horizontalInfluence;
+        float targetXVelocity = curMovementCollection.GetAerialMaxVelocity() * horizontalInfluence;
 
         sceneObject.CoreRigidBody.velocity += Vector3.right * horizontalInfluence * curMovementCollection.GetArialXAcceleration() * Time.fixedDeltaTime;
 
@@ -385,16 +386,16 @@ public class MovementInputHandler : MonoBehaviour
     /// <param name="rb"></param>
     private void UpdateAirDeceleration()
     {
-        float targetXVelocity = curMovementCollection.GetMaxXVelocity();
+        float targetXVelocity = curMovementCollection.GetAerialMaxVelocity();
 
         if (horizontalInfluence > 0)
             targetXVelocity *= horizontalInfluence;
 
         if (sceneObject.CoreRigidBody.velocity.x > targetXVelocity)
-            sceneObject.CoreRigidBody.velocity -= Vector3.right * curMovementCollection.GetArialXDeceleration() * Time.fixedDeltaTime;
+            sceneObject.CoreRigidBody.velocity -= Vector3.right * curMovementCollection.GetAerialXDeceleration() * Time.fixedDeltaTime;
 
         else if (sceneObject.CoreRigidBody.velocity.x < -targetXVelocity)
-            sceneObject.CoreRigidBody.velocity += Vector3.right * curMovementCollection.GetArialXDeceleration() * Time.fixedDeltaTime;
+            sceneObject.CoreRigidBody.velocity += Vector3.right * curMovementCollection.GetAerialXDeceleration() * Time.fixedDeltaTime;
     }
 
 
