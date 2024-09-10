@@ -47,7 +47,7 @@ public abstract class SceneObject : MonoBehaviour
     public DamageHandler DamageHandler => damageHandler;
 
     
-    public GroundedState GroundedState => curGroundedState;   
+    public GroundedState CurGroundedState => curGroundedState;   
     public Rigidbody Rb => GetComponent<Rigidbody>();
     private Collider collider => GetComponent<Collider>();
 

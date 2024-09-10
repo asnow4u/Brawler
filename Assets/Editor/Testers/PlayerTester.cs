@@ -27,6 +27,9 @@ public class PlayerTester : Editor
             CancelMovementAndAttackTest(sceneObject);
         }
 
+        if (GUILayout.Button("Jump and Movement Bug"))
+            JumpMovementBug(sceneObject);
+
 
         if (GUILayout.Button("Perform UpTilt Attack"))
         {
@@ -80,6 +83,24 @@ public class PlayerTester : Editor
 
             attackHandler.PerformRightAttack();
             moveHandler.PerformMovement(new Vector2(0, 0));
+        }
+    }
+
+
+    public async Task JumpMovementBug(SceneObject sceneObject)
+    {
+        if (sceneObject.TryGetComponent(out MovementInputHandler moveHandler))
+        {
+            moveHandler.PerformMovement(new Vector2(1, 0));                        
+            await Task.Yield();
+            
+            moveHandler.PerformJump(1);
+            await Task.Yield();
+            
+            moveHandler.PerformMovement(new Vector2(1, 0));
+            await Task.Yield();            
+
+            moveHandler.PerformMovement(Vector2.zero);
         }
     }
 }

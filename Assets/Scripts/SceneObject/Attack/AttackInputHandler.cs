@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 
 public enum AttackType { Null, UpTilt, DownTilt, ForwardTilt, UpAir, DownAir, ForwardAir };
@@ -91,13 +92,19 @@ public class AttackInputHandler : MonoBehaviour
 
     #region Attack State
 
-    private void SetCurrentAttackState(AttackType attackType)
+    /// <summary>
+    /// Attempt to set the current attack state <br></br>
+    /// This will initiate the animation of the attackType
+    /// </summary>
+    /// <param name="attackType"></param>
+    /// <returns></returns>
+    private bool TrySetCurrentAttackState(AttackType attackType)
     {
         if (curAttackCollection != null)
         {
             if (attackType != AttackType.Null)
             {
-                //Check not currently attacking
+                //Check not currently attacking and
                 //Check that attack exists
                 if (curAttackState == AttackType.Null &&
                     curAttackCollection.TryGetAttackByType(attackType, out AttackData attack))
@@ -107,6 +114,7 @@ public class AttackInputHandler : MonoBehaviour
                     {
                         curAttackState = attackType;
                         AttackStateChangedEvent?.Invoke(attackType);
+                        return true;
                     }
                 }
             }
@@ -116,9 +124,12 @@ public class AttackInputHandler : MonoBehaviour
                 curAttackState = AttackType.Null;
                 curAttackData = null;
                 AttackStateChangedEvent?.Invoke(AttackType.Null);
+                return true;
             }
         }
-    }
+
+        return false;
+    }    
 
     #endregion
 
@@ -158,12 +169,20 @@ public class AttackInputHandler : MonoBehaviour
     /// Try to perform a grounded / Air Up attack
     /// </summary>
     public void PerformUpAttack()
-    {        
-        //TODO: What attack would happen when sliding
-        if (sceneObject.GroundedState == GroundedState.Airborn)
-            SetCurrentAttackState(AttackType.UpAir);
+    {       
+        //Cant attack while jumping from ground
+        if (sceneObject.ActionStateHandler.CurActionState == ActionState.Moving && sceneObject.MovementInputHandler.CurMoveState == MovementType.Jump)
+        {
+            //TODO: Buffer attack
+        }
+
         else
-            SetCurrentAttackState(AttackType.UpTilt);              
+        {
+            if (sceneObject.CurGroundedState == GroundedState.Airborn)
+                TrySetCurrentAttackState(AttackType.UpAir);
+            else
+                TrySetCurrentAttackState(AttackType.UpTilt);              
+        }
     }
 
 
@@ -172,10 +191,19 @@ public class AttackInputHandler : MonoBehaviour
     /// </summary>
     public void PerformDownAttack()
     {
-        if (sceneObject.GroundedState == GroundedState.Airborn)
-            SetCurrentAttackState(AttackType.DownAir);
+        //Cant attack while jumping from ground
+        if (sceneObject.ActionStateHandler.CurActionState == ActionState.Moving && sceneObject.MovementInputHandler.CurMoveState == MovementType.Jump)
+        {
+            //TODO: Buffer attack
+        }
+
         else
-            SetCurrentAttackState(AttackType.DownTilt); 
+        {
+            if (sceneObject.CurGroundedState == GroundedState.Airborn)
+                TrySetCurrentAttackState(AttackType.DownAir);
+            else
+                TrySetCurrentAttackState(AttackType.DownTilt);
+        }
     }
 
 
@@ -185,25 +213,26 @@ public class AttackInputHandler : MonoBehaviour
     /// </summary>
     public void PerformRightAttack()
     {
-        if (sceneObject.GroundedState == GroundedState.Airborn)
+        //Cant attack while jumping from ground
+        if (sceneObject.ActionStateHandler.CurActionState == ActionState.Moving && sceneObject.MovementInputHandler.CurMoveState == MovementType.Jump)
         {
-            if (!sceneObject.IsFacingRightDirection())
-                sceneObject.TurnAround();
-
-            SetCurrentAttackState(AttackType.ForwardAir);
+            //TODO: Buffer attack
         }
 
         else
         {
-            if (!sceneObject.IsFacingRightDirection())
+            if (sceneObject.CurGroundedState == GroundedState.Airborn)
             {
-                //Check not sliding
-                if (sceneObject.GroundedState == GroundedState.Grounded)
+                if (TrySetCurrentAttackState(AttackType.ForwardAir) && !sceneObject.IsFacingRightDirection())
                     sceneObject.TurnAround();
             }
 
-            SetCurrentAttackState(AttackType.ForwardTilt);
-        }                
+            else
+            {
+                if (TrySetCurrentAttackState(AttackType.ForwardTilt) && !sceneObject.IsFacingRightDirection())
+                    sceneObject.TurnAround();
+            }
+        }
     }
 
 
@@ -212,25 +241,27 @@ public class AttackInputHandler : MonoBehaviour
     /// Turn around if facing the wrong direction
     /// </summary>
     public void PerformLeftAttack()
-    { 
-        if (sceneObject.GroundedState == GroundedState.Airborn)
+    {
+        //Cant attack while jumping from ground
+        if (sceneObject.ActionStateHandler.CurActionState == ActionState.Moving && sceneObject.MovementInputHandler.CurMoveState == MovementType.Jump)
         {
-            if (sceneObject.IsFacingRightDirection())
-                sceneObject.TurnAround();
-
-            SetCurrentAttackState(AttackType.ForwardAir);
+            //TODO: Buffer attack
         }
 
         else
         {
-            if (sceneObject.IsFacingRightDirection())
+            if (sceneObject.CurGroundedState == GroundedState.Airborn)
             {
-                if (sceneObject.GroundedState == GroundedState.Grounded)
+                if (TrySetCurrentAttackState(AttackType.ForwardAir) && sceneObject.IsFacingRightDirection())
                     sceneObject.TurnAround();
             }
 
-            SetCurrentAttackState(AttackType.ForwardTilt);
-        }        
+            else
+            {
+                if (TrySetCurrentAttackState(AttackType.ForwardTilt) && sceneObject.IsFacingRightDirection())
+                    sceneObject.TurnAround();
+            }
+        }
     }
 
     #endregion
@@ -267,7 +298,7 @@ public class AttackInputHandler : MonoBehaviour
         {
             if (curAttackData != null)
             {
-                SetCurrentAttackState(AttackType.Null);
+                TrySetCurrentAttackState(AttackType.Null);
                 curAttackPointCollection.ResetAttackPoints(attackData);
             }
         }

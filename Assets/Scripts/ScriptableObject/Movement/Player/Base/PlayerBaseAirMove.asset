@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a8cfbdf80a5a4e84a8666be5b4131b3d, type: 3}
   m_Name: PlayerBaseAirMove
   m_EditorClassIdentifier: 
-  Animation: {fileID: 0}
+  Animation: {fileID: 7400000, guid: 3dde231bf3aca7541a1b3c02353a6f40, type: 2}
   Type: 2
   Triggers: []
-  AirialMaxXVelocity: 10
-  ArialXAcceleration: 25
-  ArialXDeceleration: 25
+  AerialMaxXVelocity: 10
+  AerialXAcceleration: 25
+  AerialXDeceleration: 25

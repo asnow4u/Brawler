@@ -209,7 +209,7 @@ public class Ragdoll : MonoBehaviour
     {
         //TODO: Need to fix dummy animations to match correct flow
 
-        if (sceneObject.GroundedState == GroundedState.Grounded)
+        if (sceneObject.CurGroundedState == GroundedState.Grounded)
             return sceneObject.AnimationHandler.GroundIdleAnimation;
         else
             return sceneObject.AnimationHandler.AirIdleAnimation;            

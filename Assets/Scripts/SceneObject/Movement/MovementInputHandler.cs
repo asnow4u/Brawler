@@ -16,7 +16,7 @@ public class MovementInputHandler : MonoBehaviour
     private MovementData curMoveData;
 
     //Jump Properties
-    private int numJumpsPerformed;
+    private int airJumpsPerformed;
 
     //Fast Fall Properties
     private const float fastFallAcceleration = 20f;
@@ -99,7 +99,7 @@ public class MovementInputHandler : MonoBehaviour
                 break;
 
             case GroundedState.Airborn:
-                SetCurrentMoveState(MovementType.Null);
+                TrySetCurrentMoveState(MovementType.Null);
                 break;
 
         }
@@ -115,7 +115,7 @@ public class MovementInputHandler : MonoBehaviour
         if (curMovementCollection.TryGetMovementFromAnimation(clip, out MovementData moveData))
         {
             if (moveData.Type != MovementType.Move && moveData.Type != MovementType.AirMove)
-                SetCurrentMoveState(MovementType.Null);
+                TrySetCurrentMoveState(MovementType.Null);
         }
     }
 
@@ -124,7 +124,7 @@ public class MovementInputHandler : MonoBehaviour
 
     #region MoveState
 
-    private void SetCurrentMoveState(MovementType moveState)
+    private bool TrySetCurrentMoveState(MovementType moveState)
     {
         if (moveState != MovementType.Null)
         {
@@ -135,6 +135,7 @@ public class MovementInputHandler : MonoBehaviour
                 {              
                     curMoveState = moveState;
                     MoveStateChangedEvent?.Invoke(moveState);
+                    return true;
                 }
             }
 
@@ -145,6 +146,7 @@ public class MovementInputHandler : MonoBehaviour
                 sceneObject.ActionStateHandler.ChangeState(MOVESTATE);
                 curMoveState = moveState;
                 MoveStateChangedEvent?.Invoke(moveState);
+                return true;
             }
         }
 
@@ -153,7 +155,10 @@ public class MovementInputHandler : MonoBehaviour
             curMoveState = MovementType.Null;
             curMoveData = null;
             MoveStateChangedEvent?.Invoke(moveState);
+            return true;
         }
+
+        return false;
     }
 
     #endregion
@@ -169,7 +174,7 @@ public class MovementInputHandler : MonoBehaviour
 
             if (sceneObject.CoreRigidBody.velocity.x > 0)
             {
-                switch (sceneObject.GroundedState)
+                switch (sceneObject.CurGroundedState)
                 {
                     case GroundedState.Grounded:
                     case GroundedState.Sliding:
@@ -190,7 +195,7 @@ public class MovementInputHandler : MonoBehaviour
         {
             sceneObject.TurnAround();
 
-            switch (sceneObject.GroundedState)
+            switch (sceneObject.CurGroundedState)
             {
                 case GroundedState.Grounded:
                 case GroundedState.Sliding:
@@ -234,10 +239,10 @@ public class MovementInputHandler : MonoBehaviour
         {
             if (curMoveState == MovementType.Null)
             {
-                if (sceneObject.GroundedState == GroundedState.Grounded) 
-                    SetCurrentMoveState(MovementType.Move);
+                if (sceneObject.CurGroundedState == GroundedState.Grounded) 
+                    TrySetCurrentMoveState(MovementType.Move);
                 else
-                    SetCurrentMoveState(MovementType.AirMove);
+                    TrySetCurrentMoveState(MovementType.AirMove);
             }
 
             UpdateAccelerationMovement();
@@ -256,7 +261,7 @@ public class MovementInputHandler : MonoBehaviour
     /// </summary>
     private void UpdateAccelerationMovement()
     {
-        switch (sceneObject.GroundedState)
+        switch (sceneObject.CurGroundedState)
         {
             case GroundedState.Grounded:
 
@@ -341,11 +346,14 @@ public class MovementInputHandler : MonoBehaviour
     /// </summary>
     private void UpdateDeccelerationMovement()
     {
-        switch (sceneObject.GroundedState)
+        switch (sceneObject.CurGroundedState)
         {
             case GroundedState.Grounded:
 
-                UpdateGroundDecceleration();
+                //Dont deccelerate when jumping from ground
+                if (curMoveState != MovementType.Jump)
+                    UpdateGroundDecceleration();
+
                 break;
 
             case GroundedState.Airborn:
@@ -374,7 +382,7 @@ public class MovementInputHandler : MonoBehaviour
                 if (curMoveData != null)
                     sceneObject.AnimationHandler.EndAnimation(curMoveData.Animation);
                 
-                SetCurrentMoveState(MovementType.Null);
+                TrySetCurrentMoveState(MovementType.Null);
             }
         }
     }
@@ -419,7 +427,7 @@ public class MovementInputHandler : MonoBehaviour
         {
             jumpInfluence = Mathf.Clamp01(inputInfluence);
 
-            switch (sceneObject.GroundedState)
+            switch (sceneObject.CurGroundedState)
             {
                 case GroundedState.Grounded:
                     if (curMovementCollection.TryGetMovementByType(MovementType.Jump, out MovementData groundJumpData))
@@ -430,7 +438,7 @@ public class MovementInputHandler : MonoBehaviour
                 case GroundedState.Airborn:
                     if (curMovementCollection.TryGetMovementByType(MovementType.AirJump, out MovementData airJumpData))
                     {
-                        if (numJumpsPerformed < ((AirJumpData)airJumpData).JumpsAvailable)
+                        if (airJumpsPerformed < ((AirJumpData)airJumpData).JumpsAvailable)
                             PerformAirJump((AirJumpData)airJumpData);                        
                     }
 
@@ -445,10 +453,10 @@ public class MovementInputHandler : MonoBehaviour
     /// </summary>
     private void PerformGroundedJump(JumpData jumpData)
     {
-        SetCurrentMoveState(MovementType.Jump);
-
-        sceneObject.CoreRigidBody.velocity = new Vector3(sceneObject.CoreRigidBody.velocity.x, jumpData.JumpVelocity * jumpInfluence, sceneObject.CoreRigidBody.velocity.z);
-        numJumpsPerformed++;
+        if (TrySetCurrentMoveState(MovementType.Jump))
+        {
+            sceneObject.CoreRigidBody.velocity = new Vector3(sceneObject.CoreRigidBody.velocity.x, jumpData.JumpVelocity * jumpInfluence, sceneObject.CoreRigidBody.velocity.z);
+        }
     }
 
 
@@ -458,11 +466,12 @@ public class MovementInputHandler : MonoBehaviour
     /// <param name="airJumpData"></param>
     private void PerformAirJump(AirJumpData airJumpData)
     {
-        SetCurrentMoveState(MovementType.AirJump);
-
-        CheckTurnAround();
-        sceneObject.CoreRigidBody.velocity = new Vector3(sceneObject.CoreRigidBody.velocity.x, airJumpData.AirJumpVelocity * jumpInfluence, sceneObject.CoreRigidBody.velocity.z);
-        numJumpsPerformed++;
+        if (TrySetCurrentMoveState(MovementType.AirJump))
+        {
+            CheckTurnAround();
+            sceneObject.CoreRigidBody.velocity = new Vector3(sceneObject.CoreRigidBody.velocity.x, airJumpData.AirJumpVelocity * jumpInfluence, sceneObject.CoreRigidBody.velocity.z);
+            airJumpsPerformed++;
+        }
     }
 
     #endregion
@@ -475,10 +484,10 @@ public class MovementInputHandler : MonoBehaviour
     /// </summary>
     private void PerformLanding()
     {
-        SetCurrentMoveState(MovementType.Landing);
+        TrySetCurrentMoveState(MovementType.Landing);
 
         //Reset jumps
-        numJumpsPerformed = 0;
+        airJumpsPerformed = 0;
     }
 
     #endregion

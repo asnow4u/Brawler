@@ -15,5 +15,5 @@ MonoBehaviour:
   Animation: {fileID: 7400000, guid: 03a9618a54fc2984cb064b70aa23bdeb, type: 2}
   Type: 4
   Triggers: []
-  JumpsAvailable: 2
+  JumpsAvailable: 1
   AirJumpVelocity: 6

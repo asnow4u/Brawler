@@ -80,7 +80,7 @@ public class AnimationHandler : MonoBehaviour
     {
         animationGraph.Initialize();
         SetAnimationToGraph();
-        animationGraph.ResetToIdle(sceneObject.GroundedState);
+        animationGraph.ResetToIdle(sceneObject.CurGroundedState);
     }
 
     #endregion
