@@ -19,3 +19,4 @@ MonoBehaviour:
     DownAir: {fileID: 11400000, guid: 2ded7fc922e4f074b8d758dcef842c78, type: 2}
     ForwardTilt: {fileID: 11400000, guid: 540c64e2f33198f409d16180c1d0586f, type: 2}
     ForwardAir: {fileID: 11400000, guid: 9bf6cf8b1b312e94c8eb0dcfe57f3617, type: 2}
+    Dash: {fileID: 11400000, guid: b226f2df54e6d8a49b7113b45b075b90, type: 2}

@@ -48,8 +48,8 @@ public class MovementInputHandler : MonoBehaviour
     #region Getters
 
     public MovementType CurMoveState => curMoveState;    
-
     public MovementCollection CurMovementCollection => curMovementCollection;  
+    public float HorizontalInfluence => horizontalInfluence;
 
     #endregion
 

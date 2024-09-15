@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 
-public enum AttackType { Null, UpTilt, DownTilt, ForwardTilt, UpAir, DownAir, ForwardAir };
+public enum AttackType { Null, UpTilt, DownTilt, ForwardTilt, UpAir, DownAir, ForwardAir, Dash };
 
 public class AttackInputHandler : MonoBehaviour
 {
@@ -137,6 +137,23 @@ public class AttackInputHandler : MonoBehaviour
     #region Perform Attack
 
     /// <summary>
+    /// Determine if the attack needs to be buffered due to other states
+    /// </summary>
+    /// <returns></returns>
+    private bool AttackToBeBuffered()
+    {
+        //Cant attack while jumping from ground
+        if (sceneObject.ActionStateHandler.CurActionState == ActionState.Moving && sceneObject.MovementInputHandler.CurMoveState == MovementType.Jump)
+        {
+            //TODO: Buffer attack
+            return true;
+        }
+
+        return false;
+    }
+
+
+    /// <summary>
     /// Play the animation for a buffered attack
     /// </summary>
     public void ExecuteBufferedAttack()
@@ -170,13 +187,7 @@ public class AttackInputHandler : MonoBehaviour
     /// </summary>
     public void PerformUpAttack()
     {       
-        //Cant attack while jumping from ground
-        if (sceneObject.ActionStateHandler.CurActionState == ActionState.Moving && sceneObject.MovementInputHandler.CurMoveState == MovementType.Jump)
-        {
-            //TODO: Buffer attack
-        }
-
-        else
+        if (!AttackToBeBuffered())
         {
             if (sceneObject.CurGroundedState == GroundedState.Airborn)
                 TrySetCurrentAttackState(AttackType.UpAir);
@@ -191,13 +202,7 @@ public class AttackInputHandler : MonoBehaviour
     /// </summary>
     public void PerformDownAttack()
     {
-        //Cant attack while jumping from ground
-        if (sceneObject.ActionStateHandler.CurActionState == ActionState.Moving && sceneObject.MovementInputHandler.CurMoveState == MovementType.Jump)
-        {
-            //TODO: Buffer attack
-        }
-
-        else
+        if (!AttackToBeBuffered())
         {
             if (sceneObject.CurGroundedState == GroundedState.Airborn)
                 TrySetCurrentAttackState(AttackType.DownAir);
@@ -213,24 +218,31 @@ public class AttackInputHandler : MonoBehaviour
     /// </summary>
     public void PerformRightAttack()
     {
-        //Cant attack while jumping from ground
-        if (sceneObject.ActionStateHandler.CurActionState == ActionState.Moving && sceneObject.MovementInputHandler.CurMoveState == MovementType.Jump)
+        if (!AttackToBeBuffered())
         {
-            //TODO: Buffer attack
-        }
-
-        else
-        {
+            //Air Attack
             if (sceneObject.CurGroundedState == GroundedState.Airborn)
             {
                 if (TrySetCurrentAttackState(AttackType.ForwardAir) && !sceneObject.IsFacingRightDirection())
                     sceneObject.TurnAround();
             }
 
+            //Grounded Attack
             else
             {
-                if (TrySetCurrentAttackState(AttackType.ForwardTilt) && !sceneObject.IsFacingRightDirection())
-                    sceneObject.TurnAround();
+                //Dash Attack
+                if (sceneObject.MovementInputHandler.HorizontalInfluence != 0)
+                    TrySetCurrentAttackState(AttackType.Dash);                
+
+                //Tilt Attacl
+                else
+                {
+                    if (TrySetCurrentAttackState(AttackType.ForwardTilt))
+                    {
+                        if (!sceneObject.IsFacingRightDirection())
+                            sceneObject.TurnAround();                    
+                    }                
+                }
             }
         }
     }
@@ -242,14 +254,9 @@ public class AttackInputHandler : MonoBehaviour
     /// </summary>
     public void PerformLeftAttack()
     {
-        //Cant attack while jumping from ground
-        if (sceneObject.ActionStateHandler.CurActionState == ActionState.Moving && sceneObject.MovementInputHandler.CurMoveState == MovementType.Jump)
+        if (!AttackToBeBuffered())
         {
-            //TODO: Buffer attack
-        }
-
-        else
-        {
+            //Air Attack
             if (sceneObject.CurGroundedState == GroundedState.Airborn)
             {
                 if (TrySetCurrentAttackState(AttackType.ForwardAir) && sceneObject.IsFacingRightDirection())
@@ -258,8 +265,19 @@ public class AttackInputHandler : MonoBehaviour
 
             else
             {
-                if (TrySetCurrentAttackState(AttackType.ForwardTilt) && sceneObject.IsFacingRightDirection())
-                    sceneObject.TurnAround();
+                //Dash Attack
+                if (sceneObject.MovementInputHandler.HorizontalInfluence != 0)
+                    TrySetCurrentAttackState(AttackType.Dash);
+                
+                //Tilt Attack
+                else
+                {
+                    if (TrySetCurrentAttackState(AttackType.ForwardTilt))
+                    {
+                        if (sceneObject.IsFacingRightDirection())
+                            sceneObject.TurnAround();
+                    }
+                }
             }
         }
     }

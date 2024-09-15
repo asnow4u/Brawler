@@ -47,12 +47,13 @@ public class WeaponFactory : MonoBehaviour
         {
             //Randomize attack data
             WeaponData attackData = new WeaponData (
-                    weaponData.GetRandomUpTilt(),
-                    weaponData.GetRandomUpAir(),
-                    weaponData.GetRandomDownTilt(),
-                    weaponData.GetRandomDownAir(),
-                    weaponData.GetRandomForwardTilt(),
-                    weaponData.GetRandomForwardAir());
+                    weaponData.GetRandomUpTiltAttack(),
+                    weaponData.GetRandomUpAirAttack(),
+                    weaponData.GetRandomDownTiltAttack(),
+                    weaponData.GetRandomDownAirAttack(),
+                    weaponData.GetRandomForwardTiltAttack(),
+                    weaponData.GetRandomForwardAirAttack(),
+                    weaponData.GetRandomDashAttack());
 
             //Get attack points
             List<GameObject> attackPoints = new List<GameObject>();

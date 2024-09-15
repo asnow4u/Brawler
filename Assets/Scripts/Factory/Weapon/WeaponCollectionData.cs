@@ -5,45 +5,51 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Weapon", menuName = "ScriptableObject/Weapon")]
 public class WeaponCollectionData : ScriptableObject
 {
-    public List<AttackData> UpTilts;
-    public List<AttackData> UpAirs;
-    public List<AttackData> DownTilts;
-    public List<AttackData> DownAirs;
-    public List<AttackData> ForwardTilts;
-    public List<AttackData> ForwardAirs;
+    public List<AttackData> UpTiltAttacks;
+    public List<AttackData> UpAirAttacks;
+    public List<AttackData> DownTiltAttacks;
+    public List<AttackData> DownAirAttacks;
+    public List<AttackData> ForwardTiltAttacks;
+    public List<AttackData> ForwardAirAttacks;
+    public List<AttackData> DashAttacks;
 
     private int RandomNum(int max)
     {
         return Random.Range(0, max);
     }
 
-    public AttackData GetRandomUpTilt()
+    public AttackData GetRandomUpTiltAttack()
     {
-        return UpTilts[RandomNum(UpTilts.Count)];
+        return UpTiltAttacks[RandomNum(UpTiltAttacks.Count)];
     }
 
-    public AttackData GetRandomUpAir()
+    public AttackData GetRandomUpAirAttack()
     {
-        return UpAirs[RandomNum(UpAirs.Count)];
+        return UpAirAttacks[RandomNum(UpAirAttacks.Count)];
     }
 
-    public AttackData GetRandomDownTilt()
+    public AttackData GetRandomDownTiltAttack()
     {
-        return DownTilts[RandomNum(DownTilts.Count)];
+        return DownTiltAttacks[RandomNum(DownTiltAttacks.Count)];
     }
 
-    public AttackData GetRandomDownAir()
+    public AttackData GetRandomDownAirAttack()
     {
-        return DownAirs[RandomNum(DownAirs.Count)];
+        return DownAirAttacks[RandomNum(DownAirAttacks.Count)];
     }
 
-    public AttackData GetRandomForwardTilt()
+    public AttackData GetRandomForwardTiltAttack()
     {
-        return ForwardTilts[RandomNum(ForwardTilts.Count)];
+        return ForwardTiltAttacks[RandomNum(ForwardTiltAttacks.Count)];
     }
 
-    public AttackData GetRandomForwardAir()
+    public AttackData GetRandomForwardAirAttack()
     {
-        return ForwardAirs[RandomNum(ForwardAirs.Count)];
+        return ForwardAirAttacks[RandomNum(ForwardAirAttacks.Count)];
+    }
+
+    public AttackData GetRandomDashAttack()
+    {
+        return DashAttacks[RandomNum(DashAttacks.Count)];
     }
 }

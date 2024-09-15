@@ -42,6 +42,10 @@ public class AttackCollection : ScriptableObject
             case AttackType.DownAir:
                 attack = WeaponData.DownAir;
                 return true;
+
+            case AttackType.Dash:
+                attack = WeaponData.Dash;
+                return true;
         }
 
         attack = null;
@@ -84,6 +88,12 @@ public class AttackCollection : ScriptableObject
         if (WeaponData.DownAir != null && WeaponData.DownAir.AttackAnimation.name == animationName)
         {
             attack = WeaponData.DownAir;
+            return true;
+        }
+
+        if (WeaponData.Dash != null && WeaponData.Dash.AttackAnimation.name == animationName)
+        {
+            attack = WeaponData.Dash;
             return true;
         }
 
