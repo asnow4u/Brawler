@@ -32,10 +32,14 @@ public class MovementInputHandler : MonoBehaviour
     [SerializeField] private MovementCollection baseMovementCollection;
     private MovementCollection curMovementCollection = null;
 
-    //Infulence
-    private float horizontalInfluence;
-    private float verticalInfluence;
-    private float jumpInfluence;
+    [Header("Influence")]
+    [Range(-1, 1)]
+    [SerializeField] private float horizontalInfluence;
+
+    [Range(-1, 1)]
+    [SerializeField] private float verticalInfluence;
+
+    [SerializeField] private float jumpInfluence;
    
     //SceneObject
     private SceneObject sceneObject;
@@ -235,55 +239,65 @@ public class MovementInputHandler : MonoBehaviour
     /// </summary>
     public void UpdateMovement()
     {
+        //Grounded Movement
+        if (sceneObject.CurGroundedState == GroundedState.Grounded)
+            UpdateGroundedMovement();
+
+        //Air Movement
+        else
+            UpdateAirialMovement();
+    }
+
+    
+    /// <summary>
+    /// Update movement on the ground
+    /// </summary>
+    private void UpdateGroundedMovement()
+    {
         if (horizontalInfluence != 0)
         {
-            if (curMoveState == MovementType.Null)
-            {
-                if (sceneObject.CurGroundedState == GroundedState.Grounded) 
-                    TrySetCurrentMoveState(MovementType.Move);
-                else
-                    TrySetCurrentMoveState(MovementType.AirMove);
-            }
+            if (sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking)
+                UpdateGroundDecceleration(8); //TODO: Calculate the nessisary decceleration given animation time for attack and current velocity
 
-            UpdateAccelerationMovement();
+            else if (curMoveState == MovementType.Null)
+                TrySetCurrentMoveState(MovementType.Move);
+
+            else if (curMoveState == MovementType.Move)
+            {
+                CheckTurnAround();
+                UpdateGroundAcceleration();
+            }
         }
 
         else
-            UpdateDeccelerationMovement();        
+            UpdateGroundDecceleration(curMovementCollection.GetGroundedXDeceleration());
     }
-
-
-    #region Acceleration
 
 
     /// <summary>
-    /// Accelerate movement based on groundedState
+    /// Update movement in the air
     /// </summary>
-    private void UpdateAccelerationMovement()
+    private void UpdateAirialMovement()
     {
-        switch (sceneObject.CurGroundedState)
+        if (horizontalInfluence != 0)
         {
-            case GroundedState.Grounded:
+            if (curMoveState == MovementType.Null)
+                TrySetCurrentMoveState(MovementType.AirMove);
 
-                if (curMoveState == MovementType.Move)
-                {
-                    CheckTurnAround();
-                    UpdateGroundAcceleration();
-                }
-                break;
-
-            case GroundedState.Airborn:
-
-                if (curMoveState == MovementType.AirMove || 
-                    curMoveState == MovementType.Jump || 
-                    curMoveState == MovementType.AirJump)
-                {
-                    UpdateAirAcceleration();
-                }
-                break;
+            else if (curMoveState == MovementType.AirMove ||
+                curMoveState == MovementType.Jump ||
+                curMoveState == MovementType.AirJump)
+            {
+                UpdateAirAcceleration();
+            }
         }
+
+        else
+            UpdateAirDeceleration(curMovementCollection.GetAerialXDeceleration());        
     }
 
+
+    #region Acceleration   
 
     /// <summary>
     /// Update velocity while on the ground to speed up
@@ -342,47 +356,28 @@ public class MovementInputHandler : MonoBehaviour
     #region Decceleration
 
     /// <summary>
-    /// Deccelerate movement based on groundedState
-    /// </summary>
-    private void UpdateDeccelerationMovement()
-    {
-        switch (sceneObject.CurGroundedState)
-        {
-            case GroundedState.Grounded:
-
-                //Dont deccelerate when jumping from ground
-                if (curMoveState != MovementType.Jump)
-                    UpdateGroundDecceleration();
-
-                break;
-
-            case GroundedState.Airborn:
-
-                UpdateAirDeceleration();
-                break;
-        }
-    }
-
-
-    /// <summary>
     /// Update velocity while on the ground to slow down
     /// </summary>
-    private void UpdateGroundDecceleration()
+    private void UpdateGroundDecceleration(float deccelerationValue)
     {
-        if (sceneObject.CoreRigidBody.velocity.x != 0)
+        //Dont deccelerate when jumping from ground
+        if (curMoveState != MovementType.Jump)
         {
-            Vector3 dragForce = sceneObject.CoreRigidBody.velocity.normalized * curMovementCollection.GetGroundedXDeceleration();
-            sceneObject.CoreRigidBody.velocity -= dragForce * Time.fixedDeltaTime;
-
-            if ((sceneObject.IsFacingRightDirection() && sceneObject.CoreRigidBody.velocity.x <= 0) ||
-                (!sceneObject.IsFacingRightDirection() && sceneObject.CoreRigidBody.velocity.x >= 0))
+            if (sceneObject.CoreRigidBody.velocity.x != 0)
             {
-                sceneObject.CoreRigidBody.velocity = Vector3.zero;
+                Vector3 dragForce = sceneObject.CoreRigidBody.velocity.normalized * deccelerationValue;
+                sceneObject.CoreRigidBody.velocity -= dragForce * Time.fixedDeltaTime;
+
+                if ((sceneObject.IsFacingRightDirection() && sceneObject.CoreRigidBody.velocity.x <= 0) ||
+                    (!sceneObject.IsFacingRightDirection() && sceneObject.CoreRigidBody.velocity.x >= 0))
+                {
+                    sceneObject.CoreRigidBody.velocity = Vector3.zero;
                 
-                if (curMoveData != null)
-                    sceneObject.AnimationHandler.EndAnimation(curMoveData.Animation);
+                    if (curMoveData != null)
+                        sceneObject.AnimationHandler.EndAnimation(curMoveData.Animation);
                 
-                TrySetCurrentMoveState(MovementType.Null);
+                    TrySetCurrentMoveState(MovementType.Null);
+                }
             }
         }
     }
@@ -392,7 +387,7 @@ public class MovementInputHandler : MonoBehaviour
     /// Update velocity in the air to slow down
     /// </summary>
     /// <param name="rb"></param>
-    private void UpdateAirDeceleration()
+    private void UpdateAirDeceleration(float deccelerationValue)
     {
         float targetXVelocity = curMovementCollection.GetAerialMaxVelocity();
 
@@ -400,10 +395,10 @@ public class MovementInputHandler : MonoBehaviour
             targetXVelocity *= horizontalInfluence;
 
         if (sceneObject.CoreRigidBody.velocity.x > targetXVelocity)
-            sceneObject.CoreRigidBody.velocity -= Vector3.right * curMovementCollection.GetAerialXDeceleration() * Time.fixedDeltaTime;
+            sceneObject.CoreRigidBody.velocity -= Vector3.right * deccelerationValue * Time.fixedDeltaTime;
 
         else if (sceneObject.CoreRigidBody.velocity.x < -targetXVelocity)
-            sceneObject.CoreRigidBody.velocity += Vector3.right * curMovementCollection.GetAerialXDeceleration() * Time.fixedDeltaTime;
+            sceneObject.CoreRigidBody.velocity += Vector3.right * deccelerationValue * Time.fixedDeltaTime;
     }
 
 
