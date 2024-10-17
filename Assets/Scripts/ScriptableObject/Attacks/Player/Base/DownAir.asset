@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43e20834a50fe7a42b978c0aaeb95739, type: 3}
   m_Name: DownAir
   m_EditorClassIdentifier: 
+  Type: 5
   AttackAnimation: {fileID: 7400000, guid: 54b69c4b0549d394c88d787375536d5b, type: 2}
   influence: 1
   damageCurve:

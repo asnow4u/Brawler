@@ -12,31 +12,68 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43e20834a50fe7a42b978c0aaeb95739, type: 3}
   m_Name: Dash
   m_EditorClassIdentifier: 
+  Type: 7
   AttackAnimation: {fileID: 7400000, guid: 7a549e1f2439acb42bd03947aa225dd2, type: 2}
-  influence: 0
+  influence: 1
   damageCurve:
     serializedVersion: 2
-    m_Curve: []
+    m_Curve:
+    - serializedVersion: 3
+      time: 8
+      value: 8
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 15
+      value: 8
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
   launchAngleCurve:
     serializedVersion: 2
-    m_Curve: []
+    m_Curve:
+    - serializedVersion: 3
+      time: 8
+      value: 30
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 15
+      value: 30
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
   enableCollider:
-    TriggerFrame: 0
-    TriggerType: 0
-    WasTriggered: 0
+    TriggerFrame: 8
+    TriggerType: 2
+    WasTriggered: 1
   disableCollider:
-    TriggerFrame: 0
-    TriggerType: 0
-    WasTriggered: 0
+    TriggerFrame: 15
+    TriggerType: 3
+    WasTriggered: 1
   end:
-    TriggerFrame: 0
-    TriggerType: 0
-    WasTriggered: 0
+    TriggerFrame: 30
+    TriggerType: 1
+    WasTriggered: 1
   otherTriggers: []
   ColliderType: 

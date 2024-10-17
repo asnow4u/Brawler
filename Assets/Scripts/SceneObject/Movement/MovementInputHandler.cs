@@ -121,6 +121,13 @@ public class MovementInputHandler : MonoBehaviour
             if (moveData.Type != MovementType.Move && moveData.Type != MovementType.AirMove)
                 TrySetCurrentMoveState(MovementType.Null);
         }
+
+        //End movement after dash attack
+        if (sceneObject.AttackInputHandler.CurAttackCollection.TryGetAttackByAnimation(clip, out AttackData attackData))
+        {
+            if (attackData.Type == AttackType.Dash)
+                TrySetCurrentMoveState(MovementType.Null);
+        }
     }
 
     #endregion
@@ -265,7 +272,7 @@ public class MovementInputHandler : MonoBehaviour
             else if (curMoveState == MovementType.Move)
             {
                 CheckTurnAround();
-                UpdateGroundAcceleration();
+                UpdateGroundAcceleration(curMovementCollection.GetGroundedXAcceleration());
             }
         }
 
@@ -288,7 +295,7 @@ public class MovementInputHandler : MonoBehaviour
                 curMoveState == MovementType.Jump ||
                 curMoveState == MovementType.AirJump)
             {
-                UpdateAirAcceleration();
+                UpdateAirAcceleration(curMovementCollection.GetArialXAcceleration());
             }
         }
 
@@ -302,7 +309,7 @@ public class MovementInputHandler : MonoBehaviour
     /// <summary>
     /// Update velocity while on the ground to speed up
     /// </summary>
-    private void UpdateGroundAcceleration()
+    private void UpdateGroundAcceleration(float acceleration)
     {
         //Ground slope
         if (sceneObject.TryGetSlopeAngle(out Vector3 slope))
@@ -314,7 +321,7 @@ public class MovementInputHandler : MonoBehaviour
             float targetXVelocity = curMovementCollection.GetGroundedMaxXVelocity() * Mathf.Abs(horizontalInfluence);
 
             //Update velocity based on slope
-            sceneObject.CoreRigidBody.velocity += slope * Mathf.Abs(horizontalInfluence) * curMovementCollection.GetGroundedXAcceleration() * Time.fixedDeltaTime;
+            sceneObject.CoreRigidBody.velocity += slope * Mathf.Abs(horizontalInfluence) * acceleration * Time.fixedDeltaTime;
 
             //Cant exceed target velocity
             if (sceneObject.CoreRigidBody.velocity.magnitude > targetXVelocity)
@@ -327,12 +334,12 @@ public class MovementInputHandler : MonoBehaviour
     /// Update velocity in the air to speed up
     /// </summary>
     /// <param name="rb"></param>
-    private void UpdateAirAcceleration()
+    private void UpdateAirAcceleration(float acceleration)
     {
         //Cap Velocity based on horizontal influence
         float targetXVelocity = curMovementCollection.GetAerialMaxVelocity() * horizontalInfluence;
 
-        sceneObject.CoreRigidBody.velocity += Vector3.right * horizontalInfluence * curMovementCollection.GetArialXAcceleration() * Time.fixedDeltaTime;
+        sceneObject.CoreRigidBody.velocity += Vector3.right * horizontalInfluence * acceleration * Time.fixedDeltaTime;
 
         //Cant exceed target velocity
         if ((horizontalInfluence > 0 && sceneObject.CoreRigidBody.velocity.x > targetXVelocity) ||

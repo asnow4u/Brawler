@@ -294,7 +294,7 @@ public class AttackInputHandler : MonoBehaviour
     private void OnAnimationStarted(AnimationClip clip)
     {
         if (curAttackCollection != null && 
-            curAttackCollection.TryGetAttackByAnimation(clip.name, out AttackData attackData))
+            curAttackCollection.TryGetAttackByAnimation(clip, out AttackData attackData))
         {
             curAttackData = attackData;
 
@@ -312,7 +312,7 @@ public class AttackInputHandler : MonoBehaviour
     private void OnAnimationEnded(AnimationClip clip)
     {
         if (curAttackCollection != null &&
-            curAttackCollection.TryGetAttackByAnimation(clip.name, out AttackData attackData))
+            curAttackCollection.TryGetAttackByAnimation(clip, out AttackData attackData))
         {
             if (curAttackData != null)
             {

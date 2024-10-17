@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43e20834a50fe7a42b978c0aaeb95739, type: 3}
   m_Name: DownTilt
   m_EditorClassIdentifier: 
+  Type: 2
   AttackAnimation: {fileID: 7400000, guid: 324f22c1166c48041b791155b80b801f, type: 2}
   influence: 1
   damageCurve:

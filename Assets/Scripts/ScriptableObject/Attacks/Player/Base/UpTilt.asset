@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43e20834a50fe7a42b978c0aaeb95739, type: 3}
   m_Name: UpTilt
   m_EditorClassIdentifier: 
+  Type: 0
   AttackAnimation: {fileID: 7400000, guid: ef98807cec67b93429e7d2b4cc363546, type: 2}
   influence: 1
   damageCurve:
