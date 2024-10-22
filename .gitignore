@@ -69,5 +69,6 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
 /Assets/TEMP FUN
+/Assets/TempSmashCharacters
 /Brawler.sln
 /Assembly-CSharp.csproj
