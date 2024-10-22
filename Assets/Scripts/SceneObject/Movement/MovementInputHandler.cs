@@ -22,11 +22,6 @@ public class MovementInputHandler : MonoBehaviour
     private const float fastFallAcceleration = 20f;
     private const float MaxYVelocity = 15f;
 
-    //Slope Properties
-    [Header("Slope")]    
-    [SerializeField] private float slidingMaxVelocity;
-    [SerializeField] private float slidingAcceleration;
-
     //Movement Collection (NOTE: BaseMovementCollection is Required for all sceneObjects)    
     [Header("Collection")]
     [SerializeField] private MovementCollection baseMovementCollection;
@@ -188,11 +183,8 @@ public class MovementInputHandler : MonoBehaviour
                 switch (sceneObject.CurGroundedState)
                 {
                     case GroundedState.Grounded:
-                    case GroundedState.Sliding:
                         if (sceneObject.TryGetSlopeAngle(out Vector3 slope))
-                        {
                             sceneObject.CoreRigidBody.linearVelocity = slope * sceneObject.CoreRigidBody.linearVelocity.magnitude;
-                        }
                         break;
 
                     case GroundedState.Airborn:
@@ -209,11 +201,8 @@ public class MovementInputHandler : MonoBehaviour
             switch (sceneObject.CurGroundedState)
             {
                 case GroundedState.Grounded:
-                case GroundedState.Sliding:
                     if (sceneObject.TryGetSlopeAngle(out Vector3 slope))
-                    {
                         sceneObject.CoreRigidBody.linearVelocity = slope * sceneObject.CoreRigidBody.linearVelocity.magnitude;
-                    }
                     break;
 
                 case GroundedState.Airborn:

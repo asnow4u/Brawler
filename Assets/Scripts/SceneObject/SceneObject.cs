@@ -3,7 +3,7 @@ using UnityEngine;
 using System;
 
 public enum SceneObjectType { Player, Enemy, Object }
-public enum GroundedState { Airborn, Grounded, Sliding }
+public enum GroundedState { Airborn, Grounded }
 
 
 [RequireComponent(typeof(Rigidbody))]
@@ -21,7 +21,7 @@ public abstract class SceneObject : MonoBehaviour
 
     [Header("Ground Status")]
     [SerializeField] private GroundedState curGroundedState;
-    [SerializeField] private float maxSlopeAngle;
+    [SerializeField] private float maxSlopeAngle; //Move to moveData? or MovementInputHandler?
 
     //Logger
     private SceneObjectLogger logger;
@@ -170,44 +170,12 @@ public abstract class SceneObject : MonoBehaviour
     {
         if (TryGetSlopeAngle(out Vector3 slopeAngle))
         {
-            float angle = Vector3.Angle(transform.right, slopeAngle);
+            //float angle = Vector3.Angle(transform.right, slopeAngle);
 
-            switch (curGroundedState)
+            if (curGroundedState != GroundedState.Grounded)
             {
-                case GroundedState.Grounded:
-
-                    if (angle > maxSlopeAngle)
-                    {
-                        //Face direction of downward slope
-                        //if (slopeAngle.y > 0)
-                        //    TurnAround();
-
-                        curGroundedState = GroundedState.Sliding;
-
-                        GroundedStateChangeEvent?.Invoke(curGroundedState);
-                    }
-                    break;
-
-                case GroundedState.Sliding:
-
-                    if (angle < maxSlopeAngle)
-                    {                     
-                        curGroundedState = GroundedState.Grounded;
-
-                        GroundedStateChangeEvent?.Invoke(curGroundedState);
-                    }
-                    break;
-
-                case GroundedState.Airborn:
-
-                    if (angle > maxSlopeAngle)
-                        curGroundedState = GroundedState.Sliding;
-                    else
-                        curGroundedState = GroundedState.Grounded;
-
-                    GroundedStateChangeEvent?.Invoke(curGroundedState);
-                    
-                    break;
+                curGroundedState = GroundedState.Grounded;
+                GroundedStateChangeEvent?.Invoke(curGroundedState);
             }
         }
 
