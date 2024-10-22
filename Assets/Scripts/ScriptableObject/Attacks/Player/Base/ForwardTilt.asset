@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43e20834a50fe7a42b978c0aaeb95739, type: 3}
   m_Name: ForwardTilt
   m_EditorClassIdentifier: 
-  Type: 0
+  Type: 3
   AttackAnimation: {fileID: 7400000, guid: 50e19dd155be02d42923a5d13c575db3, type: 2}
   influence: 1
   damageCurve:

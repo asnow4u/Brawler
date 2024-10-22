@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43e20834a50fe7a42b978c0aaeb95739, type: 3}
   m_Name: UpAir
   m_EditorClassIdentifier: 
-  Type: 0
+  Type: 4
   AttackAnimation: {fileID: 7400000, guid: a7620b08dbd158a4e997b26aedc67215, type: 2}
   influence: 1
   damageCurve:

@@ -205,7 +205,7 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
                     //Ragdoll
                     if (ragdoll != null)
                     {
-                        if (!ragdoll.enabled && sceneObject.CoreRigidBody.velocity.magnitude > 10)
+                        if (!ragdoll.enabled && sceneObject.CoreRigidBody.linearVelocity.magnitude > 10)
                             EnableRagdoll();
 
                         if (hitStunTimer < ragdoll.ExitTransitionTime)
@@ -248,14 +248,14 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     /// <param name="bounds"></param>
     private void CheckCoreBounce(Bounds bounds)
     {
-        Vector3 velocity = sceneObject.CoreRigidBody.velocity;
+        Vector3 velocity = sceneObject.CoreRigidBody.linearVelocity;
         float distance = velocity.magnitude * Time.fixedDeltaTime;
         Vector3 direction = velocity.normalized;
 
         if (Physics.BoxCast(bounds.center, bounds.extents, direction, out RaycastHit hit, Quaternion.identity, distance, LayerMask.GetMask("Environment")))
         {
             Vector3 bounceVelocity = Vector3.Reflect(velocity, hit.normal) * bounceDegrade;
-            sceneObject.CoreRigidBody.velocity = bounceVelocity;
+            sceneObject.CoreRigidBody.linearVelocity = bounceVelocity;
         }
     }
 

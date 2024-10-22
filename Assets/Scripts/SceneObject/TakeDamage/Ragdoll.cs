@@ -90,7 +90,7 @@ public class Ragdoll : MonoBehaviour
         {            
             sceneObject.GetComponent<Collider>().enabled = true;
             sceneObject.CoreRigidBody.isKinematic = false;
-            sceneObject.CoreRigidBody.velocity = RB.velocity;                 
+            sceneObject.CoreRigidBody.linearVelocity = RB.linearVelocity;                 
 
             DisableRagdollParts();
 
@@ -130,7 +130,7 @@ public class Ragdoll : MonoBehaviour
                 collider.isTrigger = false;
 
             if (part.TryGetComponent(out Rigidbody rb))
-                rb.velocity = sceneObject.CoreRigidBody.velocity;            
+                rb.linearVelocity = sceneObject.CoreRigidBody.linearVelocity;            
 
             RB.isKinematic = false;            
         }
@@ -158,7 +158,7 @@ public class Ragdoll : MonoBehaviour
     /// <param name="bounceDegrade"></param>
     public void CheckRagdollBounce(Bounds bounds, float bounceDegrade)
     {
-        Vector3 velocity = RB.velocity;
+        Vector3 velocity = RB.linearVelocity;
         float distance = velocity.magnitude * Time.fixedDeltaTime;
         Vector3 direction = velocity.normalized;
 
@@ -169,7 +169,7 @@ public class Ragdoll : MonoBehaviour
             foreach (GameObject part in ragdollParts)
             {
                 if (part.TryGetComponent(out Rigidbody rigidbody))
-                    rigidbody.velocity = bounceVelocity;
+                    rigidbody.linearVelocity = bounceVelocity;
             }            
         }
     }

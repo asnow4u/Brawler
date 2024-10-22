@@ -192,7 +192,12 @@ public class AttackInputHandler : MonoBehaviour
             if (sceneObject.CurGroundedState == GroundedState.Airborn)
                 TrySetCurrentAttackState(AttackType.UpAir);
             else
-                TrySetCurrentAttackState(AttackType.UpTilt);              
+            {
+                if (sceneObject.MovementInputHandler.HorizontalInfluence != 0)
+                    TrySetCurrentAttackState(AttackType.Dash);
+                else
+                    TrySetCurrentAttackState(AttackType.UpTilt);              
+            }
         }
     }
 
@@ -207,7 +212,12 @@ public class AttackInputHandler : MonoBehaviour
             if (sceneObject.CurGroundedState == GroundedState.Airborn)
                 TrySetCurrentAttackState(AttackType.DownAir);
             else
-                TrySetCurrentAttackState(AttackType.DownTilt);
+            {
+                if (sceneObject.MovementInputHandler.HorizontalInfluence != 0)
+                    TrySetCurrentAttackState(AttackType.Dash);
+                else
+                    TrySetCurrentAttackState(AttackType.DownTilt);
+            }
         }
     }
 
