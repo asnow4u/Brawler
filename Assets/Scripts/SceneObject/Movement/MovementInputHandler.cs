@@ -252,8 +252,13 @@ public class MovementInputHandler : MonoBehaviour
     {
         if (horizontalInfluence != 0)
         {
-            if (sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking)
-                UpdateGroundDecceleration(8); //TODO: Calculate the nessisary decceleration given animation time for attack and current velocity
+            //Calculate decceleration for dash attack
+            if (sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking &&
+                sceneObject.AttackInputHandler.CurAttackCollection.TryGetAttackByType(AttackType.Dash, out AttackData attack))
+            {
+                float deceleration = sceneObject.CoreRigidBody.linearVelocity.magnitude / attack.AttackAnimation.length;
+                UpdateGroundDecceleration(deceleration);
+            }
 
             else if (curMoveState == MovementType.Null)
                 TrySetCurrentMoveState(MovementType.Move);
