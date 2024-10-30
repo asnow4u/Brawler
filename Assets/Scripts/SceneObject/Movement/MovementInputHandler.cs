@@ -330,24 +330,34 @@ public class MovementInputHandler : MonoBehaviour
     /// <param name="rb"></param>
     private void UpdateAirAcceleration(float acceleration)
     {
-        //Cap Velocity based on horizontal influence
-        float targetXVelocity = curMovementCollection.GetAerialMaxVelocity() * horizontalInfluence;
+        //Prevent sticking to environment by moving into it
+        if (!(horizontalInfluence < 0 && sceneObject.TryDetectCollision(Direction.Left, 0f, LayerMask.GetMask("Environment"), out Collider _)) &&
+            !(horizontalInfluence > 0 && sceneObject.TryDetectCollision(Direction.Right, 0f, LayerMask.GetMask("Environment"), out Collider _)))
+        {            
+            //Cap Velocity based on horizontal influence
+            float targetXVelocity = curMovementCollection.GetAerialMaxVelocity() * horizontalInfluence;
 
-        sceneObject.CoreRigidBody.linearVelocity += Vector3.right * horizontalInfluence * acceleration * Time.fixedDeltaTime;
+            sceneObject.CoreRigidBody.linearVelocity += Vector3.right * horizontalInfluence * acceleration * Time.fixedDeltaTime;
 
-        //Cant exceed target velocity
-        if ((horizontalInfluence > 0 && sceneObject.CoreRigidBody.linearVelocity.x > targetXVelocity) ||
-            (horizontalInfluence < 0 && sceneObject.CoreRigidBody.linearVelocity.x < targetXVelocity))
-        {
-            sceneObject.CoreRigidBody.linearVelocity = new Vector3(targetXVelocity, sceneObject.CoreRigidBody.linearVelocity.y, sceneObject.CoreRigidBody.linearVelocity.z);
+            //Cant exceed target velocity
+            if ((horizontalInfluence > 0 && sceneObject.CoreRigidBody.linearVelocity.x > targetXVelocity) ||
+                (horizontalInfluence < 0 && sceneObject.CoreRigidBody.linearVelocity.x < targetXVelocity))
+            {
+                sceneObject.CoreRigidBody.linearVelocity = new Vector3(targetXVelocity, sceneObject.CoreRigidBody.linearVelocity.y, sceneObject.CoreRigidBody.linearVelocity.z);
+            }
+
+
+            //TODO: Want to apply velocity change than check if its over for more consistant values
+            //Vertical Movement
+            if (verticalInfluence < 0f && sceneObject.CoreRigidBody.linearVelocity.y > -MaxYVelocity)
+            {
+                sceneObject.CoreRigidBody.linearVelocity += transform.up * verticalInfluence * fastFallAcceleration * Time.fixedDeltaTime;
+            }
         }
 
-
-        //TODO: Want to apply velocity change than check if its over for more consistant values
-        //Vertical Movement
-        if (verticalInfluence < 0f && sceneObject.CoreRigidBody.linearVelocity.y > -MaxYVelocity)
+        else
         {
-            sceneObject.CoreRigidBody.linearVelocity += transform.up * verticalInfluence * fastFallAcceleration * Time.fixedDeltaTime;
+            Debug.LogError("User Colliding with environment " + horizontalInfluence);
         }
     }
 

@@ -1,10 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using static Unity.Cinemachine.IInputAxisOwner.AxisDescriptor;
+using UnityEngine.UI;
 
 public enum SceneObjectType { Player, Enemy, Object }
 public enum GroundedState { Airborn, Grounded }
 
+public enum Direction { Right, Left, Up, Down }
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(MovementInputHandler))]
@@ -170,8 +173,6 @@ public abstract class SceneObject : MonoBehaviour
     {
         if (TryGetSlopeAngle(out Vector3 slopeAngle))
         {
-            //float angle = Vector3.Angle(transform.right, slopeAngle);
-
             if (curGroundedState != GroundedState.Grounded)
             {
                 curGroundedState = GroundedState.Grounded;
@@ -302,5 +303,131 @@ public abstract class SceneObject : MonoBehaviour
 
     #endregion
 
+
+
+    #region Collision Detection
+
+    /// <summary>
+    /// Try to detect if a collider exists
+    /// </summary>
+    public bool TryDetectCollision(Direction direction, float dist, LayerMask mask, out Collider collidingCollider)
+    {        
+        collidingCollider = null;
+
+        switch (direction) 
+        { 
+            case Direction.Left:
+                collidingCollider = LeftSideCollisionDetection(dist, mask);
+                break;
+
+            case Direction.Right:
+                collidingCollider = RightSideCollisionDetection(dist, mask);
+                break;
+
+            case Direction.Up:
+                collidingCollider = UpSideCollisionDetection(dist, mask); 
+                break;
+
+            case Direction.Down:
+                collidingCollider= DownSideCollisionDetection(dist, mask);
+                break;        
+        }
+
+        return collidingCollider != null;
+    }  
+
+
+    /// <summary>
+    /// Check right side for any collisions
+    /// </summary>
+    private Collider RightSideCollisionDetection(float dist, LayerMask mask)
+    {
+        Vector3 point1 = collider.bounds.center + Vector3.up * collider.bounds.extents.y;
+        Vector3 point2 = collider.bounds.center + Vector3.down * collider.bounds.extents.y;
+        float spaceBetweenRays = (point1.y - point2.y) / 10;
+
+        for (int i = 0; i < 10; i++)
+        {
+            Vector3 origin = point1 + Vector3.down * spaceBetweenRays * i;
+
+            if (Physics.Raycast(origin, Vector3.right, out RaycastHit hit, collider.bounds.extents.x + dist, mask))
+            {
+                return hit.collider;
+            }
+        }
+
+        return null;
+    }
+
+
+    /// <summary>
+    /// Check left side for any collisions
+    /// </summary>
+    private Collider LeftSideCollisionDetection(float dist, LayerMask mask)
+    {
+        Vector3 point1 = collider.bounds.center + Vector3.up * collider.bounds.extents.y;
+        Vector3 point2 = collider.bounds.center + Vector3.down * collider.bounds.extents.y;
+        float spaceBetweenRays = (point1.y - point2.y) / 10;
+
+        for (int i = 0; i < 10; i++)
+        {
+            Vector3 origin = point1 + Vector3.down * spaceBetweenRays * i;
+
+            if (Physics.Raycast(origin, Vector3.left, out RaycastHit hit, collider.bounds.extents.x + dist, mask))
+            {
+                return hit.collider;
+            }
+        }
+
+        return null;
+    }
+
+
+    /// <summary>
+    /// Check up for any collisions
+    /// </summary>
+    private Collider UpSideCollisionDetection(float dist, LayerMask mask)
+    {
+        Vector3 point1 = collider.bounds.center + Vector3.right * collider.bounds.extents.x;
+        Vector3 point2 = collider.bounds.center + Vector3.left * collider.bounds.extents.x;
+        float spaceBetweenRays = (point1.x - point2.x) / 10;
+
+        for (int i = 0; i < 10; i++)
+        {
+            Vector3 origin = point1 + Vector3.left * spaceBetweenRays * i;
+
+            if (Physics.Raycast(origin, Vector3.up, out RaycastHit hit, collider.bounds.extents.y + dist, mask))
+            {
+                return hit.collider;
+            }
+        }
+
+        return null;
+    }
+
+
+    /// <summary>
+    /// Check down for any collisions
+    /// </summary>
+    private Collider DownSideCollisionDetection(float dist, LayerMask mask)
+    {
+        Vector3 point1 = collider.bounds.center + Vector3.right * collider.bounds.extents.x;
+        Vector3 point2 = collider.bounds.center + Vector3.left * collider.bounds.extents.x;
+        float spaceBetweenRays = (point1.x - point2.x) / 10;
+
+        for (int i = 0; i < 10; i++)
+        {
+            Vector3 origin = point1 + Vector3.left * spaceBetweenRays * i;
+
+            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, collider.bounds.extents.y + dist, mask))
+            {
+                return hit.collider;
+            }
+        }
+
+        return null;
+    }
+
+    #endregion
 }
 
