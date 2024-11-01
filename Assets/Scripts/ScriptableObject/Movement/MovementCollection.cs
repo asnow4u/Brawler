@@ -11,6 +11,8 @@ public class MovementCollection : ScriptableObject
     public JumpData JumpData;
     public AirJumpData AirJumpData;
     public LandData LandData;
+    public WallLean WallLeanData;
+    public WallSlide WallSlideData;
 
     
     /// <summary>
@@ -59,6 +61,22 @@ public class MovementCollection : ScriptableObject
                 if (LandData != null)
                 {
                     requestedMovement = LandData;
+                    return true;
+                }
+                break;
+
+            case MovementType.WallLean:
+                if (WallLeanData != null)
+                {
+                    requestedMovement = WallLeanData;
+                    return true;
+                }
+                break;
+
+            case MovementType.WallSlide:
+                if (WallSlideData != null)
+                {
+                    requestedMovement = WallSlideData;
                     return true;
                 }
                 break;

@@ -4,7 +4,7 @@ using UnityEditor.Animations;
 using UnityEngine;
 
 
-public enum MovementType { Null, Move, AirMove, Jump, AirJump, Landing }
+public enum MovementType { Null, Move, AirMove, Jump, AirJump, WallLean, WallSlide, Landing }
 
 public class MovementInputHandler : MonoBehaviour
 {
@@ -215,6 +215,28 @@ public class MovementInputHandler : MonoBehaviour
     #endregion
 
 
+    #region Against WAll
+
+    /// <summary>
+    /// Determine if the sceneObject is currently against a wall
+    /// </summary>
+    /// <returns></returns>
+    private bool IsAgainstWall()
+    {
+        //Check right wall
+        if (horizontalInfluence > 0 && sceneObject.TryDetectCollision(Direction.Right, 0f, LayerMask.GetMask("Environment"), out Collider _))
+            return true;
+
+        //Check left wall
+        else if (horizontalInfluence < 0 && sceneObject.TryDetectCollision(Direction.Left, 0f, LayerMask.GetMask("Environment"), out Collider _))
+            return true;
+
+        return false;       
+    }
+
+    #endregion
+
+
     #region Perform Move
 
     /// <summary>
@@ -234,7 +256,7 @@ public class MovementInputHandler : MonoBehaviour
     /// Update movement based on grounded status
     /// </summary>
     public void UpdateMovement()
-    {
+    {       
         //Grounded Movement
         if (sceneObject.CurGroundedState == GroundedState.Grounded)
             UpdateGroundedMovement();
@@ -252,15 +274,19 @@ public class MovementInputHandler : MonoBehaviour
     {
         if (horizontalInfluence != 0)
         {
+            //Check if hitting wall
+            if (IsAgainstWall())
+                TrySetCurrentMoveState(MovementType.WallLean);
+
             //Calculate decceleration for dash attack
-            if (sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking &&
+            else if (sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking &&
                 sceneObject.AttackInputHandler.CurAttackCollection.TryGetAttackByType(AttackType.Dash, out AttackData attack))
             {
                 float deceleration = sceneObject.CoreRigidBody.linearVelocity.magnitude / attack.AttackAnimation.length;
                 UpdateGroundDecceleration(deceleration);
             }
 
-            else if (curMoveState == MovementType.Null)
+            else if (curMoveState == MovementType.Null || curMoveState == MovementType.WallLean)
                 TrySetCurrentMoveState(MovementType.Move);
 
             else if (curMoveState == MovementType.Move)
@@ -282,7 +308,11 @@ public class MovementInputHandler : MonoBehaviour
     {
         if (horizontalInfluence != 0)
         {
-            if (curMoveState == MovementType.Null)
+            //Check if hitting wall
+            if (IsAgainstWall())
+                TrySetCurrentMoveState(MovementType.WallSlide);
+
+            else if (curMoveState == MovementType.Null || curMoveState == MovementType.WallSlide)
                 TrySetCurrentMoveState(MovementType.AirMove);
 
             else if (curMoveState == MovementType.AirMove ||
@@ -329,36 +359,25 @@ public class MovementInputHandler : MonoBehaviour
     /// </summary>
     /// <param name="rb"></param>
     private void UpdateAirAcceleration(float acceleration)
-    {
-        //Prevent sticking to environment by moving into it
-        if (!(horizontalInfluence < 0 && sceneObject.TryDetectCollision(Direction.Left, 0f, LayerMask.GetMask("Environment"), out Collider _)) &&
-            !(horizontalInfluence > 0 && sceneObject.TryDetectCollision(Direction.Right, 0f, LayerMask.GetMask("Environment"), out Collider _)))
-        {            
-            //Cap Velocity based on horizontal influence
-            float targetXVelocity = curMovementCollection.GetAerialMaxVelocity() * horizontalInfluence;
+    {          
+        //Cap Velocity based on horizontal influence
+        float targetXVelocity = curMovementCollection.GetAerialMaxVelocity() * horizontalInfluence;
 
-            sceneObject.CoreRigidBody.linearVelocity += Vector3.right * horizontalInfluence * acceleration * Time.fixedDeltaTime;
+        sceneObject.CoreRigidBody.linearVelocity += Vector3.right * horizontalInfluence * acceleration * Time.fixedDeltaTime;
 
-            //Cant exceed target velocity
-            if ((horizontalInfluence > 0 && sceneObject.CoreRigidBody.linearVelocity.x > targetXVelocity) ||
-                (horizontalInfluence < 0 && sceneObject.CoreRigidBody.linearVelocity.x < targetXVelocity))
-            {
-                sceneObject.CoreRigidBody.linearVelocity = new Vector3(targetXVelocity, sceneObject.CoreRigidBody.linearVelocity.y, sceneObject.CoreRigidBody.linearVelocity.z);
-            }
-
-
-            //TODO: Want to apply velocity change than check if its over for more consistant values
-            //Vertical Movement
-            if (verticalInfluence < 0f && sceneObject.CoreRigidBody.linearVelocity.y > -MaxYVelocity)
-            {
-                sceneObject.CoreRigidBody.linearVelocity += transform.up * verticalInfluence * fastFallAcceleration * Time.fixedDeltaTime;
-            }
-        }
-
-        else
+        //Cant exceed target velocity
+        if ((horizontalInfluence > 0 && sceneObject.CoreRigidBody.linearVelocity.x > targetXVelocity) ||
+            (horizontalInfluence < 0 && sceneObject.CoreRigidBody.linearVelocity.x < targetXVelocity))
         {
-            Debug.LogError("User Colliding with environment " + horizontalInfluence);
+            sceneObject.CoreRigidBody.linearVelocity = new Vector3(targetXVelocity, sceneObject.CoreRigidBody.linearVelocity.y, sceneObject.CoreRigidBody.linearVelocity.z);
         }
+
+        //TODO: Want to apply velocity change than check if its over for more consistant values
+        //Vertical Movement
+        if (verticalInfluence < 0f && sceneObject.CoreRigidBody.linearVelocity.y > -MaxYVelocity)
+        {
+            sceneObject.CoreRigidBody.linearVelocity += transform.up * verticalInfluence * fastFallAcceleration * Time.fixedDeltaTime;
+        }        
     }
 
     #endregion
@@ -444,8 +463,14 @@ public class MovementInputHandler : MonoBehaviour
                 case GroundedState.Airborn:
                     if (curMovementCollection.TryGetMovementByType(MovementType.AirJump, out MovementData airJumpData))
                     {
-                        if (airJumpsPerformed < ((AirJumpData)airJumpData).JumpsAvailable)
-                            PerformAirJump((AirJumpData)airJumpData);                        
+                        if (IsAgainstWall())
+                            PerformAirJump((AirJumpData)airJumpData);
+
+                        else if (airJumpsPerformed < ((AirJumpData)airJumpData).JumpsAvailable)
+                        {
+                            PerformAirJump((AirJumpData)airJumpData);
+                            airJumpsPerformed++;
+                        }
                     }
 
                     break;
@@ -475,8 +500,7 @@ public class MovementInputHandler : MonoBehaviour
         if (TrySetCurrentMoveState(MovementType.AirJump))
         {
             CheckTurnAround();
-            sceneObject.CoreRigidBody.linearVelocity = new Vector3(sceneObject.CoreRigidBody.linearVelocity.x, airJumpData.AirJumpVelocity * jumpInfluence, sceneObject.CoreRigidBody.linearVelocity.z);
-            airJumpsPerformed++;
+            sceneObject.CoreRigidBody.linearVelocity = new Vector3(sceneObject.CoreRigidBody.linearVelocity.x, airJumpData.AirJumpVelocity * jumpInfluence, sceneObject.CoreRigidBody.linearVelocity.z);            
         }
     }
 

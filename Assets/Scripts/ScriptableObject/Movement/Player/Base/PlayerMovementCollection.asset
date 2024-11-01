@@ -17,3 +17,5 @@ MonoBehaviour:
   JumpData: {fileID: 11400000, guid: c6d7eb9d32e5b9143beb4473fcc06210, type: 2}
   AirJumpData: {fileID: 11400000, guid: c6e4537fdd246cd4fa029b74b114baf9, type: 2}
   LandData: {fileID: 11400000, guid: 7d733cdae57263244b8304dafaf4e76a, type: 2}
+  WallLeanData: {fileID: 11400000, guid: 3126693482cb6a84da545603898dd2a6, type: 2}
+  WallSlideData: {fileID: 11400000, guid: 0a05f92d12986914ca80d9509c943928, type: 2}
