@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "WallSlide", menuName = "ScriptableObject/Movement/WallSlide")]
-public class WallSlide : MovementData
+public class WallSlideData : MovementData
 {
 
 }

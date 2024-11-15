@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using UnityEditor.Animations;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 
-public enum MovementType { Null, Move, AirMove, Jump, AirJump, WallLean, WallSlide, Landing }
+public enum MovementType { Null, Move, AirMove, Jump, AirJump, WallLean, WallSlide, WallJump, Landing }
 
 public class MovementInputHandler : MonoBehaviour
 {
@@ -215,23 +216,49 @@ public class MovementInputHandler : MonoBehaviour
     #endregion
 
 
-    #region Against WAll
+    #region Wall Check
 
-    /// <summary>
-    /// Determine if the sceneObject is currently against a wall
-    /// </summary>
-    /// <returns></returns>
-    private bool IsAgainstWall()
+    public bool IsAgainstGroundedWall()
     {
-        //Check right wall
-        if (horizontalInfluence > 0 && sceneObject.TryDetectCollision(Direction.Right, 0f, LayerMask.GetMask("Environment"), out Collider _))
-            return true;
+        //Left
+        if (!sceneObject.IsFacingRightDirection())
+        {
+            if (horizontalInfluence <= 0 && sceneObject.TryDetectCollision(Direction.Left, 0.5f, LayerMask.GetMask("Environment"), out _))
+                return true;
+        }
 
-        //Check left wall
-        else if (horizontalInfluence < 0 && sceneObject.TryDetectCollision(Direction.Left, 0f, LayerMask.GetMask("Environment"), out Collider _))
-            return true;
+        //Right
+        else if (sceneObject.IsFacingRightDirection())
+        {
+            if (horizontalInfluence >= 0 && sceneObject.TryDetectCollision(Direction.Right, 0.5f, LayerMask.GetMask("Environment"), out _))
+                return true;
+        }               
 
-        return false;       
+        return false;
+    }
+
+
+    public bool IsAgainstArialWall()
+    {
+        //Left
+        if (horizontalInfluence <= 0 && sceneObject.TryDetectCollision(Direction.Left, 0.5f, LayerMask.GetMask("Environment"), out _))
+        {
+            if (sceneObject.CoreRigidBody.linearVelocity.x <= 0 && sceneObject.IsFacingRightDirection())
+                sceneObject.TurnAround();
+
+            return true;
+        }
+
+        //Right
+        if (horizontalInfluence >= 0 && sceneObject.TryDetectCollision(Direction.Right, 0.5f, LayerMask.GetMask("Environment"), out _))
+        {
+            if (sceneObject.CoreRigidBody.linearVelocity.x >= 0 && !sceneObject.IsFacingRightDirection())
+                sceneObject.TurnAround();
+
+            return true;
+        }
+
+        return false;
     }
 
     #endregion
@@ -259,11 +286,21 @@ public class MovementInputHandler : MonoBehaviour
     {       
         //Grounded Movement
         if (sceneObject.CurGroundedState == GroundedState.Grounded)
+        {
             UpdateGroundedMovement();
+            
+            if (IsAgainstGroundedWall())
+                TrySetCurrentMoveState(MovementType.WallLean);
+        }
 
         //Air Movement
         else
+        {
             UpdateAirialMovement();
+
+            if (IsAgainstArialWall())
+                TrySetCurrentMoveState(MovementType.WallSlide);
+        }
     }
 
     
@@ -274,12 +311,8 @@ public class MovementInputHandler : MonoBehaviour
     {
         if (horizontalInfluence != 0)
         {
-            //Check if hitting wall
-            if (IsAgainstWall())
-                TrySetCurrentMoveState(MovementType.WallLean);
-
             //Calculate decceleration for dash attack
-            else if (sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking &&
+            if (sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking &&
                 sceneObject.AttackInputHandler.CurAttackCollection.TryGetAttackByType(AttackType.Dash, out AttackData attack))
             {
                 float deceleration = sceneObject.CoreRigidBody.linearVelocity.magnitude / attack.AttackAnimation.length;
@@ -308,15 +341,10 @@ public class MovementInputHandler : MonoBehaviour
     {
         if (horizontalInfluence != 0)
         {
-            //Check if hitting wall
-            if (IsAgainstWall())
-                TrySetCurrentMoveState(MovementType.WallSlide);
-
-            else if (curMoveState == MovementType.Null || curMoveState == MovementType.WallSlide)
+            if (curMoveState == MovementType.Null || curMoveState == MovementType.WallSlide)
                 TrySetCurrentMoveState(MovementType.AirMove);
 
             else if (curMoveState == MovementType.AirMove ||
-                curMoveState == MovementType.Jump ||
                 curMoveState == MovementType.AirJump)
             {
                 UpdateAirAcceleration(curMovementCollection.GetArialXAcceleration());
@@ -461,15 +489,21 @@ public class MovementInputHandler : MonoBehaviour
                     break;
 
                 case GroundedState.Airborn:
-                    if (curMovementCollection.TryGetMovementByType(MovementType.AirJump, out MovementData airJumpData))
-                    {
-                        if (IsAgainstWall())
-                            PerformAirJump((AirJumpData)airJumpData);
 
-                        else if (airJumpsPerformed < ((AirJumpData)airJumpData).JumpsAvailable)
+                    if (curMoveState == MovementType.WallSlide)
+                    {
+                        if (curMovementCollection.TryGetMovementByType(MovementType.WallJump, out MovementData wallJumpData))
+                            PerformWallJump((WallJumpData)wallJumpData);
+                    }
+
+                    else {
+                        if (curMovementCollection.TryGetMovementByType(MovementType.AirJump, out MovementData airJumpData))
                         {
-                            PerformAirJump((AirJumpData)airJumpData);
-                            airJumpsPerformed++;
+                            if (airJumpsPerformed < ((AirJumpData)airJumpData).JumpsAvailable)
+                            {
+                                PerformAirJump((AirJumpData)airJumpData);
+                                airJumpsPerformed++;
+                            }
                         }
                     }
 
@@ -494,13 +528,29 @@ public class MovementInputHandler : MonoBehaviour
     /// <summary>
     /// Velocity applied to rb based on jumpInfluence
     /// </summary>
-    /// <param name="airJumpData"></param>
     private void PerformAirJump(AirJumpData airJumpData)
     {
         if (TrySetCurrentMoveState(MovementType.AirJump))
         {
             CheckTurnAround();
             sceneObject.CoreRigidBody.linearVelocity = new Vector3(sceneObject.CoreRigidBody.linearVelocity.x, airJumpData.AirJumpVelocity * jumpInfluence, sceneObject.CoreRigidBody.linearVelocity.z);            
+        }
+    }
+
+
+    /// <summary>
+    /// Velociy to rb to perform wall jump
+    /// </summary>
+    private void PerformWallJump(WallJumpData wallJumpData)
+    {
+        if (TrySetCurrentMoveState(MovementType.AirJump))
+        {
+            if (sceneObject.IsFacingRightDirection())
+                sceneObject.CoreRigidBody.linearVelocity = new Vector3((-1) * Mathf.Cos(wallJumpData.JumpAngle * Mathf.Deg2Rad) * wallJumpData.JumpVelocity, Mathf.Sin(wallJumpData.JumpAngle * Mathf.Deg2Rad) * wallJumpData.JumpVelocity, sceneObject.CoreRigidBody.linearVelocity.z);
+            else
+                sceneObject.CoreRigidBody.linearVelocity = new Vector3(Mathf.Cos(wallJumpData.JumpAngle * Mathf.Deg2Rad) * wallJumpData.JumpVelocity, Mathf.Sin(wallJumpData.JumpAngle * Mathf.Deg2Rad) * wallJumpData.JumpVelocity, sceneObject.CoreRigidBody.linearVelocity.z);
+
+            sceneObject.TurnAround();
         }
     }
 

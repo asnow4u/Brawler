@@ -11,8 +11,9 @@ public class MovementCollection : ScriptableObject
     public JumpData JumpData;
     public AirJumpData AirJumpData;
     public LandData LandData;
-    public WallLean WallLeanData;
-    public WallSlide WallSlideData;
+    public WallLeanData WallLeanData;
+    public WallSlideData WallSlideData;
+    public WallJumpData WallJumpData;
 
     
     /// <summary>
@@ -80,6 +81,15 @@ public class MovementCollection : ScriptableObject
                     return true;
                 }
                 break;
+
+            case MovementType.WallJump:
+                if (WallJumpData != null)
+                {
+                    requestedMovement = WallJumpData;
+                    return true;
+                }
+                break;
+
         }
 
         requestedMovement = null;
@@ -172,6 +182,22 @@ public class MovementCollection : ScriptableObject
             return JumpData.JumpVelocity;
 
         return 0;
+    }
+
+
+    /// <summary>
+    /// Return the velocity for wall jump if available
+    /// </summary>
+    public bool TryGetWallJumpVelocity(out float jumpVelocity)
+    {
+        if (WallJumpData != null)
+        {
+            jumpVelocity = WallJumpData.JumpVelocity;
+            return true;
+        }
+
+        jumpVelocity = 0;
+        return false;
     }
 
 
