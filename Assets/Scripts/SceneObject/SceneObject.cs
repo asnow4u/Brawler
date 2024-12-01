@@ -107,13 +107,6 @@ public abstract class SceneObject : MonoBehaviour
         movementInputHandler = GetComponent<MovementInputHandler>();
         attackInputHandler = GetComponent<AttackInputHandler>();
         damageHandler = GetComponent<DamageHandler>();
-
-        Debug.Assert(actionStateHandler != null, "ActionStateHandler Not Present On SceneObject", this);
-        Debug.Assert(animationHandler != null, "AnimationHandler Not Present On SceneObject", this);
-        Debug.Assert(uiHandler != null, "UIHandler Not Present On SceneObject", this);
-        Debug.Assert(movementInputHandler != null, "MovementInputHandler Not Present On SceneObject", this);
-        Debug.Assert(attackInputHandler != null, "AttackInputHandler Not Present On SceneObject", this);
-        Debug.Assert(damageHandler != null, "DamageHandler Not Present On SceneObject", this);
     }
 
 
@@ -149,7 +142,13 @@ public abstract class SceneObject : MonoBehaviour
     #endregion
 
 
-    #region Fixed Update
+    #region Update
+
+    protected virtual void Update()
+    {        
+        attackInputHandler.HandleUpdate();
+    }
+
 
     protected virtual void FixedUpdate()
     {  

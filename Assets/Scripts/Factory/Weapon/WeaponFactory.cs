@@ -9,16 +9,8 @@ public class WeaponFactory : MonoBehaviour
     [Header("Container Prefanbs")]
     [SerializeField] private GameObject weaponContainer;
 
-    [Header("Weapon Prefabs")]
-    [SerializeField] private GameObject sword;
-    [SerializeField] private GameObject bow;
-    [SerializeField] private GameObject spear;
-    [SerializeField] private GameObject hammer;
-    [SerializeField] private GameObject axe;
-    [SerializeField] private GameObject crossbow;
-    [SerializeField] private GameObject pistol;
-
-    [Header("Data")]
+    [Header("Sword")]
+    [SerializeField] private GameObject sword;    
     [SerializeField] private WeaponCollectionData swordData;
 
     // Start is called before the first frame update
@@ -57,7 +49,7 @@ public class WeaponFactory : MonoBehaviour
 
             //Get attack points
             List<GameObject> attackPoints = new List<GameObject>();
-            foreach (AttackPoint attackPoint in weaponGO.GetComponentsInChildren<AttackPoint>())
+            foreach (AttackCollider attackPoint in weaponGO.GetComponentsInChildren<AttackCollider>())
             {
                 attackPoints.Add(attackPoint.gameObject);
             }
@@ -65,10 +57,6 @@ public class WeaponFactory : MonoBehaviour
             //Create attack collection
             AttackCollection attackCollection = new AttackCollection(attackData);
             weapon.AttackCollection = attackCollection;
-
-            //Create attackPoint collection
-            AttackPointCollection attackPointCollection = new AttackPointCollection(weaponGO);
-            weapon.AttackPointCollection = attackPointCollection;
         }
     }
 

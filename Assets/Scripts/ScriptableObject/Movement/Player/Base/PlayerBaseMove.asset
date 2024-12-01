@@ -18,5 +18,3 @@ MonoBehaviour:
   GroundedMaxXVelocity: 10
   GroundedXAcceleration: 50
   GroundedXDeceleration: 50
-  ArialXAcceleration: 25
-  ArialXDeceleration: 25

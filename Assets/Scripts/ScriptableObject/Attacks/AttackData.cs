@@ -32,9 +32,6 @@ public class AttackData : ScriptableObject
     [Tooltip("Any additional triggers to be called during the animation")]
     [SerializeField] private List<AnimationTrigger> otherTriggers;
 
-    [Header("Colliders")]
-    public List<AttackColliderType> ColliderType;
-
 
     public float GetInfluence()
     {

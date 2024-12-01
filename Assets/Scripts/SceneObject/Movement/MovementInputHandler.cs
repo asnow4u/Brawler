@@ -58,20 +58,22 @@ public class MovementInputHandler : MonoBehaviour
 
     public void Setup()
     {
-        sceneObject = GetComponent<SceneObject>();
-        SetupEventListeners();
+        if (baseMovementCollection != null)
+        {
+            sceneObject = GetComponent<SceneObject>();           
+            curMovementCollection = baseMovementCollection;
+        }
 
-        Debug.Assert(baseMovementCollection != null, "BaseMovementCollection is NULL", this);
-        Debug.Assert(baseMovementCollection.MoveData != null, "BaseMovementCollection Move Data is Null", this);
-        Debug.Assert(baseMovementCollection.AirMoveData != null, "BaseMovementCollection AirMove Data is Null", this);
-
-        curMovementCollection = baseMovementCollection;
+        //Disable due to no base movement handler
+        else
+            this.enabled = false;
     }
 
 
     public void Initialize()
     {
-        
+        if (enabled)
+            SetupEventListeners();
     }
 
     #endregion
@@ -119,7 +121,8 @@ public class MovementInputHandler : MonoBehaviour
         }
 
         //End movement after dash attack
-        if (sceneObject.AttackInputHandler.CurAttackCollection.TryGetAttackByAnimation(clip, out AttackData attackData))
+        if (sceneObject.AttackInputHandler.enabled && 
+            sceneObject.AttackInputHandler.CurAttackCollection.TryGetAttackByAnimation(clip, out AttackData attackData))
         {
             if (attackData.Type == AttackType.Dash)
                 TrySetCurrentMoveState(MovementType.Null);
@@ -274,8 +277,11 @@ public class MovementInputHandler : MonoBehaviour
     /// <param name="inputInfluence"></param>
     public void PerformMovement(Vector2 inputInfluence)
     {       
-        horizontalInfluence = Mathf.Clamp(inputInfluence.x, -1, 1);
-        verticalInfluence = Mathf.Clamp(inputInfluence.y, -1, 1);                                                  
+        if (enabled)
+        {
+            horizontalInfluence = Mathf.Clamp(inputInfluence.x, -1, 1);
+            verticalInfluence = Mathf.Clamp(inputInfluence.y, -1, 1);                                                  
+        }
     }
 
 
@@ -283,23 +289,26 @@ public class MovementInputHandler : MonoBehaviour
     /// Update movement based on grounded status
     /// </summary>
     public void UpdateMovement()
-    {       
-        //Grounded Movement
-        if (sceneObject.CurGroundedState == GroundedState.Grounded)
+    {      
+        if (enabled)
         {
-            UpdateGroundedMovement();
+            //Grounded Movement
+            if (sceneObject.CurGroundedState == GroundedState.Grounded)
+            {
+                UpdateGroundedMovement();
             
-            if (IsAgainstGroundedWall())
-                TrySetCurrentMoveState(MovementType.WallLean);
-        }
+                if (IsAgainstGroundedWall())
+                    TrySetCurrentMoveState(MovementType.WallLean);
+            }
 
-        //Air Movement
-        else
-        {
-            UpdateAirialMovement();
+            //Air Movement
+            else
+            {
+                UpdateAirialMovement();
 
-            if (IsAgainstArialWall())
-                TrySetCurrentMoveState(MovementType.WallSlide);
+                if (IsAgainstArialWall())
+                    TrySetCurrentMoveState(MovementType.WallSlide);
+            }
         }
     }
 
@@ -312,7 +321,8 @@ public class MovementInputHandler : MonoBehaviour
         if (horizontalInfluence != 0)
         {
             //Calculate decceleration for dash attack
-            if (sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking &&
+            if (sceneObject.AttackInputHandler.enabled &&
+                sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking &&
                 sceneObject.AttackInputHandler.CurAttackCollection.TryGetAttackByType(AttackType.Dash, out AttackData attack))
             {
                 float deceleration = sceneObject.CoreRigidBody.linearVelocity.magnitude / attack.AttackAnimation.length;
@@ -476,40 +486,43 @@ public class MovementInputHandler : MonoBehaviour
     /// <param name="inputInfluence"></param>
     public void PerformJump(float inputInfluence)
     {       
-        if (curMoveState != MovementType.Jump && curMoveState != MovementType.Landing)
+        if (enabled)
         {
-            jumpInfluence = Mathf.Clamp01(inputInfluence);
-
-            switch (sceneObject.CurGroundedState)
+            if (curMoveState != MovementType.Jump && curMoveState != MovementType.Landing)
             {
-                case GroundedState.Grounded:
-                    if (curMovementCollection.TryGetMovementByType(MovementType.Jump, out MovementData groundJumpData))
-                        PerformGroundedJump((JumpData)groundJumpData);
+                jumpInfluence = Mathf.Clamp01(inputInfluence);
+
+                switch (sceneObject.CurGroundedState)
+                {
+                    case GroundedState.Grounded:
+                        if (curMovementCollection.TryGetMovementByType(MovementType.Jump, out MovementData groundJumpData))
+                            PerformGroundedJump((JumpData)groundJumpData);
                     
-                    break;
+                        break;
 
-                case GroundedState.Airborn:
+                    case GroundedState.Airborn:
 
-                    if (curMoveState == MovementType.WallSlide)
-                    {
-                        if (curMovementCollection.TryGetMovementByType(MovementType.WallJump, out MovementData wallJumpData))
-                            PerformWallJump((WallJumpData)wallJumpData);
-                    }
-
-                    else {
-                        if (curMovementCollection.TryGetMovementByType(MovementType.AirJump, out MovementData airJumpData))
+                        if (curMoveState == MovementType.WallSlide)
                         {
-                            if (airJumpsPerformed < ((AirJumpData)airJumpData).JumpsAvailable)
+                            if (curMovementCollection.TryGetMovementByType(MovementType.WallJump, out MovementData wallJumpData))
+                                PerformWallJump((WallJumpData)wallJumpData);
+                        }
+
+                        else {
+                            if (curMovementCollection.TryGetMovementByType(MovementType.AirJump, out MovementData airJumpData))
                             {
-                                PerformAirJump((AirJumpData)airJumpData);
-                                airJumpsPerformed++;
+                                if (airJumpsPerformed < ((AirJumpData)airJumpData).JumpsAvailable)
+                                {
+                                    PerformAirJump((AirJumpData)airJumpData);
+                                    airJumpsPerformed++;
+                                }
                             }
                         }
-                    }
 
-                    break;
-            }
-        }        
+                        break;
+                }
+            }        
+        }
     }
 
 

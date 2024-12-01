@@ -124,27 +124,27 @@ public class Player : SceneObject
 
     private void SwitchWeapon1(InputAction.CallbackContext obj)
     {
-        SwitchWeaponTo(0);
+        //SwitchWeaponTo(0);
     }
 
     private void SwitchWeapon2(InputAction.CallbackContext obj)
     {
-        SwitchWeaponTo(1);
+        //SwitchWeaponTo(1);
     }
 
     private void SwitchWeapon3(InputAction.CallbackContext obj)
     {
-        SwitchWeaponTo(2);
+        //SwitchWeaponTo(2);
     }
 
     private void SwitchWeapon4(InputAction.CallbackContext obj)
     {
-        SwitchWeaponTo(3);
+        //SwitchWeaponTo(3);
     }
 
     private void SwitchWeapon5(InputAction.CallbackContext obj)
     {
-        SwitchWeaponTo(4);
+        //SwitchWeaponTo(4);
     }
 
     #endregion

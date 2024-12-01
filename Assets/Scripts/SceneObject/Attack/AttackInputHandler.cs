@@ -8,15 +8,11 @@ public class AttackInputHandler : MonoBehaviour
 {
     const ActionState ATTACKSTATE = ActionState.Attacking;
 
-    [Header("Collection")]
-    //TODO: This should be replaced when weapons are fully integrated.
-    //Equipment handler will pass the correct attack collection
-    [SerializeField] private AttackCollection BaseAttackCollection;
-    private AttackCollection curAttackCollection = null;
+    [Header("Weapon")]    
+    [SerializeField] private Weapon baseWeapon;
+    private Weapon curWeapon = null;
 
-    [Header("Attack Points")]
-    [SerializeField] private AttackPointCollection curAttackPointCollection;
-
+    [Header("State")]
     //Attack Data
     //NOTE: This tracks what attack is currently happening. This prevents multiple attacks from overwriting one another before an attack animation starts
     [SerializeField] private AttackType curAttackState; 
@@ -34,7 +30,16 @@ public class AttackInputHandler : MonoBehaviour
 
     #region Getters
 
-    public AttackCollection CurAttackCollection => curAttackCollection;
+    public AttackCollection CurAttackCollection
+    {
+        get
+        {
+            if (curWeapon != null)
+                return curWeapon.AttackCollection;
+
+            return null;
+        }
+    }
 
     #endregion
 
@@ -43,51 +48,47 @@ public class AttackInputHandler : MonoBehaviour
 
     public void Setup()
     {
-        sceneObject = GetComponent<SceneObject>();
-        curAttackPointCollection = new AttackPointCollection(gameObject);
+        if (baseWeapon != null)
+        {
+            sceneObject = GetComponent<SceneObject>();
+            curWeapon = baseWeapon;
+        }
 
-        SetUpEvents();
+        else
+            this.enabled = false;        
     }
 
 
     public void Initialize()
     {
-        //TODO: Remove this with the implementation of equipmenthandler
-        //Equipment handler should handle updating the current weapon
-        OnWeaponChanged(null);
+        if (enabled)
+        {
+            SetUpEventListeners();
+        }
     }
 
     #endregion
 
 
-    private void Update()
-    {
-        CheckForAnimationTriggers();
-    }
-
-
     #region Events
 
-    private void SetUpEvents()
+    private void SetUpEventListeners()
     {
         //Animation Events
         sceneObject.AnimationHandler.AnimationStartedEvent += OnAnimationStarted;
         sceneObject.AnimationHandler.AnimationEndedEvent += OnAnimationEnded;
     }
 
+    #endregion
 
-    private void OnWeaponChanged(Weapon weapon)
+
+
+    public void HandleUpdate()
     {
-        //TODO: Remove this with the implementation of equipmenthandler
-        //Should always get the attackCollection even for base
-        if (weapon == null)
-            curAttackCollection = BaseAttackCollection;
-        else
-            curAttackCollection = weapon.AttackCollection;
+        if (enabled)
+            CheckForAnimationTriggers();
     }
 
-
-    #endregion
 
 
     #region Attack State
@@ -98,37 +99,30 @@ public class AttackInputHandler : MonoBehaviour
     /// </summary>
     /// <param name="attackType"></param>
     /// <returns></returns>
-    private bool TrySetCurrentAttackState(AttackType attackType)
+    private void SetCurrentAttackState(AttackType attackType)
     {
-        if (curAttackCollection != null)
+        if (attackType != AttackType.Null)
         {
-            if (attackType != AttackType.Null)
+            //Check not currently attacking and
+            //Check that attack exists
+            if (curAttackState == AttackType.Null &&
+                CurAttackCollection.TryGetAttackByType(attackType, out AttackData attack))
             {
-                //Check not currently attacking and
-                //Check that attack exists
-                if (curAttackState == AttackType.Null &&
-                    curAttackCollection.TryGetAttackByType(attackType, out AttackData attack))
+                //Change state
+                if (sceneObject.ActionStateHandler.TryChangeState(ATTACKSTATE))
                 {
-                    //Change state
-                    if (sceneObject.ActionStateHandler.TryChangeState(ATTACKSTATE))
-                    {
-                        curAttackState = attackType;
-                        AttackStateChangedEvent?.Invoke(attackType);
-                        return true;
-                    }
+                    curAttackState = attackType;
+                    AttackStateChangedEvent?.Invoke(attackType);
                 }
-            }
-
-            else
-            {
-                curAttackState = AttackType.Null;
-                curAttackData = null;
-                AttackStateChangedEvent?.Invoke(AttackType.Null);
-                return true;
             }
         }
 
-        return false;
+        else
+        {
+            curAttackState = AttackType.Null;
+            curAttackData = null;
+            AttackStateChangedEvent?.Invoke(AttackType.Null);
+        }
     }    
 
     #endregion
@@ -187,16 +181,19 @@ public class AttackInputHandler : MonoBehaviour
     /// </summary>
     public void PerformUpAttack()
     {       
-        if (!AttackToBeBuffered())
+        if (enabled)
         {
-            if (sceneObject.CurGroundedState == GroundedState.Airborn)
-                TrySetCurrentAttackState(AttackType.UpAir);
-            else
+            if (!AttackToBeBuffered())
             {
-                if (sceneObject.MovementInputHandler.HorizontalInfluence != 0)
-                    TrySetCurrentAttackState(AttackType.Dash);
+                if (sceneObject.CurGroundedState == GroundedState.Airborn)
+                    SetCurrentAttackState(AttackType.UpAir);
                 else
-                    TrySetCurrentAttackState(AttackType.UpTilt);              
+                {
+                    if (sceneObject.MovementInputHandler.HorizontalInfluence != 0)
+                        SetCurrentAttackState(AttackType.Dash);
+                    else
+                        SetCurrentAttackState(AttackType.UpTilt);              
+                }
             }
         }
     }
@@ -207,16 +204,19 @@ public class AttackInputHandler : MonoBehaviour
     /// </summary>
     public void PerformDownAttack()
     {
-        if (!AttackToBeBuffered())
+        if (enabled)
         {
-            if (sceneObject.CurGroundedState == GroundedState.Airborn)
-                TrySetCurrentAttackState(AttackType.DownAir);
-            else
+            if (!AttackToBeBuffered())
             {
-                if (sceneObject.MovementInputHandler.HorizontalInfluence != 0)
-                    TrySetCurrentAttackState(AttackType.Dash);
+                if (sceneObject.CurGroundedState == GroundedState.Airborn)
+                    SetCurrentAttackState(AttackType.DownAir);
                 else
-                    TrySetCurrentAttackState(AttackType.DownTilt);
+                {
+                    if (sceneObject.MovementInputHandler.HorizontalInfluence != 0)
+                        SetCurrentAttackState(AttackType.Dash);
+                    else
+                        SetCurrentAttackState(AttackType.DownTilt);
+                }
             }
         }
     }
@@ -228,30 +228,34 @@ public class AttackInputHandler : MonoBehaviour
     /// </summary>
     public void PerformRightAttack()
     {
-        if (!AttackToBeBuffered())
+        if (enabled)
         {
-            //Air Attack
-            if (sceneObject.CurGroundedState == GroundedState.Airborn)
+            if (!AttackToBeBuffered())
             {
-                if (TrySetCurrentAttackState(AttackType.ForwardAir) && !sceneObject.IsFacingRightDirection())
-                    sceneObject.TurnAround();
-            }
+                //Air Attack
+                if (sceneObject.CurGroundedState == GroundedState.Airborn)
+                {
+                    SetCurrentAttackState(AttackType.ForwardAir);
+                    
+                    if (!sceneObject.IsFacingRightDirection())
+                        sceneObject.TurnAround();
+                }
 
-            //Grounded Attack
-            else
-            {
-                //Dash Attack
-                if (sceneObject.MovementInputHandler.HorizontalInfluence != 0)
-                    TrySetCurrentAttackState(AttackType.Dash);                
-
-                //Tilt Attacl
+                //Grounded Attack
                 else
                 {
-                    if (TrySetCurrentAttackState(AttackType.ForwardTilt))
+                    //Dash Attack
+                    if (sceneObject.MovementInputHandler.HorizontalInfluence != 0)
+                        SetCurrentAttackState(AttackType.Dash);                
+
+                    //Tilt Attacl
+                    else
                     {
+                        SetCurrentAttackState(AttackType.ForwardTilt);
+
                         if (!sceneObject.IsFacingRightDirection())
                             sceneObject.TurnAround();                    
-                    }                
+                    }
                 }
             }
         }
@@ -264,26 +268,30 @@ public class AttackInputHandler : MonoBehaviour
     /// </summary>
     public void PerformLeftAttack()
     {
-        if (!AttackToBeBuffered())
+        if (enabled)
         {
-            //Air Attack
-            if (sceneObject.CurGroundedState == GroundedState.Airborn)
+            if (!AttackToBeBuffered())
             {
-                if (TrySetCurrentAttackState(AttackType.ForwardAir) && sceneObject.IsFacingRightDirection())
-                    sceneObject.TurnAround();
-            }
+                //Air Attack
+                if (sceneObject.CurGroundedState == GroundedState.Airborn)
+                {
+                    SetCurrentAttackState(AttackType.ForwardAir);
 
-            else
-            {
-                //Dash Attack
-                if (sceneObject.MovementInputHandler.HorizontalInfluence != 0)
-                    TrySetCurrentAttackState(AttackType.Dash);
-                
-                //Tilt Attack
+                    if (sceneObject.IsFacingRightDirection())
+                        sceneObject.TurnAround();
+                }
+
                 else
                 {
-                    if (TrySetCurrentAttackState(AttackType.ForwardTilt))
+                    //Dash Attack
+                    if (sceneObject.MovementInputHandler.HorizontalInfluence != 0)
+                        SetCurrentAttackState(AttackType.Dash);
+                
+                    //Tilt Attack
+                    else
                     {
+                        SetCurrentAttackState(AttackType.ForwardTilt);
+
                         if (sceneObject.IsFacingRightDirection())
                             sceneObject.TurnAround();
                     }
@@ -303,8 +311,7 @@ public class AttackInputHandler : MonoBehaviour
     /// <param name="clip"></param>
     private void OnAnimationStarted(AnimationClip clip)
     {
-        if (curAttackCollection != null && 
-            curAttackCollection.TryGetAttackByAnimation(clip, out AttackData attackData))
+        if (CurAttackCollection.TryGetAttackByAnimation(clip, out AttackData attackData))
         {
             curAttackData = attackData;
 
@@ -317,17 +324,16 @@ public class AttackInputHandler : MonoBehaviour
     /// <summary>
     /// Check if attack animation ended
     /// </summary>
-    /// <param name="clip"></param>
-    /// <exception cref="NotImplementedException"></exception>
     private void OnAnimationEnded(AnimationClip clip)
     {
-        if (curAttackCollection != null &&
-            curAttackCollection.TryGetAttackByAnimation(clip, out AttackData attackData))
+        if (CurAttackCollection.TryGetAttackByAnimation(clip, out AttackData attackData))
         {
+            //Check if activly in an attack
             if (curAttackData != null)
             {
-                TrySetCurrentAttackState(AttackType.Null);
-                curAttackPointCollection.ResetAttackPoints(attackData);
+                SetCurrentAttackState(AttackType.Null);
+
+                curWeapon.DisableAllColliders();
             }
         }
     }
@@ -364,12 +370,35 @@ public class AttackInputHandler : MonoBehaviour
         switch (trigger.TriggerType) 
         {
             case AnimationTrigger.Type.EnableCollider:
-                curAttackPointCollection.SetupAttackPointsForAttack(curAttackData);
+                curWeapon.EnableCollidersForAttack(curAttackData, AttackConnected);
                 break;
 
             case AnimationTrigger.Type.DisableCollider:
-                curAttackPointCollection.ResetAttackPoints(curAttackData);
+                curWeapon.DisableAllColliders();
                 break;
+        }
+    }
+
+
+    /// <summary>
+    /// Callback used when an attack makes contact with a <paramref name="col"/> of <paramref name="target"/>
+    /// </summary>
+    /// <param name="target"></param>
+    private void AttackConnected(ITakeDamage target, Collider col)
+    {
+        //Current Attack
+        if (curAttackData != null)
+        {
+            //Attack Details
+            SceneObject sceneObject = GetComponentInParent<SceneObject>();
+            int curFrame = sceneObject.AnimationHandler.GetFrameOfCurrentAnimation();
+            float launchAngle = curAttackData.GetAttackLaunchAngle(curFrame);
+
+            //Reverse launch angle
+            if (!sceneObject.IsFacingRightDirection())
+                launchAngle = 180 - launchAngle;
+
+            target.HitByAttack(curAttackData.GetInfluence(), col.ClosestPoint(col.transform.position), curAttackData.GetAttackDamage(curFrame), launchAngle);            
         }
     }
 
