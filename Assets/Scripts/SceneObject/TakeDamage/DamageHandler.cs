@@ -6,7 +6,7 @@ using UnityEngine;
 public enum HitStunState { None, StartUp, Base, Ending}
 
 
-public class DamageHandler : MonoBehaviour, ITakeDamage
+public class DamageHandler : SceneObjectHandler, ITakeDamage
 {
     [Header("Damage")]
     [SerializeField] protected float damageTaken; 
@@ -29,17 +29,15 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     //KillZones
     private KillZone[] killZones;
 
-
-    //Getters
-    private SceneObject sceneObject;
     private Collider collider => GetComponent<Collider>();
 
 
     #region Initialize
 
-    public void Setup()
+    public override void Setup()
     {
-        sceneObject = GetComponent<SceneObject>();
+        base.Setup();
+
         knockbackHandler = new KnockbackCalculator();
 
         if (ragdollRoot != null)
@@ -50,10 +48,12 @@ public class DamageHandler : MonoBehaviour, ITakeDamage
     }
 
 
-    public void Initialize()
-    {
-           
-    }
+    public override void RegisterToEvents()
+    { }
+
+
+    public override void UnregisterToEvents()
+    { }
 
     #endregion
 

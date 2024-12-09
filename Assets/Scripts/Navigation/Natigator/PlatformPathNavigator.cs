@@ -11,8 +11,13 @@ public class PlatformPathNavigator : PathNavigator
 
     protected override Graph CreateGraph(TerrainNode startNode, TerrainNode endNode)
     {
-        GraphFactory graphFactory = new GraphFactory();
-        return graphFactory.CreateGraph(GraphType.Platform, startNode, endNode, bounds, moveHandler.CurMovementCollection);
+        if (moveHandler.TryGetCurrentMovementCollection(out MovementCollection curMovementCollection))
+        {
+            GraphFactory graphFactory = new GraphFactory();
+            return graphFactory.CreateGraph(GraphType.Platform, startNode, endNode, bounds, curMovementCollection);
+        }
+
+        return null;
     }
 
 

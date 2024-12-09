@@ -10,6 +10,7 @@ public enum GroundedState { Airborn, Grounded }
 public enum Direction { Right, Left, Up, Down }
 
 [RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(EquipmentHandler))]
 [RequireComponent(typeof(MovementInputHandler))]
 [RequireComponent(typeof(AttackInputHandler))]
 [RequireComponent(typeof(ActionStateHandler))]
@@ -31,18 +32,19 @@ public abstract class SceneObject : MonoBehaviour
 
     //Handlers
     private ActionStateHandler actionStateHandler;
+    private EquipmentHandler equipmentHandler;
     private MovementInputHandler movementInputHandler;
     private AttackInputHandler attackInputHandler;
     private AnimationHandler animationHandler;
     private UIHandler uiHandler;
     private DamageHandler damageHandler;
 
-    public IEquipment EquipmentHandler;
     public IInteraction InteractionHandler;
 
     //Getters
     public SceneObjectLogger Logger => logger;
     public ActionStateHandler ActionStateHandler => actionStateHandler;
+    public EquipmentHandler EquipmentHandler => equipmentHandler;
     public MovementInputHandler MovementInputHandler => movementInputHandler;
     public AttackInputHandler AttackInputHandler => attackInputHandler;
     public AnimationHandler AnimationHandler => animationHandler;
@@ -63,8 +65,16 @@ public abstract class SceneObject : MonoBehaviour
 
     private void Start()
     {
-        InspectorCheck();
-        Initialize();        
+        try
+        {
+            InspectorCheck();
+            Initialize();
+        }
+
+        catch (Exception e)
+        {
+            Debug.LogError(e);
+        }
     }
 
 
@@ -88,7 +98,7 @@ public abstract class SceneObject : MonoBehaviour
 
         GetHandlers();
         SetUpHandlers();
-        InitializeHandlers(); 
+        SetupHandlerEvents(); 
         
         logger = new SceneObjectLogger(this);
     }
@@ -104,6 +114,7 @@ public abstract class SceneObject : MonoBehaviour
         actionStateHandler = GetComponent<ActionStateHandler>();
         animationHandler = GetComponent<AnimationHandler>();
         uiHandler = GetComponent<UIHandler>();
+        equipmentHandler = GetComponent<EquipmentHandler>();
         movementInputHandler = GetComponent<MovementInputHandler>();
         attackInputHandler = GetComponent<AttackInputHandler>();
         damageHandler = GetComponent<DamageHandler>();
@@ -116,9 +127,10 @@ public abstract class SceneObject : MonoBehaviour
     /// </summary>
     private void SetUpHandlers()
     {
-        actionStateHandler.SetUp();    
+        actionStateHandler.Setup();    
         animationHandler.Setup();                
         uiHandler.Setup();
+        equipmentHandler.Setup();
         movementInputHandler.Setup();        
         attackInputHandler.Setup();
         damageHandler.Setup();
@@ -128,16 +140,19 @@ public abstract class SceneObject : MonoBehaviour
     /// <summary>
     /// Initialize all handlers
     /// </summary>
-    private void InitializeHandlers()
+    private void SetupHandlerEvents()
     {
-        actionStateHandler.Initialize();
-        uiHandler.Initialize();
-        movementInputHandler.Initialize();
-        attackInputHandler.Initialize();        
-        animationHandler.Initialize(); //NOTE: needs to happen after move and attack handlers
-        damageHandler.Initialize();
-    }
+        actionStateHandler.RegisterToEvents();
+        uiHandler.RegisterToEvents();
+        equipmentHandler.RegisterToEvents();
+        movementInputHandler.RegisterToEvents();
+        attackInputHandler.RegisterToEvents();
 
+        //NOTE: needs to happen after move and attack handlers
+        animationHandler.RegisterToEvents(); 
+
+        damageHandler.RegisterToEvents();
+    }
   
     #endregion
 
@@ -425,6 +440,25 @@ public abstract class SceneObject : MonoBehaviour
         }
 
         return null;
+    }
+
+    #endregion
+
+
+    #region Clean up
+
+    public void OnDestroy()
+    {
+        actionStateHandler.UnregisterToEvents();
+        uiHandler.UnregisterToEvents();
+        equipmentHandler.UnregisterToEvents();
+        movementInputHandler.UnregisterToEvents();
+        attackInputHandler.UnregisterToEvents();
+
+        //NOTE: needs to happen after move and attack handlers
+        animationHandler.UnregisterToEvents();
+
+        damageHandler.UnregisterToEvents();
     }
 
     #endregion

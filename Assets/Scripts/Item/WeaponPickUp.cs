@@ -17,7 +17,7 @@ public class WeaponPickUp : Interactable
                 //}
             }
 
-            sceneObj.EquipmentHandler.Weapons.AddWeapon(weapon);
+            //sceneObj.EquipmentHandler.Weapons.AddWeapon(weapon);
         }
 
         sceneObj.InteractionHandler.UnregisterToInputEvent(InputReceived);

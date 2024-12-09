@@ -3,22 +3,23 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class UIHandler : MonoBehaviour
+public class UIHandler : SceneObjectHandler
 {
     [SerializeField] private TextMeshProUGUI damageDisplay;
 
     #region Initialize
     
-    public void Setup()
+    public override void Setup()
     {
         Debug.Assert(damageDisplay != null, "Damage display not hooked up.", gameObject);
     }
 
 
-    public void Initialize()
-    {        
+    public override void RegisterToEvents()
+    { }
 
-    }
+    public override void UnregisterToEvents()
+    { }
 
     #endregion
 

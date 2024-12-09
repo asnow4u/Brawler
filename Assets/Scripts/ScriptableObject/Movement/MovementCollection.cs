@@ -153,7 +153,7 @@ public class MovementCollection : ScriptableObject
     /// Get air acceleration in collection
     /// </summary>
     /// <returns></returns>
-    public float GetArialXAcceleration()
+    public float GetAerialXAcceleration()
     {
         if (AirMoveData != null)
             return AirMoveData.AerialXAcceleration;

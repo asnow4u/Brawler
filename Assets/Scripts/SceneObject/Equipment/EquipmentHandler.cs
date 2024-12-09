@@ -3,50 +3,70 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EquipmentHandler : IEquipment
+public class EquipmentHandler : SceneObjectHandler
 {
-    private SceneObject sceneObj;
-
-    public IWeaponCollection Weapons { get; private set; }
-    //ItemCollection
-    //EquipmentCollection
+    public Weapon CurWeapon { get; private set; }
 
 
-    public EquipmentHandler(SceneObject obj)
+    private WeaponCollection weaponCollection;
+
+    public event Action<Weapon> OnWeaponEquipped;
+
+
+    #region Initialize
+
+    public override void Setup()
     {
-        this.sceneObj = obj;
-
-        SetUpWeaponsContainer(obj);
-        SetUpItemsContainer(obj); 
-        SetUpEquipmentContainer(obj);
+        base.Setup();
+        
+        SetupWeaponsCollection();
     }
 
-
-    private void SetUpWeaponsContainer(SceneObject obj)
+    public override void RegisterToEvents()
     {
-        Weapons = obj.GetComponentInChildren<WeaponCollection>();
-
-        if (Weapons != null)
-            Weapons.Initialize(obj);
+        throw new NotImplementedException();
     }
 
-    private void SetUpItemsContainer(SceneObject obj)
+    public override void UnregisterToEvents()
     {
-        Transform itemContainer = obj.transform.Find("Items");
+        throw new NotImplementedException();
+    }
 
-        if (itemContainer != null)
+    /// <summary>
+    /// Initialize <see cref="WeaponCollection"/> if it exists
+    /// </summary>
+    private void SetupWeaponsCollection()
+    {
+        weaponCollection = GetComponentInChildren<WeaponCollection>();
+
+        if (weaponCollection != null)
         {
-
+            weaponCollection.Initialize();
+            EquipWeaponByIndex(0);
         }
     }
 
-    private void SetUpEquipmentContainer(SceneObject obj) 
-    {
-        Transform equipmentContainer = obj.transform.Find("Equipment");
+    #endregion
 
-        if (equipmentContainer != null)
+
+    #region Weapon
+
+    /// <summary>
+    /// Equip <see cref="Weapon"/> from <see cref="weaponCollection"/> given <paramref name="index"/>
+    /// </summary>
+    public void EquipWeaponByIndex(int index)
+    {
+        if (weaponCollection != null && weaponCollection.TryGetWeaponByIndex(index, out Weapon weapon))
         {
-            
+            //TODO: equip weapon
+            CurWeapon = weapon;
+            OnWeaponEquipped?.Invoke(weapon);
         }
-    }   
+    }
+
+    #endregion
+
+
+
+
 }

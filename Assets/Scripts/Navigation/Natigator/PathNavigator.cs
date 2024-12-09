@@ -44,7 +44,7 @@ public abstract class PathNavigator : MonoBehaviour
             curGraph = CreateGraph(startNode, endNode);
 
             //Pathfinder
-            pathFinder.Setup(curGraph, moveHandler.CurMovementCollection);            
+            //pathFinder.Setup(curGraph, moveHandler.CurMovementCollection);            
 
             //Routes
             SetCurRoute(await pathFinder.GetNextRoute(curGraph.StartNode));

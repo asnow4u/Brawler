@@ -13,12 +13,10 @@ using UnityEngine.Playables;
 */
 
 
-public class AnimationHandler : MonoBehaviour
+public class AnimationHandler : SceneObjectHandler
 {
     private Animator animator;
     private AnimationGraph animationGraph;
-
-    private SceneObject sceneObject;
 
     [SerializeField] private AnimationClip groundIdleAnimation;
     [SerializeField] private AnimationClip airIdleAnimation;
@@ -61,26 +59,42 @@ public class AnimationHandler : MonoBehaviour
 
     #region Initialize
 
-    public void Setup()
+    public override void Setup()
     {
+        base.Setup();
+        
         //Animator
         animator = GetComponentInChildren<Animator>();
-        Debug.Assert(animator != null, "Animator is Null!", gameObject);
-        Debug.Assert(groundIdleAnimation != null, "Ground Idle Animation not set!", gameObject);
-        Debug.Assert(airIdleAnimation != null, "Air Idle Animation not set!", gameObject);
 
-        sceneObject = GetComponent<SceneObject>();
+        if (animator == null)
+            throw new NullReferenceException("Animator is null");
+        if (groundIdleAnimation == null)
+            throw new NullReferenceException("AnimationHandlers Ground Idle Animation is null");
+        if (airIdleAnimation == null)
+            throw new NullReferenceException("AnimationHandlers Aerial Idle Animation is null");
+
         animationGraph = animator.gameObject.AddComponent<AnimationGraph>();
 
-        SetUpEventListeners();
-    }
-
-
-    public void Initialize()
-    {
         animationGraph.Initialize();
         SetAnimationToGraph();
         animationGraph.ResetToIdle(sceneObject.CurGroundedState);
+    }
+
+
+    public override void RegisterToEvents()
+    {
+        sceneObject.ActionStateHandler.ActionStateChangedEvent += OnActionStateChanged;
+        sceneObject.GroundedStateChangeEvent += OnGroundedStateChanged;
+        sceneObject.MovementInputHandler.MoveStateChangedEvent += OnMovementStateChanged;
+        sceneObject.AttackInputHandler.AttackStateChangedEvent += OnAttackStateChanged;
+    }
+
+    public override void UnregisterToEvents()
+    {
+        sceneObject.ActionStateHandler.ActionStateChangedEvent -= OnActionStateChanged;
+        sceneObject.GroundedStateChangeEvent -= OnGroundedStateChanged;
+        sceneObject.MovementInputHandler.MoveStateChangedEvent -= OnMovementStateChanged;
+        sceneObject.AttackInputHandler.AttackStateChangedEvent -= OnAttackStateChanged;
     }
 
     #endregion
@@ -114,11 +128,8 @@ public class AnimationHandler : MonoBehaviour
     /// </summary>
     private void SetMovementAnimations()
     {
-        if (TryGetComponent(out MovementInputHandler movementInputHandler))
-        {
-            if (movementInputHandler.CurMovementCollection != null)
-                animationGraph.SetMovementAnimations(movementInputHandler.CurMovementCollection);            
-        }
+        if (sceneObject.MovementInputHandler.TryGetCurrentMovementCollection(out MovementCollection curMovementCollection))
+            animationGraph.SetMovementAnimations(curMovementCollection);            
     }
 
 
@@ -129,8 +140,8 @@ public class AnimationHandler : MonoBehaviour
     {
         if (TryGetComponent(out AttackInputHandler attackInputHandler))
         {
-            if (attackInputHandler.CurAttackCollection != null)
-                animationGraph.SetAttackAnimations(attackInputHandler.CurAttackCollection);            
+            if (attackInputHandler.TryGetCurAttackCollection(out AttackCollection curAttackCollection))
+                animationGraph.SetAttackAnimations(curAttackCollection);            
         }
     }
 
@@ -153,17 +164,6 @@ public class AnimationHandler : MonoBehaviour
     /// </summary>
     private void SetUpEventListeners()
     {
-        //Action State Change        
-        sceneObject.ActionStateHandler.ActionStateChangedEvent += OnActionStateChanged;
-
-        //Ground State Changed
-        sceneObject.GroundedStateChangeEvent += OnGroundedStateChanged;
-
-        //Move State Changed        
-        sceneObject.MovementInputHandler.MoveStateChangedEvent += OnMovementStateChanged;
-
-        //Attack State Changed
-        sceneObject.AttackInputHandler.AttackStateChangedEvent += OnAttackStateChanged;
     }
 
 

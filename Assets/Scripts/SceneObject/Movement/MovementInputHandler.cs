@@ -7,7 +7,7 @@ using UnityEngine.UIElements;
 
 public enum MovementType { Null, Move, AirMove, Jump, AirJump, WallLean, WallSlide, WallJump, Landing }
 
-public class MovementInputHandler : MonoBehaviour
+public class MovementInputHandler : SceneObjectHandler
 {
     const ActionState MOVESTATE = ActionState.Moving;
 
@@ -26,7 +26,6 @@ public class MovementInputHandler : MonoBehaviour
     //Movement Collection (NOTE: BaseMovementCollection is Required for all sceneObjects)    
     [Header("Collection")]
     [SerializeField] private MovementCollection baseMovementCollection;
-    private MovementCollection curMovementCollection = null;
 
     [Header("Influence")]
     [Range(-1, 1)]
@@ -36,10 +35,7 @@ public class MovementInputHandler : MonoBehaviour
     [SerializeField] private float verticalInfluence;
 
     [SerializeField] private float jumpInfluence;
-   
-    //SceneObject
-    private SceneObject sceneObject;
-
+       
     //Events
     public event Action<MovementCollection> MovementCollectionChangedEvent;
     public event Action<MovementType> MoveStateChangedEvent;
@@ -48,7 +44,6 @@ public class MovementInputHandler : MonoBehaviour
     #region Getters
 
     public MovementType CurMoveState => curMoveState;    
-    public MovementCollection CurMovementCollection => curMovementCollection;  
     public float HorizontalInfluence => horizontalInfluence;
 
     #endregion
@@ -56,37 +51,29 @@ public class MovementInputHandler : MonoBehaviour
 
     #region Initialize
 
-    public void Setup()
+    public override void Setup()
     {
-        if (baseMovementCollection != null)
-        {
-            sceneObject = GetComponent<SceneObject>();           
-            curMovementCollection = baseMovementCollection;
-        }
-
-        //Disable due to no base movement handler
-        else
-            this.enabled = false;
+        base.Setup();
     }
 
 
-    public void Initialize()
-    {
-        if (enabled)
-            SetupEventListeners();
-    }
-
-    #endregion
-
-
-    #region Events
-
-    private void SetupEventListeners()
+    public override void RegisterToEvents()
     {
         sceneObject.GroundedStateChangeEvent += OnGroundedStateChanged;
         sceneObject.AnimationHandler.AnimationEndedEvent += OnAnimationEnded;
     }
 
+    public override void UnregisterToEvents()
+    {
+        sceneObject.GroundedStateChangeEvent -= OnGroundedStateChanged;
+        sceneObject.AnimationHandler.AnimationEndedEvent -= OnAnimationEnded;
+    }
+
+
+    #endregion
+
+
+    #region Events
     
     /// <summary>
     /// Ground state changed
@@ -114,25 +101,50 @@ public class MovementInputHandler : MonoBehaviour
     /// <param name="clip"></param>
     private void OnAnimationEnded(AnimationClip clip)
     {
-        if (curMovementCollection.TryGetMovementFromAnimation(clip, out MovementData moveData))
+        if (TryGetCurrentMovementCollection(out MovementCollection curMovementCollection))
         {
-            if (moveData.Type != MovementType.Move && moveData.Type != MovementType.AirMove)
-                TrySetCurrentMoveState(MovementType.Null);
-        }
+            if (curMovementCollection.TryGetMovementFromAnimation(clip, out MovementData moveData))
+            {
+                if (moveData.Type != MovementType.Move && moveData.Type != MovementType.AirMove)
+                    TrySetCurrentMoveState(MovementType.Null);
+            }
 
-        //End movement after dash attack
-        if (sceneObject.AttackInputHandler.enabled && 
-            sceneObject.AttackInputHandler.CurAttackCollection.TryGetAttackByAnimation(clip, out AttackData attackData))
-        {
-            if (attackData.Type == AttackType.Dash)
-                TrySetCurrentMoveState(MovementType.Null);
+            //End movement after dash attack
+            if (sceneObject.AttackInputHandler.TryGetCurAttackCollection(out AttackCollection curAttackCollection))
+            {
+                if (curAttackCollection.TryGetAttackByAnimation(clip, out AttackData attackData))
+                {
+                    if (attackData.Type == AttackType.Dash)
+                        TrySetCurrentMoveState(MovementType.Null);
+                }
+            }
         }
     }
 
     #endregion
 
 
-    #region MoveState
+    #region State / Collection
+
+    /// <summary>
+    /// Attempt to get the <paramref name="currentMoveCollection"/> <br/>
+    /// This will prioritize an equpped <see cref="Weapon"/> movement collection over <see cref="baseMovementCollection"/>
+    /// </summary>
+    public bool TryGetCurrentMovementCollection(out MovementCollection currentMoveCollection)
+    {
+        currentMoveCollection = null;
+
+        if (baseMovementCollection != null)
+        {
+            if (sceneObject.EquipmentHandler.CurWeapon != null)
+                currentMoveCollection = sceneObject.EquipmentHandler.CurWeapon.MovementCollection;
+            else
+                currentMoveCollection = baseMovementCollection;
+        }
+
+        return currentMoveCollection != null;
+    }
+
 
     private bool TrySetCurrentMoveState(MovementType moveState)
     {
@@ -277,11 +289,8 @@ public class MovementInputHandler : MonoBehaviour
     /// <param name="inputInfluence"></param>
     public void PerformMovement(Vector2 inputInfluence)
     {       
-        if (enabled)
-        {
-            horizontalInfluence = Mathf.Clamp(inputInfluence.x, -1, 1);
-            verticalInfluence = Mathf.Clamp(inputInfluence.y, -1, 1);                                                  
-        }
+        horizontalInfluence = Mathf.Clamp(inputInfluence.x, -1, 1);
+        verticalInfluence = Mathf.Clamp(inputInfluence.y, -1, 1);                                                  
     }
 
 
@@ -290,12 +299,12 @@ public class MovementInputHandler : MonoBehaviour
     /// </summary>
     public void UpdateMovement()
     {      
-        if (enabled)
+        if (TryGetCurrentMovementCollection(out MovementCollection curMovementCollection))
         {
             //Grounded Movement
             if (sceneObject.CurGroundedState == GroundedState.Grounded)
             {
-                UpdateGroundedMovement();
+                UpdateGroundedMovement(curMovementCollection);
             
                 if (IsAgainstGroundedWall())
                     TrySetCurrentMoveState(MovementType.WallLean);
@@ -304,7 +313,7 @@ public class MovementInputHandler : MonoBehaviour
             //Air Movement
             else
             {
-                UpdateAirialMovement();
+                UpdateAirialMovement(curMovementCollection);
 
                 if (IsAgainstArialWall())
                     TrySetCurrentMoveState(MovementType.WallSlide);
@@ -316,17 +325,17 @@ public class MovementInputHandler : MonoBehaviour
     /// <summary>
     /// Update movement on the ground
     /// </summary>
-    private void UpdateGroundedMovement()
+    private void UpdateGroundedMovement(MovementCollection curMovementCollection)
     {
         if (horizontalInfluence != 0)
         {
             //Calculate decceleration for dash attack
-            if (sceneObject.AttackInputHandler.enabled &&
-                sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking &&
-                sceneObject.AttackInputHandler.CurAttackCollection.TryGetAttackByType(AttackType.Dash, out AttackData attack))
+            if (sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking &&
+                sceneObject.AttackInputHandler.TryGetCurAttackCollection(out AttackCollection curAttackCollection) &&
+                curAttackCollection.TryGetAttackByType(AttackType.Dash, out AttackData attack))
             {
                 float deceleration = sceneObject.CoreRigidBody.linearVelocity.magnitude / attack.AttackAnimation.length;
-                UpdateGroundDecceleration(deceleration);
+                UpdateGroundDecceleration(deceleration);                
             }
 
             else if (curMoveState == MovementType.Null || curMoveState == MovementType.WallLean)
@@ -335,7 +344,7 @@ public class MovementInputHandler : MonoBehaviour
             else if (curMoveState == MovementType.Move)
             {
                 CheckTurnAround();
-                UpdateGroundAcceleration(curMovementCollection.GetGroundedXAcceleration());
+                UpdateGroundAcceleration(curMovementCollection.GetGroundedXAcceleration(), curMovementCollection.GetGroundedMaxXVelocity());
             }
         }
 
@@ -347,7 +356,7 @@ public class MovementInputHandler : MonoBehaviour
     /// <summary>
     /// Update movement in the air
     /// </summary>
-    private void UpdateAirialMovement()
+    private void UpdateAirialMovement(MovementCollection curMovementCollection)
     {
         if (horizontalInfluence != 0)
         {
@@ -357,21 +366,21 @@ public class MovementInputHandler : MonoBehaviour
             else if (curMoveState == MovementType.AirMove ||
                 curMoveState == MovementType.AirJump)
             {
-                UpdateAirAcceleration(curMovementCollection.GetArialXAcceleration());
+                UpdateAirAcceleration(curMovementCollection.GetAerialXAcceleration(), curMovementCollection.GetAerialMaxVelocity());
             }
         }
 
         else
-            UpdateAirDeceleration(curMovementCollection.GetAerialXDeceleration());        
+            UpdateAirDeceleration(curMovementCollection.GetAerialXDeceleration(), curMovementCollection.GetAerialMaxVelocity());        
     }
 
 
     #region Acceleration   
 
     /// <summary>
-    /// Update velocity while on the ground to speed up
+    /// Accelerate on the ground by <paramref name="acceleration"/> value to a max <paramref name="maxVelocity"/>
     /// </summary>
-    private void UpdateGroundAcceleration(float acceleration)
+    private void UpdateGroundAcceleration(float acceleration, float maxVelocity)
     {
         //Ground slope
         if (sceneObject.TryGetSlopeAngle(out Vector3 slope))
@@ -380,7 +389,7 @@ public class MovementInputHandler : MonoBehaviour
             sceneObject.CoreRigidBody.linearDamping = 0;
 
             //Cap Velocity based on horizontal influence
-            float targetXVelocity = curMovementCollection.GetGroundedMaxXVelocity() * Mathf.Abs(horizontalInfluence);
+            float targetXVelocity = maxVelocity * Mathf.Abs(horizontalInfluence);
 
             //Update velocity based on slope
             sceneObject.CoreRigidBody.linearVelocity += slope * Mathf.Abs(horizontalInfluence) * acceleration * Time.fixedDeltaTime;
@@ -393,13 +402,12 @@ public class MovementInputHandler : MonoBehaviour
 
 
     /// <summary>
-    /// Update velocity in the air to speed up
+    /// Accelerate throught the air by <paramref name="acceleration"/> value to a max <paramref name="maxVelocity"/> 
     /// </summary>
-    /// <param name="rb"></param>
-    private void UpdateAirAcceleration(float acceleration)
+    private void UpdateAirAcceleration(float acceleration, float maxVelocity)
     {          
         //Cap Velocity based on horizontal influence
-        float targetXVelocity = curMovementCollection.GetAerialMaxVelocity() * horizontalInfluence;
+        float targetXVelocity = maxVelocity * horizontalInfluence;
 
         sceneObject.CoreRigidBody.linearVelocity += Vector3.right * horizontalInfluence * acceleration * Time.fixedDeltaTime;
 
@@ -424,11 +432,11 @@ public class MovementInputHandler : MonoBehaviour
     #region Decceleration
 
     /// <summary>
-    /// Update velocity while on the ground to slow down
+    /// Update velocity while on the ground to slow down by <paramref name="deccelerationValue"/>
     /// </summary>
     private void UpdateGroundDecceleration(float deccelerationValue)
     {
-        //Dont deccelerate when jumping from ground
+        //Prevet deccelerate when jumping from ground
         if (curMoveState != MovementType.Jump)
         {
             if (sceneObject.CoreRigidBody.linearVelocity.x != 0)
@@ -452,12 +460,11 @@ public class MovementInputHandler : MonoBehaviour
 
 
     /// <summary>
-    /// Update velocity in the air to slow down
+    /// Update velocity in the air to slow down by <paramref name="deccelerationValue"/>
     /// </summary>
-    /// <param name="rb"></param>
-    private void UpdateAirDeceleration(float deccelerationValue)
+    private void UpdateAirDeceleration(float deccelerationValue, float maxAerialVelocity)
     {
-        float targetXVelocity = curMovementCollection.GetAerialMaxVelocity();
+        float targetXVelocity = maxAerialVelocity;
 
         if (horizontalInfluence > 0)
             targetXVelocity *= horizontalInfluence;
@@ -486,7 +493,7 @@ public class MovementInputHandler : MonoBehaviour
     /// <param name="inputInfluence"></param>
     public void PerformJump(float inputInfluence)
     {       
-        if (enabled)
+        if (TryGetCurrentMovementCollection(out MovementCollection curMovementCollection))
         {
             if (curMoveState != MovementType.Jump && curMoveState != MovementType.Landing)
             {

@@ -9,7 +9,7 @@ public enum ActionState
 };
 
 
-public class ActionStateHandler : MonoBehaviour
+public class ActionStateHandler : SceneObjectHandler
 {
     [SerializeField] private ActionState curActionState;
     public ActionState CurActionState => curActionState;
@@ -18,16 +18,18 @@ public class ActionStateHandler : MonoBehaviour
 
     #region Initialize
 
-    public void SetUp()
+    public override void Setup()
     {
         curActionState = ActionState.Idle;
     }
 
 
-    public void Initialize()
-    {
+    public override void RegisterToEvents()
+    { }
 
-    }
+
+    public override void UnregisterToEvents()
+    { }
 
     #endregion
 
@@ -81,6 +83,6 @@ public class ActionStateHandler : MonoBehaviour
     #endregion
 
 
-   
+
 
 }
