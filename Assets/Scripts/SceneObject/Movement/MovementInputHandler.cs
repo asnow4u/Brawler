@@ -46,6 +46,27 @@ public class MovementInputHandler : SceneObjectHandler
     public MovementType CurMoveState => curMoveState;    
     public float HorizontalInfluence => horizontalInfluence;
 
+
+    /// <summary>
+    /// Attempt to get the <paramref name="currentMoveCollection"/> <br/>
+    /// This will prioritize an equpped <see cref="Weapon"/> movement collection over <see cref="baseMovementCollection"/>
+    /// </summary>
+    public bool TryGetCurrentMovementCollection(out MovementCollection currentMoveCollection)
+    {
+        currentMoveCollection = null;
+
+        if (baseMovementCollection != null)
+        {
+            if (sceneObject.EquipmentHandler.CurWeapon != null)
+                currentMoveCollection = sceneObject.EquipmentHandler.CurWeapon.MovementCollection;
+            else
+                currentMoveCollection = baseMovementCollection;
+        }
+
+        return currentMoveCollection != null;
+    }
+
+
     #endregion
 
 
@@ -124,27 +145,7 @@ public class MovementInputHandler : SceneObjectHandler
     #endregion
 
 
-    #region State / Collection
-
-    /// <summary>
-    /// Attempt to get the <paramref name="currentMoveCollection"/> <br/>
-    /// This will prioritize an equpped <see cref="Weapon"/> movement collection over <see cref="baseMovementCollection"/>
-    /// </summary>
-    public bool TryGetCurrentMovementCollection(out MovementCollection currentMoveCollection)
-    {
-        currentMoveCollection = null;
-
-        if (baseMovementCollection != null)
-        {
-            if (sceneObject.EquipmentHandler.CurWeapon != null)
-                currentMoveCollection = sceneObject.EquipmentHandler.CurWeapon.MovementCollection;
-            else
-                currentMoveCollection = baseMovementCollection;
-        }
-
-        return currentMoveCollection != null;
-    }
-
+    #region State 
 
     private bool TrySetCurrentMoveState(MovementType moveState)
     {

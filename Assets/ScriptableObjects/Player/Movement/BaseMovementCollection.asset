@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f56f75752c1d1ec47ab2b7efc90b0fda, type: 3}
-  m_Name: PlayerMovementCollection
+  m_Name: BaseMovementCollection
   m_EditorClassIdentifier: 
   MoveData: {fileID: 11400000, guid: aceefa5ca3bfa9349bdaaae42ab3fb2f, type: 2}
   AirMoveData: {fileID: 11400000, guid: 1ef7b47a053ece24abd996a9234c8df7, type: 2}

@@ -128,11 +128,11 @@ public abstract class SceneObject : MonoBehaviour
     private void SetUpHandlers()
     {
         actionStateHandler.Setup();    
-        animationHandler.Setup();                
-        uiHandler.Setup();
         equipmentHandler.Setup();
         movementInputHandler.Setup();        
         attackInputHandler.Setup();
+        animationHandler.Setup();                
+        uiHandler.Setup();
         damageHandler.Setup();
     }
 

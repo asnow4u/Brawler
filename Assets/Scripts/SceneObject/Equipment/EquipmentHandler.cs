@@ -23,14 +23,10 @@ public class EquipmentHandler : SceneObjectHandler
     }
 
     public override void RegisterToEvents()
-    {
-        throw new NotImplementedException();
-    }
+    { }
 
     public override void UnregisterToEvents()
-    {
-        throw new NotImplementedException();
-    }
+    { }
 
     /// <summary>
     /// Initialize <see cref="WeaponCollection"/> if it exists

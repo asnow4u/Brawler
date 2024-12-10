@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f56f75752c1d1ec47ab2b7efc90b0fda, type: 3}
+  m_Name: SwordBaseMovementCollection
+  m_EditorClassIdentifier: 
+  MoveData: {fileID: 11400000, guid: 3e83465d7263f9543945eb8dde4f3c56, type: 2}
+  AirMoveData: {fileID: 11400000, guid: 86313632ffc058049bd69c313a22c8a5, type: 2}
+  JumpData: {fileID: 11400000, guid: 4057fb62c44055a4585172b668419a72, type: 2}
+  AirJumpData: {fileID: 11400000, guid: e87289f87498f324cac2e0f3e930c00a, type: 2}
+  LandData: {fileID: 11400000, guid: 3e75a8e231615344a85a33d3239e7852, type: 2}
+  WallLeanData: {fileID: 11400000, guid: 625a94a27d74ac0428a38b187d7836c2, type: 2}
+  WallSlideData: {fileID: 11400000, guid: 86c4d64ad69948c4b96820b313aab53e, type: 2}
+  WallJumpData: {fileID: 11400000, guid: 6db505fa6d6f0a34d99e7da695ff979f, type: 2}
