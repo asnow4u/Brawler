@@ -59,15 +59,7 @@ public static class DebugSceneObject
     private static GameObject CreateInventoryObject(Transform parent)
     {
         GameObject inventory = new GameObject("Inventory");
-        inventory.transform.SetParent(parent);
-
-        GameObject weapons = new GameObject("Weapons");
-        weapons.transform.SetParent(inventory.transform);
-        weapons.AddComponent<WeaponCollection>();
-
-        GameObject baseWeapon = new GameObject("Base");
-        baseWeapon.transform.SetParent(weapons.transform);
-        baseWeapon.AddComponent<Weapon>();
+        inventory.transform.SetParent(parent);        
 
         return inventory;
     }

@@ -46,6 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 78813f4c6a905db4a89f79a7a10eb5d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Type: 0
   MovementCollection: {fileID: 11400000, guid: 8652b59850fd13948b67834b9abd3160, type: 2}
   AttackCollection: {fileID: 11400000, guid: bff4e99318059e644b87d88ebfa76ee0, type: 2}
   ColliderCollection:
@@ -183,7 +184,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 4473864713819092805, guid: b07c12aaa25cb5f448751b047ddd7e6d, type: 3}
+  - {fileID: 2100000, guid: 6115a5e119642c941abf7e49cbb12c39, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

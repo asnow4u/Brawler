@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class Weapon : MonoBehaviour
 {
+    public WeaponType Type;
+
     public MovementCollection MovementCollection;
     public AttackCollection AttackCollection;
     public ColliderCollection ColliderCollection;

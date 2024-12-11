@@ -33,13 +33,8 @@ public class EquipmentHandler : SceneObjectHandler
     /// </summary>
     private void SetupWeaponsCollection()
     {
-        weaponCollection = GetComponentInChildren<WeaponCollection>();
-
-        if (weaponCollection != null)
-        {
-            weaponCollection.Initialize();
-            EquipWeaponByIndex(0);
-        }
+        weaponCollection = new WeaponCollection(gameObject);        
+        EquipWeaponByIndex(0);        
     }
 
     #endregion
@@ -54,8 +49,12 @@ public class EquipmentHandler : SceneObjectHandler
     {
         if (weaponCollection != null && weaponCollection.TryGetWeaponByIndex(index, out Weapon weapon))
         {
-            //TODO: equip weapon
+            if (CurWeapon != null)
+                CurWeapon.gameObject.SetActive(false);
+
+            weapon.gameObject.SetActive(true);
             CurWeapon = weapon;
+
             OnWeaponEquipped?.Invoke(weapon);
         }
     }

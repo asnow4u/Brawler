@@ -2,9 +2,25 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WeaponCollection : MonoBehaviour
+
+public enum WeaponType { Sword }
+
+public class WeaponCollection : IDisposable
 {
     [SerializeField] private List<Weapon> weapons = new List<Weapon>();
+    private Dictionary<WeaponType, WeaponGrabPoint> grabPoints = new Dictionary<WeaponType, WeaponGrabPoint>();
+
+    public WeaponCollection(GameObject go)
+    {
+        //GrabPoints
+        foreach (WeaponGrabPoint grabPoint in go.GetComponentsInChildren<WeaponGrabPoint>())
+            AddWeaponGrabPoint(grabPoint);
+
+        //Weapons
+        foreach (Weapon weapon in go.GetComponentsInChildren<Weapon>())
+            AddWeapon(weapon);
+    }
+
 
     #region Getter
 
@@ -21,30 +37,54 @@ public class WeaponCollection : MonoBehaviour
         return weapon != null;
     }
 
+
+    /// <summary>
+    /// Get <paramref name="grabPoint"/> from collection by <paramref name="type"/>
+    /// </summary>
+    public bool TryGetGrabPointByWeaponType(WeaponType type, out WeaponGrabPoint grabPoint)
+    {
+        grabPoint = null;
+        
+        if (grabPoints.ContainsKey(type))
+            grabPoint = grabPoints[type];
+
+        return grabPoint != null;    
+    }
+
     #endregion
 
 
-    /// <summary>
-    /// Initialize weapon collection by adding all child weapons
-    /// </summary>
-    public void Initialize()
-    {   
-        foreach (Weapon weapon in GetComponentsInChildren<Weapon>())
-            AddWeapon(weapon);
-    }
-
-
     #region Collection
+
+    /// <summary>
+    /// Add <paramref name="grabPoint"/> to <see cref="grabPoints"/>
+    /// </summary>
+    private void AddWeaponGrabPoint(WeaponGrabPoint grabPoint)
+    {
+        if (!grabPoints.ContainsKey(grabPoint.WeaponType))
+            grabPoints.Add(grabPoint.WeaponType, grabPoint);
+        else
+            Debug.LogWarning("Multiple WeaponGrabPoints for " +  grabPoint.WeaponType + " found");
+    }    
+
 
     /// <summary>
     /// Add <paramref name="weapon"/> to collection
     /// </summary>
     public void AddWeapon(Weapon weapon)
     {
-        if (!weapons.Contains(weapon))
+        try
         {
-            weapons.Add(weapon);
-            SetWeaponToInventory(weapon);
+            if (!weapons.Contains(weapon))
+            {
+                weapons.Add(weapon);
+                SetWeaponToInventory(weapon);
+            }
+        }
+
+        catch (Exception e)
+        {
+            Debug.LogException(e);
         }
     }
 
@@ -63,53 +103,41 @@ public class WeaponCollection : MonoBehaviour
 
     #region Inventory
 
-    private void ResetTransform(Transform trans)
-    {
-        trans.localPosition = Vector3.zero;
-        trans.localRotation = Quaternion.identity;
-    }
 
     /// <summary>
     /// Set <paramref name="weapon"/> to inventory
     /// </summary>
     private void SetWeaponToInventory(Weapon weapon)
-    {
-        weapon.transform.SetParent(transform);
-        ResetTransform(weapon.transform);
+    {        
+        SetGrabPointTo(weapon);
         weapon.gameObject.SetActive(false);
     }
 
 
-    
-    //private void SetWeaponToHolder(Weapon weapon)
-    //{        
-    //    weapon.transform.SetParent(weaponHolder);
-    //    ResetTransform(weapon.transform);
-    //    weapon.gameObject.SetActive(true);  
-    //} 
+    /// <summary>
+    /// Set <paramref name="weapon"/> to <see cref="WeaponGrabPoint"/> by <see cref="Weapon.Type"/>
+    /// </summary>
+    private void SetGrabPointTo(Weapon weapon)
+    {
+        if (grabPoints.ContainsKey(weapon.Type))
+        {
+            WeaponGrabPoint grabPoint = grabPoints[weapon.Type];
+            weapon.transform.parent = grabPoint.transform;
+            weapon.transform.localPosition = Vector3.zero;
+            weapon.transform.localRotation = Quaternion.identity;
+        }
 
-
-    //public void SwapWeaponTo(int index)
-    //{
-    //    Weapon weapon = GetWeaponByIndex(index);
-
-    //    if (weapon != null)
-    //    {           
-    //        if (curWeapon != null) 
-    //            SetWeaponToInventory(curWeapon);
-
-
-    //        SetWeaponToHolder(weapon);            
-
-    //        curWeapon = weapon;                
-    //    }
-
-    //    WeaponChangedEvent?.Invoke(weapon);
-    //}
-
-
-   
+        else
+            throw new NullReferenceException("Weapon grabpoint not found");
+    }
 
     #endregion
+
+
+    public void Dispose()
+    {
+        grabPoints.Clear();
+        weapons.Clear();
+    }
 }
 
