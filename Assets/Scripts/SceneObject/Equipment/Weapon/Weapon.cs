@@ -9,7 +9,8 @@ public class Weapon : MonoBehaviour
 
     public MovementCollection MovementCollection;
     public AttackCollection AttackCollection;
-    public ColliderCollection ColliderCollection;
+
+    private List<DamageCollider> damageColliders = new List<DamageCollider>();
 
     private AttackData curAttack;
 
@@ -17,12 +18,13 @@ public class Weapon : MonoBehaviour
     private void Start()
     {
         if (MovementCollection == null)
-            throw new System.NullReferenceException("Movement Collection On Weapon " + name + " Is Null!");
+            Debug.LogException(new NullReferenceException("Movement Collection On Weapon " + name + " Is Null!"), this);
 
         if (AttackCollection == null)
-            throw new System.NullReferenceException("Attack Collection On Weapon " + name + " Is Null!");
-
-        ColliderCollection = new ColliderCollection(gameObject);
+            Debug.LogException(new NullReferenceException("Attack Collection On Weapon " + name + " Is Null!"), this);
+        
+        foreach (DamageCollider damageCollider in GetComponentsInChildren<DamageCollider>())
+            damageColliders.Add(damageCollider);
     }
 
 
@@ -31,7 +33,7 @@ public class Weapon : MonoBehaviour
     /// </summary>
     public void EnableCollidersForAttack(AttackData attackData, Action<ITakeDamage, Collider> attackHitCallback)
     {
-        foreach (AttackCollider collider in ColliderCollection.AttackColliders)
+        foreach (DamageCollider collider in damageColliders)
             collider.Enable(attackData.AttackAnimation, attackHitCallback);
     }
 
@@ -41,7 +43,7 @@ public class Weapon : MonoBehaviour
     /// </summary>
     public void DisableAllColliders()
     {
-        foreach (AttackCollider collider in ColliderCollection.AttackColliders)
+        foreach (DamageCollider collider in damageColliders)
             collider.Disable();
     }   
 }

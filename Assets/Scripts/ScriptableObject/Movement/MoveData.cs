@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "Move", menuName = "ScriptableObject/Movement/Move")]
+[CreateAssetMenu(fileName = "Move", menuName = "ScriptableObjects/Movement/Move")]
 public class MoveData : MovementData
 {
     [Header("Velocity Limit")]

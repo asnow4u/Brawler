@@ -49,7 +49,7 @@ public class WeaponFactory : MonoBehaviour
 
             //Get attack points
             List<GameObject> attackPoints = new List<GameObject>();
-            foreach (AttackCollider attackPoint in weaponGO.GetComponentsInChildren<AttackCollider>())
+            foreach (DamageCollider attackPoint in weaponGO.GetComponentsInChildren<DamageCollider>())
             {
                 attackPoints.Add(attackPoint.gameObject);
             }

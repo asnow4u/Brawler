@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-[CreateAssetMenu(fileName = "MovementCollection", menuName = "ScriptableObject/Movement/Collection")]
+[CreateAssetMenu(fileName = "MovementCollection", menuName = "ScriptableObjects/Movement/Collection")]
 public class MovementCollection : ScriptableObject
 {
     public MoveData MoveData;

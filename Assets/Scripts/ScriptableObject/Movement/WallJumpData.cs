@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "WallJump", menuName = "ScriptableObject/Movement/WallJump")]
+[CreateAssetMenu(fileName = "WallJump", menuName = "ScriptableObjects/Movement/WallJump")]
 public class WallJumpData : MovementData
 {
     public float JumpVelocity;

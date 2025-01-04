@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "Land", menuName = "ScriptableObject/Movement/Land")]
+[CreateAssetMenu(fileName = "Land", menuName = "ScriptableObjects/Movement/Land")]
 public class LandData : MovementData
 {
 

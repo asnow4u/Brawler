@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "Weapon", menuName = "ScriptableObject/Weapon")]
+[CreateAssetMenu(fileName = "Weapon", menuName = "ScriptableObjects/Weapon")]
 public class WeaponCollectionData : ScriptableObject
 {
     public List<AttackData> UpTiltAttacks;

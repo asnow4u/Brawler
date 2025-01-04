@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "Attack", menuName = "ScriptableObject/Attack/Attack")]
+[CreateAssetMenu(fileName = "Attack", menuName = "ScriptableObjects/Attack/Attack")]
 public class AttackData : ScriptableObject
 {
     [Header("AttackType")]
@@ -12,6 +12,7 @@ public class AttackData : ScriptableObject
     public AnimationClip AttackAnimation;
 
     [Header("Attack Details")]
+    [Range(0, 1)]
     [SerializeField] private float influence;
     [SerializeField] private AnimationCurve damageCurve;
     [SerializeField] private AnimationCurve launchAngleCurve;    

@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 
-[CreateAssetMenu(fileName = "AttackCollection", menuName = "ScriptableObject/Attack/Collection")]
+[CreateAssetMenu(fileName = "AttackCollection", menuName = "ScriptableObjects/Attack/Collection")]
 public class AttackCollection : ScriptableObject
 {
     public WeaponData WeaponData;

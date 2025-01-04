@@ -99,6 +99,9 @@ public class AttackInputHandler : SceneObjectHandler
     #endregion
 
 
+    /// <summary>
+    /// Each Update frame check any attack animation triggers that need to invoke
+    /// </summary>
     public void HandleUpdate()
     {
         if (TryGetCurAttackCollection(out AttackCollection curAttackCollection))
@@ -334,9 +337,7 @@ public class AttackInputHandler : SceneObjectHandler
             foreach (AnimationTrigger trigger in curAttackData.GetAttackTriggers())
             {
                 if (!trigger.WasTriggered && curAnimationFrame >= trigger.TriggerFrame)
-                {
                     ExecuteTrigger(trigger);
-                }
             }
         }
     }
@@ -353,11 +354,11 @@ public class AttackInputHandler : SceneObjectHandler
         switch (trigger.TriggerType) 
         {
             case AnimationTrigger.Type.EnableCollider:
-                //curWeapon.EnableCollidersForAttack(curAttackData, AttackConnected);
+                sceneObject.EquipmentHandler.CurWeapon.EnableCollidersForAttack(curAttackData, AttackConnected);
                 break;
 
             case AnimationTrigger.Type.DisableCollider:
-                //curWeapon.DisableAllColliders();
+                sceneObject.EquipmentHandler.CurWeapon.DisableAllColliders();
                 break;
         }
     }
