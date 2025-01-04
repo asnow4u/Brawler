@@ -1,11 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
-public class FlyingEdge : Edge
+namespace Game.Navigation
 {
-    public FlyingEdge(GraphNode startNode, GraphNode endNode) : base(startNode, endNode)
+    public class FlyingEdge : Edge
     {
-        edgeType = EdgeType.Fly;
+        public FlyingEdge(GraphNode startNode, GraphNode endNode) : base(startNode, endNode)
+        {
+            edgeType = EdgeType.Fly;
+        }
     }
 }

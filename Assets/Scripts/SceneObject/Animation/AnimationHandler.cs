@@ -1,7 +1,7 @@
-using RayAssets;
+using Game.SceneObjects.ActionStates;
+using Game.SceneObjects.Attack;
+using Game.SceneObjects.Movement;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
@@ -12,250 +12,252 @@ using UnityEngine.Playables;
         Methods like animator.GetCurrentAnimatorClipInfo() will not work while using the playable api
 */
 
-
-public class AnimationHandler : SceneObjectHandler
+namespace Game.SceneObjects.Animation
 {
-    private Animator animator;
-    private AnimationGraph animationGraph;
-
-    [SerializeField] private AnimationClip groundIdleAnimation;
-    [SerializeField] private AnimationClip airIdleAnimation;
-
-    [SerializeField] private AnimationClip curPlayingAnimation;
-
-    //Coroutines
-    private Coroutine animationEventCorutine;
-
-    //Events
-    public event Action<AnimationClip> AnimationStartedEvent;
-    public event Action<AnimationClip> AnimationEndedEvent;
-
-
-    #region Getters
-
-    public Animator Animator => animator;
-    public AnimationClip GroundIdleAnimation => groundIdleAnimation;
-    public AnimationClip AirIdleAnimation => airIdleAnimation;
-
-
-    /// <summary>
-    /// Get the current frame that the animation is on
-    /// </summary>
-    /// <returns></returns>
-    public int GetFrameOfCurrentAnimation()
+    public class AnimationHandler : SceneObjectHandler
     {
-        AnimationClipPlayable clipPlayable = animationGraph.GetCurrentAnimationPlayable();
+        private Animator animator;
+        private AnimationGraph animationGraph;
 
-        double wrappedTime = clipPlayable.GetTime() % clipPlayable.GetAnimationClip().length;
-        
-        float frameRate = clipPlayable.GetAnimationClip().frameRate; 
-        int currentFrame = Mathf.FloorToInt((float)wrappedTime * frameRate);
+        [SerializeField] private AnimationClip groundIdleAnimation;
+        [SerializeField] private AnimationClip airIdleAnimation;
 
-        return currentFrame;
-    }
+        [SerializeField] private AnimationClip curPlayingAnimation;
 
+        //Coroutines
+        private Coroutine animationEventCorutine;
 
-    #endregion
-
-    #region Initialize
-
-    public override void Setup()
-    {
-        base.Setup();
-        
-        //Animator
-        animator = GetComponentInChildren<Animator>();
-
-        if (animator == null)
-            throw new NullReferenceException("Animator is null");
-        if (groundIdleAnimation == null)
-            throw new NullReferenceException("AnimationHandlers Ground Idle Animation is null");
-        if (airIdleAnimation == null)
-            throw new NullReferenceException("AnimationHandlers Aerial Idle Animation is null");
-
-        animationGraph = animator.gameObject.AddComponent<AnimationGraph>();
-
-        animationGraph.Initialize();
-        SetAnimationToGraph();
-        animationGraph.ResetToIdle(sceneObject.CurGroundedState);
-    }
+        //Events
+        public event Action<AnimationClip> AnimationStartedEvent;
+        public event Action<AnimationClip> AnimationEndedEvent;
 
 
-    public override void RegisterToEvents()
-    {
-        sceneObject.ActionStateHandler.ActionStateChangedEvent += OnActionStateChanged;
-        sceneObject.GroundedStateChangeEvent += OnGroundedStateChanged;
-        sceneObject.MovementInputHandler.MoveStateChangedEvent += OnMovementStateChanged;
-        sceneObject.AttackInputHandler.AttackStateChangedEvent += OnAttackStateChanged;
-    }
+        #region Getters
 
-    public override void UnregisterToEvents()
-    {
-        sceneObject.ActionStateHandler.ActionStateChangedEvent -= OnActionStateChanged;
-        sceneObject.GroundedStateChangeEvent -= OnGroundedStateChanged;
-        sceneObject.MovementInputHandler.MoveStateChangedEvent -= OnMovementStateChanged;
-        sceneObject.AttackInputHandler.AttackStateChangedEvent -= OnAttackStateChanged;
-    }
-
-    #endregion
+        public Animator Animator => animator;
+        public AnimationClip GroundIdleAnimation => groundIdleAnimation;
+        public AnimationClip AirIdleAnimation => airIdleAnimation;
 
 
-    #region AnimationGraph
-
-    /// <summary>
-    /// Create animationGraph and set animations
-    /// </summary>
-    private void SetAnimationToGraph()
-    {       
-        SetIdleAnimations();
-        SetMovementAnimations();
-        SetAttackAnimations();
-        //SetHitStunAnimations();
-    }
-
-
-    /// <summary>
-    /// Set animationGraphs idle animations
-    /// </summary>
-    private void SetIdleAnimations()
-    {
-        animationGraph.SetIdleAnimations(groundIdleAnimation, airIdleAnimation);
-    }
-
-
-    /// <summary>
-    /// Set animationGraphs movement animations
-    /// </summary>
-    private void SetMovementAnimations()
-    {
-        if (sceneObject.MovementInputHandler.TryGetCurrentMovementCollection(out MovementCollection curMovementCollection))
-            animationGraph.SetMovementAnimations(curMovementCollection);            
-    }
-
-
-    /// <summary>
-    /// Set animationGraphs attack animations
-    /// </summary>
-    private void SetAttackAnimations()
-    {
-        if (TryGetComponent(out AttackInputHandler attackInputHandler))
+        /// <summary>
+        /// Get the current frame that the animation is on
+        /// </summary>
+        /// <returns></returns>
+        public int GetFrameOfCurrentAnimation()
         {
-            if (attackInputHandler.TryGetCurAttackCollection(out AttackCollection curAttackCollection))
-                animationGraph.SetAttackAnimations(curAttackCollection);            
+            AnimationClipPlayable clipPlayable = animationGraph.GetCurrentAnimationPlayable();
+
+            double wrappedTime = clipPlayable.GetTime() % clipPlayable.GetAnimationClip().length;
+
+            float frameRate = clipPlayable.GetAnimationClip().frameRate;
+            int currentFrame = Mathf.FloorToInt((float)wrappedTime * frameRate);
+
+            return currentFrame;
         }
-    }
 
 
-    /// <summary>
-    /// Set animationGraphs hitstun animations
-    /// </summary>
-    private void SetHitStunAnimations()
-    {
-        animationGraph.SetHitStunAnimations();
-    }
+        #endregion
 
-    #endregion
+        #region Initialize
 
-
-    #region Events
-
-    /// <summary>
-    /// Listen to needed events
-    /// </summary>
-    private void SetUpEventListeners()
-    {
-    }
-
-
-    /// <summary>
-    /// Action State Changed
-    /// </summary>
-    /// <param name="actionState"></param>
-    private void OnActionStateChanged(ActionState actionState)
-    {
-        animationGraph.ChangeActionStateInput(actionState);
-    }
-
-
-    /// <summary>
-    /// Grounded State Changed
-    /// </summary>
-    /// <param name="groundedState"></param>
-    private void OnGroundedStateChanged(GroundedState groundedState)
-    {
-        animationGraph.ChangeGroundedStateInput(groundedState);
-    }
-
-    
-    /// <summary>
-    /// Movement state changed
-    /// </summary>
-    /// <param name="movementState"></param>
-    private void OnMovementStateChanged(MovementType movementState)
-    {        
-        if (movementState == MovementType.Null)
+        public override void Setup()
         {
-            if (sceneObject.ActionStateHandler.CurActionState == ActionState.Moving)
-               sceneObject.ActionStateHandler.ChangeState(ActionState.Idle);     
+            base.Setup();
+
+            //Animator
+            animator = GetComponentInChildren<Animator>();
+
+            if (animator == null)
+                throw new NullReferenceException("Animator is null");
+            if (groundIdleAnimation == null)
+                throw new NullReferenceException("AnimationHandlers Ground Idle Animation is null");
+            if (airIdleAnimation == null)
+                throw new NullReferenceException("AnimationHandlers Aerial Idle Animation is null");
+
+            animationGraph = animator.gameObject.AddComponent<AnimationGraph>();
+
+            animationGraph.Initialize();
+            SetAnimationToGraph();
+            animationGraph.ResetToIdle(sceneObject.CurGroundedState);
         }
-        else
-            animationGraph.ChangeMovementStateInput(movementState);        
-    }
 
 
-    /// <summary>
-    /// Attack state changed
-    /// </summary>
-    /// <param name="attackState"></param>
-    private void OnAttackStateChanged(AttackType attackState)
-    {
-        animationGraph.ChangeAttackStateInput(attackState);
-    }
-
-    #endregion
-    
-
-    /// <summary>
-    /// Check the current animation playing from graph </br>
-    /// Invoke events on changes to the currentPlayingAnimation </br>
-    /// Determine when an animation ends   
-    /// </summary>
-    private void Update()
-    {
-        //Get animationClip from graph
-        AnimationClipPlayable clipPlayable = animationGraph.GetCurrentAnimationPlayable();
-
-        if (clipPlayable.GetAnimationClip() != null)
+        public override void RegisterToEvents()
         {
-            //Check if animation changed
-            if (curPlayingAnimation != clipPlayable.GetAnimationClip())
+            sceneObject.ActionStateHandler.ActionStateChangedEvent += OnActionStateChanged;
+            sceneObject.GroundedStateChangeEvent += OnGroundedStateChanged;
+            sceneObject.MovementInputHandler.MoveStateChangedEvent += OnMovementStateChanged;
+            sceneObject.AttackInputHandler.AttackStateChangedEvent += OnAttackStateChanged;
+        }
+
+        public override void UnregisterToEvents()
+        {
+            sceneObject.ActionStateHandler.ActionStateChangedEvent -= OnActionStateChanged;
+            sceneObject.GroundedStateChangeEvent -= OnGroundedStateChanged;
+            sceneObject.MovementInputHandler.MoveStateChangedEvent -= OnMovementStateChanged;
+            sceneObject.AttackInputHandler.AttackStateChangedEvent -= OnAttackStateChanged;
+        }
+
+        #endregion
+
+
+        #region AnimationGraph
+
+        /// <summary>
+        /// Create animationGraph and set animations
+        /// </summary>
+        private void SetAnimationToGraph()
+        {
+            SetIdleAnimations();
+            SetMovementAnimations();
+            SetAttackAnimations();
+            //SetHitStunAnimations();
+        }
+
+
+        /// <summary>
+        /// Set animationGraphs idle animations
+        /// </summary>
+        private void SetIdleAnimations()
+        {
+            animationGraph.SetIdleAnimations(groundIdleAnimation, airIdleAnimation);
+        }
+
+
+        /// <summary>
+        /// Set animationGraphs movement animations
+        /// </summary>
+        private void SetMovementAnimations()
+        {
+            if (sceneObject.MovementInputHandler.TryGetCurrentMovementCollection(out MovementCollection curMovementCollection))
+                animationGraph.SetMovementAnimations(curMovementCollection);
+        }
+
+
+        /// <summary>
+        /// Set animationGraphs attack animations
+        /// </summary>
+        private void SetAttackAnimations()
+        {
+            if (TryGetComponent(out AttackInputHandler attackInputHandler))
             {
-                if (curPlayingAnimation != null)
-                    AnimationEndedEvent?.Invoke(curPlayingAnimation);
-
-                curPlayingAnimation = clipPlayable.GetAnimationClip();
-
-                AnimationStartedEvent?.Invoke(curPlayingAnimation);
-            }
-
-
-            //Determine when the clip ends
-            if (!curPlayingAnimation.isLooping)
-            {  
-                if (clipPlayable.GetTime() > curPlayingAnimation.length)
-                    EndAnimation(curPlayingAnimation);                
+                if (attackInputHandler.TryGetCurAttackCollection(out AttackCollection curAttackCollection))
+                    animationGraph.SetAttackAnimations(curAttackCollection);
             }
         }
-    }
 
 
-
-    public void EndAnimation(AnimationClip clip)
-    {        
-        if (curPlayingAnimation != null &&
-            curPlayingAnimation == clip)
+        /// <summary>
+        /// Set animationGraphs hitstun animations
+        /// </summary>
+        private void SetHitStunAnimations()
         {
-            GetComponent<ActionStateHandler>().ChangeState(ActionState.Idle);
+            animationGraph.SetHitStunAnimations();
+        }
+
+        #endregion
+
+
+        #region Events
+
+        /// <summary>
+        /// Listen to needed events
+        /// </summary>
+        private void SetUpEventListeners()
+        {
+        }
+
+
+        /// <summary>
+        /// Action State Changed
+        /// </summary>
+        /// <param name="actionState"></param>
+        private void OnActionStateChanged(ActionState actionState)
+        {
+            animationGraph.ChangeActionStateInput(actionState);
+        }
+
+
+        /// <summary>
+        /// Grounded State Changed
+        /// </summary>
+        /// <param name="groundedState"></param>
+        private void OnGroundedStateChanged(GroundedState groundedState)
+        {
+            animationGraph.ChangeGroundedStateInput(groundedState);
+        }
+
+
+        /// <summary>
+        /// Movement state changed
+        /// </summary>
+        /// <param name="movementState"></param>
+        private void OnMovementStateChanged(MovementType movementState)
+        {
+            if (movementState == MovementType.Null)
+            {
+                if (sceneObject.ActionStateHandler.CurActionState == ActionState.Moving)
+                    sceneObject.ActionStateHandler.ChangeState(ActionState.Idle);
+            }
+            else
+                animationGraph.ChangeMovementStateInput(movementState);
+        }
+
+
+        /// <summary>
+        /// Attack state changed
+        /// </summary>
+        /// <param name="attackState"></param>
+        private void OnAttackStateChanged(AttackType attackState)
+        {
+            animationGraph.ChangeAttackStateInput(attackState);
+        }
+
+        #endregion
+
+
+        /// <summary>
+        /// Check the current animation playing from graph </br>
+        /// Invoke events on changes to the currentPlayingAnimation </br>
+        /// Determine when an animation ends   
+        /// </summary>
+        private void Update()
+        {
+            //Get animationClip from graph
+            AnimationClipPlayable clipPlayable = animationGraph.GetCurrentAnimationPlayable();
+
+            if (clipPlayable.GetAnimationClip() != null)
+            {
+                //Check if animation changed
+                if (curPlayingAnimation != clipPlayable.GetAnimationClip())
+                {
+                    if (curPlayingAnimation != null)
+                        AnimationEndedEvent?.Invoke(curPlayingAnimation);
+
+                    curPlayingAnimation = clipPlayable.GetAnimationClip();
+
+                    AnimationStartedEvent?.Invoke(curPlayingAnimation);
+                }
+
+
+                //Determine when the clip ends
+                if (!curPlayingAnimation.isLooping)
+                {
+                    if (clipPlayable.GetTime() > curPlayingAnimation.length)
+                        EndAnimation(curPlayingAnimation);
+                }
+            }
+        }
+
+
+
+        public void EndAnimation(AnimationClip clip)
+        {
+            if (curPlayingAnimation != null &&
+                curPlayingAnimation == clip)
+            {
+                GetComponent<ActionStateHandler>().ChangeState(ActionState.Idle);
+            }
         }
     }
 }

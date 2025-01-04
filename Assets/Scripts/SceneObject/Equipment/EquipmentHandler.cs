@@ -1,67 +1,63 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
-public class EquipmentHandler : SceneObjectHandler
+namespace Game.SceneObjects.Equipment
 {
-    public Weapon CurWeapon { get; private set; }
-
-
-    private WeaponCollection weaponCollection;
-
-    public event Action<Weapon> OnWeaponEquipped;
-
-
-    #region Initialize
-
-    public override void Setup()
+    public class EquipmentHandler : SceneObjectHandler
     {
-        base.Setup();
-        
-        SetupWeaponsCollection();
-    }
-
-    public override void RegisterToEvents()
-    { }
-
-    public override void UnregisterToEvents()
-    { }
-
-    /// <summary>
-    /// Initialize <see cref="WeaponCollection"/> if it exists
-    /// </summary>
-    private void SetupWeaponsCollection()
-    {
-        weaponCollection = new WeaponCollection(gameObject);        
-        EquipWeaponByIndex(0);        
-    }
-
-    #endregion
+        public Weapon CurWeapon { get; private set; }
 
 
-    #region Weapon
+        private WeaponCollection weaponCollection;
 
-    /// <summary>
-    /// Equip <see cref="Weapon"/> from <see cref="weaponCollection"/> given <paramref name="index"/>
-    /// </summary>
-    public void EquipWeaponByIndex(int index)
-    {
-        if (weaponCollection != null && weaponCollection.TryGetWeaponByIndex(index, out Weapon weapon))
+        public event Action<Weapon> OnWeaponEquipped;
+
+
+        #region Initialize
+
+        public override void Setup()
         {
-            if (CurWeapon != null)
-                CurWeapon.gameObject.SetActive(false);
+            base.Setup();
 
-            weapon.gameObject.SetActive(true);
-            CurWeapon = weapon;
-
-            OnWeaponEquipped?.Invoke(weapon);
+            SetupWeaponsCollection();
         }
+
+        public override void RegisterToEvents()
+        { }
+
+        public override void UnregisterToEvents()
+        { }
+
+        /// <summary>
+        /// Initialize <see cref="WeaponCollection"/> if it exists
+        /// </summary>
+        private void SetupWeaponsCollection()
+        {
+            weaponCollection = new WeaponCollection(gameObject);
+            EquipWeaponByIndex(0);
+        }
+
+        #endregion
+
+
+        #region Weapon
+
+        /// <summary>
+        /// Equip <see cref="Weapon"/> from <see cref="weaponCollection"/> given <paramref name="index"/>
+        /// </summary>
+        public void EquipWeaponByIndex(int index)
+        {
+            if (weaponCollection != null && weaponCollection.TryGetWeaponByIndex(index, out Weapon weapon))
+            {
+                if (CurWeapon != null)
+                    CurWeapon.gameObject.SetActive(false);
+
+                weapon.gameObject.SetActive(true);
+                CurWeapon = weapon;
+
+                OnWeaponEquipped?.Invoke(weapon);
+            }
+        }
+
+        #endregion
     }
-
-    #endregion
-
-
-
-
 }

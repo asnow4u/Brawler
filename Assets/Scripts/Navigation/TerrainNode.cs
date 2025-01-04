@@ -1,121 +1,121 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public enum TerrainNodeType { Air, Surface, Wall, Ceiling, SurfaceWall, CeilngWall, WallLedge, SurfaceLedge, Inside }
-
-public class TerrainNode
+namespace Game.Navigation
 {
-    public TerrainNodeType Type;
-    public Vector3 Pos;
+    public enum TerrainNodeType { Air, Surface, Wall, Ceiling, SurfaceWall, CeilngWall, WallLedge, SurfaceLedge, Inside }
 
-    public int ColumnNum;
-    public int RowNum;
-
-    public TerrainCollisionNode UpCollision;
-    public TerrainCollisionNode DownCollision;
-    public TerrainCollisionNode RightCollision;
-    public TerrainCollisionNode LeftCollision;
-
-
-    public TerrainNode(Vector3 pos, int columnNum, int rowNum)
+    public class TerrainNode
     {
-        this.Pos = pos;
-        ColumnNum = columnNum;
-        RowNum = rowNum;
+        public TerrainNodeType Type;
+        public Vector3 Pos;
 
-        ResetRaycasts();
-    }
+        public int ColumnNum;
+        public int RowNum;
 
-
-    public void ResetRaycasts()
-    {
-        UpCollision = null;
-        DownCollision = null;
-        RightCollision = null;
-        LeftCollision = null;
-    }
+        public TerrainCollisionNode UpCollision;
+        public TerrainCollisionNode DownCollision;
+        public TerrainCollisionNode RightCollision;
+        public TerrainCollisionNode LeftCollision;
 
 
-    /// <summary>
-    /// Check each direction for collisions
-    /// Create TerrainCollisionNodes for each collision, null for misses
-    /// </summary>
-    /// <param name="castDist"></param>
-    public void PerformRaycastCheck(float castDist)
-    {
-        UpCollision = new TerrainCollisionNode();
-        if (!UpCollision.AttemptRaycast(Pos, Vector3.up, castDist))        
+        public TerrainNode(Vector3 pos, int columnNum, int rowNum)
+        {
+            this.Pos = pos;
+            ColumnNum = columnNum;
+            RowNum = rowNum;
+
+            ResetRaycasts();
+        }
+
+
+        public void ResetRaycasts()
+        {
             UpCollision = null;
-
-        DownCollision = new TerrainCollisionNode();
-        if (!DownCollision.AttemptRaycast(Pos, Vector3.down, castDist))
             DownCollision = null;
-
-        RightCollision = new TerrainCollisionNode();
-        if (!RightCollision.AttemptRaycast(Pos, Vector3.right, castDist))
             RightCollision = null;
-
-        LeftCollision = new TerrainCollisionNode();    
-        if (!LeftCollision.AttemptRaycast(Pos, Vector3.left, castDist))
             LeftCollision = null;
-
-        DetermineType();
-    }
-
-    private void DetermineType()
-    {
-        if (UpCollision == null
-            && DownCollision == null
-            && RightCollision == null
-            && LeftCollision == null)
-        {
-            Type = TerrainNodeType.Air;
-            return;
         }
 
-        if (UpCollision != null
-            && (DownCollision == null && RightCollision == null && LeftCollision == null))
+
+        /// <summary>
+        /// Check each direction for collisions
+        /// Create TerrainCollisionNodes for each collision, null for misses
+        /// </summary>
+        /// <param name="castDist"></param>
+        public void PerformRaycastCheck(float castDist)
         {
-            Type = TerrainNodeType.Ceiling;
-            return;
+            UpCollision = new TerrainCollisionNode();
+            if (!UpCollision.AttemptRaycast(Pos, Vector3.up, castDist))
+                UpCollision = null;
+
+            DownCollision = new TerrainCollisionNode();
+            if (!DownCollision.AttemptRaycast(Pos, Vector3.down, castDist))
+                DownCollision = null;
+
+            RightCollision = new TerrainCollisionNode();
+            if (!RightCollision.AttemptRaycast(Pos, Vector3.right, castDist))
+                RightCollision = null;
+
+            LeftCollision = new TerrainCollisionNode();
+            if (!LeftCollision.AttemptRaycast(Pos, Vector3.left, castDist))
+                LeftCollision = null;
+
+            DetermineType();
         }
 
-        if (DownCollision != null
-            && (UpCollision == null && RightCollision == null && LeftCollision == null))
+        private void DetermineType()
         {
-            Type = TerrainNodeType.Surface;
-            return;
+            if (UpCollision == null
+                && DownCollision == null
+                && RightCollision == null
+                && LeftCollision == null)
+            {
+                Type = TerrainNodeType.Air;
+                return;
+            }
+
+            if (UpCollision != null
+                && (DownCollision == null && RightCollision == null && LeftCollision == null))
+            {
+                Type = TerrainNodeType.Ceiling;
+                return;
+            }
+
+            if (DownCollision != null
+                && (UpCollision == null && RightCollision == null && LeftCollision == null))
+            {
+                Type = TerrainNodeType.Surface;
+                return;
+            }
+
+            if ((RightCollision != null || LeftCollision != null)
+                && (UpCollision == null && DownCollision == null))
+            {
+                Type = TerrainNodeType.Wall;
+                return;
+            }
+
+            if ((RightCollision != null || LeftCollision != null)
+                && DownCollision != null
+                && UpCollision == null)
+            {
+                Type = TerrainNodeType.SurfaceWall;
+                return;
+            }
+
+            if ((RightCollision != null || LeftCollision != null)
+                && UpCollision != null
+                && DownCollision == null)
+            {
+                Type = TerrainNodeType.CeilngWall;
+                return;
+            }
         }
 
-        if ((RightCollision != null || LeftCollision != null)
-            && (UpCollision == null && DownCollision == null))
+
+        public string LogCoordinates()
         {
-            Type = TerrainNodeType.Wall;
-            return;
+            return "(" + ColumnNum + ", " + RowNum + ")";
         }
-
-        if ((RightCollision != null || LeftCollision != null)
-            && DownCollision != null
-            && UpCollision == null)
-        {
-            Type = TerrainNodeType.SurfaceWall;
-            return;
-        }
-
-        if ((RightCollision != null || LeftCollision != null)
-            && UpCollision != null
-            && DownCollision == null)
-        {
-            Type = TerrainNodeType.CeilngWall;
-            return;
-        }
-    }
-
-
-    public string LogCoordinates()
-    {
-        return "(" + ColumnNum + ", " + RowNum + ")";
     }
 }

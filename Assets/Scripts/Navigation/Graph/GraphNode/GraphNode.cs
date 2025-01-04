@@ -1,62 +1,63 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GraphNode
+namespace Game.Navigation
 {
-    protected Vector3 pos;
-
-    public List<Edge> EdgeList;
-
-    protected TerrainNode terrainNode;
-
-    //Getters
-    public Vector3 Pos => pos;  
-    public int ColumnNum => terrainNode.ColumnNum;
-    public int RowNum => terrainNode.RowNum;
-
-
-    public GraphNode(Vector3 pos, TerrainNode terrainNode)
+    public class GraphNode
     {
-        this.pos = pos;
-        this.terrainNode = terrainNode;
-        EdgeList = new List<Edge>();
-    }
+        protected Vector3 pos;
+
+        public List<Edge> EdgeList;
+
+        protected TerrainNode terrainNode;
+
+        //Getters
+        public Vector3 Pos => pos;
+        public int ColumnNum => terrainNode.ColumnNum;
+        public int RowNum => terrainNode.RowNum;
 
 
-    /// <summary>
-    /// Returns a list of edges based on the type provided
-    /// </summary>
-    /// <param name="type"></param>
-    /// <returns></returns>
-    public List<Edge> GetEdgesOfType(EdgeType type) 
-    {
-        List<Edge> edges = new List<Edge>();
-        foreach (Edge edge in EdgeList)
+        public GraphNode(Vector3 pos, TerrainNode terrainNode)
         {
-            if (edge.Type == type)
-                edges.Add(edge);
+            this.pos = pos;
+            this.terrainNode = terrainNode;
+            EdgeList = new List<Edge>();
         }
 
-        return edges;        
-    }    
 
-
-
-    /// <summary>
-    /// Return if graphNode is connected by an edge
-    /// </summary>
-    /// <param name="node"></param>
-    /// <returns></returns>
-    public bool IsConnectedByEdge(GraphNode node)
-    {
-        foreach (Edge edge in EdgeList)
+        /// <summary>
+        /// Returns a list of edges based on the type provided
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public List<Edge> GetEdgesOfType(EdgeType type)
         {
-            if (edge.EndNode == node)
-                return true;
+            List<Edge> edges = new List<Edge>();
+            foreach (Edge edge in EdgeList)
+            {
+                if (edge.Type == type)
+                    edges.Add(edge);
+            }
+
+            return edges;
         }
 
-        return false;
+
+
+        /// <summary>
+        /// Return if graphNode is connected by an edge
+        /// </summary>
+        /// <param name="node"></param>
+        /// <returns></returns>
+        public bool IsConnectedByEdge(GraphNode node)
+        {
+            foreach (Edge edge in EdgeList)
+            {
+                if (edge.EndNode == node)
+                    return true;
+            }
+
+            return false;
+        }
     }
 }

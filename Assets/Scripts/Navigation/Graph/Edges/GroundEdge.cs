@@ -1,11 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
-public class GroundEdge : Edge
+namespace Game.Navigation
 {
-    public GroundEdge(GraphNode startNode, GraphNode endNode) : base(startNode, endNode)
+    public class GroundEdge : Edge
     {
-        edgeType = EdgeType.Ground;
+        public GroundEdge(GraphNode startNode, GraphNode endNode) : base(startNode, endNode)
+        {
+            edgeType = EdgeType.Ground;
+        }
     }
 }

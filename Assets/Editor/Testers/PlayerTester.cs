@@ -1,3 +1,6 @@
+using Game.SceneObjects;
+using Game.SceneObjects.Attack;
+using Game.SceneObjects.Movement;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;

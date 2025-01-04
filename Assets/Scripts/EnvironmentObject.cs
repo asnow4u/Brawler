@@ -1,8 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
-public class EnvironmentObject : SceneObject
+namespace Game.SceneObjects
 {
-   
+    public class EnvironmentObject : SceneObject
+    {
+
+    }
 }

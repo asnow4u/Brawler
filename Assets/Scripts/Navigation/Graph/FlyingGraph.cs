@@ -1,68 +1,71 @@
-using System.Collections;
+using Game.SceneObjects.Movement;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FlyingGraph : Graph
+namespace Game.Navigation 
 {
-    public FlyingGraph(TerrainNode startNode, TerrainNode endNode, Bounds bounds, MovementCollection collection) : base(startNode, endNode, bounds, collection)
+    public class FlyingGraph : Graph
     {
-        type = GraphType.Flying;
-    }
-
-
-    /// <summary>
-    /// Get all nodes inbetween terrain start and end that work with flying
-    /// </summary>
-    /// <param name="startNode"></param>
-    /// <param name="endNode"></param>
-    protected override void CreateNodes(TerrainNode startNode, TerrainNode endNode)
-    {
-        List<List<TerrainNode>> terrainNodes = TerrainNodeMapper.Instance.GetAllNodesWithin(startNode.ColumnNum,
-                                                                                           endNode.ColumnNum,
-                                                                                           new TerrainNodeType[] { TerrainNodeType.Air });
-
-        foreach (List<TerrainNode> columnNodeList in terrainNodes)
+        public FlyingGraph(TerrainNode startNode, TerrainNode endNode, Bounds bounds, MovementCollection collection) : base(startNode, endNode, bounds, collection)
         {
-            foreach (TerrainNode terrainNode in columnNodeList)
+            type = GraphType.Flying;
+        }
+
+
+        /// <summary>
+        /// Get all nodes inbetween terrain start and end that work with flying
+        /// </summary>
+        /// <param name="startNode"></param>
+        /// <param name="endNode"></param>
+        protected override void CreateNodes(TerrainNode startNode, TerrainNode endNode)
+        {
+            List<List<TerrainNode>> terrainNodes = TerrainNodeMapper.Instance.GetAllNodesWithin(startNode.ColumnNum,
+                                                                                               endNode.ColumnNum,
+                                                                                               new TerrainNodeType[] { TerrainNodeType.Air });
+
+            foreach (List<TerrainNode> columnNodeList in terrainNodes)
             {
-                nodeList.Add(new GraphNode(terrainNode.Pos, terrainNode));
+                foreach (TerrainNode terrainNode in columnNodeList)
+                {
+                    nodeList.Add(new GraphNode(terrainNode.Pos, terrainNode));
+                }
             }
         }
-    }
 
 
-    //TODO:
-    protected override GraphNode CalculateNearestGraphNode(TerrainNode node)
-    {
-        return null;
-    }
-
-
-
-
-    /// <summary>
-    /// Map all possible nodes of graph to node
-    /// The connecting node has to be 1 column and/or 1 row away
-    /// </summary>
-    /// <param name="node"></param>
-    protected override void MapNodeConnections(List<GraphNode> nodes)
-    {
-        foreach (GraphNode node in nodes)
+        //TODO:
+        protected override GraphNode CalculateNearestGraphNode(TerrainNode node)
         {
-            foreach (GraphNode connectingNode in nodeList)
+            return null;
+        }
+
+
+
+
+        /// <summary>
+        /// Map all possible nodes of graph to node
+        /// The connecting node has to be 1 column and/or 1 row away
+        /// </summary>
+        /// <param name="node"></param>
+        protected override void MapNodeConnections(List<GraphNode> nodes)
+        {
+            foreach (GraphNode node in nodes)
             {
-                //Cant connect to self
-                if (connectingNode != node)
+                foreach (GraphNode connectingNode in nodeList)
                 {
-                    if (!node.IsConnectedByEdge(connectingNode))
+                    //Cant connect to self
+                    if (connectingNode != node)
                     {
-                        //Check no more then one column away
-                        if (Mathf.Abs(node.ColumnNum - connectingNode.ColumnNum) <= 1)
+                        if (!node.IsConnectedByEdge(connectingNode))
                         {
-                            //Check no more then one row away
-                            if (Mathf.Abs(node.RowNum - connectingNode.RowNum) <= 1)
+                            //Check no more then one column away
+                            if (Mathf.Abs(node.ColumnNum - connectingNode.ColumnNum) <= 1)
                             {
-                                node.EdgeList.Add(new FlyingEdge(node, connectingNode));
+                                //Check no more then one row away
+                                if (Mathf.Abs(node.RowNum - connectingNode.RowNum) <= 1)
+                                {
+                                    node.EdgeList.Add(new FlyingEdge(node, connectingNode));
+                                }
                             }
                         }
                     }

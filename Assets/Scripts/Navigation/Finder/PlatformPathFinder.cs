@@ -2,183 +2,186 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 
-public class PlatformPathFinder : PathFinder
+namespace Game.Navigation
 {
-    private PlatformGraph platformGraph => (PlatformGraph)curGraph;
-
-    public PlatformPathFinder(GameObject go) : base(go)
-    { }   
-
-
-    /// <summary>
-    /// From a given node calculate all available options through the graph
-    /// Determine if option can reach targetNode
-    /// </summary>
-    /// <param name="graph"></param>
-    /// <param name="startNode"></param>
-    /// <param name="targetNode"></param>
-    /// <param name="collection"></param>
-    /// <returns></returns>
-    public override async Task<Edge> GetNextRoute(GraphNode node)
+    public class PlatformPathFinder : PathFinder
     {
-        if (!visitedNodes.Contains(node))
-            visitedNodes.Add(node);
+        private PlatformGraph platformGraph => (PlatformGraph)curGraph;
 
-        List<Edge> availableRoutes = GetAvailableRoutes(node);
+        public PlatformPathFinder(GameObject go) : base(go)
+        { }
 
-        //No path points found
-        if (availableRoutes.Count == 0)
-            return null;
 
-        //One path point found
-        else if (availableRoutes.Count == 1)
-        {       
-            if (availableRoutes[0].Type == EdgeType.Jump)
-                PreventBacktracking(node);
-
-            return availableRoutes[0];
-        }
-
-        //Multiple path points found
-        else
+        /// <summary>
+        /// From a given node calculate all available options through the graph
+        /// Determine if option can reach targetNode
+        /// </summary>
+        /// <param name="graph"></param>
+        /// <param name="startNode"></param>
+        /// <param name="targetNode"></param>
+        /// <param name="collection"></param>
+        /// <returns></returns>
+        public override async Task<Edge> GetNextRoute(GraphNode node)
         {
-            int rand = UnityEngine.Random.Range(0, availableRoutes.Count);
+            if (!visitedNodes.Contains(node))
+                visitedNodes.Add(node);
 
-            if (availableRoutes[rand].Type == EdgeType.Jump)
-                PreventBacktracking(node);
+            List<Edge> availableRoutes = GetAvailableRoutes(node);
 
-            return availableRoutes[rand];
-        }
-    }
+            //No path points found
+            if (availableRoutes.Count == 0)
+                return null;
 
-
-    /// <summary>
-    /// Makes it so all nodes from previous movement secion cant be jump to again
-    /// Helps prevent back tracking
-    /// </summary>
-    /// <param name="node"></param>
-    private void PreventBacktracking(GraphNode node)
-    {
-        foreach (GraphNode connectedNode in curGraph.GetAllConnectingNodes(node, new List<EdgeType>() { EdgeType.Ground }))
-        {
-            if (!visitedNodes.Contains(connectedNode))
-                visitedNodes.Add(connectedNode);
-        }
-    }
-
-
-    /// <summary>
-    /// Return a list of all possible movement and jump pathpoints
-    /// </summary>
-    /// <returns></returns>
-    protected override List<Edge> GetAvailableRoutes(GraphNode node)
-    {               
-        List<Edge> routes = new List<Edge>();
-
-        //Get possible move points
-        routes.AddRange(GetAvailableMovePathPoints(node));
-
-        //Get possible jump points
-        routes.AddRange(GetAvailableJumpPathPoints(node));        
-
-        return routes;
-    }
-
-
-    #region Movement Path Points
-
-    /// <summary>
-    /// Return a list of possible GroundEdges that are connected to the node provided
-    /// </summary>
-    /// <param name="pathPoint"></param>
-    /// <returns></returns>
-    private List<Edge> GetAvailableMovePathPoints(GraphNode node)
-    {
-        List<Edge> moveRoutes = new List<Edge>();
-
-        foreach (Edge edge in node.GetEdgesOfType(EdgeType.Ground))
-        {
-            //Check if already visited
-            if (!visitedNodes.Contains(edge.EndNode))
+            //One path point found
+            else if (availableRoutes.Count == 1)
             {
-                //Check that graph endNode can be reached
-                if (curGraph.CheckForConnection(edge.EndNode, curGraph.EndNode, null, new List<GraphNode>(visitedNodes)))
-                {
-                    moveRoutes.Add(edge);
-                }                    
+                if (availableRoutes[0].Type == EdgeType.Jump)
+                    PreventBacktracking(node);
+
+                return availableRoutes[0];
+            }
+
+            //Multiple path points found
+            else
+            {
+                int rand = UnityEngine.Random.Range(0, availableRoutes.Count);
+
+                if (availableRoutes[rand].Type == EdgeType.Jump)
+                    PreventBacktracking(node);
+
+                return availableRoutes[rand];
             }
         }
 
-        return moveRoutes;
-    }
 
-
-    #endregion
-
-
-    #region Jump Path Points
-
-    /// <summary>
-    /// Return a list of possible jumpEdges
-    /// If node is an edge node, then determine if any other node can be jumped to
-    /// If node is not an edge node, then determine if any edge nodes can be jumped to
-    /// Cant jump to a node that is connected by ground edges
-    /// </summary>
-    /// <param name="pathPoint"></param>
-    /// <returns></returns>
-    private List<Edge> GetAvailableJumpPathPoints(GraphNode node)
-    {
-        List<Edge> jumpRoutes = new List<Edge>();
-
-        //Edge node (node with single ground connecing edge)
-        if (IsEdgeNode(node))
+        /// <summary>
+        /// Makes it so all nodes from previous movement secion cant be jump to again
+        /// Helps prevent back tracking
+        /// </summary>
+        /// <param name="node"></param>
+        private void PreventBacktracking(GraphNode node)
         {
-            foreach (JumpEdge edge in node.GetEdgesOfType(EdgeType.Jump))
+            foreach (GraphNode connectedNode in curGraph.GetAllConnectingNodes(node, new List<EdgeType>() { EdgeType.Ground }))
             {
+                if (!visitedNodes.Contains(connectedNode))
+                    visitedNodes.Add(connectedNode);
+            }
+        }
+
+
+        /// <summary>
+        /// Return a list of all possible movement and jump pathpoints
+        /// </summary>
+        /// <returns></returns>
+        protected override List<Edge> GetAvailableRoutes(GraphNode node)
+        {
+            List<Edge> routes = new List<Edge>();
+
+            //Get possible move points
+            routes.AddRange(GetAvailableMovePathPoints(node));
+
+            //Get possible jump points
+            routes.AddRange(GetAvailableJumpPathPoints(node));
+
+            return routes;
+        }
+
+
+        #region Movement Path Points
+
+        /// <summary>
+        /// Return a list of possible GroundEdges that are connected to the node provided
+        /// </summary>
+        /// <param name="pathPoint"></param>
+        /// <returns></returns>
+        private List<Edge> GetAvailableMovePathPoints(GraphNode node)
+        {
+            List<Edge> moveRoutes = new List<Edge>();
+
+            foreach (Edge edge in node.GetEdgesOfType(EdgeType.Ground))
+            {
+                //Check if already visited
                 if (!visitedNodes.Contains(edge.EndNode))
                 {
-                    //Check that endNode can be reached
+                    //Check that graph endNode can be reached
                     if (curGraph.CheckForConnection(edge.EndNode, curGraph.EndNode, null, new List<GraphNode>(visitedNodes)))
-                        jumpRoutes.Add(edge);
+                    {
+                        moveRoutes.Add(edge);
+                    }
                 }
             }
+
+            return moveRoutes;
         }
 
-        //Non Edge Node
-        else
+
+        #endregion
+
+
+        #region Jump Path Points
+
+        /// <summary>
+        /// Return a list of possible jumpEdges
+        /// If node is an edge node, then determine if any other node can be jumped to
+        /// If node is not an edge node, then determine if any edge nodes can be jumped to
+        /// Cant jump to a node that is connected by ground edges
+        /// </summary>
+        /// <param name="pathPoint"></param>
+        /// <returns></returns>
+        private List<Edge> GetAvailableJumpPathPoints(GraphNode node)
         {
-            foreach (JumpEdge edge in node.GetEdgesOfType(EdgeType.Jump))
+            List<Edge> jumpRoutes = new List<Edge>();
+
+            //Edge node (node with single ground connecing edge)
+            if (IsEdgeNode(node))
             {
-                if (!visitedNodes.Contains(edge.EndNode))
+                foreach (JumpEdge edge in node.GetEdgesOfType(EdgeType.Jump))
                 {
-                    //Determine if connecting node is an edge node
-                    if (IsEdgeNode(edge.EndNode))
-                    {                        
+                    if (!visitedNodes.Contains(edge.EndNode))
+                    {
                         //Check that endNode can be reached
                         if (curGraph.CheckForConnection(edge.EndNode, curGraph.EndNode, null, new List<GraphNode>(visitedNodes)))
                             jumpRoutes.Add(edge);
                     }
                 }
             }
+
+            //Non Edge Node
+            else
+            {
+                foreach (JumpEdge edge in node.GetEdgesOfType(EdgeType.Jump))
+                {
+                    if (!visitedNodes.Contains(edge.EndNode))
+                    {
+                        //Determine if connecting node is an edge node
+                        if (IsEdgeNode(edge.EndNode))
+                        {
+                            //Check that endNode can be reached
+                            if (curGraph.CheckForConnection(edge.EndNode, curGraph.EndNode, null, new List<GraphNode>(visitedNodes)))
+                                jumpRoutes.Add(edge);
+                        }
+                    }
+                }
+            }
+
+            return jumpRoutes;
         }
 
-        return jumpRoutes;
+
+        /// <summary>
+        /// Returns wether the provided node is an edge node
+        /// </summary>
+        /// <param name="node"></param>
+        /// <returns></returns>
+        //NOTE: A edge node is a node that has only one connecting ground edge. All other edges are jumps
+        private bool IsEdgeNode(GraphNode node)
+        {
+            if (node.GetEdgesOfType(EdgeType.Ground).Count == 1)
+                return true;
+
+            return false;
+        }
+
+        #endregion
     }
-
-
-    /// <summary>
-    /// Returns wether the provided node is an edge node
-    /// </summary>
-    /// <param name="node"></param>
-    /// <returns></returns>
-    //NOTE: A edge node is a node that has only one connecting ground edge. All other edges are jumps
-    private bool IsEdgeNode(GraphNode node)
-    {
-        if (node.GetEdgesOfType(EdgeType.Ground).Count == 1)
-            return true;
-
-        return false;
-    }
-
-    #endregion
 }

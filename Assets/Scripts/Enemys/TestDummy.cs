@@ -1,8 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
-public class TestDummy : Enemy
+namespace Game.SceneObjects
 {
+    public class TestDummy : Enemy
+    {
     
+    }
 }

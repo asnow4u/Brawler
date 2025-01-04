@@ -1,36 +1,39 @@
-using System.Collections;
-using System.Collections.Generic;
+using Game.SceneObjects;
 using TMPro;
 using UnityEngine;
 
-public class UIHandler : SceneObjectHandler
+
+namespace Game.UI.SceneObject
 {
-    [SerializeField] private TextMeshProUGUI damageDisplay;
+    public class UIHandler : SceneObjectHandler
+    {
+        [SerializeField] private TextMeshProUGUI damageDisplay;
 
-    #region Initialize
+        #region Initialize
     
-    public override void Setup()
-    {
-        Debug.Assert(damageDisplay != null, "Damage display not hooked up.", gameObject);
-    }
+        public override void Setup()
+        {
+            Debug.Assert(damageDisplay != null, "Damage display not hooked up.", gameObject);
+        }
 
 
-    public override void RegisterToEvents()
-    { }
+        public override void RegisterToEvents()
+        { }
 
-    public override void UnregisterToEvents()
-    { }
+        public override void UnregisterToEvents()
+        { }
 
-    #endregion
+        #endregion
 
-    public void RotateDisplayText()
-    {
-        damageDisplay.transform.Rotate(transform.up, 180f);
-    }
+        public void RotateDisplayText()
+        {
+            damageDisplay.transform.Rotate(transform.up, 180f);
+        }
 
 
-    public void UpdateDamageDisplay(float damageValue)
-    {
-        damageDisplay.text = (Mathf.Round(damageValue * 10f) * 0.1f).ToString();   
+        public void UpdateDamageDisplay(float damageValue)
+        {
+            damageDisplay.text = (Mathf.Round(damageValue * 10f) * 0.1f).ToString();   
+        }
     }
 }

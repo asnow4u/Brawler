@@ -1,29 +1,30 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
-public class FlyingPathNavigator : PathNavigator
+using Game.SceneObjects.Movement;
+
+namespace Game.Navigation
 {
-    protected override void CreatePathFinder()
+    public class FlyingPathNavigator : PathNavigator
     {
-        pathFinder = new FlyingPathFinder(gameObject);
-    }
-
-
-    protected override Graph CreateGraph(TerrainNode startNode, TerrainNode endNode)
-    {
-        if (moveHandler.TryGetCurrentMovementCollection(out MovementCollection curMovementCollection))
+        protected override void CreatePathFinder()
         {
-            GraphFactory graphFactory = new GraphFactory();
-            return graphFactory.CreateGraph(GraphType.Flying, startNode, endNode, bounds, curMovementCollection);
+            pathFinder = new FlyingPathFinder(gameObject);
         }
 
-        return null;
-    }
 
-    protected override void PerformMovement()
-    {
+        protected override Graph CreateGraph(TerrainNode startNode, TerrainNode endNode)
+        {
+            if (moveHandler.TryGetCurrentMovementCollection(out MovementCollection curMovementCollection))
+            {
+                GraphFactory graphFactory = new GraphFactory();
+                return graphFactory.CreateGraph(GraphType.Flying, startNode, endNode, bounds, curMovementCollection);
+            }
+
+            return null;
+        }
+
+        protected override void PerformMovement()
+        {
         
+        }
     }
 }

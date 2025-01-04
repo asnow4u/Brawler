@@ -1,53 +1,56 @@
 using UnityEngine;
 
-public enum EnemyState { Idle, Alert, Attack }
+namespace Game.SceneObjects
+{ 
+    public enum EnemyState { Idle, Alert, Attack }
 
-public abstract class Enemy : SceneObject
-{
-    protected EnemyState enemyState;
-
-    protected override void Initialize()
+    public abstract class Enemy : SceneObject
     {
-        base.Initialize();
+        protected EnemyState enemyState;
 
-        ObjectType = SceneObjectType.Enemy;
+        protected override void Initialize()
+        {
+            base.Initialize();
 
-        SetState(EnemyState.Idle);        
+            ObjectType = SceneObjectType.Enemy;
+
+            SetState(EnemyState.Idle);
+        }
+
+
+        private void SetState(EnemyState state)
+        {
+            enemyState = state;
+        }
+
+
+        protected override void FixedUpdate()
+        {
+            base.FixedUpdate();
+        }
+
+
+        //private void OnTriggerEnter(Collider other)
+        //{
+        //    if (other.gameObject.layer == LayerMask.NameToLayer("PlayerEvent"))
+        //    {
+        //        if (Camera.main.TryGetComponent(out ICameraTarget cameraTarget))
+        //        {
+        //            cameraTarget.AddTargetFocus(transform);
+        //        }
+        //    }
+        //}
+
+
+        //private void OnTriggerExit(Collider other)
+        //{
+        //    if (other.gameObject.layer == LayerMask.NameToLayer("PlayerEvent"))
+        //    {
+        //        if (Camera.main.TryGetComponent(out ICameraTarget cameraTarget))
+        //        {
+        //            cameraTarget.RemoveTargetFocus(transform);
+        //        }
+        //    }
+        //}
     }
-
-
-    private void SetState(EnemyState state)
-    {
-        enemyState = state;
-    }
-
-
-    protected override void FixedUpdate()
-    {
-        base.FixedUpdate();
-    }
-
-
-    //private void OnTriggerEnter(Collider other)
-    //{
-    //    if (other.gameObject.layer == LayerMask.NameToLayer("PlayerEvent"))
-    //    {
-    //        if (Camera.main.TryGetComponent(out ICameraTarget cameraTarget))
-    //        {
-    //            cameraTarget.AddTargetFocus(transform);
-    //        }
-    //    }
-    //}
-
-
-    //private void OnTriggerExit(Collider other)
-    //{
-    //    if (other.gameObject.layer == LayerMask.NameToLayer("PlayerEvent"))
-    //    {
-    //        if (Camera.main.TryGetComponent(out ICameraTarget cameraTarget))
-    //        {
-    //            cameraTarget.RemoveTargetFocus(transform);
-    //        }
-    //    }
-    //}
 }

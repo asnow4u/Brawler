@@ -1,17 +1,20 @@
 using UnityEngine;
 
-public abstract class SceneObjectHandler : MonoBehaviour
+namespace Game.SceneObjects 
 {
-    protected SceneObject sceneObject;
-
-    public virtual void Setup()
+    public abstract class SceneObjectHandler : MonoBehaviour
     {
-        sceneObject = GetComponent<SceneObject>();
+        protected SceneObject sceneObject;
 
-        if (sceneObject == null)
-            throw new System.NullReferenceException("SceneObject not found on handlers gameobject");
+        public virtual void Setup()
+        {
+            sceneObject = GetComponent<SceneObject>();
+
+            if (sceneObject == null)
+                throw new System.NullReferenceException("SceneObject not found on handlers gameobject");
+        }
+
+        public abstract void RegisterToEvents();
+        public abstract void UnregisterToEvents();
     }
-
-    public abstract void RegisterToEvents();
-    public abstract void UnregisterToEvents();
 }
