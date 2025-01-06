@@ -8,6 +8,7 @@ using Game.SceneObjects.Attack;
 using Game.SceneObjects.Animation;
 using Game.SceneObjects.Damage;
 using Game.UI.SceneObject;
+using Game.Interactable;
 
 namespace Game.SceneObjects
 {
@@ -46,7 +47,7 @@ namespace Game.SceneObjects
         private UIHandler uiHandler;
         private DamageHandler damageHandler;
 
-        public IInteraction InteractionHandler;
+        public InteractionHandler InteractionHandler;
 
         //Getters
         public SceneObjectLogger Logger => logger;

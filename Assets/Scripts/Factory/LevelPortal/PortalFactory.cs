@@ -2,26 +2,29 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PortalFactory : MonoBehaviour
+namespace Game.Interactable.Factory
 {
-    [SerializeField] private List<LevelPortal> portals;
-
-
-    public void SpawnRandomLevelPortal(Vector3 pos)
+    public class PortalFactory : MonoBehaviour
     {
-        List<LevelPortal> possibleDestinations = new List<LevelPortal>();
+        [SerializeField] private List<LevelPortal> portals;
 
-        //TODO: Track previous levels?
-        //Grab possible levels
-        foreach (LevelPortal portal in portals)
+
+        public void SpawnRandomLevelPortal(Vector3 pos)
         {
-            if (portal.Destination != GameManager.instance.CurLevelType)
-            {
-                possibleDestinations.Add(portal);
-            }
-        }
+            List<LevelPortal> possibleDestinations = new List<LevelPortal>();
 
-        int rand = Random.Range(0, possibleDestinations.Count);
-        Instantiate(portals[rand], pos, Quaternion.identity);
+            //TODO: Track previous levels?
+            //Grab possible levels
+            foreach (LevelPortal portal in portals)
+            {
+                if (portal.Destination != GameManager.instance.CurLevelType)
+                {
+                    possibleDestinations.Add(portal);
+                }
+            }
+
+            int rand = Random.Range(0, possibleDestinations.Count);
+            Instantiate(portals[rand], pos, Quaternion.identity);
+        }
     }
 }

@@ -1,21 +1,23 @@
 using Game.SceneObjects;
 
-
-public class LevelPortal : Interactable
+namespace Game.Interactable
 {
-    public LevelType Destination;
-
-    protected override void InputReceived(SceneObject sceneObj)
+    public class LevelPortal : Interactable
     {
-        //TODO: Go through GameManager to load the scene nessisary
+        public LevelType Destination;
 
-        switch (Destination) 
+        protected override void InputReceived(SceneObject sceneObj)
         {
-            case LevelType.Forest:
-                break;
+            //TODO: Go through GameManager to load the scene nessisary
 
-            case LevelType.Desert:
-                break;
+            switch (Destination) 
+            {
+                case LevelType.Forest:
+                    break;
+
+                case LevelType.Desert:
+                    break;
+            }
         }
     }
 }

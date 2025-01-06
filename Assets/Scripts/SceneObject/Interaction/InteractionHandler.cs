@@ -1,22 +1,25 @@
 using Game.SceneObjects;
 using System;
 
-public class InteractionHandler : IInteraction
+namespace Game.Interactable
 {
-    private Action<SceneObject> inputAction;
-
-    public void ReceiveInput(SceneObject sceneObj)
+    public class InteractionHandler
     {
-        inputAction?.Invoke(sceneObj);
-    }
+        private Action<SceneObject> inputAction;
 
-    public void RegisterToInputEvent(Action<SceneObject> callback)
-    {        
-        inputAction += callback;
-    }
+        public void ReceiveInput(SceneObject sceneObj)
+        {
+            inputAction?.Invoke(sceneObj);
+        }
 
-    public void UnregisterToInputEvent(Action<SceneObject> callback)
-    {
-        inputAction -= callback;
+        public void RegisterToInputEvent(Action<SceneObject> callback)
+        {
+            inputAction += callback;
+        }
+
+        public void UnregisterToInputEvent(Action<SceneObject> callback)
+        {
+            inputAction -= callback;
+        }
     }
 }
