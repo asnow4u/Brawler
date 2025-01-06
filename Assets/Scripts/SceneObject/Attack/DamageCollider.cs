@@ -62,7 +62,7 @@ public class DamageCollider : MonoBehaviour
 
     public void OnDrawGizmos()
     {
-        if (Application.isPlaying)
+        if (Application.isPlaying && GizmosHandler.DamageColliderGizmosEnabled)
         {
             if (damageCollider.enabled)
             {

@@ -495,108 +495,111 @@ namespace Game.Navigation
 
 #if UNITY_EDITOR
         private void OnDrawGizmos()
-        {
-            if (TerrainNodes != null && TerrainNodes.Count > 0)
+        {            
+            if (GizmosHandler.TerrainNodeGizmosEnabled)
             {
-                List<TerrainNode> lableList = new List<TerrainNode>();
-
-                //Draw Nodes
-                foreach (TerrainNode node in TerrainNodes.Values)
+                if (TerrainNodes != null && TerrainNodes.Count > 0)
                 {
-                    switch (node.Type)
+                    List<TerrainNode> lableList = new List<TerrainNode>();
+
+                    //Draw Nodes
+                    foreach (TerrainNode node in TerrainNodes.Values)
                     {
-                        case TerrainNodeType.Air:
-                            Gizmos.color = Color.cyan;
-                            break;
-
-                        case TerrainNodeType.Surface:
-                            Gizmos.color = Color.green;
-                            break;
-
-                        case TerrainNodeType.Wall:
-                            Gizmos.color = Color.red;
-                            break;
-
-                        case TerrainNodeType.Ceiling:
-                            Gizmos.color = Color.yellow;
-                            break;
-
-                        case TerrainNodeType.SurfaceWall:
-                            Gizmos.color = Color.magenta;
-                            break;
-
-                        case TerrainNodeType.CeilngWall:
-                            Gizmos.color = Color.magenta;
-                            break;
-
-                        case TerrainNodeType.SurfaceLedge:
-                            Gizmos.color = Color.white;
-                            break;
-
-                        case TerrainNodeType.WallLedge:
-                            Gizmos.color = Color.gray;
-                            break;
-
-                        case TerrainNodeType.Inside:
-                            Gizmos.color = Color.black;
-                            break;
-                    }
-
-                    Gizmos.DrawCube(node.Pos, Vector3.one * 0.1f);
-
-                    //Draw Collisions
-                    if (node.UpCollision != null)
-                    {
-                        Gizmos.color = Color.yellow;
-                        Gizmos.DrawLine(node.Pos, node.Pos + Vector3.up * scaleFactor);
-                    }
-
-                    if (node.DownCollision != null)
-                    {
-                        Gizmos.color = Color.yellow;
-                        Gizmos.DrawLine(node.Pos, node.Pos - Vector3.up * scaleFactor);
-
-                        Gizmos.color = Color.Lerp(Color.red, Color.green, node.DownCollision.SlopeGradiant / 90);
-                        Gizmos.DrawSphere(node.DownCollision.CollisionPoint, 0.1f);
-                    }
-
-                    if (node.RightCollision != null)
-                    {
-                        Gizmos.color = Color.yellow;
-                        Gizmos.DrawLine(node.Pos, node.Pos + Vector3.right * scaleFactor);
-
-                        Gizmos.color = Color.Lerp(Color.red, Color.green, node.RightCollision.SlopeGradiant / 90);
-                        Gizmos.DrawSphere(node.RightCollision.CollisionPoint, 0.1f);
-                    }
-
-                    if (node.LeftCollision != null)
-                    {
-                        Gizmos.color = Color.yellow;
-                        Gizmos.DrawLine(node.Pos, node.Pos - Vector3.right * scaleFactor);
-
-                        Gizmos.color = Color.Lerp(Color.red, Color.green, node.LeftCollision.SlopeGradiant / 90);
-                        Gizmos.DrawSphere(node.LeftCollision.CollisionPoint, 0.1f);
-                    }
-
-                    //Lables for column and row
-                    //TODO only upate if within scene viw camera
-                    Camera sceneViewCamera = SceneView.lastActiveSceneView.camera;
-
-                    if (sceneViewCamera != null)
-                    {
-                        Vector3 viewPoint = sceneViewCamera.WorldToViewportPoint(node.Pos);
-
-                        if (viewPoint.x >= 0 && viewPoint.x <= 1
-                            && viewPoint.y >= 0 && viewPoint.y <= 1
-                            && viewPoint.z > 0)
-                        //&& Mathf.Abs(sceneViewCamera.transform.position.z) < 10)
+                        switch (node.Type)
                         {
-                            lableList.Add(node);
+                            case TerrainNodeType.Air:
+                                Gizmos.color = Color.cyan;
+                                break;
+
+                            case TerrainNodeType.Surface:
+                                Gizmos.color = Color.green;
+                                break;
+
+                            case TerrainNodeType.Wall:
+                                Gizmos.color = Color.red;
+                                break;
+
+                            case TerrainNodeType.Ceiling:
+                                Gizmos.color = Color.yellow;
+                                break;
+
+                            case TerrainNodeType.SurfaceWall:
+                                Gizmos.color = Color.magenta;
+                                break;
+
+                            case TerrainNodeType.CeilngWall:
+                                Gizmos.color = Color.magenta;
+                                break;
+
+                            case TerrainNodeType.SurfaceLedge:
+                                Gizmos.color = Color.white;
+                                break;
+
+                            case TerrainNodeType.WallLedge:
+                                Gizmos.color = Color.gray;
+                                break;
+
+                            case TerrainNodeType.Inside:
+                                Gizmos.color = Color.black;
+                                break;
+                        }
+
+                        Gizmos.DrawCube(node.Pos, Vector3.one * 0.1f);
+
+                        //Draw Collisions
+                        if (node.UpCollision != null)
+                        {
+                            Gizmos.color = Color.yellow;
+                            Gizmos.DrawLine(node.Pos, node.Pos + Vector3.up * scaleFactor);
+                        }
+
+                        if (node.DownCollision != null)
+                        {
+                            Gizmos.color = Color.yellow;
+                            Gizmos.DrawLine(node.Pos, node.Pos - Vector3.up * scaleFactor);
+
+                            Gizmos.color = Color.Lerp(Color.red, Color.green, node.DownCollision.SlopeGradiant / 90);
+                            Gizmos.DrawSphere(node.DownCollision.CollisionPoint, 0.1f);
+                        }
+
+                        if (node.RightCollision != null)
+                        {
+                            Gizmos.color = Color.yellow;
+                            Gizmos.DrawLine(node.Pos, node.Pos + Vector3.right * scaleFactor);
+
+                            Gizmos.color = Color.Lerp(Color.red, Color.green, node.RightCollision.SlopeGradiant / 90);
+                            Gizmos.DrawSphere(node.RightCollision.CollisionPoint, 0.1f);
+                        }
+
+                        if (node.LeftCollision != null)
+                        {
+                            Gizmos.color = Color.yellow;
+                            Gizmos.DrawLine(node.Pos, node.Pos - Vector3.right * scaleFactor);
+
+                            Gizmos.color = Color.Lerp(Color.red, Color.green, node.LeftCollision.SlopeGradiant / 90);
+                            Gizmos.DrawSphere(node.LeftCollision.CollisionPoint, 0.1f);
+                        }
+
+                        //Lables for column and row
+                        //TODO only upate if within scene viw camera
+                        Camera sceneViewCamera = SceneView.lastActiveSceneView.camera;
+
+                        if (sceneViewCamera != null)
+                        {
+                            Vector3 viewPoint = sceneViewCamera.WorldToViewportPoint(node.Pos);
+
+                            if (viewPoint.x >= 0 && viewPoint.x <= 1
+                                && viewPoint.y >= 0 && viewPoint.y <= 1
+                                && viewPoint.z > 0)
+                            //&& Mathf.Abs(sceneViewCamera.transform.position.z) < 10)
+                            {
+                                lableList.Add(node);
+                            }
                         }
                     }
-                }
 
-                DisplayLables(lableList);
+                    DisplayLables(lableList);
+                }
             }
         }
 
