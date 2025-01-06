@@ -131,7 +131,7 @@ namespace Game.SceneObjects.Movement
                 }
 
                 //End movement after dash attack
-                if (sceneObject.AttackInputHandler.TryGetCurAttackCollection(out AttackCollection curAttackCollection))
+                if (sceneObject.AttackInputHandler.TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
                 {
                     if (curAttackCollection.TryGetAttackByAnimation(clip, out AttackData attackData))
                     {
@@ -332,10 +332,10 @@ namespace Game.SceneObjects.Movement
             {
                 //Calculate decceleration for dash attack
                 if (sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking &&
-                    sceneObject.AttackInputHandler.TryGetCurAttackCollection(out AttackCollection curAttackCollection) &&
+                    sceneObject.AttackInputHandler.TryGetCurrentAttackCollection(out AttackCollection curAttackCollection) &&
                     curAttackCollection.TryGetAttackByType(AttackType.Dash, out AttackData attack))
                 {
-                    float deceleration = sceneObject.CoreRigidBody.linearVelocity.magnitude / attack.AttackAnimation.length;
+                    float deceleration = sceneObject.CoreRigidBody.linearVelocity.magnitude / attack.Animation.length;
                     UpdateGroundDecceleration(deceleration);
                 }
 

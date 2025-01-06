@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: PlayerBaseLand
   m_EditorClassIdentifier: 
   Animation: {fileID: 7400000, guid: 8fddf820552876a48a8b25bd2f0a102d, type: 2}
+  AnimationSpeedMultiplier: 1
   Type: 5
   Triggers: []

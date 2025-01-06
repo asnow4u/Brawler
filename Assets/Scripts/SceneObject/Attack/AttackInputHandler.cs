@@ -26,7 +26,7 @@ namespace Game.SceneObjects.Attack
 
         #region Getters
 
-        public bool TryGetCurAttackCollection(out AttackCollection curAttackCollection)
+        public bool TryGetCurrentAttackCollection(out AttackCollection curAttackCollection)
         {
             curAttackCollection = null;
 
@@ -65,7 +65,7 @@ namespace Game.SceneObjects.Attack
         /// </summary>
         private void OnAnimationStarted(AnimationClip clip)
         {
-            if (TryGetCurAttackCollection(out AttackCollection curAttackCollection))
+            if (TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
             {
                 if (curAttackCollection.TryGetAttackByAnimation(clip, out AttackData attackData))
                 {
@@ -83,7 +83,7 @@ namespace Game.SceneObjects.Attack
         /// </summary>
         private void OnAnimationEnded(AnimationClip clip)
         {
-            if (TryGetCurAttackCollection(out AttackCollection curAttackCollection))
+            if (TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
             {
                 if (curAttackCollection.TryGetAttackByAnimation(clip, out AttackData attackData))
                 {
@@ -107,7 +107,7 @@ namespace Game.SceneObjects.Attack
         /// </summary>
         public void HandleUpdate()
         {
-            if (TryGetCurAttackCollection(out AttackCollection curAttackCollection))
+            if (TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
                 CheckForAnimationTriggers();
         }
 
@@ -202,7 +202,7 @@ namespace Game.SceneObjects.Attack
         /// </summary>
         public void PerformUpAttack()
         {
-            if (TryGetCurAttackCollection(out AttackCollection curAttackCollection))
+            if (TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
             {
                 if (!AttackToBeBuffered())
                 {
@@ -225,7 +225,7 @@ namespace Game.SceneObjects.Attack
         /// </summary>
         public void PerformDownAttack()
         {
-            if (TryGetCurAttackCollection(out AttackCollection curAttackCollection))
+            if (TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
             {
                 if (!AttackToBeBuffered())
                 {
@@ -249,7 +249,7 @@ namespace Game.SceneObjects.Attack
         /// </summary>
         public void PerformRightAttack()
         {
-            if (TryGetCurAttackCollection(out AttackCollection curAttackCollection))
+            if (TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
             {
                 if (!AttackToBeBuffered())
                 {
@@ -289,7 +289,7 @@ namespace Game.SceneObjects.Attack
         /// </summary>
         public void PerformLeftAttack()
         {
-            if (TryGetCurAttackCollection(out AttackCollection curAttackCollection))
+            if (TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
             {
                 if (!AttackToBeBuffered())
                 {

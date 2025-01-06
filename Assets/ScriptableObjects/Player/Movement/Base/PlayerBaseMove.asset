@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: PlayerBaseMove
   m_EditorClassIdentifier: 
   Animation: {fileID: 7400000, guid: 1bbcb447f8326a540a7edd76c8a1b992, type: 2}
+  AnimationSpeedMultiplier: 1
   Type: 1
   Triggers: []
   GroundedMaxXVelocity: 10

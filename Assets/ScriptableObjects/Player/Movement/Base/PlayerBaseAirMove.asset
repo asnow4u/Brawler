@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: PlayerBaseAirMove
   m_EditorClassIdentifier: 
   Animation: {fileID: 7400000, guid: 3dde231bf3aca7541a1b3c02353a6f40, type: 2}
+  AnimationSpeedMultiplier: 1
   Type: 2
   Triggers: []
   AerialMaxXVelocity: 10

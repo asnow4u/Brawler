@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: SwordLand
   m_EditorClassIdentifier: 
   Animation: {fileID: 7400000, guid: 21d83ad7cba807b40a59a1c6f87ad46b, type: 2}
+  AnimationSpeedMultiplier: 1
   Type: 5
   Triggers: []

@@ -182,7 +182,7 @@ namespace Game.SceneObjects.Animation
             {
                 if (attackCollection.TryGetAttackByType(attackType, out AttackData attackData))
                 {
-                    AnimationClipPlayable attackPlayable = AnimationClipPlayable.Create(animationGraph, attackData.AttackAnimation);
+                    AnimationClipPlayable attackPlayable = AnimationClipPlayable.Create(animationGraph, attackData.Animation);
                     attackAnimationMixer.ConnectInput((int)attackType, attackPlayable, 0);
                 }
             }
@@ -265,11 +265,12 @@ namespace Game.SceneObjects.Animation
         /// Change movement mixer to prioritize current move state
         /// </summary>
         /// <param name="moveState"></param>
-        public void ChangeMovementStateInput(MovementType moveState)
+        public void ChangeMovementStateInput(MovementType moveState, float speedMultiplier)
         {
             //reset animation clip
             AnimationClipPlayable clipPlayable = (AnimationClipPlayable)movementAnimationMixer.GetInput((int)moveState);
             clipPlayable.SetTime(0);
+            PlayableExtensions.SetSpeed(clipPlayable, speedMultiplier);            
 
             ResetInputWeights(movementAnimationMixer);
             movementAnimationMixer.SetInputWeight((int)moveState, 1);
@@ -280,13 +281,14 @@ namespace Game.SceneObjects.Animation
         /// Change attack mixer to prioritize current attack state
         /// </summary>
         /// <param name="attackState"></param>
-        public void ChangeAttackStateInput(AttackType attackState)
+        public void ChangeAttackStateInput(AttackType attackState, float speedMultiplier)
         {
             if (attackState != AttackType.Null)
             {
                 //reset animation clip
                 AnimationClipPlayable clipPlayable = (AnimationClipPlayable)attackAnimationMixer.GetInput((int)attackState);
                 clipPlayable.SetTime(0);
+                PlayableExtensions.SetSpeed(clipPlayable, speedMultiplier);
 
                 ResetInputWeights(attackAnimationMixer);
                 attackAnimationMixer.SetInputWeight((int)attackState, 1);

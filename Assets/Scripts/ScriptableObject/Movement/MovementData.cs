@@ -7,6 +7,7 @@ namespace Game.SceneObjects.Movement
     public class MovementData : ScriptableObject
     {    
         public AnimationClip Animation;
+        public float AnimationSpeedMultiplier;
         public MovementType Type;
         public List<AnimationTrigger> Triggers;
     }

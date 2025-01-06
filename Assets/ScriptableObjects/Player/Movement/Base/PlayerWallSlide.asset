@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: PlayerWallSlide
   m_EditorClassIdentifier: 
   Animation: {fileID: 7400000, guid: 1b1641616e1b12942a391c0d667d186d, type: 2}
+  AnimationSpeedMultiplier: 1
   Type: 6
   Triggers: []

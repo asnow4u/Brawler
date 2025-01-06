@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: ForwardAir
   m_EditorClassIdentifier: 
   Type: 6
-  AttackAnimation: {fileID: 7400000, guid: 0a345bb362d58b647bc8d48a22dbd1df, type: 2}
+  Animation: {fileID: 7400000, guid: 0a345bb362d58b647bc8d48a22dbd1df, type: 2}
+  AnimationSpeedMultiplier: 1
   influence: 1
   damageCurve:
     serializedVersion: 2
@@ -85,4 +86,3 @@ MonoBehaviour:
     TriggerType: 1
     WasTriggered: 0
   otherTriggers: []
-  ColliderType: 0000000002000000

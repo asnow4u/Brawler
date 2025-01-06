@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: DownAir
   m_EditorClassIdentifier: 
   Type: 5
-  AttackAnimation: {fileID: 7400000, guid: 54b69c4b0549d394c88d787375536d5b, type: 2}
+  Animation: {fileID: 7400000, guid: 54b69c4b0549d394c88d787375536d5b, type: 2}
+  AnimationSpeedMultiplier: 1
   influence: 1
   damageCurve:
     serializedVersion: 2
@@ -94,4 +95,3 @@ MonoBehaviour:
     TriggerType: 1
     WasTriggered: 0
   otherTriggers: []
-  ColliderType: 01000000

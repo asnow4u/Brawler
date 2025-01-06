@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: PlayerBaseAirJump
   m_EditorClassIdentifier: 
   Animation: {fileID: 7400000, guid: 03a9618a54fc2984cb064b70aa23bdeb, type: 2}
+  AnimationSpeedMultiplier: 1
   Type: 4
   Triggers: []
   JumpsAvailable: 1

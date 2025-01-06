@@ -141,7 +141,7 @@ namespace Game.SceneObjects.Animation
         {
             if (TryGetComponent(out AttackInputHandler attackInputHandler))
             {
-                if (attackInputHandler.TryGetCurAttackCollection(out AttackCollection curAttackCollection))
+                if (attackInputHandler.TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
                     animationGraph.SetAttackAnimations(curAttackCollection);
             }
         }
@@ -199,8 +199,18 @@ namespace Game.SceneObjects.Animation
                 if (sceneObject.ActionStateHandler.CurActionState == ActionState.Moving)
                     sceneObject.ActionStateHandler.ChangeState(ActionState.Idle);
             }
+
             else
-                animationGraph.ChangeMovementStateInput(movementState);
+            {
+                //NOTE: 
+                // If weapon or other enhancements improve animation speed, add to multiplier here
+
+                if (sceneObject.MovementInputHandler.TryGetCurrentMovementCollection(out MovementCollection moveCollection))
+                {
+                    if (moveCollection.TryGetMovementByType(movementState, out MovementData requestedMovementData))
+                        animationGraph.ChangeMovementStateInput(movementState, requestedMovementData.AnimationSpeedMultiplier);
+                }
+            }
         }
 
 
@@ -210,7 +220,14 @@ namespace Game.SceneObjects.Animation
         /// <param name="attackState"></param>
         private void OnAttackStateChanged(AttackType attackState)
         {
-            animationGraph.ChangeAttackStateInput(attackState);
+            //NOTE: 
+            // If weapon or other enhancements improve animation speed, add to multiplier here
+
+            if (sceneObject.AttackInputHandler.TryGetCurrentAttackCollection(out AttackCollection attackCollection))
+            {
+                if (attackCollection.TryGetAttackByType(attackState, out AttackData requestedAttackData))
+                    animationGraph.ChangeAttackStateInput(attackState, requestedAttackData.AnimationSpeedMultiplier);
+            }
         }
 
         #endregion

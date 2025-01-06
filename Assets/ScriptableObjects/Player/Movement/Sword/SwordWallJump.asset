@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: SwordWallJump
   m_EditorClassIdentifier: 
   Animation: {fileID: 7400000, guid: 0c1229e1a30f8a34385935ec076caecb, type: 2}
+  AnimationSpeedMultiplier: 1
   Type: 7
   Triggers: []
   JumpVelocity: 10

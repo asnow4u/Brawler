@@ -12,7 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43e20834a50fe7a42b978c0aaeb95739, type: 3}
   m_Name: DownTilt 3
   m_EditorClassIdentifier: 
-  AttackAnimation: {fileID: 7400000, guid: de88e00a966105a41b22c0ecda73c129, type: 2}
+  Type: 2
+  Animation: {fileID: 7400000, guid: de88e00a966105a41b22c0ecda73c129, type: 2}
+  AnimationSpeedMultiplier: 1
+  influence: 0
   damageCurve:
     serializedVersion: 2
     m_Curve:
@@ -28,30 +31,6 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 11
       value: 5
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  knockbackCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 5
-      value: 500
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 11
-      value: 500
       inSlope: 0
       outSlope: 0
       tangentMode: 136
@@ -85,7 +64,6 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  damageInfluence: 1
   enableCollider:
     TriggerFrame: 19
     TriggerType: 2
@@ -99,4 +77,3 @@ MonoBehaviour:
     TriggerType: 1
     WasTriggered: 0
   otherTriggers: []
-  ColliderType: 00000000

@@ -55,43 +55,43 @@ namespace Game.SceneObjects.Attack
 
         public bool TryGetAttackByAnimation(AnimationClip animation, out AttackData attack)
         {
-            if (WeaponData.ForwardTilt != null && WeaponData.ForwardTilt.AttackAnimation == animation)
+            if (WeaponData.ForwardTilt != null && WeaponData.ForwardTilt.Animation == animation)
             {
                 attack = WeaponData.ForwardTilt;
                 return true;
             }
 
-            if (WeaponData.UpTilt != null && WeaponData.UpTilt.AttackAnimation == animation)
+            if (WeaponData.UpTilt != null && WeaponData.UpTilt.Animation == animation)
             {
                 attack = WeaponData.UpTilt;
                 return true;
             }
 
-            if (WeaponData.DownTilt != null && WeaponData.DownTilt.AttackAnimation == animation)
+            if (WeaponData.DownTilt != null && WeaponData.DownTilt.Animation == animation)
             {
                 attack = WeaponData.DownTilt;
                 return true;
             }
 
-            if (WeaponData.ForwardAir != null && WeaponData.ForwardAir.AttackAnimation == animation)
+            if (WeaponData.ForwardAir != null && WeaponData.ForwardAir.Animation == animation)
             {
                 attack = WeaponData.ForwardAir;
                 return true;
             }
 
-            if (WeaponData.UpAir != null && WeaponData.UpAir.AttackAnimation == animation)
+            if (WeaponData.UpAir != null && WeaponData.UpAir.Animation == animation)
             {
                 attack = WeaponData.UpAir;
                 return true;
             }
 
-            if (WeaponData.DownAir != null && WeaponData.DownAir.AttackAnimation == animation)
+            if (WeaponData.DownAir != null && WeaponData.DownAir.Animation == animation)
             {
                 attack = WeaponData.DownAir;
                 return true;
             }
 
-            if (WeaponData.Dash != null && WeaponData.Dash.AttackAnimation == animation)
+            if (WeaponData.Dash != null && WeaponData.Dash.Animation == animation)
             {
                 attack = WeaponData.Dash;
                 return true;

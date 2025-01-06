@@ -10,7 +10,8 @@ public class AttackData : ScriptableObject
     public AttackType Type;
 
     [Header("Animation")]
-    public AnimationClip AttackAnimation;
+    public AnimationClip Animation;
+    public float AnimationSpeedMultiplier;
 
     [Header("Attack Details")]
     [Range(0, 1)]

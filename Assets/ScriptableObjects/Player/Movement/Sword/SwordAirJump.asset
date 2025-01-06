@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: SwordAirJump
   m_EditorClassIdentifier: 
   Animation: {fileID: 7400000, guid: 321ce23443f06c544a250836532d3853, type: 2}
+  AnimationSpeedMultiplier: 1
   Type: 4
   Triggers: []
   JumpsAvailable: 1

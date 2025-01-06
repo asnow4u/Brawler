@@ -38,7 +38,7 @@ public class Weapon : Interactable
     public void EnableCollidersForAttack(AttackData attackData, Action<ITakeDamage, Collider> attackHitCallback)
     {
         foreach (DamageCollider collider in damageColliders)
-            collider.Enable(attackData.AttackAnimation, attackHitCallback);
+            collider.Enable(attackData.Animation, attackHitCallback);
     }
 
 

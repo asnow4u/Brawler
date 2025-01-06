@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: Dash
   m_EditorClassIdentifier: 
   Type: 7
-  AttackAnimation: {fileID: 7400000, guid: 7a549e1f2439acb42bd03947aa225dd2, type: 2}
+  Animation: {fileID: 7400000, guid: 7a549e1f2439acb42bd03947aa225dd2, type: 2}
+  AnimationSpeedMultiplier: 1
   influence: 1
   damageCurve:
     serializedVersion: 2
@@ -76,4 +77,3 @@ MonoBehaviour:
     TriggerType: 1
     WasTriggered: 1
   otherTriggers: []
-  ColliderType: 

@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: ForwardTilt
   m_EditorClassIdentifier: 
   Type: 3
-  AttackAnimation: {fileID: 7400000, guid: 50e19dd155be02d42923a5d13c575db3, type: 2}
+  Animation: {fileID: 7400000, guid: 50e19dd155be02d42923a5d13c575db3, type: 2}
+  AnimationSpeedMultiplier: 1
   influence: 1
   damageCurve:
     serializedVersion: 2
@@ -85,4 +86,3 @@ MonoBehaviour:
     TriggerType: 1
     WasTriggered: 1
   otherTriggers: []
-  ColliderType: 02000000

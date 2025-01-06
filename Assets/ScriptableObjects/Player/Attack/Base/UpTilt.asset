@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: UpTilt
   m_EditorClassIdentifier: 
   Type: 1
-  AttackAnimation: {fileID: 7400000, guid: ef98807cec67b93429e7d2b4cc363546, type: 2}
+  Animation: {fileID: 7400000, guid: ef98807cec67b93429e7d2b4cc363546, type: 2}
+  AnimationSpeedMultiplier: 1
   influence: 1
   damageCurve:
     serializedVersion: 2
@@ -130,4 +131,3 @@ MonoBehaviour:
     TriggerType: 1
     WasTriggered: 1
   otherTriggers: []
-  ColliderType: 00000000
