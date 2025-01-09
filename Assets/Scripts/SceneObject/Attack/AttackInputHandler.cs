@@ -89,12 +89,7 @@ namespace Game.SceneObjects.Attack
                 {
                     //Check if activly in an attack
                     if (curAttackData != null)
-                    {
                         SetCurrentAttackState(AttackType.Null, curAttackCollection);
-
-                        //TODO:
-                        //curWeapon.DisableAllColliders();
-                    }
                 }
             }
         }
@@ -324,9 +319,7 @@ namespace Game.SceneObjects.Attack
         #endregion
 
 
-        #region Animation
-
-
+        #region Animation Triggers
 
         /// <summary>
         /// Check for animation triggers that need to fire
