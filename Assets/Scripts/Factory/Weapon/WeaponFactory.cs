@@ -47,8 +47,7 @@ namespace Game.Interactable.Factory
                         weaponData.GetRandomDownTiltAttack(),
                         weaponData.GetRandomDownAirAttack(),
                         weaponData.GetRandomForwardTiltAttack(),
-                        weaponData.GetRandomForwardAirAttack(),
-                        weaponData.GetRandomDashAttack());
+                        weaponData.GetRandomForwardAirAttack());
 
                 //Get attack points
                 List<GameObject> attackPoints = new List<GameObject>();

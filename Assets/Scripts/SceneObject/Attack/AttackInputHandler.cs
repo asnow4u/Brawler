@@ -5,11 +5,11 @@ using UnityEngine;
 
 namespace Game.SceneObjects.Attack
 {
-    public enum AttackType { Null, UpTilt, DownTilt, ForwardTilt, UpAir, DownAir, ForwardAir, Dash };
+    public enum AttackType { Null, UpTilt, DownTilt, ForwardTilt, UpAir, DownAir, ForwardAir };
 
     public class AttackInputHandler : SceneObjectHandler
     {
-        const ActionState ATTACKSTATE = ActionState.Attacking;
+        const ActionState ATTACKSTATE = ActionState.Attacking;        
 
         [Header("State")]
         //Attack Data
@@ -25,6 +25,8 @@ namespace Game.SceneObjects.Attack
 
 
         #region Getters
+
+        public AttackData CurAttackData => curAttackData;
 
         public bool TryGetCurrentAttackCollection(out AttackCollection curAttackCollection)
         {
@@ -117,12 +119,11 @@ namespace Game.SceneObjects.Attack
         /// <param name="attackType"></param>
         /// <returns></returns>
         private void SetCurrentAttackState(AttackType attackType, AttackCollection curAttackCollection)
-        {
+        {            
             if (attackType != AttackType.Null)
             {
                 //Check not currently attacking and Check that attack exists
-                if (curAttackState == AttackType.Null &&
-                    curAttackCollection.TryGetAttackByType(attackType, out AttackData attack))
+                if (curAttackCollection.TryGetAttackByType(attackType, out AttackData attack))
                 {
                     //Change state
                     if (sceneObject.ActionStateHandler.TryChangeState(ATTACKSTATE))
@@ -147,70 +148,17 @@ namespace Game.SceneObjects.Attack
         #region Perform Attack
 
         /// <summary>
-        /// Determine if the attack needs to be buffered due to other states
-        /// </summary>
-        /// <returns></returns>
-        private bool AttackToBeBuffered()
-        {
-            //Cant attack while jumping from ground
-            if (sceneObject.ActionStateHandler.CurActionState == ActionState.Moving && sceneObject.MovementInputHandler.CurMoveState == MovementType.Jump)
-            {
-                //TODO: Buffer attack
-                return true;
-            }
-
-            return false;
-        }
-
-
-        /// <summary>
-        /// Play the animation for a buffered attack
-        /// </summary>
-        public void ExecuteBufferedAttack()
-        {
-            //TODO: ReImplement
-            //if (bufferedAttackAction != null)
-            //{
-            //    bufferedAttackAction.Invoke();
-            //    bufferedAttackAction = null;
-            //}
-        }
-
-
-        /// <summary>
-        /// Buffer attack if currently jumping or landing
-        /// Buffered attack will attempt to exacute when transition state ends
-        /// </summary>
-        /// <param name="attackType"></param>
-        private void BufferAttack(Action bufferedAttackAction)
-        {
-            //TODO: ReImplement
-            //if (sceneObj.ActionStateHandler.CurActionState == ActionState.MoveTransition)
-            //{
-            //    this.bufferedAttackAction = bufferedAttackAction;
-            //}
-        }
-
-
-        /// <summary>
         /// Try to perform a grounded / Air Up attack
         /// </summary>
         public void PerformUpAttack()
         {
-            if (TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
+            if (curAttackState == AttackType.Null && TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
             {
-                if (!AttackToBeBuffered())
-                {
-                    if (sceneObject.CurGroundedState == GroundedState.Airborn)
-                        SetCurrentAttackState(AttackType.UpAir, curAttackCollection);
-                    else
-                    {
-                        if (sceneObject.MovementInputHandler.HorizontalInfluence != 0)
-                            SetCurrentAttackState(AttackType.Dash, curAttackCollection);
-                        else
-                            SetCurrentAttackState(AttackType.UpTilt, curAttackCollection);
-                    }
-                }
+                if (sceneObject.CurGroundedState == GroundedState.Grounded)
+                    SetCurrentAttackState(AttackType.UpTilt, curAttackCollection);                            
+
+                else
+                    SetCurrentAttackState(AttackType.UpAir, curAttackCollection);
             }
         }
 
@@ -220,20 +168,13 @@ namespace Game.SceneObjects.Attack
         /// </summary>
         public void PerformDownAttack()
         {
-            if (TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
+            if (curAttackState == AttackType.Null && TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
             {
-                if (!AttackToBeBuffered())
-                {
-                    if (sceneObject.CurGroundedState == GroundedState.Airborn)
-                        SetCurrentAttackState(AttackType.DownAir, curAttackCollection);
-                    else
-                    {
-                        if (sceneObject.MovementInputHandler.HorizontalInfluence != 0)
-                            SetCurrentAttackState(AttackType.Dash, curAttackCollection);
-                        else
-                            SetCurrentAttackState(AttackType.DownTilt, curAttackCollection);
-                    }
-                }
+                if (sceneObject.CurGroundedState == GroundedState.Grounded)
+                    SetCurrentAttackState(AttackType.DownTilt, curAttackCollection);
+
+                else
+                    SetCurrentAttackState(AttackType.DownAir, curAttackCollection);
             }
         }
 
@@ -244,35 +185,22 @@ namespace Game.SceneObjects.Attack
         /// </summary>
         public void PerformRightAttack()
         {
-            if (TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
-            {
-                if (!AttackToBeBuffered())
+            if (curAttackState == AttackType.Null && TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
+            {                
+                if (sceneObject.CurGroundedState == GroundedState.Grounded)
                 {
-                    //Air Attack
-                    if (sceneObject.CurGroundedState == GroundedState.Airborn)
-                    {
-                        SetCurrentAttackState(AttackType.ForwardAir, curAttackCollection);
+                    SetCurrentAttackState(AttackType.ForwardTilt, curAttackCollection);
 
-                        if (!sceneObject.IsFacingRightDirection())
-                            sceneObject.TurnAround();
-                    }
+                    if (!sceneObject.IsFacingRightDirection())
+                        sceneObject.TurnAround();                   
+                }
+                    
+                else
+                {
+                    SetCurrentAttackState(AttackType.ForwardAir, curAttackCollection);
 
-                    //Grounded Attack
-                    else
-                    {
-                        //Dash Attack
-                        if (sceneObject.MovementInputHandler.HorizontalInfluence != 0)
-                            SetCurrentAttackState(AttackType.Dash, curAttackCollection);
-
-                        //Tilt Attacl
-                        else
-                        {
-                            SetCurrentAttackState(AttackType.ForwardTilt, curAttackCollection);
-
-                            if (!sceneObject.IsFacingRightDirection())
-                                sceneObject.TurnAround();
-                        }
-                    }
+                    if (!sceneObject.IsFacingRightDirection())
+                        sceneObject.TurnAround();
                 }
             }
         }
@@ -284,35 +212,23 @@ namespace Game.SceneObjects.Attack
         /// </summary>
         public void PerformLeftAttack()
         {
-            if (TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
+            if (curAttackState == AttackType.Null && TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
             {
-                if (!AttackToBeBuffered())
+                if (sceneObject.CurGroundedState == GroundedState.Grounded)
                 {
-                    //Air Attack
-                    if (sceneObject.CurGroundedState == GroundedState.Airborn)
-                    {
-                        SetCurrentAttackState(AttackType.ForwardAir, curAttackCollection);
+                    SetCurrentAttackState(AttackType.ForwardTilt, curAttackCollection);
 
-                        if (sceneObject.IsFacingRightDirection())
-                            sceneObject.TurnAround();
-                    }
-
-                    else
-                    {
-                        //Dash Attack
-                        if (sceneObject.MovementInputHandler.HorizontalInfluence != 0)
-                            SetCurrentAttackState(AttackType.Dash, curAttackCollection);
-
-                        //Tilt Attack
-                        else
-                        {
-                            SetCurrentAttackState(AttackType.ForwardTilt, curAttackCollection);
-
-                            if (sceneObject.IsFacingRightDirection())
-                                sceneObject.TurnAround();
-                        }
-                    }
+                    if (sceneObject.IsFacingRightDirection())
+                        sceneObject.TurnAround();
                 }
+
+                else
+                {
+                    SetCurrentAttackState(AttackType.ForwardAir, curAttackCollection);
+
+                    if (sceneObject.IsFacingRightDirection())
+                        sceneObject.TurnAround();
+                }                
             }
         }
 

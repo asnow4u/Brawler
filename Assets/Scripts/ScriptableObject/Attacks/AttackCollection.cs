@@ -20,32 +20,52 @@ namespace Game.SceneObjects.Attack
             switch (attackType)
             {
                 case AttackType.UpTilt:
-                    attack = WeaponData.UpTilt;
-                    return true;
+                    if (WeaponData.UpTilt != null)
+                    {
+                        attack = WeaponData.UpTilt;
+                        return true;
+                    }
+                    break;
 
                 case AttackType.ForwardTilt:
-                    attack = WeaponData.ForwardTilt;
-                    return true;
+                    if (WeaponData.ForwardTilt != null)
+                    {
+                        attack = WeaponData.ForwardTilt;
+                        return true;
+                    }
+                    break;
 
                 case AttackType.DownTilt:
-                    attack = WeaponData.DownTilt;
-                    return true;
+                    if (WeaponData.DownTilt != null)
+                    {
+                        attack = WeaponData.DownTilt;
+                        return true;
+                    }
+                    break;
 
                 case AttackType.UpAir:
-                    attack = WeaponData.UpAir;
-                    return true;
+                    if (WeaponData.UpAir != null)
+                    {
+                        attack = WeaponData.UpAir;
+                        return true;
+                    }
+                    break;
 
                 case AttackType.ForwardAir:
-                    attack = WeaponData.ForwardAir;
-                    return true;
+                    if (WeaponData.ForwardAir != null)
+                    {
+                        attack = WeaponData.ForwardAir;
+                        return true;
+                    }
+                    break;
 
                 case AttackType.DownAir:
-                    attack = WeaponData.DownAir;
-                    return true;
-
-                case AttackType.Dash:
-                    attack = WeaponData.Dash;
-                    return true;
+                    if (WeaponData.DownAir != null)
+                    {
+                        attack = WeaponData.DownAir;
+                        return true;
+                    }
+                    break;
             }
 
             attack = null;
@@ -88,12 +108,6 @@ namespace Game.SceneObjects.Attack
             if (WeaponData.DownAir != null && WeaponData.DownAir.Animation == animation)
             {
                 attack = WeaponData.DownAir;
-                return true;
-            }
-
-            if (WeaponData.Dash != null && WeaponData.Dash.Animation == animation)
-            {
-                attack = WeaponData.Dash;
                 return true;
             }
 

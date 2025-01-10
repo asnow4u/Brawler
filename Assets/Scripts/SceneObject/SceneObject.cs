@@ -304,8 +304,11 @@ namespace Game.SceneObjects
 
         public void TurnAround()
         {
-            transform.Rotate(transform.up, 180f);
-
+            if (IsFacingRightDirection())
+                transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
+            else
+                transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
+            
             UIHandler.RotateDisplayText();
         }
 

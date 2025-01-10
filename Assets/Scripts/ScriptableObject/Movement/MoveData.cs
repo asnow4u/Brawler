@@ -11,6 +11,9 @@ namespace Game.SceneObjects.Movement
 
         [Header("Grounded Movement")]
         public float GroundedXAcceleration;
-        public float GroundedXDeceleration;   
+        public float GroundedXDeceleration;
+
+        [Tooltip("How quickly should the sceneObject slowdow when performing an attack while moving")]
+        public float GroundedAttackXDecleration;
     }
 }

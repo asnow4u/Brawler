@@ -9,15 +9,13 @@ public class WeaponData
     public AttackData DownAir;
     public AttackData ForwardTilt;
     public AttackData ForwardAir;
-    public AttackData Dash;
 
     public WeaponData(AttackData upTilt,
                       AttackData upAir,
                       AttackData downTilt,
                       AttackData downAir,
                       AttackData forwardTilt,
-                      AttackData forwardAir,
-                      AttackData dash)
+                      AttackData forwardAir)
     {
         this.UpTilt = upTilt;
         this.UpAir = upAir;
@@ -25,7 +23,6 @@ public class WeaponData
         this.DownAir = downAir;
         this.ForwardTilt = forwardTilt;
         this.ForwardAir = forwardAir;
-        Dash = dash;
     }
 
 }

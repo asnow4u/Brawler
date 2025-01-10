@@ -138,6 +138,18 @@ namespace Game.SceneObjects.Movement
 
 
         /// <summary>
+        /// Get grounded deceleration for attacks in collection
+        /// </summary>
+        public float GetGroundedAttackDeclerationn()
+        {
+            if (MoveData != null)
+                return MoveData.GroundedAttackXDecleration;
+
+            throw new NullReferenceException("MoveData is not set");
+        }
+
+
+        /// <summary>
         /// Get air max velocity
         /// </summary>
         /// <returns></returns>

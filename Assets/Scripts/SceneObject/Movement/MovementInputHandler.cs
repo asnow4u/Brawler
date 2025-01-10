@@ -23,6 +23,8 @@ namespace Game.SceneObjects.Movement
         private const float fastFallAcceleration = 20f;
         private const float MaxYVelocity = 15f;
 
+        private bool deceleratingForAttack;
+
         //Movement Collection (NOTE: BaseMovementCollection is Required for all sceneObjects)    
         [Header("Collection")]
         [SerializeField] private MovementCollection baseMovementCollection;
@@ -130,14 +132,13 @@ namespace Game.SceneObjects.Movement
                         TrySetCurrentMoveState(MovementType.Null);
                 }
 
-                //End movement after dash attack
-                if (sceneObject.AttackInputHandler.TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
+                //End movement after attack
+                if (deceleratingForAttack && sceneObject.AttackInputHandler.TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
                 {
                     if (curAttackCollection.TryGetAttackByAnimation(clip, out AttackData attackData))
-                    {
-                        if (attackData.Type == AttackType.Dash)
-                            TrySetCurrentMoveState(MovementType.Null);
-                    }
+                        TrySetCurrentMoveState(MovementType.Null);
+
+                    deceleratingForAttack = false;
                 }
             }
         }
@@ -257,18 +258,18 @@ namespace Game.SceneObjects.Movement
         public bool IsAgainstArialWall()
         {
             //Left
-            if (horizontalInfluence <= 0 && sceneObject.TryDetectCollision(Direction.Left, 0.5f, LayerMask.GetMask("Environment"), out _))
+            if (sceneObject.CoreRigidBody.linearVelocity.x <= 0 && sceneObject.TryDetectCollision(Direction.Left, 0.5f, LayerMask.GetMask("Environment"), out _))
             {
-                if (sceneObject.CoreRigidBody.linearVelocity.x <= 0 && sceneObject.IsFacingRightDirection())
+                if (sceneObject.IsFacingRightDirection())
                     sceneObject.TurnAround();
 
                 return true;
             }
 
             //Right
-            if (horizontalInfluence >= 0 && sceneObject.TryDetectCollision(Direction.Right, 0.5f, LayerMask.GetMask("Environment"), out _))
+            if (sceneObject.CoreRigidBody.linearVelocity.x >= 0 && sceneObject.TryDetectCollision(Direction.Right, 0.5f, LayerMask.GetMask("Environment"), out _))
             {
-                if (sceneObject.CoreRigidBody.linearVelocity.x >= 0 && !sceneObject.IsFacingRightDirection())
+                if (!sceneObject.IsFacingRightDirection())
                     sceneObject.TurnAround();
 
                 return true;
@@ -330,16 +331,16 @@ namespace Game.SceneObjects.Movement
         {
             if (horizontalInfluence != 0)
             {
-                //Calculate decceleration for dash attack
-                if (sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking &&
-                    sceneObject.AttackInputHandler.TryGetCurrentAttackCollection(out AttackCollection curAttackCollection) &&
-                    curAttackCollection.TryGetAttackByType(AttackType.Dash, out AttackData attack))
+                //Calculate decceleration for attacks
+                if (sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking)
                 {
-                    float deceleration = sceneObject.CoreRigidBody.linearVelocity.magnitude / attack.Animation.length;
-                    UpdateGroundDecceleration(deceleration);
+                    AttackData attackData = sceneObject.AttackInputHandler.CurAttackData;
+                    UpdateGroundDecceleration(curMovementCollection.GetGroundedAttackDeclerationn());
+
+                    deceleratingForAttack = true;
                 }
 
-                else if (curMoveState == MovementType.Null || curMoveState == MovementType.WallLean)
+                if (curMoveState == MovementType.Null || curMoveState == MovementType.WallLean)
                     TrySetCurrentMoveState(MovementType.Move);
 
                 else if (curMoveState == MovementType.Move)

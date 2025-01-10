@@ -11,7 +11,6 @@ public class WeaponCollectionData : ScriptableObject
     public List<AttackData> DownAirAttacks;
     public List<AttackData> ForwardTiltAttacks;
     public List<AttackData> ForwardAirAttacks;
-    public List<AttackData> DashAttacks;
 
     private int RandomNum(int max)
     {
@@ -46,10 +45,5 @@ public class WeaponCollectionData : ScriptableObject
     public AttackData GetRandomForwardAirAttack()
     {
         return ForwardAirAttacks[RandomNum(ForwardAirAttacks.Count)];
-    }
-
-    public AttackData GetRandomDashAttack()
-    {
-        return DashAttacks[RandomNum(DashAttacks.Count)];
     }
 }
