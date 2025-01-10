@@ -15,7 +15,7 @@ MonoBehaviour:
   Type: 4
   Animation: {fileID: 7400000, guid: babe4a30aae91bb41a73b7f48b83dcd1, type: 2}
   AnimationSpeedMultiplier: 1
-  influence: 0
+  influence: 1
   damageCurve:
     serializedVersion: 2
     m_Curve:
