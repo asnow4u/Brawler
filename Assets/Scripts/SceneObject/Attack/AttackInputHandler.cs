@@ -1,6 +1,8 @@
 using Game.SceneObjects.ActionStates;
 using Game.SceneObjects.Movement;
+using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Game.SceneObjects.Attack
@@ -17,8 +19,9 @@ namespace Game.SceneObjects.Attack
         [SerializeField] private AttackType curAttackState;
         //NOTE: This tracks the current attack data being used
         private AttackData curAttackData;
-        //NOTE: This tracks any buffered attack
-        private Action bufferedAttackAction = null;
+
+        private HashSet<ITakeDamage> objectHitByAttack = new HashSet<ITakeDamage>();
+
 
         //Events
         public event Action<AttackType> AttackStateChangedEvent;
@@ -138,6 +141,7 @@ namespace Game.SceneObjects.Attack
             {
                 curAttackState = AttackType.Null;
                 curAttackData = null;
+                objectHitByAttack.Clear();
                 AttackStateChangedEvent?.Invoke(AttackType.Null);
             }
         }
@@ -283,8 +287,10 @@ namespace Game.SceneObjects.Attack
         private void AttackConnected(ITakeDamage target, Collider col)
         {
             //Current Attack
-            if (curAttackData != null)
+            if (curAttackData != null && !objectHitByAttack.Contains(target))
             {
+                objectHitByAttack.Add(target);
+
                 //Attack Details
                 SceneObject sceneObject = GetComponentInParent<SceneObject>();
                 int curFrame = sceneObject.AnimationHandler.GetFrameOfCurrentAnimation();

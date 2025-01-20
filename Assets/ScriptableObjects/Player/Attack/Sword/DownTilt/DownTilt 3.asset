@@ -15,7 +15,7 @@ MonoBehaviour:
   Type: 2
   Animation: {fileID: 7400000, guid: de88e00a966105a41b22c0ecda73c129, type: 2}
   AnimationSpeedMultiplier: 1
-  influence: 0
+  influence: 1
   damageCurve:
     serializedVersion: 2
     m_Curve:
@@ -67,13 +67,13 @@ MonoBehaviour:
   enableCollider:
     TriggerFrame: 19
     TriggerType: 2
-    WasTriggered: 0
+    WasTriggered: 1
   disableCollider:
     TriggerFrame: 25
     TriggerType: 3
-    WasTriggered: 0
+    WasTriggered: 1
   end:
     TriggerFrame: 80
     TriggerType: 1
-    WasTriggered: 0
+    WasTriggered: 1
   otherTriggers: []

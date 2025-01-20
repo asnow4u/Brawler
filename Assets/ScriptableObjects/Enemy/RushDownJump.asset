@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: RushDownJump
   m_EditorClassIdentifier: 
   Animation: {fileID: 7400000, guid: aabda58267bec094bbd5490f8526da3e, type: 2}
-  Type: 1
+  AnimationSpeedMultiplier: 0
+  Type: 3
   Triggers: []
   JumpVelocity: 7
   GravityScaler: 1

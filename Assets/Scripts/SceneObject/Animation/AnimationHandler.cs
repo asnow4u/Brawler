@@ -111,7 +111,7 @@ namespace Game.SceneObjects.Animation
             SetIdleAnimations();
             SetMovementAnimations();
             SetAttackAnimations();
-            //SetHitStunAnimations();
+            SetHitStunAnimations();
         }
 
 
@@ -152,7 +152,7 @@ namespace Game.SceneObjects.Animation
         /// </summary>
         private void SetHitStunAnimations()
         {
-            animationGraph.SetHitStunAnimations();
+            animationGraph.SetHitStunAnimations(airIdleAnimation);
         }
 
         #endregion
@@ -164,8 +164,7 @@ namespace Game.SceneObjects.Animation
         /// Listen to needed events
         /// </summary>
         private void SetUpEventListeners()
-        {
-        }
+        { }
 
 
         /// <summary>

@@ -13,6 +13,10 @@ MonoBehaviour:
   m_Name: RushDownMovementCollection
   m_EditorClassIdentifier: 
   MoveData: {fileID: 11400000, guid: e0f27305a9687e74e871bc1b8c81f5fd, type: 2}
+  AirMoveData: {fileID: 11400000, guid: 7d4fe8acfb862c547b703f9892db73c1, type: 2}
   JumpData: {fileID: 0}
   AirJumpData: {fileID: 0}
-  LandData: {fileID: 0}
+  LandData: {fileID: 11400000, guid: 71d8592bd1922d74cb52561ba110869c, type: 2}
+  WallLeanData: {fileID: 0}
+  WallSlideData: {fileID: 0}
+  WallJumpData: {fileID: 0}

@@ -167,15 +167,10 @@ namespace Game.SceneObjects
 
         #region Update
 
-        protected virtual void Update()
-        {        
-            attackInputHandler.HandleUpdate();
-        }
-
-
         protected virtual void FixedUpdate()
         {  
             MovementInputHandler.UpdateMovement();
+            attackInputHandler.HandleUpdate();
 
             DamageHandler.HandleUpdate();
 

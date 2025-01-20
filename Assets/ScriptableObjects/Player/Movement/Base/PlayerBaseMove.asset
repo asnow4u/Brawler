@@ -19,4 +19,4 @@ MonoBehaviour:
   GroundedMaxXVelocity: 10
   GroundedXAcceleration: 50
   GroundedXDeceleration: 50
-  GroundedAttackXDecleration: 15
+  GroundedAttackXDecleration: 100

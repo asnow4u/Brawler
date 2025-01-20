@@ -52,9 +52,7 @@ public class DamageCollider : MonoBehaviour
         {
             ITakeDamage hitTarget = col.GetComponentInParent<ITakeDamage>();
             if (hitTarget != null)
-            {
                 hitCallback?.Invoke(hitTarget, col);
-            }
         }
     }
 

@@ -1,5 +1,6 @@
 using Game.SceneObjects.ActionStates;
 using Game.SceneObjects.Attack;
+using Game.SceneObjects.Damage;
 using System;
 using UnityEngine;
 
@@ -360,7 +361,26 @@ namespace Game.SceneObjects.Movement
         /// </summary>
         private void UpdateAirialMovement(MovementCollection curMovementCollection)
         {
-            if (horizontalInfluence != 0)
+            if (sceneObject.ActionStateHandler.CurActionState == ActionState.HitStun)
+            {
+                if (sceneObject.DamageHandler.HitStunState == HitStunState.Deccelerate)
+                {
+                    float desiredVelocity = 0;
+
+                    float deltaXVelocity = desiredVelocity - sceneObject.CoreRigidBody.linearVelocity.x;
+                    float declerationXValue = deltaXVelocity / sceneObject.DamageHandler.HitStunTimer;
+
+                    float deltaYVelocity = desiredVelocity - sceneObject.CoreRigidBody.linearVelocity.y;
+                    float declerationYValue = deltaYVelocity / sceneObject.DamageHandler.HitStunTimer;
+
+                    float decelerationValue = new Vector2(declerationXValue, declerationYValue).magnitude;
+
+                    Debug.Log("Decelerating Value: " + decelerationValue);
+                    UpdateAerialDeceleration(decelerationValue, desiredVelocity);
+                }
+            }
+
+            else if (horizontalInfluence != 0)
             {
                 if (curMoveState == MovementType.Null || curMoveState == MovementType.WallSlide)
                     TrySetCurrentMoveState(MovementType.AirMove);
@@ -373,7 +393,7 @@ namespace Game.SceneObjects.Movement
             }
 
             else
-                UpdateAirDeceleration(curMovementCollection.GetAerialXDeceleration(), curMovementCollection.GetAerialMaxVelocity());
+                UpdateAerialDeceleration(curMovementCollection.GetAerialXDeceleration(), curMovementCollection.GetAerialMaxVelocity());
         }
 
 
@@ -462,22 +482,39 @@ namespace Game.SceneObjects.Movement
 
 
         /// <summary>
-        /// Update velocity in the air to slow down by <paramref name="deccelerationValue"/>
+        /// Update velocity in the air to slow down by <paramref name="decelerationValue"/>
         /// </summary>
-        private void UpdateAirDeceleration(float deccelerationValue, float maxAerialVelocity)
+        private void UpdateAerialDeceleration(float decelerationValue, float velocityMagnitude)
         {
-            float targetXVelocity = maxAerialVelocity;
+            Vector3 curVelocity = sceneObject.CoreRigidBody.linearVelocity;
+            
+            if (curVelocity.magnitude > velocityMagnitude)
+            {            
+                Vector3 dragForce = curVelocity.normalized * Mathf.Abs(decelerationValue);
+                sceneObject.CoreRigidBody.linearVelocity -= dragForce * Time.fixedDeltaTime;
+                Debug.Log("Decelerating To: " + sceneObject.CoreRigidBody.linearVelocity);
+            }
 
-            if (horizontalInfluence > 0)
-                targetXVelocity *= horizontalInfluence;
 
-            if (sceneObject.CoreRigidBody.linearVelocity.x > targetXVelocity)
-                sceneObject.CoreRigidBody.linearVelocity -= Vector3.right * deccelerationValue * Time.fixedDeltaTime;
 
-            else if (sceneObject.CoreRigidBody.linearVelocity.x < -targetXVelocity)
-                sceneObject.CoreRigidBody.linearVelocity += Vector3.right * deccelerationValue * Time.fixedDeltaTime;
+
+
+
+
+
+
+
+
+            //if (horizontalInfluence > 0)
+            //    targetXVelocity *= horizontalInfluence;
+
+            //TODO: Should check if suppasing 0 (Ex: pos value going to negative)
+            //if (sceneObject.CoreRigidBody.linearVelocity.x > targetXVelocity)
+            //    sceneObject.CoreRigidBody.linearVelocity -= Vector3.right * decelerationValue * Time.fixedDeltaTime;
+
+            //else if (sceneObject.CoreRigidBody.linearVelocity.x < -targetXVelocity)
+            //    sceneObject.CoreRigidBody.linearVelocity += Vector3.right * decelerationValue * Time.fixedDeltaTime;
         }
-
 
         #endregion
 

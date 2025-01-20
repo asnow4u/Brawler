@@ -1,16 +1,23 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
+[Serializable]
 public class KnockbackCalculator
 {
-    const float minKnockBackAcceleration = 4f;
+    /*const*/public float minKnockBackAcceleration = 7f;
+
+
+    public float power = 3f;
+
 
     public Vector3 CalculateForceKnockBack(float influence, float totalDamage, float launchAngle, Rigidbody rb)
-    {        
+    {
         float minForce = rb.mass * minKnockBackAcceleration;
-        float damageForce = minForce + influence * (Mathf.Pow(totalDamage, 2.75f) / rb.mass);
+        float damageForce = minForce + influence * (Mathf.Pow(totalDamage, power) / rb.mass);
+        Debug.Log("LaunchForce: " + damageForce);
 
         float xLaunch = Mathf.Cos(launchAngle * Mathf.Deg2Rad);
         float yLaunch = Mathf.Sin(launchAngle * Mathf.Deg2Rad);

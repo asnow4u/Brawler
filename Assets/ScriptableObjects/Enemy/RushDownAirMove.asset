@@ -9,14 +9,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e365b02dcde51004da1f1dcd92c6880e, type: 3}
-  m_Name: RushDownMove
+  m_Script: {fileID: 11500000, guid: a8cfbdf80a5a4e84a8666be5b4131b3d, type: 3}
+  m_Name: RushDownAirMove
   m_EditorClassIdentifier: 
-  Animation: {fileID: 7400000, guid: 321cfbc3cd600fb48bc8bca7bc059301, type: 2}
+  Animation: {fileID: 7400000, guid: 8dad9e7a8dd690249968190d0e7d4fce, type: 2}
   AnimationSpeedMultiplier: 0
-  Type: 1
+  Type: 2
   Triggers: []
-  GroundedMaxXVelocity: 10
-  GroundedXAcceleration: 5
-  GroundedXDeceleration: 50
-  GroundedAttackXDecleration: 50
+  AerialMaxXVelocity: 10
+  AerialXAcceleration: 30
+  AerialXDeceleration: 30

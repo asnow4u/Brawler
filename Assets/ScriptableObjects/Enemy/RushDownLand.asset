@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: RushDownLand
   m_EditorClassIdentifier: 
   Animation: {fileID: 7400000, guid: dd3158a7439ed0949bf4ffb6033099d2, type: 2}
-  Type: 4
+  AnimationSpeedMultiplier: 0
+  Type: 8
   Triggers: []

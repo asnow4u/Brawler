@@ -126,7 +126,7 @@ namespace Game.SceneObjects.Animation
         /// </summary>
         private void SetupHitStunMixer()
         {
-            hitAnimationMixer = AnimationMixerPlayable.Create(animationGraph, 2);
+            hitAnimationMixer = AnimationMixerPlayable.Create(animationGraph, 1);
             stateAnimationMixer.ConnectInput((int)ActionState.HitStun, hitAnimationMixer, 0);
         }
 
@@ -192,9 +192,12 @@ namespace Game.SceneObjects.Animation
         /// <summary>
         /// Set hitstun animations to use
         /// </summary>
-        public void SetHitStunAnimations()
+        public void SetHitStunAnimations(AnimationClip hitStunAnimation)
         {
-            throw new NotImplementedException();
+            AnimationClipPlayable hitstunPlayable = AnimationClipPlayable.Create(animationGraph, hitStunAnimation);
+            hitAnimationMixer.ConnectInput(0, hitstunPlayable, 0);
+
+            hitAnimationMixer.SetInputWeight(0, 1);
         }
 
         #endregion
@@ -224,7 +227,7 @@ namespace Game.SceneObjects.Animation
             ResetInputWeights(idleAnimationMixer);
             ResetInputWeights(movementAnimationMixer);
             ResetInputWeights(attackAnimationMixer);
-            ResetInputWeights(hitAnimationMixer);
+            //ResetInputWeights(hitAnimationMixer);
 
             stateAnimationMixer.SetInputWeight(0, 1);
 

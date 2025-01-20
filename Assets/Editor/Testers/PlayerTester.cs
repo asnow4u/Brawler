@@ -17,37 +17,29 @@ public class PlayerTester : Editor
         
         DrawDefaultInspector();
 
-        GUILayout.Label("-------------Test-------------");
+        
 
-        if (GUILayout.Button("Cancel Movement And Jump"))
+        if (GUILayout.Button("Turn Around"))
         {
-            CancelMovementAndJumpTest(sceneObject);
+            sceneObject.TurnAround();
         }
 
-
-        if (GUILayout.Button("Cancel Movement And Attack"))
-        {
-            CancelMovementAndAttackTest(sceneObject);
-        }
-
-        if (GUILayout.Button("Jump and Movement Bug"))
-            JumpMovementBug(sceneObject);
-
-
-        if (GUILayout.Button("Perform UpTilt Attack"))
+        //Attack
+        GUILayout.Label("---Attack---");
+        if (GUILayout.Button("Perform Up Attack"))
         {
             sceneObject.AttackInputHandler.PerformUpAttack();
         }
 
-        if (GUILayout.Button("Perform ForwardTilt Attack"))
+        if (GUILayout.Button("Perform Forward Attack"))
         {
             sceneObject.AttackInputHandler.PerformRightAttack();
         }
 
-        if (GUILayout.Button("Perform DownTilt Attack"))
+        if (GUILayout.Button("Perform Down Attack"))
         {
             sceneObject.AttackInputHandler.PerformDownAttack();
-        }
+        }       
     }
 
 

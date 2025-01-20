@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Game.SceneObjects.Damage
 {
-    public enum HitStunState { None, StartUp, Base, Ending }
+    public enum HitStunState { None, Start, Launch, Deccelerate, End }
 
 
     public class DamageHandler : SceneObjectHandler, ITakeDamage
@@ -12,7 +12,7 @@ namespace Game.SceneObjects.Damage
         [SerializeField] protected float damageTaken;
 
         [Header("Knockback")]
-        private KnockbackCalculator knockbackHandler;
+        [SerializeField]private KnockbackCalculator knockbackHandler;
 
         [Header("HitStun")]
         [SerializeField] private HitStunState hitStunState;
@@ -30,6 +30,14 @@ namespace Game.SceneObjects.Damage
         private KillZone[] killZones;
 
         private Collider collider => GetComponent<Collider>();
+
+
+        #region Getters
+
+        public HitStunState HitStunState => hitStunState;
+        public float HitStunTimer => hitStunTimer;
+
+        #endregion
 
 
         #region Initialize
@@ -107,25 +115,24 @@ namespace Game.SceneObjects.Damage
 
 
         /// <summary>
-        /// Hit by an attack, apply damage and store force
+        /// Handle being hit by an attack. <br/>
+        /// UI to be displayed on <paramref name="attackPoint"/> <br/>
+        /// Damage and Launch force calculated and applied based on <paramref name="influence"/>, <paramref name="attackDamage"/> and <paramref name="launchAngle"/>
         /// </summary>
-        /// <param name="attackType"></param>
-        /// <param name="attackDamage"></param>
-        /// <param name="launchAngle"></param>
         public void HitByAttack(float influence, Vector3 attackPoint, float attackDamage, float launchAngle)
         {
             //Damage bubble                    
             UIFactory.Instance.SpawnDamageBubble(attackPoint, attackDamage);
 
             //Damage
-            AddDamage(attackDamage);
+            //AddDamage(attackDamage);
 
             //Launch knockback
-            Vector3 launchForce = knockbackHandler.CalculateForceKnockBack(influence, damageTaken, launchAngle, sceneObject.Rb);
+            Vector3 launchForce = 2 * knockbackHandler.CalculateForceKnockBack(influence, damageTaken, launchAngle, sceneObject.Rb);
             ApplyLaunchForce(launchForce);
-
+           
             //HitStun
-            ApplyHitStun(launchForce.magnitude);
+            ApplyHitStun(launchForce);
         }
 
 
@@ -155,36 +162,19 @@ namespace Game.SceneObjects.Damage
         #region HitStun
 
         /// <summary>
-        /// Change ActionState and start timer
+        /// Calculate <see cref="hitStunTimer"/> based on the <paramref name="launchForce"/>
         /// </summary>
-        /// <param name="launchForce"></param>
-        private void ApplyHitStun(float launchForceMagnitude)
-        {
+        private void ApplyHitStun(Vector3 launchForce)
+        {            
             if (hitStunState == HitStunState.None)
             {
-                //TODO: This does not incorperate different weapons yet
                 sceneObject.ActionStateHandler.ChangeState(ActionState.HitStun);
-
-                SetUpKillZone();
-
-                //TODO: Determine equation for hitstun time
-                hitStunTimer = launchForceMagnitude / 1500;
-
-                hitStunState = HitStunState.Base;
+                hitStunState = HitStunState.Start;
             }
-
-            else
-            {
-                //TODO: Determine equation for hitstun time
-                hitStunTimer = launchForceMagnitude / 1500;
-            }
-        }
-
-
-        private void EndHitStun()
-        {
-            hitStunState = HitStunState.None;
-            DestroyKillZones();
+            
+            //NOTE: Hitstun based on 80% of time to apex
+            hitStunTimer = 0.3f * ((-launchForce.y / sceneObject.CoreRigidBody.mass) / Physics.gravity.y);
+            Debug.Log("HitStunTimer: " + hitStunTimer);
         }
 
 
@@ -195,33 +185,47 @@ namespace Game.SceneObjects.Damage
         {
             if (hitStunState != HitStunState.None)
             {
-                switch (hitStunState)
+                //Bounce
+                //PerdictHitStunBounce();
+
+                if (hitStunState == HitStunState.Start)
+                { 
+                    //SetUpKillZone();
+
+                    //Ragdoll
+                    //if (ragdoll != null)
+                    //{
+                    //    if (!ragdoll.enabled && sceneObject.CoreRigidBody.linearVelocity.magnitude > 10)
+                    //        EnableRagdoll();
+
+                    //    if (hitStunTimer < ragdoll.ExitTransitionTime)
+                    //        DisableRagdoll();
+                    //} 
+
+                    hitStunState = HitStunState.Launch;
+                }
+
+                if (hitStunState == HitStunState.Launch)
                 {
-                    case HitStunState.Base:
+                    if (hitStunTimer < 1f)
+                        hitStunState = HitStunState.Deccelerate;
+                }
 
-                        //Bounce
-                        PerdictHitStunBounce();
+                if (hitStunState == HitStunState.Deccelerate)
+                {
+                    if (hitStunTimer < 0)
+                        hitStunState = HitStunState.End;
+                }
 
-                        //Ragdoll
-                        if (ragdoll != null)
-                        {
-                            if (!ragdoll.enabled && sceneObject.CoreRigidBody.linearVelocity.magnitude > 10)
-                                EnableRagdoll();
+                if (hitStunState == HitStunState.End)
+                {
+                    DebugSphereFactory.SpawnDebugSphere(sceneObject.transform.position);
 
-                            if (hitStunTimer < ragdoll.ExitTransitionTime)
-                                DisableRagdoll();
-                        }
+                    DestroyKillZones();
+                    hitStunState = HitStunState.None;
+                    sceneObject.ActionStateHandler.ChangeState(ActionState.Idle);
 
-                        //Timer
-                        if (hitStunTimer < 0)
-                            hitStunState = HitStunState.Ending;
-
-                        break;
-
-                    case HitStunState.Ending:
-
-                        EndHitStun();
-                        break;
+                    DebugSphereFactory.SpawnDebugSphere(sceneObject.transform.position);
                 }
 
                 hitStunTimer -= Time.deltaTime;
