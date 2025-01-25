@@ -3,16 +3,13 @@ using UnityEngine;
 
 namespace Game.SceneObjects.Damage
 {
-    public enum HitStunState { None, Start, Launch, Deccelerate, End }
+    public enum HitStunState { None, Start, Launch, End }
 
 
     public class DamageHandler : SceneObjectHandler, ITakeDamage
     {
         [Header("Damage")]
         [SerializeField] protected float damageTaken;
-
-        [Header("Knockback")]
-        [SerializeField]private KnockbackCalculator knockbackHandler;
 
         [Header("HitStun")]
         [SerializeField] private HitStunState hitStunState;
@@ -25,6 +22,9 @@ namespace Game.SceneObjects.Damage
         [Header("Bounce")]
         [SerializeField] private float bounceDegrade = 0.9f;
 
+        //Calculators
+        private KnockbackCalculator knockbackHandler;
+        private HitStunCalculator hitStunCalculator;
 
         //KillZones
         private KillZone[] killZones;
@@ -47,6 +47,7 @@ namespace Game.SceneObjects.Damage
             base.Setup();
 
             knockbackHandler = new KnockbackCalculator();
+            hitStunCalculator = new HitStunCalculator();
 
             if (ragdollRoot != null)
             {
@@ -128,7 +129,7 @@ namespace Game.SceneObjects.Damage
             //AddDamage(attackDamage);
 
             //Launch knockback
-            Vector3 launchForce = 2 * knockbackHandler.CalculateForceKnockBack(influence, damageTaken, launchAngle, sceneObject.Rb);
+            Vector3 launchForce = knockbackHandler.CalculateForceKnockBack(influence, damageTaken, launchAngle, sceneObject.Rb);
             ApplyLaunchForce(launchForce);
            
             //HitStun
@@ -161,6 +162,10 @@ namespace Game.SceneObjects.Damage
 
         #region HitStun
 
+        [Range(0, 1)]
+        public float X = 0.15f;
+        public bool UseX;
+
         /// <summary>
         /// Calculate <see cref="hitStunTimer"/> based on the <paramref name="launchForce"/>
         /// </summary>
@@ -171,10 +176,11 @@ namespace Game.SceneObjects.Damage
                 sceneObject.ActionStateHandler.ChangeState(ActionState.HitStun);
                 hitStunState = HitStunState.Start;
             }
-            
-            //NOTE: Hitstun based on 80% of time to apex
-            hitStunTimer = 0.3f * ((-launchForce.y / sceneObject.CoreRigidBody.mass) / Physics.gravity.y);
-            Debug.Log("HitStunTimer: " + hitStunTimer);
+
+            //hitStunTimer = X * ((-launchForce.y / sceneObject.CoreRigidBody.mass) / Physics.gravity.y);
+
+            //Debug.Log("Force: " + launchForce.magnitude);
+            hitStunTimer = hitStunCalculator.CalculateHitStunTime(launchForce, sceneObject.Rb.mass);
         }
 
 
@@ -189,7 +195,7 @@ namespace Game.SceneObjects.Damage
                 //PerdictHitStunBounce();
 
                 if (hitStunState == HitStunState.Start)
-                { 
+                {
                     //SetUpKillZone();
 
                     //Ragdoll
@@ -207,15 +213,10 @@ namespace Game.SceneObjects.Damage
 
                 if (hitStunState == HitStunState.Launch)
                 {
-                    if (hitStunTimer < 1f)
-                        hitStunState = HitStunState.Deccelerate;
-                }
-
-                if (hitStunState == HitStunState.Deccelerate)
-                {
                     if (hitStunTimer < 0)
                         hitStunState = HitStunState.End;
                 }
+
 
                 if (hitStunState == HitStunState.End)
                 {
@@ -224,11 +225,9 @@ namespace Game.SceneObjects.Damage
                     DestroyKillZones();
                     hitStunState = HitStunState.None;
                     sceneObject.ActionStateHandler.ChangeState(ActionState.Idle);
-
-                    DebugSphereFactory.SpawnDebugSphere(sceneObject.transform.position);
                 }
 
-                hitStunTimer -= Time.deltaTime;
+                hitStunTimer -= Time.fixedDeltaTime;
             }
         }
 

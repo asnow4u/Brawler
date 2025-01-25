@@ -363,9 +363,9 @@ namespace Game.SceneObjects.Movement
         {
             if (sceneObject.ActionStateHandler.CurActionState == ActionState.HitStun)
             {
-                if (sceneObject.DamageHandler.HitStunState == HitStunState.Deccelerate)
+                if (sceneObject.DamageHandler.HitStunState == HitStunState.Launch)
                 {
-                    float desiredVelocity = 0;
+                    float desiredVelocity = curMovementCollection.GetAerialMaxVelocity();
 
                     float deltaXVelocity = desiredVelocity - sceneObject.CoreRigidBody.linearVelocity.x;
                     float declerationXValue = deltaXVelocity / sceneObject.DamageHandler.HitStunTimer;
@@ -492,7 +492,6 @@ namespace Game.SceneObjects.Movement
             {            
                 Vector3 dragForce = curVelocity.normalized * Mathf.Abs(decelerationValue);
                 sceneObject.CoreRigidBody.linearVelocity -= dragForce * Time.fixedDeltaTime;
-                Debug.Log("Decelerating To: " + sceneObject.CoreRigidBody.linearVelocity);
             }
 
 

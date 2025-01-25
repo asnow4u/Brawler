@@ -9,7 +9,7 @@ namespace Game.SceneObjects
 
             if (CurGroundedState == GroundedState.Airborn)
             {
-                //MovementInputHandler.PerformMovement(new UnityEngine.Vector2(-0.5f, 0));
+                MovementInputHandler.PerformMovement(new UnityEngine.Vector2(0, 0));
             }
 
             else
