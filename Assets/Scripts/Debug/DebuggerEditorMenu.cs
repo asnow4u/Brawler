@@ -13,13 +13,24 @@ public class DebuggerEditorMenu : EditorWindow
     private DebuggerMenuType selectedType = DebuggerMenuType.Nothing;
 
     //Damage Menu
-    [SerializeField] private List<SceneObject> sceneObjects = new List<SceneObject>();
-    private UnityEngine.Object targetObject;
-    private float launchInfluence;
-    private float launchDamage;
-    private float launchAngle;
-    
-    
+    //[SerializeField] private List<SceneObject> sceneObjects = new List<SceneObject>();
+    //private UnityEngine.Object targetObject;
+    //private float launchInfluence;
+    //private float launchDamage;
+    //private float launchAngle;
+
+    [Serializable]
+    private class SceneObjectData
+    {
+        public UnityEngine.Object TargetObject;
+        public float LaunchInfluence;
+        public float LaunchDamage;
+        public float LaunchAngle;
+    }
+
+    [SerializeField] private List<SceneObjectData> sceneObjectsData = new List<SceneObjectData>();
+
+
     [MenuItem("Debug/DebugMenu")]
     static void DisplayDebuggerMenu()
     {
@@ -77,23 +88,41 @@ public class DebuggerEditorMenu : EditorWindow
         GUILayout.BeginVertical("Damage", "window");
         GUILayout.Space(10f);
 
-        //Return to "none" when object is destroyed
-        if (targetObject == null)
-            targetObject = null;
+        if (GUILayout.Button("Add SceneObject"))
+        {
+            sceneObjectsData.Add(new SceneObjectData());
+        }
 
-        targetObject = EditorGUILayout.ObjectField(targetObject, typeof(SceneObject), true);
-        launchInfluence = EditorGUILayout.Slider("Influence", launchInfluence, 0, 1f);
-        launchDamage = EditorGUILayout.Slider("Damage: ", launchDamage, 0, 100f);
-        launchAngle = EditorGUILayout.Slider("Angle: ", launchAngle, 0, 360f);
+        for (int i = 0; i < sceneObjectsData.Count; i++)
+        {
+            var data = sceneObjectsData[i];
 
-        GUILayout.Space(10f);
+            GUILayout.BeginVertical("SceneObject " + (i + 1), "window");
+            GUILayout.Space(10f);
+
+            data.TargetObject = EditorGUILayout.ObjectField(data.TargetObject, typeof(SceneObject), true);
+            data.LaunchInfluence = EditorGUILayout.Slider("Influence", data.LaunchInfluence, 0, 1f);
+            data.LaunchDamage = EditorGUILayout.Slider("Damage", data.LaunchDamage, 0, 100f);
+            data.LaunchAngle = EditorGUILayout.Slider("Angle", data.LaunchAngle, 0, 360f);
+
+            if (GUILayout.Button("Remove SceneObject"))
+            {
+                sceneObjectsData.RemoveAt(i);
+                i--; // Adjust index after removal
+            }
+
+            GUILayout.EndVertical();
+            GUILayout.Space(10f);
+        }
+
         if (GUILayout.Button("Apply Damage To SceneObjects"))
         {
-            if (targetObject is SceneObject targetSceneObject)
+            foreach (var data in sceneObjectsData)
             {
-                if (targetSceneObject.TryGetComponent(out ITakeDamage damageHandler))
+                if (data.TargetObject is SceneObject targetSceneObject)
                 {
-                    damageHandler.HitByAttack(launchInfluence, targetSceneObject.transform.position, launchDamage, launchAngle);
+                    if (targetSceneObject.TryGetComponent(out ITakeDamage damageHandler))
+                        damageHandler.HitByAttack(data.LaunchInfluence, targetSceneObject.transform.position, data.LaunchDamage, data.LaunchAngle);
                 }
             }
         }
