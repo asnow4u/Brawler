@@ -162,10 +162,6 @@ namespace Game.SceneObjects.Damage
 
         #region HitStun
 
-        [Range(0, 1)]
-        public float X = 0.15f;
-        public bool UseX;
-
         /// <summary>
         /// Calculate <see cref="hitStunTimer"/> based on the <paramref name="launchForce"/>
         /// </summary>
@@ -177,9 +173,6 @@ namespace Game.SceneObjects.Damage
                 hitStunState = HitStunState.Start;
             }
 
-            //hitStunTimer = X * ((-launchForce.y / sceneObject.CoreRigidBody.mass) / Physics.gravity.y);
-
-            //Debug.Log("Force: " + launchForce.magnitude);
             hitStunTimer = hitStunCalculator.CalculateHitStunTime(launchForce, sceneObject.Rb.mass);
         }
 
@@ -191,6 +184,8 @@ namespace Game.SceneObjects.Damage
         {
             if (hitStunState != HitStunState.None)
             {
+                hitStunTimer -= Time.fixedDeltaTime;
+
                 //Bounce
                 //PerdictHitStunBounce();
 
@@ -225,9 +220,7 @@ namespace Game.SceneObjects.Damage
                     DestroyKillZones();
                     hitStunState = HitStunState.None;
                     sceneObject.ActionStateHandler.ChangeState(ActionState.Idle);
-                }
-
-                hitStunTimer -= Time.fixedDeltaTime;
+                }               
             }
         }
 

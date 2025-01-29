@@ -7,9 +7,14 @@ namespace Game.SceneObjects.Movement
     {
         [Header("Velocity Limit")]
         public float AerialMaxXVelocity;
+        public float AerialMaxYVelocity;
 
-        [Header("Arial Movement")]
+        [Header("Arial Acceleration")]
         public float AerialXAcceleration;
+        public float AerialYAcceleration;
+
+        [Header("Arial Decceleration")]
         public float AerialXDeceleration;
+        public float AerialYDeceleration;
     }
 }

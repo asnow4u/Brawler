@@ -17,5 +17,8 @@ MonoBehaviour:
   Type: 2
   Triggers: []
   AerialMaxXVelocity: 10
+  AerialMaxYVelocity: 10
   AerialXAcceleration: 30
+  AerialYAcceleration: 30
   AerialXDeceleration: 30
+  AerialYDeceleration: 30

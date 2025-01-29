@@ -39,6 +39,12 @@ namespace Game.SceneObjects.Movement
 
         [SerializeField] private float jumpInfluence;
 
+        //HitStun Properties
+        [Header("HitStun")]
+        [Tooltip("Target percentage of maxVelocity")]
+        [Range(0, 1)]
+        [SerializeField] private float hitStunAerialMaxVelocityTarget;
+
         //Events
         public event Action<MovementCollection> MovementCollectionChangedEvent;
         public event Action<MovementType> MoveStateChangedEvent;
@@ -316,7 +322,7 @@ namespace Game.SceneObjects.Movement
                 //Air Movement
                 else
                 {
-                    UpdateAirialMovement(curMovementCollection);
+                    UpdateAerialMovement(curMovementCollection.AirMoveData);
 
                     if (IsAgainstArialWall())
                         TrySetCurrentMoveState(MovementType.WallSlide);
@@ -324,6 +330,8 @@ namespace Game.SceneObjects.Movement
             }
         }
 
+
+        #region Grounded Movement
 
         /// <summary>
         /// Update movement on the ground
@@ -357,49 +365,6 @@ namespace Game.SceneObjects.Movement
 
 
         /// <summary>
-        /// Update movement in the air
-        /// </summary>
-        private void UpdateAirialMovement(MovementCollection curMovementCollection)
-        {
-            if (sceneObject.ActionStateHandler.CurActionState == ActionState.HitStun)
-            {
-                if (sceneObject.DamageHandler.HitStunState == HitStunState.Launch)
-                {
-                    float desiredVelocity = curMovementCollection.GetAerialMaxVelocity();
-
-                    float deltaXVelocity = desiredVelocity - sceneObject.CoreRigidBody.linearVelocity.x;
-                    float declerationXValue = deltaXVelocity / sceneObject.DamageHandler.HitStunTimer;
-
-                    float deltaYVelocity = desiredVelocity - sceneObject.CoreRigidBody.linearVelocity.y;
-                    float declerationYValue = deltaYVelocity / sceneObject.DamageHandler.HitStunTimer;
-
-                    float decelerationValue = new Vector2(declerationXValue, declerationYValue).magnitude;
-
-                    Debug.Log("Decelerating Value: " + decelerationValue);
-                    UpdateAerialDeceleration(decelerationValue, desiredVelocity);
-                }
-            }
-
-            else if (horizontalInfluence != 0)
-            {
-                if (curMoveState == MovementType.Null || curMoveState == MovementType.WallSlide)
-                    TrySetCurrentMoveState(MovementType.AirMove);
-
-                else if (curMoveState == MovementType.AirMove ||
-                    curMoveState == MovementType.AirJump)
-                {
-                    UpdateAirAcceleration(curMovementCollection.GetAerialXAcceleration(), curMovementCollection.GetAerialMaxVelocity());
-                }
-            }
-
-            else
-                UpdateAerialDeceleration(curMovementCollection.GetAerialXDeceleration(), curMovementCollection.GetAerialMaxVelocity());
-        }
-
-
-        #region Acceleration   
-
-        /// <summary>
         /// Accelerate on the ground by <paramref name="acceleration"/> value to a max <paramref name="maxVelocity"/>
         /// </summary>
         private void UpdateGroundAcceleration(float acceleration, float maxVelocity)
@@ -422,36 +387,6 @@ namespace Game.SceneObjects.Movement
             }
         }
 
-
-        /// <summary>
-        /// Accelerate throught the air by <paramref name="acceleration"/> value to a max <paramref name="maxVelocity"/> 
-        /// </summary>
-        private void UpdateAirAcceleration(float acceleration, float maxVelocity)
-        {
-            //Cap Velocity based on horizontal influence
-            float targetXVelocity = maxVelocity * horizontalInfluence;
-
-            sceneObject.CoreRigidBody.linearVelocity += Vector3.right * horizontalInfluence * acceleration * Time.fixedDeltaTime;
-
-            //Cant exceed target velocity
-            if ((horizontalInfluence > 0 && sceneObject.CoreRigidBody.linearVelocity.x > targetXVelocity) ||
-                (horizontalInfluence < 0 && sceneObject.CoreRigidBody.linearVelocity.x < targetXVelocity))
-            {
-                sceneObject.CoreRigidBody.linearVelocity = new Vector3(targetXVelocity, sceneObject.CoreRigidBody.linearVelocity.y, sceneObject.CoreRigidBody.linearVelocity.z);
-            }
-
-            //TODO: Want to apply velocity change than check if its over for more consistant values
-            //Vertical Movement
-            if (verticalInfluence < 0f && sceneObject.CoreRigidBody.linearVelocity.y > -MaxYVelocity)
-            {
-                sceneObject.CoreRigidBody.linearVelocity += transform.up * verticalInfluence * fastFallAcceleration * Time.fixedDeltaTime;
-            }
-        }
-
-        #endregion
-
-
-        #region Decceleration
 
         /// <summary>
         /// Update velocity while on the ground to slow down by <paramref name="deccelerationValue"/>
@@ -480,39 +415,223 @@ namespace Game.SceneObjects.Movement
             }
         }
 
+        #endregion
+
+
+        #region Aerial Movement
 
         /// <summary>
-        /// Update velocity in the air to slow down by <paramref name="decelerationValue"/>
+        /// Update movement in the air
         /// </summary>
-        private void UpdateAerialDeceleration(float decelerationValue, float velocityMagnitude)
+        private void UpdateAerialMovement(AirMoveData airMoveData)
         {
-            Vector3 curVelocity = sceneObject.CoreRigidBody.linearVelocity;
+            UpdateAerialXMovement(airMoveData);
+            UpdateAerialYMovement(airMoveData);
+        }
+
+
+        /// <summary>
+        /// Update velocity in the air on the X axis
+        /// </summary>
+        private void UpdateAerialXMovement(AirMoveData airMoveData)
+        {
+            //In Hitstun
+            if (sceneObject.ActionStateHandler.CurActionState == ActionState.HitStun)
+            {                
+                float targetVelocity = airMoveData.AerialMaxXVelocity * hitStunAerialMaxVelocityTarget;
+
+                if (Mathf.Abs(sceneObject.CoreRigidBody.linearVelocity.x) > targetVelocity)
+                {
+                    //NOTE: Calculating the needed time to deccelerate towards the max velocity and waiting till that time to start deccelerating
+                    float velocityDiff = targetVelocity - Mathf.Abs(sceneObject.CoreRigidBody.linearVelocity.x);
+                    float deccelerationTime = velocityDiff / -airMoveData.AerialXDeceleration;
+
+                    if (deccelerationTime <= sceneObject.DamageHandler.HitStunTimer)
+                        AerialXDeccelerate();                       
+                }
+            }
             
-            if (curVelocity.magnitude > velocityMagnitude)
-            {            
-                Vector3 dragForce = curVelocity.normalized * Mathf.Abs(decelerationValue);
-                sceneObject.CoreRigidBody.linearVelocity -= dragForce * Time.fixedDeltaTime;
+            else 
+            {
+                if (horizontalInfluence != 0)
+                {
+                    if (curMoveState == MovementType.Null || curMoveState == MovementType.WallSlide)
+                        TrySetCurrentMoveState(MovementType.AirMove);
+
+                    if (CurMoveState == MovementType.AirMove)
+                        AerialXAccelerate();
+                }
+
+                if (Mathf.Abs(sceneObject.CoreRigidBody.linearVelocity.x) > airMoveData.AerialMaxXVelocity)
+                    AerialXDeccelerate();
+            }
+        }
+
+
+        /// <summary>
+        /// Accelerate in the air on the X axis
+        /// </summary>
+        private void AerialXAccelerate()
+        {
+            if (TryGetCurrentMovementCollection(out MovementCollection collection))
+            {
+                //Positive Acceleration
+                if (horizontalInfluence > 0)
+                {
+                    float acceleratedXValue = sceneObject.CoreRigidBody.linearVelocity.x + (collection.GetAerialXAcceleration() * Time.fixedDeltaTime);
+
+                    if (acceleratedXValue > collection.GetAerialMaxXVelocity())
+                        acceleratedXValue = collection.GetAerialMaxXVelocity();
+
+                    sceneObject.CoreRigidBody.linearVelocity = new Vector3(acceleratedXValue, sceneObject.CoreRigidBody.linearVelocity.y, sceneObject.CoreRigidBody.linearVelocity.z);
+                }
+
+                //Negative Acceleration
+                else if (horizontalInfluence < 0)
+                {
+                    float acceleratedXValue = sceneObject.CoreRigidBody.linearVelocity.x - (collection.GetAerialXAcceleration() * Time.fixedDeltaTime);
+
+                    if (acceleratedXValue < -collection.GetAerialMaxXVelocity())
+                        acceleratedXValue = -collection.GetAerialMaxXVelocity();    
+
+                    sceneObject.CoreRigidBody.linearVelocity = new Vector3(acceleratedXValue, sceneObject.CoreRigidBody.linearVelocity.y, sceneObject.CoreRigidBody.linearVelocity.z);
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Deccelerate in the air on the X axis 
+        /// </summary>
+        private void AerialXDeccelerate()
+        {
+            if (TryGetCurrentMovementCollection(out MovementCollection collection))
+            {
+                //Positive Decceleration
+                if (sceneObject.CoreRigidBody.linearVelocity.x > 0)
+                {
+                    float decceleratedXValue = sceneObject.CoreRigidBody.linearVelocity.x - (collection.GetAerialXDeceleration() * Time.fixedDeltaTime);
+
+                    if (decceleratedXValue < 0)
+                        decceleratedXValue = 0;
+
+                    sceneObject.CoreRigidBody.linearVelocity = new Vector3(decceleratedXValue, sceneObject.CoreRigidBody.linearVelocity.y, sceneObject.CoreRigidBody.linearVelocity.z);
+                }
+
+                //Negative Decceleration
+                else if (sceneObject.CoreRigidBody.linearVelocity.x < 0)
+                {
+                    float decceleratedXValue = sceneObject.CoreRigidBody.linearVelocity.x + (collection.GetAerialXDeceleration() * Time.fixedDeltaTime);
+
+                    if (decceleratedXValue > 0)
+                        decceleratedXValue = 0;
+
+                    sceneObject.CoreRigidBody.linearVelocity = new Vector3(decceleratedXValue, sceneObject.CoreRigidBody.linearVelocity.y, sceneObject.CoreRigidBody.linearVelocity.z);
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Update velocity in the air on the Y axis
+        /// </summary>
+        private void UpdateAerialYMovement(AirMoveData airMoveData)
+        {
+            //In Hitstun
+            if (sceneObject.ActionStateHandler.CurActionState == ActionState.HitStun)
+            {
+                float targetVelocity = airMoveData.AerialMaxYVelocity * hitStunAerialMaxVelocityTarget;                
+
+                if (Mathf.Abs(sceneObject.CoreRigidBody.linearVelocity.x) > targetVelocity)
+                {
+                    //NOTE: Calculating the needed time to deccelerate towards the max velocity and waiting till that time to start deccelerating
+                    float velocityDiff = targetVelocity - Mathf.Abs(sceneObject.CoreRigidBody.linearVelocity.x);
+                    float deccelerationTime = velocityDiff / -GetDeccelerationRateWithGravity();
+
+                    if (deccelerationTime <= sceneObject.DamageHandler.HitStunTimer)
+                        AerialYDeccelerate();
+                }
             }
 
+            else
+            {
+                if (verticalInfluence != 0)
+                {
+                    //TODO: Implement Fast Fall
+                    //AerialYAccelerate();
+                }
+
+                if (Mathf.Abs(sceneObject.CoreRigidBody.linearVelocity.y) > airMoveData.AerialMaxYVelocity)
+                    AerialYDeccelerate();
+            }
+        }
 
 
 
+        /// <returns>
+        /// Return the Y axis decceleration rate with gravity applied <br/>
+        /// The decceleration rate from the collection is what the sceneObject should deccelerate by so adjustments have to be made to account for gravity
+        /// </returns>
+        /// <exception cref="NullReferenceException"></exception>
+        private float GetDeccelerationRateWithGravity()
+        {
+            if (TryGetCurrentMovementCollection(out MovementCollection collection))
+            {
+                if (sceneObject.CoreRigidBody.linearVelocity.y > 0)
+                    return collection.AirMoveData.AerialYDeceleration - Physics.gravity.y;
+
+                else if (sceneObject.CoreRigidBody.linearVelocity.y < 0)
+                    return collection.AirMoveData.AerialYDeceleration + Physics.gravity.y;
+            }
+
+            throw new NullReferenceException("Movement Collection not found");
+        }
 
 
+        /// <summary>
+        /// Accelerate in the air on the Y axis 
+        /// </summary>
+        private void AerialYAccelerate()
+        {
+            if (TryGetCurrentMovementCollection(out MovementCollection collection))
+            {
+                if (verticalInfluence < 0)
+                {
+                    //TODO: Implement with fast fall
+                }
+            }
+        }
 
 
+        /// <summary>
+        /// Deccelerate in the air on the Y axis 
+        /// </summary>
+        private void AerialYDeccelerate()
+        {
+            if (TryGetCurrentMovementCollection(out MovementCollection collection))
+            {
+                //Positive Decceleration
+                if (sceneObject.CoreRigidBody.linearVelocity.y > 0)
+                {
+                    float decceleratedYValue = sceneObject.CoreRigidBody.linearVelocity.y - (GetDeccelerationRateWithGravity() * Time.fixedDeltaTime);
 
+                    if (decceleratedYValue < 0)
+                        decceleratedYValue = 0;
 
+                    sceneObject.CoreRigidBody.linearVelocity = new Vector3(sceneObject.CoreRigidBody.linearVelocity.x, decceleratedYValue, sceneObject.CoreRigidBody.linearVelocity.z);
+                }
 
-            //if (horizontalInfluence > 0)
-            //    targetXVelocity *= horizontalInfluence;
+                //Negative Decceleration
+                else if (sceneObject.CoreRigidBody.linearVelocity.y < 0)
+                {
+                    float decceleratedYValue = sceneObject.CoreRigidBody.linearVelocity.y + (GetDeccelerationRateWithGravity() * Time.fixedDeltaTime);
 
-            //TODO: Should check if suppasing 0 (Ex: pos value going to negative)
-            //if (sceneObject.CoreRigidBody.linearVelocity.x > targetXVelocity)
-            //    sceneObject.CoreRigidBody.linearVelocity -= Vector3.right * decelerationValue * Time.fixedDeltaTime;
+                    if (decceleratedYValue > 0)
+                        decceleratedYValue = 0;
 
-            //else if (sceneObject.CoreRigidBody.linearVelocity.x < -targetXVelocity)
-            //    sceneObject.CoreRigidBody.linearVelocity += Vector3.right * decelerationValue * Time.fixedDeltaTime;
+                    sceneObject.CoreRigidBody.linearVelocity = new Vector3(sceneObject.CoreRigidBody.linearVelocity.x, decceleratedYValue, sceneObject.CoreRigidBody.linearVelocity.z);
+                }
+            }
         }
 
         #endregion
