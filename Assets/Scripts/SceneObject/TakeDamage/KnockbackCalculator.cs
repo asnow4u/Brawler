@@ -4,13 +4,13 @@ using UnityEngine;
 
 public class KnockbackCalculator
 {
-    const float minKnockBackAcceleration = 7f;
-    const float power = 3f;
+    const float minKnockBackAcceleration = 10f;
+    const float exGrowth = 2.8f;
 
-    public Vector3 CalculateForceKnockBack(float influence, float totalDamage, float launchAngle, Rigidbody rb)
+    public Vector3 CalculateKnockbackVelocity(float influence, float totalDamage, float launchAngle, Rigidbody rb)
     {
         float minForce = rb.mass * minKnockBackAcceleration;
-        float damageForce = minForce + influence * (Mathf.Pow(totalDamage, power) / rb.mass);
+        float damageForce = minForce + influence * (Mathf.Pow(totalDamage, exGrowth) / rb.mass);
 
         float xLaunch = Mathf.Cos(launchAngle * Mathf.Deg2Rad);
         float yLaunch = Mathf.Sin(launchAngle * Mathf.Deg2Rad);
@@ -19,7 +19,7 @@ public class KnockbackCalculator
         if (CheckForImmediateBounce(initalLaunchDirection, rb, out Vector3 bouncedDirection))
             initalLaunchDirection = bouncedDirection;
 
-        return initalLaunchDirection * damageForce;
+        return initalLaunchDirection * damageForce / rb.mass;
     }
 
     

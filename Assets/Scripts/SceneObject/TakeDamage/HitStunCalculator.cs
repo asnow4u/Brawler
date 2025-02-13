@@ -28,9 +28,9 @@ public class HitStunCalculator
         hitStunPercentSet.Add(new HitStunPercentData(0, 700, 1));
         hitStunPercentSet.Add(new HitStunPercentData(10, 710, 0.9f));
         hitStunPercentSet.Add(new HitStunPercentData(20, 780, 0.8f));
-        hitStunPercentSet.Add(new HitStunPercentData(30, 970, 0.7f));
+        hitStunPercentSet.Add(new HitStunPercentData(30, 970, 0.9f));
         hitStunPercentSet.Add(new HitStunPercentData(40, 1340, 0.6f));
-        hitStunPercentSet.Add(new HitStunPercentData(50, 1950, 0.5f));
+        hitStunPercentSet.Add(new HitStunPercentData(50, 1950, 0.7f));
         hitStunPercentSet.Add(new HitStunPercentData(60, 2860, 0.32f));
         hitStunPercentSet.Add(new HitStunPercentData(70, 4130, 0.2f));
         hitStunPercentSet.Add(new HitStunPercentData(80, 5820, 0.13f));
@@ -43,7 +43,7 @@ public class HitStunCalculator
     /// The percentage of hitstun time based on the force of the hit
     /// </returns>
     private float LookUpPercentageValueBy(float forceValue)
-    {
+    {        
         HitStunPercentData lowEnd = hitStunPercentSet.First();
         HitStunPercentData highEnd = hitStunPercentSet.First();
 
@@ -65,7 +65,10 @@ public class HitStunCalculator
         float percentageDiff = highEnd.Percentage - lowEnd.Percentage;
         float inbeteenPercentage = (forceValue - lowEnd.Force) / forceDiff;
 
-        return lowEnd.Percentage + inbeteenPercentage * percentageDiff;
+        float percentageValue = lowEnd.Percentage + inbeteenPercentage * percentageDiff;
+        Debug.Log("Percentage Value: " + percentageValue);
+
+        return percentageValue;
     }
 
 

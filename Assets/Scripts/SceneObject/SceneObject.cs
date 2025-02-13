@@ -9,6 +9,8 @@ using Game.SceneObjects.Animation;
 using Game.SceneObjects.Damage;
 using Game.UI.SceneObject;
 using Game.Interactable;
+using UnityEngine.SceneManagement;
+using UnityEngine.Events;
 
 namespace Game.SceneObjects
 {
@@ -263,12 +265,6 @@ namespace Game.SceneObjects
 
 
         #region RigidBody
-
-        public Rigidbody CoreRigidBody 
-        { 
-            get { return GetComponent<Rigidbody>(); }            
-        }
-
 
         /// <summary>
         /// Returns a list of active rigidbody where the associated collider is not trigger

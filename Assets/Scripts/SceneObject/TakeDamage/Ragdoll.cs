@@ -68,9 +68,7 @@ namespace Game.SceneObjects.Damage
         #region Enable / Disable
 
         private void OnEnable()
-        {
-            Debug.Log("RAGDOLL: Enabled");
-
+        {            
             if (isInitialized)
             {
                 EnableRagdollParts();
@@ -81,13 +79,11 @@ namespace Game.SceneObjects.Damage
 
         private async void OnDisable()
         {
-            Debug.Log("RAGDOLL: Disabled");
-
             if (isInitialized)
             {
                 sceneObject.GetComponent<Collider>().enabled = true;
-                sceneObject.CoreRigidBody.isKinematic = false;
-                sceneObject.CoreRigidBody.linearVelocity = RB.linearVelocity;
+                sceneObject.Rb.isKinematic = false;
+                sceneObject.Rb.linearVelocity = RB.linearVelocity;
 
                 DisableRagdollParts();
 
@@ -112,7 +108,7 @@ namespace Game.SceneObjects.Damage
         {
             if (sceneObject != null)
             {
-                sceneObject.CoreRigidBody.isKinematic = true;
+                sceneObject.Rb.isKinematic = true;
                 sceneObject.GetComponent<Collider>().enabled = false;
                 sceneObject.AnimationHandler.Animator.enabled = false;
             }
@@ -127,7 +123,7 @@ namespace Game.SceneObjects.Damage
                     collider.isTrigger = false;
 
                 if (part.TryGetComponent(out Rigidbody rb))
-                    rb.linearVelocity = sceneObject.CoreRigidBody.linearVelocity;
+                    rb.linearVelocity = sceneObject.Rb.linearVelocity;
 
                 RB.isKinematic = false;
             }

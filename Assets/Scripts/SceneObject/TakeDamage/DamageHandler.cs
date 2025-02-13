@@ -14,6 +14,9 @@ namespace Game.SceneObjects.Damage
         [Header("HitStun")]
         [SerializeField] private HitStunState hitStunState;
         [SerializeField] private float hitStunTimer;
+        
+        [Tooltip("Decceleration rate during hitstun")]
+        [SerializeField] private const float hitStunDeceleration = 21.5f;
 
         [Header("RagDoll")]
         [SerializeField] private GameObject ragdollRoot;
@@ -36,6 +39,7 @@ namespace Game.SceneObjects.Damage
 
         public HitStunState HitStunState => hitStunState;
         public float HitStunTimer => hitStunTimer;
+        public float HitStunDeceleration => hitStunDeceleration;
 
         #endregion
 
@@ -126,41 +130,44 @@ namespace Game.SceneObjects.Damage
             UIFactory.Instance.SpawnDamageBubble(attackPoint, attackDamage);
 
             //Damage
-            //AddDamage(attackDamage);
+            AddDamage(attackDamage);
 
             //Launch knockback
-            Vector3 launchForce = knockbackHandler.CalculateForceKnockBack(influence, damageTaken, launchAngle, sceneObject.Rb);
-            ApplyLaunchForce(launchForce);
+            Vector3 launchVelocity = knockbackHandler.CalculateKnockbackVelocity(influence, damageTaken, launchAngle, sceneObject.Rb);
+            ApplyLaunchForce(launchVelocity);
            
             //HitStun
-            ApplyHitStun(launchForce);
+            ApplyHitStun(launchVelocity);
         }
 
 
         /// <summary>
-        /// Apply the stored force
+        /// Apply the calculated <paramref name="launchForce"/> to the sceneObject
         /// </summary>
-        private void ApplyLaunchForce(Vector3 launchForce)
+        private void ApplyLaunchForce(Vector3 launchVelocity)
         {
-            if (ragdoll != null && ragdoll.enabled)
-            {
-                //Set mass to coreRigidbody to get similar force effect
-                float mass = ragdoll.RB.mass;
-                ragdoll.RB.mass = sceneObject.CoreRigidBody.mass;
+            //if (ragdoll != null && ragdoll.enabled)
+            //{
+            //    //Set mass to coreRigidbody to get similar force effect
+            //    float mass = ragdoll.RB.mass;
+            //    ragdoll.RB.mass = sceneObject.CoreRigidBody.mass;
 
-                ragdoll.RB.AddForce(launchForce, ForceMode.Impulse);
+            //    ragdoll.RB.AddForce(launchForce, ForceMode.Impulse);
 
-                ragdoll.RB.mass = mass;
-            }
+            //    ragdoll.RB.mass = mass;
+            //}
 
-            else
-                sceneObject.CoreRigidBody.AddForce(launchForce, ForceMode.Impulse);
+            //else
+            sceneObject.Rb.linearVelocity = launchVelocity; 
         }
 
         #endregion
 
 
         #region HitStun
+
+        [Range(0, 1)]
+        public float percentageValue;
 
         /// <summary>
         /// Calculate <see cref="hitStunTimer"/> based on the <paramref name="launchForce"/>
@@ -173,7 +180,8 @@ namespace Game.SceneObjects.Damage
                 hitStunState = HitStunState.Start;
             }
 
-            hitStunTimer = hitStunCalculator.CalculateHitStunTime(launchForce, sceneObject.Rb.mass);
+            float apexTime = Mathf.Abs(launchForce.y / (Physics.gravity.y - hitStunDeceleration));
+            hitStunTimer = percentageValue * apexTime;
         }
 
 
@@ -187,7 +195,7 @@ namespace Game.SceneObjects.Damage
                 hitStunTimer -= Time.fixedDeltaTime;
 
                 //Bounce
-                //PerdictHitStunBounce();
+                PerdictHitStunBounce();
 
                 if (hitStunState == HitStunState.Start)
                 {
@@ -215,8 +223,6 @@ namespace Game.SceneObjects.Damage
 
                 if (hitStunState == HitStunState.End)
                 {
-                    DebugSphereFactory.SpawnDebugSphere(sceneObject.transform.position);
-
                     DestroyKillZones();
                     hitStunState = HitStunState.None;
                     sceneObject.ActionStateHandler.ChangeState(ActionState.Idle);
@@ -244,14 +250,14 @@ namespace Game.SceneObjects.Damage
         /// <param name="bounds"></param>
         private void CheckCoreBounce(Bounds bounds)
         {
-            Vector3 velocity = sceneObject.CoreRigidBody.linearVelocity;
+            Vector3 velocity = sceneObject.Rb.linearVelocity;
             float distance = velocity.magnitude * Time.fixedDeltaTime;
             Vector3 direction = velocity.normalized;
 
             if (Physics.BoxCast(bounds.center, bounds.extents, direction, out RaycastHit hit, Quaternion.identity, distance, LayerMask.GetMask("Environment")))
             {
                 Vector3 bounceVelocity = Vector3.Reflect(velocity, hit.normal) * bounceDegrade;
-                sceneObject.CoreRigidBody.linearVelocity = bounceVelocity;
+                sceneObject.Rb.linearVelocity = bounceVelocity;
             }
         }
 

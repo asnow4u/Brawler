@@ -20,10 +20,7 @@ namespace Game.SceneObjects.Movement
         //Jump Properties
         private int airJumpsPerformed;
 
-        //Fast Fall Properties
-        private const float fastFallAcceleration = 20f;
-        private const float MaxYVelocity = 15f;
-
+        //Attack Properties
         private bool deceleratingForAttack;
 
         //Movement Collection (NOTE: BaseMovementCollection is Required for all sceneObjects)    
@@ -39,11 +36,11 @@ namespace Game.SceneObjects.Movement
 
         [SerializeField] private float jumpInfluence;
 
-        //HitStun Properties
-        [Header("HitStun")]
-        [Tooltip("Target percentage of maxVelocity")]
+        
+
         [Range(0, 1)]
-        [SerializeField] private float hitStunAerialMaxVelocityTarget;
+        [Tooltip("Target percentage of maxVelocity on X Axis")]
+        [SerializeField] private const float hitStunVelocityTargetMultiplier = 0.25f;
 
         //Events
         public event Action<MovementCollection> MovementCollectionChangedEvent;
@@ -203,17 +200,17 @@ namespace Game.SceneObjects.Movement
             {
                 sceneObject.TurnAround();
 
-                if (sceneObject.CoreRigidBody.linearVelocity.x > 0)
+                if (sceneObject.Rb.linearVelocity.x > 0)
                 {
                     switch (sceneObject.CurGroundedState)
                     {
                         case GroundedState.Grounded:
                             if (sceneObject.TryGetSlopeAngle(out Vector3 slope))
-                                sceneObject.CoreRigidBody.linearVelocity = slope * sceneObject.CoreRigidBody.linearVelocity.magnitude;
+                                sceneObject.Rb.linearVelocity = slope * sceneObject.Rb.linearVelocity.magnitude;
                             break;
 
                         case GroundedState.Airborn:
-                            sceneObject.CoreRigidBody.linearVelocity = new Vector3(sceneObject.CoreRigidBody.linearVelocity.x * -1, sceneObject.CoreRigidBody.linearVelocity.y, sceneObject.CoreRigidBody.linearVelocity.z);
+                            sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x * -1, sceneObject.Rb.linearVelocity.y, sceneObject.Rb.linearVelocity.z);
                             break;
                     }
                 }
@@ -227,11 +224,11 @@ namespace Game.SceneObjects.Movement
                 {
                     case GroundedState.Grounded:
                         if (sceneObject.TryGetSlopeAngle(out Vector3 slope))
-                            sceneObject.CoreRigidBody.linearVelocity = slope * sceneObject.CoreRigidBody.linearVelocity.magnitude;
+                            sceneObject.Rb.linearVelocity = slope * sceneObject.Rb.linearVelocity.magnitude;
                         break;
 
                     case GroundedState.Airborn:
-                        sceneObject.CoreRigidBody.linearVelocity = new Vector3(sceneObject.CoreRigidBody.linearVelocity.x * -1, sceneObject.CoreRigidBody.linearVelocity.y, sceneObject.CoreRigidBody.linearVelocity.z);
+                        sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x * -1, sceneObject.Rb.linearVelocity.y, sceneObject.Rb.linearVelocity.z);
                         break;
                 }
             }
@@ -265,7 +262,7 @@ namespace Game.SceneObjects.Movement
         public bool IsAgainstArialWall()
         {
             //Left
-            if (sceneObject.CoreRigidBody.linearVelocity.x <= 0 && sceneObject.TryDetectCollision(Direction.Left, 0.5f, LayerMask.GetMask("Environment"), out _))
+            if (sceneObject.Rb.linearVelocity.x <= 0 && sceneObject.TryDetectCollision(Direction.Left, 0.5f, LayerMask.GetMask("Environment"), out _))
             {
                 if (sceneObject.IsFacingRightDirection())
                     sceneObject.TurnAround();
@@ -274,7 +271,7 @@ namespace Game.SceneObjects.Movement
             }
 
             //Right
-            if (sceneObject.CoreRigidBody.linearVelocity.x >= 0 && sceneObject.TryDetectCollision(Direction.Right, 0.5f, LayerMask.GetMask("Environment"), out _))
+            if (sceneObject.Rb.linearVelocity.x >= 0 && sceneObject.TryDetectCollision(Direction.Right, 0.5f, LayerMask.GetMask("Environment"), out _))
             {
                 if (!sceneObject.IsFacingRightDirection())
                     sceneObject.TurnAround();
@@ -310,8 +307,12 @@ namespace Game.SceneObjects.Movement
         {
             if (TryGetCurrentMovementCollection(out MovementCollection curMovementCollection))
             {
+                //HitStun Movement
+                if (sceneObject.ActionStateHandler.CurActionState == ActionState.HitStun)
+                    UpdateAerialHitStunMovement(curMovementCollection.AirMoveData);
+
                 //Grounded Movement
-                if (sceneObject.CurGroundedState == GroundedState.Grounded)
+                else if (sceneObject.CurGroundedState == GroundedState.Grounded)
                 {
                     UpdateGroundedMovement(curMovementCollection);
 
@@ -338,29 +339,32 @@ namespace Game.SceneObjects.Movement
         /// </summary>
         private void UpdateGroundedMovement(MovementCollection curMovementCollection)
         {
-            if (horizontalInfluence != 0)
+            if (sceneObject.ActionStateHandler.CurActionState != ActionState.HitStun)
             {
-                //Calculate decceleration for attacks
-                if (sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking)
+                if (horizontalInfluence != 0)
                 {
-                    AttackData attackData = sceneObject.AttackInputHandler.CurAttackData;
-                    UpdateGroundDecceleration(curMovementCollection.GetGroundedAttackDeclerationn());
+                    //Calculate decceleration for attacks
+                    if (sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking)
+                    {
+                        AttackData attackData = sceneObject.AttackInputHandler.CurAttackData;
+                        UpdateGroundDecceleration(curMovementCollection.GetGroundedAttackDeclerationn());
 
-                    deceleratingForAttack = true;
+                        deceleratingForAttack = true;
+                    }
+
+                    if (curMoveState == MovementType.Null || curMoveState == MovementType.WallLean)
+                        TrySetCurrentMoveState(MovementType.Move);
+
+                    else if (curMoveState == MovementType.Move)
+                    {
+                        CheckTurnAround();
+                        UpdateGroundAcceleration(curMovementCollection.GetGroundedXAcceleration(), curMovementCollection.GetGroundedMaxXVelocity());
+                    }
                 }
 
-                if (curMoveState == MovementType.Null || curMoveState == MovementType.WallLean)
-                    TrySetCurrentMoveState(MovementType.Move);
-
-                else if (curMoveState == MovementType.Move)
-                {
-                    CheckTurnAround();
-                    UpdateGroundAcceleration(curMovementCollection.GetGroundedXAcceleration(), curMovementCollection.GetGroundedMaxXVelocity());
-                }
-            }
-
-            else
-                UpdateGroundDecceleration(curMovementCollection.GetGroundedXDeceleration());
+                else
+                    UpdateGroundDecceleration(curMovementCollection.GetGroundedXDeceleration());
+            } 
         }
 
 
@@ -373,17 +377,17 @@ namespace Game.SceneObjects.Movement
             if (sceneObject.TryGetSlopeAngle(out Vector3 slope))
             {
                 //Drag
-                sceneObject.CoreRigidBody.linearDamping = 0;
+                sceneObject.Rb.linearDamping = 0;
 
                 //Cap Velocity based on horizontal influence
                 float targetXVelocity = maxVelocity * Mathf.Abs(horizontalInfluence);
 
                 //Update velocity based on slope
-                sceneObject.CoreRigidBody.linearVelocity += slope * Mathf.Abs(horizontalInfluence) * acceleration * Time.fixedDeltaTime;
+                sceneObject.Rb.linearVelocity += slope * Mathf.Abs(horizontalInfluence) * acceleration * Time.fixedDeltaTime;
 
                 //Cant exceed target velocity
-                if (sceneObject.CoreRigidBody.linearVelocity.magnitude > targetXVelocity)
-                    sceneObject.CoreRigidBody.linearVelocity = slope * targetXVelocity;
+                if (sceneObject.Rb.linearVelocity.magnitude > targetXVelocity)
+                    sceneObject.Rb.linearVelocity = slope * targetXVelocity;
             }
         }
 
@@ -396,15 +400,15 @@ namespace Game.SceneObjects.Movement
             //Prevet deccelerate when jumping from ground
             if (curMoveState != MovementType.Jump)
             {
-                if (sceneObject.CoreRigidBody.linearVelocity.x != 0)
+                if (sceneObject.Rb.linearVelocity.x != 0)
                 {
-                    Vector3 dragForce = sceneObject.CoreRigidBody.linearVelocity.normalized * deccelerationValue;
-                    sceneObject.CoreRigidBody.linearVelocity -= dragForce * Time.fixedDeltaTime;
+                    Vector3 dragForce = sceneObject.Rb.linearVelocity.normalized * deccelerationValue;
+                    sceneObject.Rb.linearVelocity -= dragForce * Time.fixedDeltaTime;
 
-                    if ((sceneObject.IsFacingRightDirection() && sceneObject.CoreRigidBody.linearVelocity.x <= 0) ||
-                        (!sceneObject.IsFacingRightDirection() && sceneObject.CoreRigidBody.linearVelocity.x >= 0))
+                    if ((sceneObject.IsFacingRightDirection() && sceneObject.Rb.linearVelocity.x <= 0) ||
+                        (!sceneObject.IsFacingRightDirection() && sceneObject.Rb.linearVelocity.x >= 0))
                     {
-                        sceneObject.CoreRigidBody.linearVelocity = Vector3.zero;
+                        sceneObject.Rb.linearVelocity = Vector3.zero;
 
                         if (curMoveData != null)
                             sceneObject.AnimationHandler.EndAnimation(curMoveData.Animation);
@@ -425,8 +429,31 @@ namespace Game.SceneObjects.Movement
         /// </summary>
         private void UpdateAerialMovement(AirMoveData airMoveData)
         {
-            UpdateAerialXMovement(airMoveData);
-            UpdateAerialYMovement(airMoveData);
+            {
+                UpdateAerialXMovement(airMoveData);
+                UpdateAerialYMovement(airMoveData);
+            }
+        }
+
+
+        private void UpdateAerialHitStunMovement(AirMoveData airMoveData)
+        {           
+            float targetXVelocity = airMoveData.AerialMaxXVelocity * hitStunVelocityTargetMultiplier;
+            float targetYVelocity = airMoveData.AerialMaxXVelocity * hitStunVelocityTargetMultiplier;            
+
+            //X Deceleration
+            if (sceneObject.Rb.linearVelocity.x > targetXVelocity)
+                sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x - (sceneObject.DamageHandler.HitStunDeceleration * Time.fixedDeltaTime), sceneObject.Rb.linearVelocity.y, sceneObject.Rb.linearVelocity.z);
+
+            if (sceneObject.Rb.linearVelocity.x < targetXVelocity)
+                sceneObject.Rb.linearVelocity = new Vector3(targetXVelocity, sceneObject.Rb.linearVelocity.y, sceneObject.Rb.linearVelocity.z);
+
+            //Y Deceleration
+            if (sceneObject.Rb.linearVelocity.y > 0)
+                sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, sceneObject.Rb.linearVelocity.y - (sceneObject.DamageHandler.HitStunDeceleration * Time.fixedDeltaTime), sceneObject.Rb.linearVelocity.z);
+
+            if (sceneObject.Rb.linearVelocity.y < -targetYVelocity)
+                sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, -targetYVelocity, sceneObject.Rb.linearVelocity.z);
         }
 
 
@@ -435,36 +462,17 @@ namespace Game.SceneObjects.Movement
         /// </summary>
         private void UpdateAerialXMovement(AirMoveData airMoveData)
         {
-            //In Hitstun
-            if (sceneObject.ActionStateHandler.CurActionState == ActionState.HitStun)
-            {                
-                float targetVelocity = airMoveData.AerialMaxXVelocity * hitStunAerialMaxVelocityTarget;
-
-                if (Mathf.Abs(sceneObject.CoreRigidBody.linearVelocity.x) > targetVelocity)
-                {
-                    //NOTE: Calculating the needed time to deccelerate towards the max velocity and waiting till that time to start deccelerating
-                    float velocityDiff = targetVelocity - Mathf.Abs(sceneObject.CoreRigidBody.linearVelocity.x);
-                    float deccelerationTime = velocityDiff / -airMoveData.AerialXDeceleration;
-
-                    if (deccelerationTime <= sceneObject.DamageHandler.HitStunTimer)
-                        AerialXDeccelerate();                       
-                }
-            }
-            
-            else 
+            if (horizontalInfluence != 0)
             {
-                if (horizontalInfluence != 0)
-                {
-                    if (curMoveState == MovementType.Null || curMoveState == MovementType.WallSlide)
-                        TrySetCurrentMoveState(MovementType.AirMove);
+                if (curMoveState == MovementType.Null || curMoveState == MovementType.WallSlide)
+                    TrySetCurrentMoveState(MovementType.AirMove);
 
-                    if (CurMoveState == MovementType.AirMove)
-                        AerialXAccelerate();
-                }
-
-                if (Mathf.Abs(sceneObject.CoreRigidBody.linearVelocity.x) > airMoveData.AerialMaxXVelocity)
-                    AerialXDeccelerate();
+                if (CurMoveState == MovementType.AirMove)
+                    AerialXAccelerate();
             }
+
+            if (Mathf.Abs(sceneObject.Rb.linearVelocity.x) > airMoveData.AerialMaxXVelocity)
+                AerialXDeccelerate();
         }
 
 
@@ -478,23 +486,23 @@ namespace Game.SceneObjects.Movement
                 //Positive Acceleration
                 if (horizontalInfluence > 0)
                 {
-                    float acceleratedXValue = sceneObject.CoreRigidBody.linearVelocity.x + (collection.GetAerialXAcceleration() * Time.fixedDeltaTime);
+                    float acceleratedXValue = sceneObject.Rb.linearVelocity.x + (collection.GetAerialXAcceleration() * Time.fixedDeltaTime);
 
                     if (acceleratedXValue > collection.GetAerialMaxXVelocity())
                         acceleratedXValue = collection.GetAerialMaxXVelocity();
 
-                    sceneObject.CoreRigidBody.linearVelocity = new Vector3(acceleratedXValue, sceneObject.CoreRigidBody.linearVelocity.y, sceneObject.CoreRigidBody.linearVelocity.z);
+                    sceneObject.Rb.linearVelocity = new Vector3(acceleratedXValue, sceneObject.Rb.linearVelocity.y, sceneObject.Rb.linearVelocity.z);
                 }
 
                 //Negative Acceleration
                 else if (horizontalInfluence < 0)
                 {
-                    float acceleratedXValue = sceneObject.CoreRigidBody.linearVelocity.x - (collection.GetAerialXAcceleration() * Time.fixedDeltaTime);
+                    float acceleratedXValue = sceneObject.Rb.linearVelocity.x - (collection.GetAerialXAcceleration() * Time.fixedDeltaTime);
 
                     if (acceleratedXValue < -collection.GetAerialMaxXVelocity())
                         acceleratedXValue = -collection.GetAerialMaxXVelocity();    
 
-                    sceneObject.CoreRigidBody.linearVelocity = new Vector3(acceleratedXValue, sceneObject.CoreRigidBody.linearVelocity.y, sceneObject.CoreRigidBody.linearVelocity.z);
+                    sceneObject.Rb.linearVelocity = new Vector3(acceleratedXValue, sceneObject.Rb.linearVelocity.y, sceneObject.Rb.linearVelocity.z);
                 }
             }
         }
@@ -508,25 +516,25 @@ namespace Game.SceneObjects.Movement
             if (TryGetCurrentMovementCollection(out MovementCollection collection))
             {
                 //Positive Decceleration
-                if (sceneObject.CoreRigidBody.linearVelocity.x > 0)
+                if (sceneObject.Rb.linearVelocity.x > 0)
                 {
-                    float decceleratedXValue = sceneObject.CoreRigidBody.linearVelocity.x - (collection.GetAerialXDeceleration() * Time.fixedDeltaTime);
+                    float decceleratedXValue = sceneObject.Rb.linearVelocity.x - (collection.GetAerialXDeceleration() * Time.fixedDeltaTime);
 
                     if (decceleratedXValue < 0)
                         decceleratedXValue = 0;
 
-                    sceneObject.CoreRigidBody.linearVelocity = new Vector3(decceleratedXValue, sceneObject.CoreRigidBody.linearVelocity.y, sceneObject.CoreRigidBody.linearVelocity.z);
+                    sceneObject.Rb.linearVelocity = new Vector3(decceleratedXValue, sceneObject.Rb.linearVelocity.y, sceneObject.Rb.linearVelocity.z);
                 }
 
                 //Negative Decceleration
-                else if (sceneObject.CoreRigidBody.linearVelocity.x < 0)
+                else if (sceneObject.Rb.linearVelocity.x < 0)
                 {
-                    float decceleratedXValue = sceneObject.CoreRigidBody.linearVelocity.x + (collection.GetAerialXDeceleration() * Time.fixedDeltaTime);
+                    float decceleratedXValue = sceneObject.Rb.linearVelocity.x + (collection.GetAerialXDeceleration() * Time.fixedDeltaTime);
 
                     if (decceleratedXValue > 0)
                         decceleratedXValue = 0;
 
-                    sceneObject.CoreRigidBody.linearVelocity = new Vector3(decceleratedXValue, sceneObject.CoreRigidBody.linearVelocity.y, sceneObject.CoreRigidBody.linearVelocity.z);
+                    sceneObject.Rb.linearVelocity = new Vector3(decceleratedXValue, sceneObject.Rb.linearVelocity.y, sceneObject.Rb.linearVelocity.z);
                 }
             }
         }
@@ -537,33 +545,14 @@ namespace Game.SceneObjects.Movement
         /// </summary>
         private void UpdateAerialYMovement(AirMoveData airMoveData)
         {
-            //In Hitstun
-            if (sceneObject.ActionStateHandler.CurActionState == ActionState.HitStun)
+            if (verticalInfluence != 0)
             {
-                float targetVelocity = airMoveData.AerialMaxYVelocity * hitStunAerialMaxVelocityTarget;                
-
-                if (Mathf.Abs(sceneObject.CoreRigidBody.linearVelocity.x) > targetVelocity)
-                {
-                    //NOTE: Calculating the needed time to deccelerate towards the max velocity and waiting till that time to start deccelerating
-                    float velocityDiff = targetVelocity - Mathf.Abs(sceneObject.CoreRigidBody.linearVelocity.x);
-                    float deccelerationTime = velocityDiff / -GetDeccelerationRateWithGravity();
-
-                    if (deccelerationTime <= sceneObject.DamageHandler.HitStunTimer)
-                        AerialYDeccelerate();
-                }
+                //TODO: Implement Fast Fall
+                //AerialYAccelerate();
             }
 
-            else
-            {
-                if (verticalInfluence != 0)
-                {
-                    //TODO: Implement Fast Fall
-                    //AerialYAccelerate();
-                }
-
-                if (Mathf.Abs(sceneObject.CoreRigidBody.linearVelocity.y) > airMoveData.AerialMaxYVelocity)
-                    AerialYDeccelerate();
-            }
+            if (Mathf.Abs(sceneObject.Rb.linearVelocity.y) > airMoveData.AerialMaxYVelocity)
+                AerialYDeccelerate();
         }
 
 
@@ -577,10 +566,10 @@ namespace Game.SceneObjects.Movement
         {
             if (TryGetCurrentMovementCollection(out MovementCollection collection))
             {
-                if (sceneObject.CoreRigidBody.linearVelocity.y > 0)
+                if (sceneObject.Rb.linearVelocity.y > 0)
                     return collection.AirMoveData.AerialYDeceleration - Physics.gravity.y;
 
-                else if (sceneObject.CoreRigidBody.linearVelocity.y < 0)
+                else if (sceneObject.Rb.linearVelocity.y < 0)
                     return collection.AirMoveData.AerialYDeceleration + Physics.gravity.y;
             }
 
@@ -611,25 +600,25 @@ namespace Game.SceneObjects.Movement
             if (TryGetCurrentMovementCollection(out MovementCollection collection))
             {
                 //Positive Decceleration
-                if (sceneObject.CoreRigidBody.linearVelocity.y > 0)
+                if (sceneObject.Rb.linearVelocity.y > 0)
                 {
-                    float decceleratedYValue = sceneObject.CoreRigidBody.linearVelocity.y - (GetDeccelerationRateWithGravity() * Time.fixedDeltaTime);
+                    float decceleratedYValue = sceneObject.Rb.linearVelocity.y - (GetDeccelerationRateWithGravity() * Time.fixedDeltaTime);
 
                     if (decceleratedYValue < 0)
                         decceleratedYValue = 0;
 
-                    sceneObject.CoreRigidBody.linearVelocity = new Vector3(sceneObject.CoreRigidBody.linearVelocity.x, decceleratedYValue, sceneObject.CoreRigidBody.linearVelocity.z);
+                    sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, decceleratedYValue, sceneObject.Rb.linearVelocity.z);
                 }
 
                 //Negative Decceleration
-                else if (sceneObject.CoreRigidBody.linearVelocity.y < 0)
+                else if (sceneObject.Rb.linearVelocity.y < 0)
                 {
-                    float decceleratedYValue = sceneObject.CoreRigidBody.linearVelocity.y + (GetDeccelerationRateWithGravity() * Time.fixedDeltaTime);
+                    float decceleratedYValue = sceneObject.Rb.linearVelocity.y + (GetDeccelerationRateWithGravity() * Time.fixedDeltaTime);
 
                     if (decceleratedYValue > 0)
                         decceleratedYValue = 0;
 
-                    sceneObject.CoreRigidBody.linearVelocity = new Vector3(sceneObject.CoreRigidBody.linearVelocity.x, decceleratedYValue, sceneObject.CoreRigidBody.linearVelocity.z);
+                    sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, decceleratedYValue, sceneObject.Rb.linearVelocity.z);
                 }
             }
         }
@@ -698,7 +687,7 @@ namespace Game.SceneObjects.Movement
         {
             if (TrySetCurrentMoveState(MovementType.Jump))
             {
-                sceneObject.CoreRigidBody.linearVelocity = new Vector3(sceneObject.CoreRigidBody.linearVelocity.x, jumpData.JumpVelocity * jumpInfluence, sceneObject.CoreRigidBody.linearVelocity.z);
+                sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, jumpData.JumpVelocity * jumpInfluence, sceneObject.Rb.linearVelocity.z);
             }
         }
 
@@ -711,7 +700,7 @@ namespace Game.SceneObjects.Movement
             if (TrySetCurrentMoveState(MovementType.AirJump))
             {
                 CheckTurnAround();
-                sceneObject.CoreRigidBody.linearVelocity = new Vector3(sceneObject.CoreRigidBody.linearVelocity.x, airJumpData.AirJumpVelocity * jumpInfluence, sceneObject.CoreRigidBody.linearVelocity.z);
+                sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, airJumpData.AirJumpVelocity * jumpInfluence, sceneObject.Rb.linearVelocity.z);
             }
         }
 
@@ -724,9 +713,9 @@ namespace Game.SceneObjects.Movement
             if (TrySetCurrentMoveState(MovementType.AirJump))
             {
                 if (sceneObject.IsFacingRightDirection())
-                    sceneObject.CoreRigidBody.linearVelocity = new Vector3((-1) * Mathf.Cos(wallJumpData.JumpAngle * Mathf.Deg2Rad) * wallJumpData.JumpVelocity, Mathf.Sin(wallJumpData.JumpAngle * Mathf.Deg2Rad) * wallJumpData.JumpVelocity, sceneObject.CoreRigidBody.linearVelocity.z);
+                    sceneObject.Rb.linearVelocity = new Vector3((-1) * Mathf.Cos(wallJumpData.JumpAngle * Mathf.Deg2Rad) * wallJumpData.JumpVelocity, Mathf.Sin(wallJumpData.JumpAngle * Mathf.Deg2Rad) * wallJumpData.JumpVelocity, sceneObject.Rb.linearVelocity.z);
                 else
-                    sceneObject.CoreRigidBody.linearVelocity = new Vector3(Mathf.Cos(wallJumpData.JumpAngle * Mathf.Deg2Rad) * wallJumpData.JumpVelocity, Mathf.Sin(wallJumpData.JumpAngle * Mathf.Deg2Rad) * wallJumpData.JumpVelocity, sceneObject.CoreRigidBody.linearVelocity.z);
+                    sceneObject.Rb.linearVelocity = new Vector3(Mathf.Cos(wallJumpData.JumpAngle * Mathf.Deg2Rad) * wallJumpData.JumpVelocity, Mathf.Sin(wallJumpData.JumpAngle * Mathf.Deg2Rad) * wallJumpData.JumpVelocity, sceneObject.Rb.linearVelocity.z);
 
                 sceneObject.TurnAround();
             }
