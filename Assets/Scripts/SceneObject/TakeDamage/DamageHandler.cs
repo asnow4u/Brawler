@@ -27,7 +27,6 @@ namespace Game.SceneObjects.Damage
 
         //Calculators
         private KnockbackCalculator knockbackHandler;
-        private HitStunCalculator hitStunCalculator;
 
         //KillZones
         private KillZone[] killZones;
@@ -51,7 +50,6 @@ namespace Game.SceneObjects.Damage
             base.Setup();
 
             knockbackHandler = new KnockbackCalculator();
-            hitStunCalculator = new HitStunCalculator();
 
             if (ragdollRoot != null)
             {
@@ -134,6 +132,8 @@ namespace Game.SceneObjects.Damage
 
             //Launch knockback
             Vector3 launchVelocity = knockbackHandler.CalculateKnockbackVelocity(influence, damageTaken, launchAngle, sceneObject.Rb);
+            Debug.Log(launchVelocity);
+            
             ApplyLaunchForce(launchVelocity);
            
             //HitStun
@@ -195,7 +195,7 @@ namespace Game.SceneObjects.Damage
                 hitStunTimer -= Time.fixedDeltaTime;
 
                 //Bounce
-                PerdictHitStunBounce();
+                //PerdictHitStunBounce();
 
                 if (hitStunState == HitStunState.Start)
                 {

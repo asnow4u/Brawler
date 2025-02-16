@@ -14,23 +14,21 @@ public class KnockbackCalculator
 
         float xLaunch = Mathf.Cos(launchAngle * Mathf.Deg2Rad);
         float yLaunch = Mathf.Sin(launchAngle * Mathf.Deg2Rad);
-        Vector3 initalLaunchDirection = new Vector2(xLaunch, yLaunch);            
+        Vector3 launchDirection = new Vector2(xLaunch, yLaunch);
 
-        if (CheckForImmediateBounce(initalLaunchDirection, rb, out Vector3 bouncedDirection))
-            initalLaunchDirection = bouncedDirection;
+        if (CheckForImmediateBounce(launchDirection, rb, out Vector3 bouncedDirection))
+            launchDirection = bouncedDirection;
 
-        return initalLaunchDirection * damageForce / rb.mass;
+        Debug.Log(launchAngle + ", X: " + xLaunch + ", Y:" + yLaunch);
+        return launchDirection * damageForce / rb.mass;
     }
 
-    
+    //TODO: Change how this works
     private bool CheckForImmediateBounce(Vector3 initialDirection, Rigidbody rb, out Vector3 bounceDirection)
     {                
         Bounds bounds = rb.GetComponent<Collider>().bounds;
         float max = bounds.max.y;
         float min = bounds.min.y;
-
-        float originX = bounds.center.x;
-        float originZ = bounds.center.z;
 
         Collider[] cols = Physics.OverlapBox(bounds.center, bounds.extents * 2f, Quaternion.identity, LayerMask.GetMask("Environment"));        
 

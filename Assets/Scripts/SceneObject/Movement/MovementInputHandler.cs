@@ -437,23 +437,43 @@ namespace Game.SceneObjects.Movement
 
 
         private void UpdateAerialHitStunMovement(AirMoveData airMoveData)
-        {           
-            float targetXVelocity = airMoveData.AerialMaxXVelocity * hitStunVelocityTargetMultiplier;
-            float targetYVelocity = airMoveData.AerialMaxXVelocity * hitStunVelocityTargetMultiplier;            
-
+        {
             //X Deceleration
-            if (sceneObject.Rb.linearVelocity.x > targetXVelocity)
-                sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x - (sceneObject.DamageHandler.HitStunDeceleration * Time.fixedDeltaTime), sceneObject.Rb.linearVelocity.y, sceneObject.Rb.linearVelocity.z);
+            float targetXVelocity;
+            
+            //Right (Pos)
+            if (sceneObject.Rb.linearVelocity.x > 0)
+            {
+                targetXVelocity = airMoveData.AerialMaxXVelocity * hitStunVelocityTargetMultiplier;
 
-            if (sceneObject.Rb.linearVelocity.x < targetXVelocity)
-                sceneObject.Rb.linearVelocity = new Vector3(targetXVelocity, sceneObject.Rb.linearVelocity.y, sceneObject.Rb.linearVelocity.z);
+                if (sceneObject.Rb.linearVelocity.x > targetXVelocity)
+                    sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x - (sceneObject.DamageHandler.HitStunDeceleration * Time.fixedDeltaTime), sceneObject.Rb.linearVelocity.y, sceneObject.Rb.linearVelocity.z);
+
+                if (sceneObject.Rb.linearVelocity.x < targetXVelocity)
+                    sceneObject.Rb.linearVelocity = new Vector3(targetXVelocity, sceneObject.Rb.linearVelocity.y, sceneObject.Rb.linearVelocity.z);
+            }
+
+            //Left (Neg)
+            else
+            {
+                targetXVelocity = -airMoveData.AerialMaxXVelocity * hitStunVelocityTargetMultiplier;
+
+                if (sceneObject.Rb.linearVelocity.x < targetXVelocity)
+                    sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x + (sceneObject.DamageHandler.HitStunDeceleration * Time.fixedDeltaTime), sceneObject.Rb.linearVelocity.y, sceneObject.Rb.linearVelocity.z);
+
+                if (sceneObject.Rb.linearVelocity.x > targetXVelocity)
+                    sceneObject.Rb.linearVelocity = new Vector3(targetXVelocity, sceneObject.Rb.linearVelocity.y, sceneObject.Rb.linearVelocity.z);
+            }
+
 
             //Y Deceleration
-            if (sceneObject.Rb.linearVelocity.y > 0)
+            float targetYVelocity = -airMoveData.AerialMaxXVelocity * hitStunVelocityTargetMultiplier;
+
+            if (sceneObject.Rb.linearVelocity.y > targetYVelocity)
                 sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, sceneObject.Rb.linearVelocity.y - (sceneObject.DamageHandler.HitStunDeceleration * Time.fixedDeltaTime), sceneObject.Rb.linearVelocity.z);
 
-            if (sceneObject.Rb.linearVelocity.y < -targetYVelocity)
-                sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, -targetYVelocity, sceneObject.Rb.linearVelocity.z);
+            if (sceneObject.Rb.linearVelocity.y < targetYVelocity)
+                sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, targetYVelocity, sceneObject.Rb.linearVelocity.z);            
         }
 
 
