@@ -1,4 +1,5 @@
 using Game.SceneObjects.ActionStates;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Game.SceneObjects.Damage
@@ -9,24 +10,24 @@ namespace Game.SceneObjects.Damage
     public class DamageHandler : SceneObjectHandler, ITakeDamage
     {
         [Header("Damage")]
-        [SerializeField] protected float damageTaken;
+        [SerializeField] protected float damageTaken;        
+        [Tooltip("Base amount of acceleration that will be applied anytime taking a hit")]
+        const float minKnockBackAcceleration = 10f;        
+        [Tooltip("The exponential growth of knockback based on damage")]
+        const float exGrowth = 2.8f;
 
         [Header("HitStun")]
         [SerializeField] private HitStunState hitStunState;
-        [SerializeField] private float hitStunTimer;
-        
+        [SerializeField] private float hitStunTimer;        
         [Tooltip("Decceleration rate during hitstun")]
-        [SerializeField] private const float hitStunDeceleration = 21.5f;
-
-        [Header("RagDoll")]
-        [SerializeField] private GameObject ragdollRoot;
-        private Ragdoll ragdoll;
+        private const float hitStunDeceleration = 21.5f;
 
         [Header("Bounce")]
         [SerializeField] private float bounceDegrade = 0.9f;
 
-        //Calculators
-        private KnockbackCalculator knockbackHandler;
+        [Header("RagDoll")]
+        [SerializeField] private GameObject ragdollRoot;
+        private Ragdoll ragdoll;
 
         //KillZones
         private KillZone[] killZones;
@@ -48,8 +49,6 @@ namespace Game.SceneObjects.Damage
         public override void Setup()
         {
             base.Setup();
-
-            knockbackHandler = new KnockbackCalculator();
 
             if (ragdollRoot != null)
             {
@@ -131,13 +130,31 @@ namespace Game.SceneObjects.Damage
             AddDamage(attackDamage);
 
             //Launch knockback
-            Vector3 launchVelocity = knockbackHandler.CalculateKnockbackVelocity(influence, damageTaken, launchAngle, sceneObject.Rb);
-            Debug.Log(launchVelocity);
+            Vector3 launchVelocity = CalculateKnockbackVelocity(influence, damageTaken, launchAngle, sceneObject.Rb.mass);
             
             ApplyLaunchForce(launchVelocity);
-           
+            CalculateBounce(launchVelocity);
+
             //HitStun
             ApplyHitStun(launchVelocity);
+        }
+
+
+        /// <summary>
+        /// Calculate launch velocity
+        /// </summary>
+        public Vector3 CalculateKnockbackVelocity(float influence, float totalDamage, float launchAngle, float mass)
+        {
+            float minForce = mass * minKnockBackAcceleration;
+            float damageForce = minForce + influence * (Mathf.Pow(totalDamage, exGrowth) / mass);
+
+            float xLaunch = Mathf.Cos(launchAngle * Mathf.Deg2Rad);
+            float yLaunch = Mathf.Sin(launchAngle * Mathf.Deg2Rad);
+            Vector3 launchDirection = new Vector2(xLaunch, yLaunch);
+
+            //TODO: bounce
+            
+            return launchDirection * damageForce / mass;
         }
 
 
@@ -164,10 +181,63 @@ namespace Game.SceneObjects.Damage
         #endregion
 
 
-        #region HitStun
+        #region Bounce
 
-        [Range(0, 1)]
-        public float percentageValue;
+        private void CalculateBounce(Vector3 velocity)
+        {            
+            Bounds bounds = collider.bounds;
+            float centralZ = (bounds.max.z + bounds.min.z) / 2;
+
+            Vector3[] points = new Vector3[]
+            {
+                new Vector3(bounds.min.x, bounds.max.y, centralZ), // Top-left
+                new Vector3(bounds.max.x, bounds.max.y, centralZ), // Top-right
+                new Vector3(bounds.min.x, bounds.min.y, centralZ), // Bottom-left
+                new Vector3(bounds.max.x, bounds.min.y, centralZ), // Bottom-right
+
+                //NOTE: Might implement additional points in the future
+                new Vector3(bounds.center.x, bounds.max.y, centralZ), // Top-center
+                new Vector3(bounds.center.x, bounds.min.y, centralZ), // Bottom-center
+                new Vector3(bounds.min.x, bounds.center.y, centralZ), // Left-center
+                new Vector3(bounds.max.x, bounds.center.y, centralZ)  // Right-center
+            };
+
+            // Calculate the direction and distance of the velocity
+            Vector3 direction = velocity.normalized;
+            float distance = velocity.magnitude * Time.fixedDeltaTime;
+
+            float offsetDistance = 0.1f;
+            Vector3 offset = -direction * offsetDistance;
+
+            // Check for collision at each point            
+            List<Vector3> hitNormals = new List<Vector3>();
+            foreach (var point in points)
+            {
+                if (Physics.Raycast(point + offset, direction, out RaycastHit hit, distance + offsetDistance, LayerMask.GetMask("Environment")))
+                    hitNormals.Add(hit.normal);
+            }
+            
+            if (hitNormals.Count == 0)
+                return;
+
+            // Calculate bounce velocity
+            Vector3 averageNormal = Vector3.zero;
+            foreach (var normal in hitNormals)
+            {
+                averageNormal += normal;
+            }
+            averageNormal /= hitNormals.Count;
+
+            Vector3 bounceVelocity = Vector3.Reflect(velocity, averageNormal) * bounceDegrade;
+            Debug.Log(bounceVelocity);
+
+            sceneObject.Rb.linearVelocity = bounceVelocity;
+        }        
+
+        #endregion
+
+
+        #region HitStun
 
         /// <summary>
         /// Calculate <see cref="hitStunTimer"/> based on the <paramref name="launchForce"/>
@@ -180,8 +250,7 @@ namespace Game.SceneObjects.Damage
                 hitStunState = HitStunState.Start;
             }
 
-            float apexTime = Mathf.Abs(launchForce.y / (Physics.gravity.y - hitStunDeceleration));
-            hitStunTimer = percentageValue * apexTime;
+            hitStunTimer = Mathf.Abs(launchForce.y / (Physics.gravity.y - hitStunDeceleration));
         }
 
 
@@ -195,7 +264,7 @@ namespace Game.SceneObjects.Damage
                 hitStunTimer -= Time.fixedDeltaTime;
 
                 //Bounce
-                //PerdictHitStunBounce();
+                CalculateBounce(sceneObject.Rb.linearVelocity);
 
                 if (hitStunState == HitStunState.Start)
                 {
@@ -229,37 +298,7 @@ namespace Game.SceneObjects.Damage
                 }               
             }
         }
-
-
-        /// <summary>
-        /// Looks ahead to help calculate a bounce
-        /// </summary>
-        public void PerdictHitStunBounce()
-        {
-            if (ragdoll != null && ragdoll.enabled)
-                ragdoll.CheckRagdollBounce(collider.bounds, bounceDegrade);
-
-            else
-                CheckCoreBounce(collider.bounds);
-        }
-
-
-        /// <summary>
-        /// Check if a bounce is going to occure. Adjust velocity accordingly
-        /// </summary>
-        /// <param name="bounds"></param>
-        private void CheckCoreBounce(Bounds bounds)
-        {
-            Vector3 velocity = sceneObject.Rb.linearVelocity;
-            float distance = velocity.magnitude * Time.fixedDeltaTime;
-            Vector3 direction = velocity.normalized;
-
-            if (Physics.BoxCast(bounds.center, bounds.extents, direction, out RaycastHit hit, Quaternion.identity, distance, LayerMask.GetMask("Environment")))
-            {
-                Vector3 bounceVelocity = Vector3.Reflect(velocity, hit.normal) * bounceDegrade;
-                sceneObject.Rb.linearVelocity = bounceVelocity;
-            }
-        }
+        
 
         #endregion
 
@@ -348,5 +387,50 @@ namespace Game.SceneObjects.Damage
         {
             DestroyKillZones();
         }
+
+
+        #region Gizmos
+
+        private void OnDrawGizmosSelected()
+        {
+            Bounds bounds = collider.bounds;
+            float centralZ = (bounds.max.z + bounds.min.z) / 2;
+
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawWireCube(bounds.center, bounds.size);
+
+            //Corners
+            Vector3 topRightPoint = new Vector3(bounds.max.x, bounds.max.y, centralZ);
+            Vector3 topLeftPoint = new Vector3(bounds.min.x, bounds.max.y, centralZ);
+            Vector3 bottomRightPoint = new Vector3(bounds.max.x, bounds.min.y, centralZ);
+            Vector3 bottomLeftPoint = new Vector3(bounds.min.x, bounds.min.y, centralZ);
+
+            float xSpacing = (bounds.max.x - bounds.min.x) / 4;
+            float ySpacing = (bounds.max.y - bounds.min.y) / 4;
+            Vector3 point;
+            
+            //Sides
+            for (int i=0; i<5; i++)
+            {
+                //Top
+                point = new Vector3(bounds.min.x + i * xSpacing, bounds.max.y, centralZ);
+                Gizmos.DrawSphere(point, 0.05f);
+
+                //Bottom
+                point = new Vector3(bounds.min.x + i * xSpacing, bounds.min.y, centralZ);
+                Gizmos.DrawSphere(point, 0.05f);
+
+                //Right
+                point = new Vector3(bounds.max.x, bounds.min.y + i * ySpacing, centralZ);
+                Gizmos.DrawSphere(point, 0.05f);
+
+                //Left
+                point = new Vector3(bounds.min.x, bounds.min.y + i * ySpacing, centralZ);
+                Gizmos.DrawSphere(point, 0.05f);
+
+            }
+        }
+
+        #endregion
     }
 }
