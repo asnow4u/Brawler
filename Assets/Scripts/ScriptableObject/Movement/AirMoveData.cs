@@ -16,5 +16,9 @@ namespace Game.SceneObjects.Movement
         [Header("Arial Decceleration")]
         public float AerialXDeceleration;
         public float AerialYDeceleration;
+
+        [Header("Gravity Scaler")]
+        [Tooltip("How much additional gravity should be applied to the player")]
+        public float AdditionalGravityScaler;
     }
 }

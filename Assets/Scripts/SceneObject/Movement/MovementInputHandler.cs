@@ -326,8 +326,11 @@ namespace Game.SceneObjects.Movement
                     UpdateAerialMovement(curMovementCollection.AirMoveData);
 
                     if (IsAgainstArialWall())
-                        TrySetCurrentMoveState(MovementType.WallSlide);
+                        TrySetCurrentMoveState(MovementType.WallSlide);                    
                 }
+
+                //Gravity
+                ApplyGravityScaler(curMovementCollection.AirMoveData);
             }
         }
 
@@ -429,10 +432,8 @@ namespace Game.SceneObjects.Movement
         /// </summary>
         private void UpdateAerialMovement(AirMoveData airMoveData)
         {
-            {
-                UpdateAerialXMovement(airMoveData);
-                UpdateAerialYMovement(airMoveData);
-            }
+            UpdateAerialXMovement(airMoveData);
+            UpdateAerialYMovement(airMoveData);
         }
 
 
@@ -644,6 +645,20 @@ namespace Game.SceneObjects.Movement
         }
 
         #endregion
+
+        #endregion
+
+
+        #region Gravity Scaler
+
+        /// <summary>
+        /// Apply additional downward velocity ontop of gravity based on <paramref name="airMoveData"/>
+        /// </summary>
+        private void ApplyGravityScaler(AirMoveData airMoveData)
+        {
+            if (sceneObject.CurGroundedState == GroundedState.Airborn)
+                sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, sceneObject.Rb.linearVelocity.y + (Physics.gravity.y * airMoveData.AdditionalGravityScaler * Time.fixedDeltaTime), sceneObject.Rb.linearVelocity.z);
+        }
 
         #endregion
 

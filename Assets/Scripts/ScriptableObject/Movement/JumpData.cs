@@ -6,6 +6,5 @@ namespace Game.SceneObjects.Movement
     public class JumpData : MovementData
     {
         public float JumpVelocity;
-        public float GravityScaler;
     }
 }

@@ -286,24 +286,6 @@ namespace Game.SceneObjects.Movement
             return false;
         }
 
-        #endregion
-
-
-        /// <summary>
-        /// Get gravity scaler if jumpData exists
-        /// </summary>
-        /// <param name="gravityScaler"></param>
-        /// <returns></returns>
-        public bool TryGetGravityScaler(out float gravityScaler)
-        {
-            if (JumpData != null)
-            {
-                gravityScaler = JumpData.GravityScaler;
-                return true;
-            }
-
-            gravityScaler = 1;
-            return false;
-        }       
+        #endregion     
     }
 }
