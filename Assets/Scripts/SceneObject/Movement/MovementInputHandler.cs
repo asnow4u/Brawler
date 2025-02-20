@@ -327,10 +327,11 @@ namespace Game.SceneObjects.Movement
 
                     if (IsAgainstArialWall())
                         TrySetCurrentMoveState(MovementType.WallSlide);                    
+                    
+                    //Gravity
+                    ApplyGravityScaler(curMovementCollection.AirMoveData);
                 }
 
-                //Gravity
-                ApplyGravityScaler(curMovementCollection.AirMoveData);
             }
         }
 
