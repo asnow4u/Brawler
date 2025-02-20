@@ -657,8 +657,7 @@ namespace Game.SceneObjects.Movement
         /// </summary>
         private void ApplyGravityScaler(AirMoveData airMoveData)
         {
-            if (sceneObject.CurGroundedState == GroundedState.Airborn)
-                sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, sceneObject.Rb.linearVelocity.y + (Physics.gravity.y * airMoveData.AdditionalGravityScaler * Time.fixedDeltaTime), sceneObject.Rb.linearVelocity.z);
+            sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, sceneObject.Rb.linearVelocity.y + (Physics.gravity.y * airMoveData.AdditionalGravityScaler * Time.fixedDeltaTime), sceneObject.Rb.linearVelocity.z);
         }
 
         #endregion
