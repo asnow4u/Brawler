@@ -42,7 +42,7 @@ public static class DebugSceneObject
     private static GameObject CreateSceneObject(string name)
     {
         GameObject obj = new GameObject(name);
-        obj.AddComponent<EnvironmentObject>();
+        obj.AddComponent<TestDummy>();
         obj.AddComponent<CapsuleCollider>();
         return obj;
     }
