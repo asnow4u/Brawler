@@ -3,14 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum AnimationTriggerType { Start, End, EnableCollider, DisableCollider, ChargeAction }
 
 [Serializable]
 public class AnimationTrigger
 {
-    public enum Type { Start, End, EnableCollider, DisableCollider }
 
     public float TriggerFrame;
-    public Type TriggerType;
+    public AnimationTriggerType TriggerType;
     [HideInInspector]
     public bool WasTriggered = false;
 

@@ -269,12 +269,20 @@ namespace Game.SceneObjects.Attack
 
             switch (trigger.TriggerType)
             {
-                case AnimationTrigger.Type.EnableCollider:
+                case AnimationTriggerType.EnableCollider:
                     sceneObject.EquipmentHandler.CurWeapon.EnableCollidersForAttack(curAttackData, AttackConnected);
                     break;
 
-                case AnimationTrigger.Type.DisableCollider:
+                case AnimationTriggerType.DisableCollider:
                     sceneObject.EquipmentHandler.CurWeapon.DisableAllColliders();
+                    break;
+
+                case AnimationTriggerType.ChargeAction:
+
+                    //Determine if attack button is still held
+                    //Pause attack animation.
+                    //establish a listener for when the button is dropped
+                    //start countdown on when to release the attack automatically
                     break;
             }
         }
@@ -294,13 +302,13 @@ namespace Game.SceneObjects.Attack
                 //Attack Details
                 SceneObject sceneObject = GetComponentInParent<SceneObject>();
                 int curFrame = sceneObject.AnimationHandler.GetFrameOfCurrentAnimation();
-                float launchAngle = curAttackData.GetAttackLaunchAngle(curFrame);
 
-                //Reverse launch angle
+                //Launch Angle
+                float launchAngle = curAttackData.LaunchAngle;
                 if (!sceneObject.IsFacingRightDirection())
                     launchAngle = 180 - launchAngle;
 
-                target.HitByAttack(curAttackData.GetInfluence(), col.ClosestPoint(col.transform.position), curAttackData.GetAttackDamage(curFrame), launchAngle);
+                target.HitByAttack(curAttackData.Influence, col.ClosestPoint(col.transform.position), curAttackData.GetAttackDamage(curFrame), launchAngle);
             }
         }
 

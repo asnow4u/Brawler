@@ -55,50 +55,153 @@ namespace Game.SceneObjects
             inputHandler.DisableInputEvents();
         }
 
+        public void Update()
+        {
+            if (inputHandler.input.PlayerActions.RightAttack.IsPressed())
+            {
+                Debug.Log("Right Attack is Pressed");
+            }
+        }
 
-        #region Movement Input Events
+
+        #region Movement Inputs
+
+        //Horizontal Movement
 
         private void HorizontalMovementInput(InputAction.CallbackContext obj)
         {
-            MovementInputHandler.PerformMovement(obj.ReadValue<Vector2>());
+            PerformHorizontalMovement(obj.ReadValue<Vector2>());
+        }
+
+        /// <inheritdoc/>
+        public override void PerformHorizontalMovement(Vector2 movement)
+        {
+            MovementInputHandler.PerformMovement(movement);
         }
 
         private void MovementCanceled(InputAction.CallbackContext obj)
         {
+            StopHorizontalMovement();
+        }
+
+        /// <inheritdoc/>
+        public override void StopHorizontalMovement()
+        {
             MovementInputHandler.PerformMovement(Vector2.zero);
         }
 
+        //Vertical Jump
+        
         private void JumpInput(InputAction.CallbackContext obj)
         {
-            MovementInputHandler.PerformJump(obj.ReadValue<float>());
+            PerformVerticalJump(obj.ReadValue<float>());
+        }
+
+        /// <inheritdoc/>
+        public override void PerformVerticalJump(float jumpStrength)
+        {
+            MovementInputHandler.PerformJump(jumpStrength);
         }
 
         private void JumpCanceled(InputAction.CallbackContext obj)
         {
+            StopVerticalJump();
+        }
+
+        /// <inheritdoc/>
+        public override void StopVerticalJump()
+        {
             //TODO: Determine if needed, can add to interface
         }
+
+        //Active Movement Inputs
+        /// <inheritdoc/>
+        public override bool IsHorizontalMovementActive()
+        {
+            return inputHandler.input.PlayerActions.Movement.IsPressed();
+        }
+
+        /// <inheritdoc/>
+        public override bool IsVerticalJumpActive()
+        {
+            return inputHandler.input.PlayerActions.Jump.IsPressed();
+        }
+
         #endregion
 
-        #region Attack Input Events
+        #region Attack Input
 
+        //Upward Attack
         private void AttackUpwardInput(InputAction.CallbackContext obj)
+        {
+            PerformUpAttack();
+        }
+
+        /// <inheritdoc/>
+        public override void PerformUpAttack()
         {
             AttackInputHandler.PerformUpAttack();
         }
 
+        //Downward Attack
         private void AttackDownwardInput(InputAction.CallbackContext obj)
+        {
+            PerformDownAttack();
+        }
+
+        /// <inheritdoc/>
+        public override void PerformDownAttack()
         {
             AttackInputHandler.PerformDownAttack();
         }
 
+        //Left Attack
         private void AttackLeftInput(InputAction.CallbackContext obj)
+        {
+            PerformLeftAttack();
+        }
+
+        /// <inheritdoc/>
+        public override void PerformLeftAttack()
         {
             AttackInputHandler.PerformLeftAttack();
         }
 
+        //Right Attack
         private void AttackRightInput(InputAction.CallbackContext obj)
         {
+            PerformRightAttack();           
+        }
+
+        /// <inheritdoc/>
+        public override void PerformRightAttack()
+        {
             AttackInputHandler.PerformRightAttack();
+        }
+
+        //Active Attack Inputs
+        /// <inheritdoc/>
+        public override bool IsUpAttackActive()
+        {
+            return inputHandler.input.PlayerActions.UpAttack.IsPressed();
+        }
+
+        /// <inheritdoc/>
+        public override bool IsDownAttackActive()
+        {
+            return inputHandler.input.PlayerActions.DownAttack.IsPressed();
+        }
+
+        /// <inheritdoc/>
+        public override bool IsLeftAttackActive()
+        {
+            return inputHandler.input.PlayerActions.LeftAttack.IsPressed();
+        }
+
+        /// <inheritdoc/>
+        public override bool IsRightAttackActive()
+        {
+            return inputHandler.input.PlayerActions.RightAttack.IsPressed();
         }
 
         #endregion
@@ -107,8 +210,21 @@ namespace Game.SceneObjects
 
         private void InteractInput(InputAction.CallbackContext obj)
         {
+            PerformInteraction();
+        }
+
+        /// <inheritdoc/>
+        public override void PerformInteraction()
+        {
             InteractionHandler.ReceiveInput(this);
         }
+
+        /// <inheritdoc/>
+        public override bool IsInteractionActive()
+        {
+            return inputHandler.input.PlayerActions.Interaction.IsPressed();
+        }
+
 
         #endregion
 
