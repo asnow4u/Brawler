@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Animation: {fileID: 7400000, guid: 21d83ad7cba807b40a59a1c6f87ad46b, type: 2}
   AnimationSpeedMultiplier: 3
-  Type: 5
+  Type: 8
   Triggers: []

@@ -22,4 +22,4 @@ MonoBehaviour:
   AerialYAcceleration: 25
   AerialXDeceleration: 25
   AerialYDeceleration: 25
-  AdditionalGravityScaler: 0
+  AdditionalGravityScaler: 1
