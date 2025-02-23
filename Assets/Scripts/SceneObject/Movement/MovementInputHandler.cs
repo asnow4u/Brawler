@@ -676,7 +676,7 @@ namespace Game.SceneObjects.Movement
         {
             if (TryGetCurrentMovementCollection(out MovementCollection curMovementCollection))
             {
-                if (curMoveState != MovementType.Jump && curMoveState != MovementType.Landing)
+                if (curMoveState != MovementType.Jump)
                 {
                     jumpInfluence = Mathf.Clamp01(inputInfluence);
 
