@@ -196,7 +196,7 @@ namespace Game.SceneObjects.Movement
 
         private void CheckTurnAround()
         {
-            if (sceneObject.IsFacingRightDirection() && horizontalInfluence < 0)
+            if (sceneObject.IsFacingRightDirection && horizontalInfluence < 0)
             {
                 sceneObject.TurnAround();
 
@@ -216,7 +216,7 @@ namespace Game.SceneObjects.Movement
                 }
             }
 
-            else if (!sceneObject.IsFacingRightDirection() && horizontalInfluence > 0)
+            else if (!sceneObject.IsFacingRightDirection && horizontalInfluence > 0)
             {
                 sceneObject.TurnAround();
 
@@ -242,14 +242,14 @@ namespace Game.SceneObjects.Movement
         public bool IsAgainstGroundedWall()
         {
             //Left
-            if (!sceneObject.IsFacingRightDirection())
+            if (!sceneObject.IsFacingRightDirection)
             {
                 if (horizontalInfluence <= 0 && sceneObject.TryDetectCollision(Direction.Left, 0.5f, LayerMask.GetMask("Environment"), out _))
                     return true;
             }
 
             //Right
-            else if (sceneObject.IsFacingRightDirection())
+            else if (sceneObject.IsFacingRightDirection)
             {
                 if (horizontalInfluence >= 0 && sceneObject.TryDetectCollision(Direction.Right, 0.5f, LayerMask.GetMask("Environment"), out _))
                     return true;
@@ -264,7 +264,7 @@ namespace Game.SceneObjects.Movement
             //Left
             if (sceneObject.Rb.linearVelocity.x <= 0 && sceneObject.TryDetectCollision(Direction.Left, 0.5f, LayerMask.GetMask("Environment"), out _))
             {
-                if (sceneObject.IsFacingRightDirection())
+                if (sceneObject.IsFacingRightDirection)
                     sceneObject.TurnAround();
 
                 return true;
@@ -273,7 +273,7 @@ namespace Game.SceneObjects.Movement
             //Right
             if (sceneObject.Rb.linearVelocity.x >= 0 && sceneObject.TryDetectCollision(Direction.Right, 0.5f, LayerMask.GetMask("Environment"), out _))
             {
-                if (!sceneObject.IsFacingRightDirection())
+                if (!sceneObject.IsFacingRightDirection)
                     sceneObject.TurnAround();
 
                 return true;
@@ -409,8 +409,8 @@ namespace Game.SceneObjects.Movement
                     Vector3 dragForce = sceneObject.Rb.linearVelocity.normalized * deccelerationValue;
                     sceneObject.Rb.linearVelocity -= dragForce * Time.fixedDeltaTime;
 
-                    if ((sceneObject.IsFacingRightDirection() && sceneObject.Rb.linearVelocity.x <= 0) ||
-                        (!sceneObject.IsFacingRightDirection() && sceneObject.Rb.linearVelocity.x >= 0))
+                    if ((sceneObject.IsFacingRightDirection && sceneObject.Rb.linearVelocity.x <= 0) ||
+                        (!sceneObject.IsFacingRightDirection && sceneObject.Rb.linearVelocity.x >= 0))
                     {
                         sceneObject.Rb.linearVelocity = Vector3.zero;
 
@@ -747,7 +747,7 @@ namespace Game.SceneObjects.Movement
         {
             if (TrySetCurrentMoveState(MovementType.AirJump))
             {
-                if (sceneObject.IsFacingRightDirection())
+                if (sceneObject.IsFacingRightDirection)
                     sceneObject.Rb.linearVelocity = new Vector3((-1) * Mathf.Cos(wallJumpData.JumpAngle * Mathf.Deg2Rad) * wallJumpData.JumpVelocity, Mathf.Sin(wallJumpData.JumpAngle * Mathf.Deg2Rad) * wallJumpData.JumpVelocity, sceneObject.Rb.linearVelocity.z);
                 else
                     sceneObject.Rb.linearVelocity = new Vector3(Mathf.Cos(wallJumpData.JumpAngle * Mathf.Deg2Rad) * wallJumpData.JumpVelocity, Mathf.Sin(wallJumpData.JumpAngle * Mathf.Deg2Rad) * wallJumpData.JumpVelocity, sceneObject.Rb.linearVelocity.z);

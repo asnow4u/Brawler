@@ -293,30 +293,39 @@ namespace Game.SceneObjects
 
         #region Direction
 
+        /// <returns>
+        /// Whether the sceneObject is facing the right direction
+        /// </returns>
+        public bool IsFacingRightDirection
+        {
+            get
+            {
+                float angleRightDiff = Vector3.Angle(transform.right, Vector3.right);
+                float angleLeftDiff = Vector3.Angle(transform.right, Vector3.left);
+
+                if (angleRightDiff < angleLeftDiff)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+
+        /// <summary>
+        /// Turn the sceneObject around 
+        /// </summary>
         public void TurnAround()
         {
-            if (IsFacingRightDirection())
+            if (IsFacingRightDirection)
                 transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
             else
                 transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
             
             UIHandler.RotateDisplayText();
         }
-
-
-        public bool IsFacingRightDirection()
-        {
-            float angleRightDiff = Vector3.Angle(transform.right, Vector3.right);
-            float angleLeftDiff = Vector3.Angle(transform.right, Vector3.left);
-
-            if (angleRightDiff < angleLeftDiff)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
+      
         #endregion
 
 

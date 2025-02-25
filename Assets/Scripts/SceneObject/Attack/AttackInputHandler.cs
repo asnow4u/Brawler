@@ -107,8 +107,16 @@ namespace Game.SceneObjects.Attack
         /// </summary>
         public void HandleUpdate()
         {
-            if (TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
-                CheckForAnimationTriggers();
+            if (sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking && curAttackData != null)
+            {
+                //Check Collision
+                if (TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
+                    CheckForAnimationTriggers();
+
+                //Charge Attack
+                CheckChargeAttacksForRelease();
+                
+            }
         }
 
 
@@ -195,7 +203,7 @@ namespace Game.SceneObjects.Attack
                 {
                     SetCurrentAttackState(AttackType.ForwardTilt, curAttackCollection);
 
-                    if (!sceneObject.IsFacingRightDirection())
+                    if (!sceneObject.IsFacingRightDirection)
                         sceneObject.TurnAround();                   
                 }
                     
@@ -203,7 +211,7 @@ namespace Game.SceneObjects.Attack
                 {
                     SetCurrentAttackState(AttackType.ForwardAir, curAttackCollection);
 
-                    if (!sceneObject.IsFacingRightDirection())
+                    if (!sceneObject.IsFacingRightDirection)
                         sceneObject.TurnAround();
                 }
             }
@@ -222,7 +230,7 @@ namespace Game.SceneObjects.Attack
                 {
                     SetCurrentAttackState(AttackType.ForwardTilt, curAttackCollection);
 
-                    if (sceneObject.IsFacingRightDirection())
+                    if (sceneObject.IsFacingRightDirection)
                         sceneObject.TurnAround();
                 }
 
@@ -230,7 +238,7 @@ namespace Game.SceneObjects.Attack
                 {
                     SetCurrentAttackState(AttackType.ForwardAir, curAttackCollection);
 
-                    if (sceneObject.IsFacingRightDirection())
+                    if (sceneObject.IsFacingRightDirection)
                         sceneObject.TurnAround();
                 }                
             }
@@ -239,6 +247,114 @@ namespace Game.SceneObjects.Attack
         #endregion
 
 
+        #region Charged Attack
+
+        /// <summary>
+        /// Determine if a charged attack needs to be released
+        /// </summary>
+        private void CheckChargeAttacksForRelease()
+        {
+            if (sceneObject.AnimationHandler.IsAnimationPaused)
+            {
+                switch (curAttackState)
+                {
+                    case AttackType.UpTilt:
+                    case AttackType.UpAir:
+                        ReleaseUpChargeAttack();                        
+                        break;
+
+                    case AttackType.ForwardTilt:
+                    case AttackType.ForwardAir:
+                        ReleaseForwardChargeAttack();
+                        break;
+
+                    case AttackType.DownTilt:
+                    case AttackType.DownAir:
+                        ReleaseDownChargeAttack();
+                        break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Perform a charged upward attack. <br/>
+        /// Pauses animation till release. <br/>
+        /// Fired from animationTrigger
+        /// </summary>
+        private void PerformUpChargeAttack()
+        {
+            if (sceneObject.IsUpAttackActive())
+                sceneObject.AnimationHandler.PauseCurrentAnimation(1);
+        }
+
+
+        /// <summary>
+        /// Release charged upward attack
+        /// </summary>
+        private void ReleaseUpChargeAttack()
+        {
+            if (!sceneObject.IsUpAttackActive())
+                sceneObject.AnimationHandler.ResumeCurrentAnimation();
+        }
+
+        /// <summary>
+        /// Perform a charged forward attack. <br/>
+        /// Pauses animation till release. <br/>
+        /// Fired from animationTrigger
+        /// </summary>
+        private void PerformForwardChangeAttack()
+        {
+            Debug.Log(sceneObject.IsLeftAttackActive() + " " + !sceneObject.IsFacingRightDirection);
+
+            if (sceneObject.IsRightAttackActive() && sceneObject.IsFacingRightDirection)
+                sceneObject.AnimationHandler.PauseCurrentAnimation(1);
+
+
+            else if (sceneObject.IsLeftAttackActive() && !sceneObject.IsFacingRightDirection)
+                sceneObject.AnimationHandler.PauseCurrentAnimation(1);
+        }
+
+
+        /// <summary>
+        /// Release charged forward attack
+        /// </summary>
+        private void ReleaseForwardChargeAttack()
+        {
+            if (!sceneObject.IsRightAttackActive() && sceneObject.IsFacingRightDirection)
+            {
+                sceneObject.AnimationHandler.ResumeCurrentAnimation();
+                Debug.Log("Release forward charge attack");
+            }
+
+            else if (!sceneObject.IsLeftAttackActive() && !sceneObject.IsFacingRightDirection)
+                sceneObject.AnimationHandler.ResumeCurrentAnimation();
+        }
+
+
+        /// <summary>
+        /// Perform a charged downward attack. <br/>
+        /// Pauses animation till release. <br/>
+        /// Fired from animationTrigger
+        /// </summary>
+        private void PerformDownChargeAttack()
+        {
+            if (sceneObject.IsDownAttackActive())
+                sceneObject.AnimationHandler.PauseCurrentAnimation(1);
+        }
+
+
+        /// <summary>
+        /// Release charged downward attack
+        /// </summary>
+        private void ReleaseDownChargeAttack()
+        {
+            if (!sceneObject.IsDownAttackActive())
+                sceneObject.AnimationHandler.ResumeCurrentAnimation();
+        }
+
+
+        #endregion
+
         #region Animation Triggers
 
         /// <summary>
@@ -246,23 +362,19 @@ namespace Game.SceneObjects.Attack
         /// </summary>
         private void CheckForAnimationTriggers()
         {
-            if (sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking && curAttackData != null)
-            {
-                int curAnimationFrame = sceneObject.AnimationHandler.GetFrameOfCurrentAnimation();
+            int curAnimationFrame = sceneObject.AnimationHandler.GetFrameOfCurrentAnimation();
 
-                foreach (AnimationTrigger trigger in curAttackData.GetAttackTriggers())
-                {
-                    if (!trigger.WasTriggered && curAnimationFrame >= trigger.TriggerFrame)
-                        ExecuteTrigger(trigger);
-                }
+            foreach (AnimationTrigger trigger in curAttackData.GetAttackTriggers())
+            {
+                if (!trigger.WasTriggered && curAnimationFrame >= trigger.TriggerFrame)
+                    ExecuteTrigger(trigger);
             }
         }
 
 
         /// <summary>
-        /// Execute animation trigger
+        /// Execute <paramref name="trigger"/>
         /// </summary>
-        /// <param name="trigger"></param>
         private void ExecuteTrigger(AnimationTrigger trigger)
         {
             trigger.WasTriggered = true;
@@ -278,11 +390,23 @@ namespace Game.SceneObjects.Attack
                     break;
 
                 case AnimationTriggerType.ChargeAction:
+                    switch (curAttackState)
+                    {
+                        case AttackType.UpTilt:
+                        case AttackType.UpAir:
+                            PerformUpChargeAttack();
+                            break;
 
-                    //Determine if attack button is still held
-                    //Pause attack animation.
-                    //establish a listener for when the button is dropped
-                    //start countdown on when to release the attack automatically
+                        case AttackType.ForwardTilt:
+                        case AttackType.ForwardAir:
+                            PerformForwardChangeAttack();
+                            break;
+
+                        case AttackType.DownTilt:
+                        case AttackType.DownAir:
+                            PerformDownChargeAttack();
+                            break;
+                    }
                     break;
             }
         }
@@ -305,7 +429,7 @@ namespace Game.SceneObjects.Attack
 
                 //Launch Angle
                 float launchAngle = curAttackData.LaunchAngle;
-                if (!sceneObject.IsFacingRightDirection())
+                if (!sceneObject.IsFacingRightDirection)
                     launchAngle = 180 - launchAngle;
 
                 target.HitByAttack(curAttackData.Influence, col.ClosestPoint(col.transform.position), curAttackData.GetAttackDamage(curFrame), launchAngle);

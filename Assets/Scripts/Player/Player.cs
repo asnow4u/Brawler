@@ -55,14 +55,6 @@ namespace Game.SceneObjects
             inputHandler.DisableInputEvents();
         }
 
-        public void Update()
-        {
-            if (inputHandler.input.PlayerActions.RightAttack.IsPressed())
-            {
-                Debug.Log("Right Attack is Pressed");
-            }
-        }
-
 
         #region Movement Inputs
 

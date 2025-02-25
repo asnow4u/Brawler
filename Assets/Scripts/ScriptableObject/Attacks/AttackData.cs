@@ -40,7 +40,7 @@ public class AttackData : ScriptableObject
 
     [Space]
     [Tooltip("Trigger to be fired to determine if attack is a strong attack")]
-    [SerializeField] private AnimationTrigger strongAttack;
+    [SerializeField] private AnimationTrigger chargeAction;
 
     [Space]
     [Tooltip("Any additional triggers to be called during the animation")]
@@ -63,7 +63,8 @@ public class AttackData : ScriptableObject
         {
             enableCollider,
             disableCollider,
-            end
+            end,
+            chargeAction
         };
 
         triggers.AddRange(otherTriggers);

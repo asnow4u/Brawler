@@ -56,8 +56,8 @@ namespace Game.Navigation
                 //Face the direction of the jump
                 if (TryGetComponent(out SceneObject sceneObject))
                 {
-                    if ((sceneObject.IsFacingRightDirection() && jumpRoute.InitialVelocity < 0f) ||
-                        !sceneObject.IsFacingRightDirection() && jumpRoute.InitialVelocity > 0f)
+                    if ((sceneObject.IsFacingRightDirection && jumpRoute.InitialVelocity < 0f) ||
+                        !sceneObject.IsFacingRightDirection && jumpRoute.InitialVelocity > 0f)
                     {
                         sceneObject.TurnAround();
                     }

@@ -2,6 +2,7 @@ using Game.SceneObjects.ActionStates;
 using Game.SceneObjects.Attack;
 using Game.SceneObjects.Movement;
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
@@ -25,7 +26,7 @@ namespace Game.SceneObjects.Animation
         [SerializeField] private AnimationClip curPlayingAnimation;
 
         //Coroutines
-        private Coroutine animationEventCorutine;
+        private Coroutine animationPauseCoroutine;
 
         //Events
         public event Action<AnimationClip> AnimationStartedEvent;
@@ -35,6 +36,7 @@ namespace Game.SceneObjects.Animation
         #region Getters
 
         public Animator Animator => animator;
+        public bool IsAnimationPaused => animationPauseCoroutine != null;
         public AnimationClip GroundIdleAnimation => groundIdleAnimation;
         public AnimationClip AirIdleAnimation => airIdleAnimation;
 
@@ -55,8 +57,8 @@ namespace Game.SceneObjects.Animation
             return currentFrame;
         }
 
-
         #endregion
+
 
         #region Initialize
 
@@ -266,7 +268,55 @@ namespace Game.SceneObjects.Animation
         }
 
 
+        /// <summary>
+        /// Pause the current animation for <paramref name="timer"/> seconds
+        /// </summary>
+        /// <param name="timer"></param>
+        public void PauseCurrentAnimation(float timer)
+        {
+            //Determine a animation is not already paused
+            if (curPlayingAnimation != null)
+            {
+                AnimationClipPlayable clipPlayable = animationGraph.GetCurrentAnimationPlayable();
+                clipPlayable.Pause();
+         
+                animationPauseCoroutine = StartCoroutine(PauseAnimationTimer(timer));
+            }
+        }
 
+        /// <summary>
+        /// Resume a paused animation
+        /// </summary>
+        public void ResumeCurrentAnimation()
+        {
+            if (animationPauseCoroutine != null)
+            {
+                animationPauseCoroutine = null;
+
+                AnimationClipPlayable clipPlayable = animationGraph.GetCurrentAnimationPlayable();
+                clipPlayable.Play();
+            }
+        }
+
+
+        /// <summary>
+        /// Coroutine timer for how long an animation is paused for
+        /// </summary>
+        private IEnumerator PauseAnimationTimer(float timer)
+        {
+            while (timer > 0)
+            {
+                timer -= Time.deltaTime;
+                yield return null;
+            }
+
+            ResumeCurrentAnimation();
+        }
+
+
+        /// <summary>
+        /// End the animation if currently playing and go to Idle
+        /// </summary>
         public void EndAnimation(AnimationClip clip)
         {
             if (curPlayingAnimation != null &&
