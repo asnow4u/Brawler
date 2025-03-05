@@ -8,12 +8,15 @@ public enum AnimationTriggerType { Start, End, EnableCollider, DisableCollider, 
 [Serializable]
 public class AnimationTrigger
 {
-
     public float TriggerFrame;
     public AnimationTriggerType TriggerType;
     [HideInInspector]
     public bool WasTriggered = false;
 
+    public AnimationTrigger(AnimationTriggerType triggerType)
+    {
+        TriggerType = triggerType;
+    }
 
     public void Reset()
     {

@@ -53,8 +53,8 @@ MonoBehaviour:
     TriggerFrame: 40
     TriggerType: 1
     WasTriggered: 0
-  strongAttack:
-    TriggerFrame: 0
-    TriggerType: 0
+  chargeAction:
+    TriggerFrame: 3
+    TriggerType: 4
     WasTriggered: 0
   otherTriggers: []

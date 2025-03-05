@@ -28,25 +28,21 @@ public class AttackData : ScriptableObject
 
     [Header("Triggers")]
     [Tooltip("Trigger to be fired when attack colliders should be enabled")]
-    [SerializeField] private AnimationTrigger enableCollider;
+    [SerializeField] private AnimationTrigger enableCollider = new AnimationTrigger(AnimationTriggerType.EnableCollider);
     
     [Space]
     [Tooltip("Trigger to be fired when attack colliders should be disabled")]
-    [SerializeField] private AnimationTrigger disableCollider;
-
-    [Space]
-    [Tooltip("Trigger to be fired when attack animation is ending")]
-    [SerializeField] private AnimationTrigger end;
+    [SerializeField] private AnimationTrigger disableCollider = new AnimationTrigger(AnimationTriggerType.DisableCollider);
 
     [Space]
     [Tooltip("Trigger to be fired to determine if attack is a strong attack")]
-    [SerializeField] private AnimationTrigger chargeAction;
+    [SerializeField] private AnimationTrigger chargeAction = new AnimationTrigger(AnimationTriggerType.ChargeAction);
 
     [Space]
-    [Tooltip("Any additional triggers to be called during the animation")]
-    [SerializeField] private List<AnimationTrigger> otherTriggers;
+    [Tooltip("Trigger to be fired when attack animation is ending")]
+    [SerializeField] private AnimationTrigger end = new AnimationTrigger(AnimationTriggerType.End);
 
-
+    
     public float Influence => influence;
     public float LaunchAngle => launchAngle;
 
@@ -66,8 +62,6 @@ public class AttackData : ScriptableObject
             end,
             chargeAction
         };
-
-        triggers.AddRange(otherTriggers);
 
         return triggers.ToArray();
     }

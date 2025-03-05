@@ -9,7 +9,6 @@ namespace Game.SceneObjects.Movement
         public AnimationClip Animation;
         public float AnimationSpeedMultiplier;
         public MovementType Type;
-        public List<AnimationTrigger> Triggers;
     }
 }
 
