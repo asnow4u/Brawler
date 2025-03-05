@@ -229,7 +229,6 @@ namespace Game.SceneObjects.Damage
             averageNormal /= hitNormals.Count;
 
             Vector3 bounceVelocity = Vector3.Reflect(velocity, averageNormal) * bounceDegrade;
-            Debug.Log(bounceVelocity);
 
             sceneObject.Rb.linearVelocity = bounceVelocity;
         }        

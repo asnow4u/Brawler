@@ -304,8 +304,6 @@ namespace Game.SceneObjects.Attack
         /// </summary>
         private void PerformForwardChangeAttack()
         {
-            Debug.Log(sceneObject.IsLeftAttackActive() + " " + !sceneObject.IsFacingRightDirection);
-
             if (sceneObject.IsRightAttackActive() && sceneObject.IsFacingRightDirection)
                 sceneObject.AnimationHandler.PauseCurrentAnimation(1);
 

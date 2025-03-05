@@ -49,12 +49,11 @@ MonoBehaviour:
     TriggerFrame: 12
     TriggerType: 3
     WasTriggered: 1
+  chargeAction:
+    TriggerFrame: 5
+    TriggerType: 4
+    WasTriggered: 1
   end:
     TriggerFrame: 50
     TriggerType: 1
     WasTriggered: 0
-  strongAttack:
-    TriggerFrame: 0
-    TriggerType: 0
-    WasTriggered: 0
-  otherTriggers: []

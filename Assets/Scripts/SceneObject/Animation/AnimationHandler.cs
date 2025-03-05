@@ -250,10 +250,13 @@ namespace Game.SceneObjects.Animation
                 if (curPlayingAnimation != clipPlayable.GetAnimationClip())
                 {
                     if (curPlayingAnimation != null)
+                    {
+                        animationPauseCoroutine = null;
                         AnimationEndedEvent?.Invoke(curPlayingAnimation);
+                    }
 
+                    clipPlayable.Play();
                     curPlayingAnimation = clipPlayable.GetAnimationClip();
-
                     AnimationStartedEvent?.Invoke(curPlayingAnimation);
                 }
 
@@ -322,6 +325,7 @@ namespace Game.SceneObjects.Animation
             if (curPlayingAnimation != null &&
                 curPlayingAnimation == clip)
             {
+                animationPauseCoroutine = null;
                 GetComponent<ActionStateHandler>().ChangeState(ActionState.Idle);
             }
         }
