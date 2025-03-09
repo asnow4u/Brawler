@@ -6,62 +6,54 @@ using System.Collections.Generic;
 using UnityEngine;
 
 //NOTE: Solid is not yet implemented. Would want to make a seperate class for it having killzone be an abstract class
-public enum KillZoneType { LeftGhost, RightGhost, LeftSolid, RightSolid }
+public enum KillZoneType { Left, Right, LeftSolid, RightSolid }
 
 
-[RequireComponent(typeof(Collider))]
 public class KillZone : MonoBehaviour
 {
     [SerializeField] private KillZoneType type;
-    [SerializeField] private string killID;
+    [SerializeField] private Transform objTransform;
 
     private const float OFFSCREENDISTANCE = 1.5f;
-    private const float MINVELOCITY = 20f;
 
 
     #region Initialize
 
-    public void Initialize(KillZoneType type, string uniqueID) 
+    public void Initialize(KillZoneType type, Transform objTransform) 
     {
         this.type = type;
-        this.killID = uniqueID;
+        this.objTransform = objTransform;
 
-        SetUpCollider();
-    }
-
-
-    private void SetUpCollider()
-    {
-        switch (type)
-        {
-            case KillZoneType.LeftGhost:
-            case KillZoneType.RightGhost:
-                GetComponent<Collider>().isTrigger = true;
-                break;
-        }
+        UpdatePosition();
     }
 
     #endregion
 
     private void Update()
     {
-        (Vector3 leftView, Vector3 rightView) cameraView = GetCameraViewport();
-
-        if (type == KillZoneType.LeftGhost &&
-            transform.position.x > cameraView.leftView.x)
-        {
-            transform.position = cameraView.leftView;
-        }
-
-        else if (type == KillZoneType.RightGhost &&
-                 transform.position.x < cameraView.rightView.x)
-        {
-            transform.position = cameraView.rightView;            
-        }                 
+        UpdatePosition();
+        CheckForKill();
     }
 
 
-    //NOTE: This should probably be moved to a diffent script dealing with the cameras
+    /// <summary>
+    /// Update the position of the killzone based on the camera view
+    /// </summary>
+    private void UpdatePosition()
+    {
+        (Vector3 leftView, Vector3 rightView) cameraView = GetCameraViewport();
+
+        if (type == KillZoneType.Left && transform.position.x > cameraView.leftView.x)
+            transform.position = cameraView.leftView;
+
+        else if (type == KillZoneType.Right && transform.position.x < cameraView.rightView.x)
+            transform.position = cameraView.rightView;
+    }
+
+
+    /// <summary>
+    /// Get the left and right side of the camera view
+    /// </summary>
     private (Vector3, Vector3) GetCameraViewport()
     {
         Camera cam = Camera.main;
@@ -75,31 +67,35 @@ public class KillZone : MonoBehaviour
     }
 
 
-    #region Collision
-
-    private void OnTriggerEnter(Collider col)
+    /// <summary>
+    /// Check if the objects transform has passed the killzone and should be destroyed
+    /// </summary>
+    private void CheckForKill()
     {
-        if (col.gameObject.layer == LayerMask.NameToLayer("Ragdoll"))
-        {            
-            SceneObject hitSceneObject = col.gameObject.GetComponentInParent<SceneObject>();
-            if (hitSceneObject != null)
-                CollisionWithSceneObject(hitSceneObject);
+        if (objTransform != null)
+        {
+            if (type == KillZoneType.Left && objTransform.position.x < transform.position.x)
+                KillObject();
+
+            else if (type == KillZoneType.Right && objTransform.position.x > transform.position.x)
+                KillObject();
         }
     }
 
 
-    private void CollisionWithSceneObject(SceneObject sceneObject)
+    /// <summary>
+    /// Kill the object that has passed the killzone
+    /// </summary>
+    private void KillObject()
     {
-        if (sceneObject.UniqueId == killID)
-        {                        
-            if (sceneObject.ActionStateHandler.CurActionState == ActionState.HitStun)
-            {                                
-                //TODO: Spawn partical effect
-                //TODO: Determine if player
-                Destroy(sceneObject.gameObject);
+        if (objTransform.TryGetComponent(out SceneObject sceneObject))
+        {
+            if (sceneObject is Player player)
+            {
+                //TODO: Handle player death
             }
+            else
+                Destroy(sceneObject.gameObject);
         }
     }
-
-    #endregion
 }

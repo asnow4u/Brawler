@@ -137,6 +137,8 @@ namespace Game.SceneObjects.Damage
 
             //HitStun
             ApplyHitStun(launchVelocity);
+
+            SetUpKillZone();
         }
 
 
@@ -266,9 +268,7 @@ namespace Game.SceneObjects.Damage
                 CalculateBounce(sceneObject.Rb.linearVelocity);
 
                 if (hitStunState == HitStunState.Start)
-                {
-                    //SetUpKillZone();
-
+                {                    
                     //Ragdoll
                     //if (ragdoll != null)
                     //{
@@ -291,7 +291,7 @@ namespace Game.SceneObjects.Damage
 
                 if (hitStunState == HitStunState.End)
                 {
-                    DestroyKillZones();
+                    RemoveKillZones();
                     hitStunState = HitStunState.None;
                     sceneObject.ActionStateHandler.ChangeState(ActionState.Idle);
                 }               
@@ -353,38 +353,34 @@ namespace Game.SceneObjects.Damage
         #region KillZone
 
         /// <summary>
-        /// Spawn killzones
+        /// Spawn killzones for this sceneObject
         /// </summary>
         private void SetUpKillZone()
         {
             if (killZones == null)
-            {
-                killZones = KillZoneFactory.instance.SpawnGhostKillZones(sceneObject.UniqueId);
-            }
+                killZones = KillZoneFactory.instance.SpawnKillZones(sceneObject.transform);
         }
 
 
         /// <summary>
         /// Destroy current killzones
         /// </summary>
-        private void DestroyKillZones()
+        private void RemoveKillZones()
         {
             if (killZones != null)
             {
                 foreach (KillZone killZone in killZones)
-                {
                     Destroy(killZone.gameObject);
-                }
-            }
 
-            killZones = null;
+               killZones = null;
+            }
         }
 
         #endregion
 
         private void OnDestroy()
         {
-            DestroyKillZones();
+            RemoveKillZones();
         }
 
 

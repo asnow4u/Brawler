@@ -1,3 +1,4 @@
+using Game.SceneObjects;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -22,15 +23,15 @@ public class KillZoneFactory : MonoBehaviour
     }
 
 
-    public KillZone[] SpawnGhostKillZones(string objID)
+    public KillZone[] SpawnKillZones(Transform sceneObjectTransform)
     {
         GameObject leftKillZoneObj = Instantiate(killZonePrefab);
         KillZone leftKillZone = leftKillZoneObj.GetComponent<KillZone>();
-        leftKillZone.Initialize(KillZoneType.LeftGhost, objID);
+        leftKillZone.Initialize(KillZoneType.Left, sceneObjectTransform);
                 
         GameObject rightKillZoneObj = Instantiate(killZonePrefab);
         KillZone rightKillZone = rightKillZoneObj.GetComponent<KillZone>();
-        rightKillZone.Initialize(KillZoneType.RightGhost, objID);
+        rightKillZone.Initialize(KillZoneType.Right, sceneObjectTransform);
 
         return new KillZone[] { rightKillZone, leftKillZone};
     }

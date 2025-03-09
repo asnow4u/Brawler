@@ -319,10 +319,7 @@ namespace Game.SceneObjects.Attack
         private void ReleaseForwardChargeAttack()
         {
             if (!sceneObject.IsRightAttackActive() && sceneObject.IsFacingRightDirection)
-            {
                 sceneObject.AnimationHandler.ResumeCurrentAnimation();
-                Debug.Log("Release forward charge attack");
-            }
 
             else if (!sceneObject.IsLeftAttackActive() && !sceneObject.IsFacingRightDirection)
                 sceneObject.AnimationHandler.ResumeCurrentAnimation();

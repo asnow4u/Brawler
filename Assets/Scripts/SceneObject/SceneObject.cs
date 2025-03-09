@@ -73,7 +73,7 @@ namespace Game.SceneObjects
 
         #region Initialize
 
-        private void Start()
+        private void Awake()
         {
             try
             {

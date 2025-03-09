@@ -3289,7 +3289,7 @@ Transform:
   m_GameObject: {fileID: 7797432938708641119}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -15.47, y: 7.71, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3446,14 +3446,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c67052fc0716664989d2bb2093fec61, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damageTaken: 0
-  knockbackHandler:
-    minKnockBackAcceleration: 7
-    power: 3
+  damageTaken: 100
   hitStunState: 0
   hitStunTimer: 0
+  bounceDegrade: 0.9
   ragdollRoot: {fileID: 8066618445049447940}
-  bounceDegrade: 1
 --- !u!114 &2606246193487707004
 MonoBehaviour:
   m_ObjectHideFlags: 0
