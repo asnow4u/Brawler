@@ -22,7 +22,7 @@ public interface IInputControl
     /// <summary>
     /// Stop vertical jump
     /// </summary>
-    public void StopVerticalJump();
+    public void StopJumpMovement();
 
     /// <returns>
     /// Whether inputs for horizontal movement is active

@@ -51,13 +51,13 @@ public class PlayerTester : Editor
 
             while (frameCount < 60)
             {
-                movementHandler.PerformMovement(new Vector2(1, 0));
+                movementHandler.SetMovementInfluence(new Vector2(1, 0));
                 frameCount++;
                 await Task.Yield();
             }
 
-            movementHandler.PerformMovement(new Vector2(0, 0));
-            movementHandler.PerformJump(1);
+            movementHandler.SetMovementInfluence(new Vector2(0, 0));
+            movementHandler.SetJumpInfluence(1);
         }
     }
 
@@ -71,13 +71,13 @@ public class PlayerTester : Editor
             
             while (frameCount < 60)
             {
-                moveHandler.PerformMovement(new Vector2(1, 0));
+                moveHandler.SetMovementInfluence(new Vector2(1, 0));
                 frameCount++;
                 await Task.Yield();
             }
 
             attackHandler.PerformRightAttack();
-            moveHandler.PerformMovement(new Vector2(0, 0));
+            moveHandler.SetMovementInfluence(new Vector2(0, 0));
         }
     }
 
@@ -86,16 +86,16 @@ public class PlayerTester : Editor
     {
         if (sceneObject.TryGetComponent(out MovementInputHandler moveHandler))
         {
-            moveHandler.PerformMovement(new Vector2(1, 0));                        
+            moveHandler.SetMovementInfluence(new Vector2(1, 0));                        
             await Task.Yield();
             
-            moveHandler.PerformJump(1);
+            moveHandler.SetJumpInfluence(1);
             await Task.Yield();
             
-            moveHandler.PerformMovement(new Vector2(1, 0));
+            moveHandler.SetMovementInfluence(new Vector2(1, 0));
             await Task.Yield();            
 
-            moveHandler.PerformMovement(Vector2.zero);
+            moveHandler.SetMovementInfluence(Vector2.zero);
         }
     }
 }

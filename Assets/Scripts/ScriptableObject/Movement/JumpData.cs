@@ -5,6 +5,7 @@ namespace Game.SceneObjects.Movement
     [CreateAssetMenu(fileName = "Jump", menuName = "ScriptableObjects/Movement/Jump")]
     public class JumpData : MovementData
     {
-        public float JumpVelocity;
+        public float MinJumpVelocity;
+        public float MaxJumpVelocity;
     }
 }

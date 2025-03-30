@@ -6,6 +6,7 @@ namespace Game.SceneObjects.Movement
     public class AirJumpData : MovementData
     {
         public int JumpsAvailable;
-        public float AirJumpVelocity;
+        public float MinAirJumpVelocity;
+        public float MaxAirJumpVelocity;
     }
 }

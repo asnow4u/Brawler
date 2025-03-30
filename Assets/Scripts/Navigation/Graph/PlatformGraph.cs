@@ -241,7 +241,7 @@ namespace Game.Navigation
                             //NOTE: No acceleration used at this time
                             jumpXInfluence = 0f;
 
-                            if (moveCollection.TryGetJumpVelocity(out float jumpVelocity))
+                            if (moveCollection.TryGetMinJumpVelocity(out float jumpVelocity))
                                 jumpYInfluence = jumpYVelocity / jumpVelocity;
                             else
                                 jumpYInfluence = 0f;
@@ -273,7 +273,7 @@ namespace Game.Navigation
         //TODO: Determine a better peak measurement (In this case a big enemy would have to jump really high for a jump to be allowed)
         private bool IsJumpHeightPossible(Vector3 startPos, Vector3 endPos, out float jumpYVelocity)
         {
-            if (moveCollection.TryGetJumpVelocity(out float maxJumpVelocity))
+            if (moveCollection.TryGetMinJumpVelocity(out float maxJumpVelocity))
             {
                 //Determine highest peak
                 float jumpPeak = Mathf.Max(startPos.y + bounds.extents.y, endPos.y + bounds.extents.y);

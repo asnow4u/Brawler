@@ -15,6 +15,5 @@ MonoBehaviour:
   Animation: {fileID: 7400000, guid: c1c5ebb45dc868242b0039589babf2aa, type: 2}
   AnimationSpeedMultiplier: 1
   Type: 3
-  Triggers: []
-  JumpVelocity: 5
-  GravityScaler: 2
+  MinJumpVelocity: 3
+  MaxJumpVelocity: 5

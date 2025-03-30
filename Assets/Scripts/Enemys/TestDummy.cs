@@ -80,7 +80,7 @@ namespace Game.SceneObjects
             throw new System.NotImplementedException();
         }
 
-        public override void StopVerticalJump()
+        public override void StopJumpMovement()
         {
             throw new System.NotImplementedException();
         }

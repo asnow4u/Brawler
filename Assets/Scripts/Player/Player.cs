@@ -68,7 +68,7 @@ namespace Game.SceneObjects
         /// <inheritdoc/>
         public override void PerformHorizontalMovement(Vector2 movement)
         {
-            MovementInputHandler.PerformMovement(movement);
+            MovementInputHandler.SetMovementInfluence(movement);
         }
 
         private void MovementCanceled(InputAction.CallbackContext obj)
@@ -79,7 +79,7 @@ namespace Game.SceneObjects
         /// <inheritdoc/>
         public override void StopHorizontalMovement()
         {
-            MovementInputHandler.PerformMovement(Vector2.zero);
+            MovementInputHandler.SetMovementInfluence(Vector2.zero);
         }
 
         //Vertical Jump
@@ -90,20 +90,20 @@ namespace Game.SceneObjects
         }
 
         /// <inheritdoc/>
-        public override void PerformVerticalJump(float jumpStrength)
+        public override void PerformVerticalJump(float jumpInfluence)
         {
-            MovementInputHandler.PerformJump(jumpStrength);
+            MovementInputHandler.SetJumpInfluence(jumpInfluence);
         }
 
         private void JumpCanceled(InputAction.CallbackContext obj)
         {
-            StopVerticalJump();
+            StopJumpMovement();
         }
 
         /// <inheritdoc/>
-        public override void StopVerticalJump()
+        public override void StopJumpMovement()
         {
-            //TODO: Determine if needed, can add to interface
+            MovementInputHandler.SetJumpInfluence(0);
         }
 
         //Active Movement Inputs

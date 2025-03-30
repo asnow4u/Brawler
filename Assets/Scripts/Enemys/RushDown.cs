@@ -41,11 +41,11 @@ namespace Game.SceneObjects
             switch (type)
             {
                 case EdgeType.Ground:
-                    MovementInputHandler.PerformMovement(new Vector2(movementInfluence, 0));
+                    MovementInputHandler.SetMovementInfluence(new Vector2(movementInfluence, 0));
                     break;
 
                 case EdgeType.Jump:
-                    MovementInputHandler.PerformJump(movementInfluence);
+                    MovementInputHandler.SetJumpInfluence(movementInfluence);
                     break;
             }
         }
@@ -148,7 +148,7 @@ namespace Game.SceneObjects
             throw new System.NotImplementedException();
         }
 
-        public override void StopVerticalJump()
+        public override void StopJumpMovement()
         {
             throw new System.NotImplementedException();
         }

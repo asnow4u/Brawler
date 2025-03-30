@@ -160,7 +160,7 @@ namespace Game.SceneObjects.Movement
         /// Grounded attack deceleration in collection
         /// </returns>
         /// <exception cref="NullReferenceException"></exception>
-        public float GetGroundedAttackDeclerationn()
+        public float GetGroundedAttackDecleration()
         {
             if (MoveData != null)
                 return MoveData.GroundedAttackXDecleration;
@@ -169,6 +169,7 @@ namespace Game.SceneObjects.Movement
         }
 
         #endregion
+
 
         #region Air Movement
 
@@ -258,15 +259,31 @@ namespace Game.SceneObjects.Movement
         /// <summary>
         /// Attempt to get jump velocity if in collection
         /// </summary>
-        public bool TryGetJumpVelocity(out float jumpVelocity)
+        public bool TryGetMinJumpVelocity(out float minJumpVelocity)
         {
             if (JumpData != null)
             {
-                jumpVelocity = JumpData.JumpVelocity;
+                minJumpVelocity = JumpData.MinJumpVelocity;
                 return true;
             }
 
-            jumpVelocity = 0;
+            minJumpVelocity = 0;
+            return false;
+        }
+
+
+        /// <summary>
+        /// Attempt to get jump velocity if in collection
+        /// </summary>
+        public bool TryGetMaxJumpVelocity(out float maxJumpVelocity)
+        {
+            if (JumpData != null)
+            {
+                maxJumpVelocity = JumpData.MaxJumpVelocity;
+                return true;
+            }
+
+            maxJumpVelocity = 0;
             return false;
         }
 

@@ -105,6 +105,8 @@ namespace Game.SceneObjects
         {               
             UniqueId = Guid.NewGuid().ToString();
             curGroundedState = GroundedState.Grounded;
+            
+            Rb.linearDamping = 0;
 
             GetHandlers();
             SetUpHandlers();
@@ -467,7 +469,7 @@ namespace Game.SceneObjects
         public abstract void PerformVerticalJump(float jumpStrength);
 
         /// <inheritdoc/>
-        public abstract void StopVerticalJump();
+        public abstract void StopJumpMovement();
 
         /// <inheritdoc/>
         public abstract bool IsHorizontalMovementActive();
