@@ -20,16 +20,28 @@ namespace Game.SceneObjects.ActionStates
 
         public override void Setup()
         {
+            base.Setup();
             curActionState = ActionState.Idle;
         }
 
 
         public override void RegisterToEvents()
-        { }
+        {
+            sceneObject.GroundedStateChangeEvent += OnGroundedStateChanged;
+        }
 
 
         public override void UnregisterToEvents()
-        { }
+        {
+            sceneObject.GroundedStateChangeEvent -= OnGroundedStateChanged;
+        }
+
+
+        private void OnGroundedStateChanged(GroundedState groundedState)
+        {
+            if (groundedState == GroundedState.Grounded)
+                ChangeState(ActionState.Idle);
+        }
 
         #endregion
 
@@ -67,17 +79,6 @@ namespace Game.SceneObjects.ActionStates
                 return true;
 
             return false;
-        }
-
-
-        /// <summary>
-        /// Reset State to Idle
-        /// </summary>
-        private void ResetState()
-        {
-            curActionState = ActionState.Idle;
-
-            ActionStateChangedEvent?.Invoke(curActionState);
         }
 
         #endregion

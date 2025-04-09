@@ -64,29 +64,29 @@ namespace Game.SceneObjects.Movement
                     }
                     break;
 
-                case MovementType.WallLean:
-                    if (WallLeanData != null)
-                    {
-                        requestedMovement = WallLeanData;
-                        return true;
-                    }
-                    break;
+                //case MovementType.WallLean:
+                //    if (WallLeanData != null)
+                //    {
+                //        requestedMovement = WallLeanData;
+                //        return true;
+                //    }
+                //    break;
 
-                case MovementType.WallSlide:
-                    if (WallSlideData != null)
-                    {
-                        requestedMovement = WallSlideData;
-                        return true;
-                    }
-                    break;
+                //case MovementType.WallSlide:
+                //    if (WallSlideData != null)
+                //    {
+                //        requestedMovement = WallSlideData;
+                //        return true;
+                //    }
+                //    break;
 
-                case MovementType.WallJump:
-                    if (WallJumpData != null)
-                    {
-                        requestedMovement = WallJumpData;
-                        return true;
-                    }
-                    break;
+                //case MovementType.WallJump:
+                //    if (WallJumpData != null)
+                //    {
+                //        requestedMovement = WallJumpData;
+                //        return true;
+                //    }
+                //    break;
 
             }
 

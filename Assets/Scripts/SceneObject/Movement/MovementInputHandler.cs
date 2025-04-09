@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Game.SceneObjects.Movement 
 {
-    public enum MovementType { Null, Move, AirMove, Jump, AirJump, WallLean, WallSlide, WallJump, Landing }
+    public enum MovementType { Null, /*WallLean, WallSlide, WallJump,*/ Move, AirMove, Jump, AirJump, Landing }
 
     public class MovementInputHandler : SceneObjectHandler
     {
@@ -108,22 +108,15 @@ namespace Game.SceneObjects.Movement
         #region Events
 
         /// <summary>
-        /// Ground state changed
+        /// Handle Ground state changed event
         /// </summary>
-        /// <param name="curGroundState"></param>
-        private void OnGroundedStateChanged(GroundedState curGroundState)
+        private void OnGroundedStateChanged(GroundedState groundedState)
         {
-            switch (curGroundState)
-            {
-                case GroundedState.Grounded:
-                    PerformLanding();
-                    break;
-
-                    //NEEDED?
-                //case GroundedState.Airborn:
-                //    TrySetCurrentMoveState(MovementType.Null);
-                //    break;
-
+            if (groundedState == GroundedState.Grounded)
+            {                     
+                //Reset jumps
+                airJumpsPerformed = 0;
+                SetCurrentMoveState(MovementType.Null);
             }
         }
 
@@ -139,14 +132,14 @@ namespace Game.SceneObjects.Movement
                 if (curMovementCollection.TryGetMovementFromAnimation(clip, out MovementData moveData))
                 {
                     if (moveData.Type != MovementType.Move && moveData.Type != MovementType.AirMove)
-                        TrySetCurrentMoveState(MovementType.Null);
+                        SetCurrentMoveState(MovementType.Null);
                 }
 
                 //End movement after attack
                 if (deceleratingForAttack && sceneObject.AttackInputHandler.TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
                 {
                     if (curAttackCollection.TryGetAttackByAnimation(clip, out AttackData attackData))
-                        TrySetCurrentMoveState(MovementType.Null);
+                        SetCurrentMoveState(MovementType.Null);
 
                     deceleratingForAttack = false;
                 }
@@ -197,45 +190,35 @@ namespace Game.SceneObjects.Movement
 
         #region State 
 
+        /// <summary>
+        /// Attempt to set the <see cref="ActionState"/> to <see cref="MOVESTATE"/> <br/>
+        /// Then set the <see cref="curMoveState"/> to the <paramref name="moveState"/>        
         private bool TrySetCurrentMoveState(MovementType moveState)
-        {            
-            //Already at the requested state
-            if (moveState == CurMoveState)
-                return true;
-
-            if (moveState != MovementType.Null)
-            {                
-                if (moveState != MovementType.Landing)
+        {                                    
+            if (sceneObject.ActionStateHandler.TryChangeState(MOVESTATE))
+            {
+                if (moveState != curMoveState && moveState > curMoveState)
                 {
-                    //Change State
-                    if (sceneObject.ActionStateHandler.TryChangeState(MOVESTATE))
-                    {
-                        curMoveState = moveState;
-                        MoveStateChangedEvent?.Invoke(moveState);
-                        return true;
-                    }
+                    SetCurrentMoveState(moveState);                    
                 }
 
-                //Landing
-                else
-                {
-                    //TODO: Check for hitstun?
-                    sceneObject.ActionStateHandler.ChangeState(MOVESTATE);
-                    curMoveState = moveState;
-                    MoveStateChangedEvent?.Invoke(moveState);
-                    return true;
-                }                
-            }
-
-            else
-            {
-                curMoveState = MovementType.Null;
-                curMoveData = null;
-                MoveStateChangedEvent?.Invoke(moveState);
                 return true;
             }
 
             return false;
+        }
+
+
+        /// <summary>
+        /// Set the <see cref="curMoveState"/> to <paramref name="moveState"/>
+        /// </summary>
+        private void SetCurrentMoveState(MovementType moveState)
+        {
+            if (moveState == MovementType.Null)
+                curMoveData = null;
+
+            curMoveState = moveState;
+            MoveStateChangedEvent?.Invoke(moveState);
         }
 
         #endregion
@@ -379,13 +362,9 @@ namespace Game.SceneObjects.Movement
             //Cant move without influence
             if (horizontalInfluence == 0)
                 return false;
-
-            //Cant move in these moveStates
-            if (curMoveState == MovementType.Jump || curMoveState == MovementType.AirJump || curMoveState == MovementType.WallJump || curMoveState == MovementType.Landing)
-                return false;
-
+            
             //Cant move into a wall
-            if (curMoveState == MovementType.WallLean || curMoveState == MovementType.WallSlide)
+            //if (curMoveState == MovementType.WallLean || curMoveState == MovementType.WallSlide)
             {
                 if (IsAgainstWall())
                     return false;
@@ -460,8 +439,8 @@ namespace Game.SceneObjects.Movement
                 UpdateGroundedDecceleration(curMovementCollection.GetGroundedXDeceleration());               
 
             //Check if against a wall
-            if (IsAgainstWall())
-                TrySetCurrentMoveState(MovementType.WallLean);
+            //if (IsAgainstWall())
+            //    TrySetCurrentMoveState(MovementType.WallLean);
         }
 
 
@@ -472,19 +451,15 @@ namespace Game.SceneObjects.Movement
         {
             CheckTurnAround();
 
-            //Ground slope
-            if (sceneObject.TryGetSlopeAngle(out Vector3 slope))
-            {               
-                //Cap Velocity based on horizontal influence
-                float targetXVelocity = maxVelocity * Mathf.Abs(horizontalInfluence);
+            float targetXVelocity = maxVelocity * Mathf.Abs(horizontalInfluence);
 
-                //Update velocity based on slope
-                sceneObject.Rb.linearVelocity += slope * Mathf.Abs(horizontalInfluence) * acceleration * Time.fixedDeltaTime;
+            sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x + (horizontalInfluence * acceleration * Time.fixedDeltaTime), sceneObject.Rb.linearVelocity.y, sceneObject.Rb.linearVelocity.z);
 
-                //Cant exceed target velocity
-                if (sceneObject.Rb.linearVelocity.magnitude > targetXVelocity)
-                    sceneObject.Rb.linearVelocity = slope * targetXVelocity;
-            }
+            if (sceneObject.Rb.linearVelocity.x > targetXVelocity)
+                sceneObject.Rb.linearVelocity = new Vector3(targetXVelocity, sceneObject.Rb.linearVelocity.y, sceneObject.Rb.linearVelocity.z);
+
+            else if (sceneObject.Rb.linearVelocity.x < -targetXVelocity)
+                sceneObject.Rb.linearVelocity = new Vector3(-targetXVelocity, sceneObject.Rb.linearVelocity.y, sceneObject.Rb.linearVelocity.z);
         }
 
 
@@ -509,7 +484,7 @@ namespace Game.SceneObjects.Movement
                         if (curMoveData != null)
                             sceneObject.AnimationHandler.EndAnimation(curMoveData.Animation);
 
-                        TrySetCurrentMoveState(MovementType.Null);
+                        SetCurrentMoveState(MovementType.Null);
                     }
                 }
             }
@@ -824,20 +799,5 @@ namespace Game.SceneObjects.Movement
 
         #endregion
 
-
-        #region Perform Landing
-
-        /// <summary>
-        /// Performs any actions associated with landing
-        /// </summary>
-        private void PerformLanding()
-        {
-            TrySetCurrentMoveState(MovementType.Landing);
-
-            //Reset jumps
-            airJumpsPerformed = 0;
-        }
-
-        #endregion
     }
 }
