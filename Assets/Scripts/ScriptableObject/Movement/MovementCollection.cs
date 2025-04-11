@@ -11,10 +11,7 @@ namespace Game.SceneObjects.Movement
         public AirMoveData AirMoveData;
         public JumpData JumpData;
         public AirJumpData AirJumpData;
-        public LandData LandData;
         public WallLeanData WallLeanData;
-        public WallSlideData WallSlideData;
-        public WallJumpData WallJumpData;
 
 
         /// <summary>
@@ -56,38 +53,13 @@ namespace Game.SceneObjects.Movement
                     }
                     break;
 
-                case MovementType.Landing:
-                    if (LandData != null)
+                case MovementType.WallLean:
+                    if (WallLeanData != null)
                     {
-                        requestedMovement = LandData;
+                        requestedMovement = WallLeanData;
                         return true;
                     }
                     break;
-
-                //case MovementType.WallLean:
-                //    if (WallLeanData != null)
-                //    {
-                //        requestedMovement = WallLeanData;
-                //        return true;
-                //    }
-                //    break;
-
-                //case MovementType.WallSlide:
-                //    if (WallSlideData != null)
-                //    {
-                //        requestedMovement = WallSlideData;
-                //        return true;
-                //    }
-                //    break;
-
-                //case MovementType.WallJump:
-                //    if (WallJumpData != null)
-                //    {
-                //        requestedMovement = WallJumpData;
-                //        return true;
-                //    }
-                //    break;
-
             }
 
             requestedMovement = null;
@@ -284,22 +256,6 @@ namespace Game.SceneObjects.Movement
             }
 
             maxJumpVelocity = 0;
-            return false;
-        }
-
-
-        /// <summary>
-        /// Attempt to get the velocity for wall jumping if in collection
-        /// </summary>
-        public bool TryGetWallJumpVelocity(out float jumpVelocity)
-        {
-            if (WallJumpData != null)
-            {
-                jumpVelocity = WallJumpData.JumpVelocity;
-                return true;
-            }
-
-            jumpVelocity = 0;
             return false;
         }
 

@@ -192,7 +192,7 @@ namespace Game.SceneObjects
         /// </summary>
         private void CheckGroundedStatus()
         {
-            if (TryGetSlopeAngle(out Vector3 slopeAngle))
+            if (IsGrounded())
             {
                 if (curGroundedState != GroundedState.Grounded)
                 {
@@ -213,12 +213,9 @@ namespace Game.SceneObjects
 
 
         /// <summary>
-        /// Attempt to get the current slope of the environment under the sceneObject
-        /// Casts 10 rays based on the left/right most point of the collider
+        /// Casts 10 rays based on the left/right most point of the collider to determine if touching the ground
         /// </summary>
-        /// <param name="slopeAngle"></param>
-        /// <returns></returns>
-        public bool TryGetSlopeAngle(out Vector3 slopeAngle)
+        public bool IsGrounded()
         {
             List<RaycastHit> hits = new List<RaycastHit>();
 
@@ -244,22 +241,13 @@ namespace Game.SceneObjects
                 Vector3 avgNormal = Vector3.zero;
 
                 foreach (RaycastHit hit in hits)
-                {
                     avgNormal += hit.normal;
-                }
 
                 avgNormal /= 10;
-
-                //Determine slope angle
-                slopeAngle = Vector3.Cross(avgNormal, transform.forward).normalized;
-            
-                Debug.DrawRay(collider.bounds.center + Vector3.down * collider.bounds.extents.y, avgNormal, Color.green);
-                Debug.DrawRay(collider.bounds.center + Vector3.down * collider.bounds.extents.y, slopeAngle, Color.red);
 
                 return true;
             }
 
-            slopeAngle = Vector3.zero;
             return false;
         }
 

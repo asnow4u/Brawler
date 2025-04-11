@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Game.SceneObjects.Movement 
 {
-    public enum MovementType { Null, /*WallLean, WallSlide, WallJump,*/ Move, AirMove, Jump, AirJump, Landing }
+    public enum MovementType { Null, Move, WallLean, AirMove, Jump, AirJump }
 
     public class MovementInputHandler : SceneObjectHandler
     {
@@ -16,7 +16,6 @@ namespace Game.SceneObjects.Movement
         //Movement State Data
         [Header("State")]
         [SerializeField] private MovementType curMoveState;
-        private MovementData curMoveData;
 
         //Jump Properties
         public int MAXJUMPFRAMECOUNT = 10;
@@ -130,10 +129,7 @@ namespace Game.SceneObjects.Movement
             if (TryGetCurrentMovementCollection(out MovementCollection curMovementCollection))
             {
                 if (curMovementCollection.TryGetMovementFromAnimation(clip, out MovementData moveData))
-                {
-                    if (moveData.Type != MovementType.Move && moveData.Type != MovementType.AirMove)
-                        SetCurrentMoveState(MovementType.Null);
-                }
+                    SetCurrentMoveState(MovementType.Null);
 
                 //End movement after attack
                 if (deceleratingForAttack && sceneObject.AttackInputHandler.TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
@@ -214,9 +210,6 @@ namespace Game.SceneObjects.Movement
         /// </summary>
         private void SetCurrentMoveState(MovementType moveState)
         {
-            if (moveState == MovementType.Null)
-                curMoveData = null;
-
             curMoveState = moveState;
             MoveStateChangedEvent?.Invoke(moveState);
         }
@@ -231,38 +224,13 @@ namespace Game.SceneObjects.Movement
             if (sceneObject.IsFacingRightDirection && horizontalInfluence < 0)
             {
                 sceneObject.TurnAround();
-
-                if (sceneObject.Rb.linearVelocity.x > 0)
-                {
-                    switch (sceneObject.CurGroundedState)
-                    {
-                        case GroundedState.Grounded:
-                            if (sceneObject.TryGetSlopeAngle(out Vector3 slope))
-                                sceneObject.Rb.linearVelocity = slope * sceneObject.Rb.linearVelocity.magnitude;
-                            break;
-
-                        case GroundedState.Airborn:
-                            sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x * -1, sceneObject.Rb.linearVelocity.y, sceneObject.Rb.linearVelocity.z);
-                            break;
-                    }
-                }
+                sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x * -1, sceneObject.Rb.linearVelocity.y, sceneObject.Rb.linearVelocity.z);                
             }
 
             else if (!sceneObject.IsFacingRightDirection && horizontalInfluence > 0)
             {
                 sceneObject.TurnAround();
-
-                switch (sceneObject.CurGroundedState)
-                {
-                    case GroundedState.Grounded:
-                        if (sceneObject.TryGetSlopeAngle(out Vector3 slope))
-                            sceneObject.Rb.linearVelocity = slope * sceneObject.Rb.linearVelocity.magnitude;
-                        break;
-
-                    case GroundedState.Airborn:
-                        sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x * -1, sceneObject.Rb.linearVelocity.y, sceneObject.Rb.linearVelocity.z);
-                        break;
-                }
+                sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x * -1, sceneObject.Rb.linearVelocity.y, sceneObject.Rb.linearVelocity.z);
             }
         }
 
@@ -363,12 +331,21 @@ namespace Game.SceneObjects.Movement
             if (horizontalInfluence == 0)
                 return false;
             
-            //Cant move into a wall
-            //if (curMoveState == MovementType.WallLean || curMoveState == MovementType.WallSlide)
-            {
-                if (IsAgainstWall())
-                    return false;
-            }
+            if (IsAgainstWall())
+                return false;
+
+            return true;
+        }
+
+
+        /// <summary>
+        /// Determine if vertical movement is allowed based on current movement state
+        /// </summary>
+        private bool IsVerticalMovementAllowed()
+        {
+            //Cant move without influence
+            if (verticalInfluence == 0)
+                return false;
 
             return true;
         }
@@ -432,15 +409,17 @@ namespace Game.SceneObjects.Movement
         /// </summary>
         private void UpdateGroundedMovement(MovementCollection curMovementCollection)
         {
-            //Horizontal Movement
-            if (IsHorizontalMovementAllowed() && TrySetCurrentMoveState(MovementType.Move))
-                UpdateGroundedAcceleration(curMovementCollection.GetGroundedXAcceleration(), curMovementCollection.GetGroundedMaxXVelocity());            
-            else
-                UpdateGroundedDecceleration(curMovementCollection.GetGroundedXDeceleration());               
+            //Check if moving into a wall
+            if ((horizontalInfluence > 0 && IsAgainstRightWall()) || (horizontalInfluence < 0 && IsAgainstLeftWall()))
+                TrySetCurrentMoveState(MovementType.WallLean);
 
-            //Check if against a wall
-            //if (IsAgainstWall())
-            //    TrySetCurrentMoveState(MovementType.WallLean);
+            //Horizontal Movement
+            else if (IsHorizontalMovementAllowed() && TrySetCurrentMoveState(MovementType.Move))
+                UpdateGroundedAcceleration(curMovementCollection.GetGroundedXAcceleration(), curMovementCollection.GetGroundedMaxXVelocity());
+            
+            else
+                UpdateGroundedDecceleration(curMovementCollection.GetGroundedXDeceleration());
+
         }
 
 
@@ -475,17 +454,16 @@ namespace Game.SceneObjects.Movement
                 {
                     Vector3 dragForce = sceneObject.Rb.linearVelocity.normalized * deccelerationValue;
                     sceneObject.Rb.linearVelocity -= dragForce * Time.fixedDeltaTime;
+                }
 
-                    if ((sceneObject.IsFacingRightDirection && sceneObject.Rb.linearVelocity.x <= 0) ||
-                        (!sceneObject.IsFacingRightDirection && sceneObject.Rb.linearVelocity.x >= 0))
-                    {
-                        sceneObject.Rb.linearVelocity = Vector3.zero;
+                if ((sceneObject.IsFacingRightDirection && sceneObject.Rb.linearVelocity.x <= 0) ||
+                    (!sceneObject.IsFacingRightDirection && sceneObject.Rb.linearVelocity.x >= 0))
+                {
+                    sceneObject.Rb.linearVelocity = Vector3.zero;
 
-                        if (curMoveData != null)
-                            sceneObject.AnimationHandler.EndAnimation(curMoveData.Animation);
-
+                    if (curMoveState != MovementType.Null)
                         SetCurrentMoveState(MovementType.Null);
-                    }
+
                 }
             }
         }
@@ -552,26 +530,10 @@ namespace Game.SceneObjects.Movement
 
             //Vertical Movement
             //TODO: Implement Fast Fall            
-            AerialYDeccelerate(curMovementCollection.AirMoveData);            
-
-            //NOTE: Unsure if we want to keep this just for the extra complexity it adds (extra animations and wall jumps), Remember this would have to be implemented with AI as well
-            //      A lot of this depends on level design. If multiple floors exist, you need a way to traverse up and down, this would provide one method for that.
-            //Against wall
-            //if (IsAgainstRightWall())
-            //{
-            //    if (sceneObject.IsFacingRightDirection)
-            //        sceneObject.TurnAround();
-
-            //    TrySetCurrentMoveState(MovementType.WallSlide);
-            //}
-
-            //if (IsAgainstLeftWall())
-            //{
-            //    if (!sceneObject.IsFacingRightDirection)
-            //        sceneObject.TurnAround();
-
-            //    TrySetCurrentMoveState(MovementType.WallSlide);
-            //}
+            if (IsVerticalMovementAllowed() && TrySetCurrentMoveState(MovementType.AirMove))
+                AerialYAccelerate(curMovementCollection.AirMoveData);
+            else
+                AerialYDeccelerate(curMovementCollection.AirMoveData);               
 
             //Gravity
             ApplyGravityScaler(curMovementCollection.AirMoveData);
@@ -604,8 +566,24 @@ namespace Game.SceneObjects.Movement
                     acceleratedXValue = -airMoveData.AerialMaxXVelocity;    
 
                 sceneObject.Rb.linearVelocity = new Vector3(acceleratedXValue, sceneObject.Rb.linearVelocity.y, sceneObject.Rb.linearVelocity.z);
+            }            
+        }
+
+
+        /// <summary>
+        /// Accelerate in the air on the Y axis
+        /// </summary>
+        private void AerialYAccelerate(AirMoveData airMoveData)
+        {
+            if (verticalInfluence < 0)
+            {
+                float acceleratedYValue = sceneObject.Rb.linearVelocity.y - (airMoveData.AerialYAcceleration * Time.fixedDeltaTime);
+
+                if (acceleratedYValue < -airMoveData.AerialMaxYVelocity)
+                    acceleratedYValue = -airMoveData.AerialMaxYVelocity;
+
+                sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, acceleratedYValue, sceneObject.Rb.linearVelocity.z);
             }
-            
         }
 
 
@@ -739,62 +717,6 @@ namespace Game.SceneObjects.Movement
             sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, jumpVelocity, sceneObject.Rb.linearVelocity.z);
 
             curJumpFrameCount++;
-        }
-
-
-
-
-        //if (TryGetCurrentMovementCollection(out MovementCollection curMovementCollection))
-        //{
-        //    if (curMoveState != MovementType.Jump)
-        //    {
-
-        //        switch (sceneObject.CurGroundedState)
-        //        {
-        //            
-
-        //            case GroundedState.Airborn:
-
-        //                if (curMoveState == MovementType.WallSlide)
-        //                {
-        //                    if (curMovementCollection.TryGetMovementByType(MovementType.WallJump, out MovementData wallJumpData))
-        //                        PerformWallJump((WallJumpData)wallJumpData);
-        //                }
-
-        //                else
-        //                {
-        //                    if (curMovementCollection.TryGetMovementByType(MovementType.AirJump, out MovementData airJumpData))
-        //                    {
-        //                        if (airJumpsPerformed < ((AirJumpData)airJumpData).JumpsAvailable)
-        //                        {
-        //                            PerformAirJump((AirJumpData)airJumpData);
-        //                            airJumpsPerformed++;
-        //                        }
-        //                    }
-        //                }
-
-        //                break;
-        //        }
-        //    }
-        //}
-        //}
-
-
-        //NOTE: CHECK NOTE ABOVE ABOUT WALL SLIDE
-        /// <summary>
-        /// Velociy to rb to perform wall jump
-        /// </summary>
-        private void PerformWallJump(WallJumpData wallJumpData)
-        {
-            if (TrySetCurrentMoveState(MovementType.AirJump))
-            {
-                if (sceneObject.IsFacingRightDirection)
-                    sceneObject.Rb.linearVelocity = new Vector3((-1) * Mathf.Cos(wallJumpData.JumpAngle * Mathf.Deg2Rad) * wallJumpData.JumpVelocity, Mathf.Sin(wallJumpData.JumpAngle * Mathf.Deg2Rad) * wallJumpData.JumpVelocity, sceneObject.Rb.linearVelocity.z);
-                else
-                    sceneObject.Rb.linearVelocity = new Vector3(Mathf.Cos(wallJumpData.JumpAngle * Mathf.Deg2Rad) * wallJumpData.JumpVelocity, Mathf.Sin(wallJumpData.JumpAngle * Mathf.Deg2Rad) * wallJumpData.JumpVelocity, sceneObject.Rb.linearVelocity.z);
-
-                sceneObject.TurnAround();
-            }
         }
 
         #endregion
