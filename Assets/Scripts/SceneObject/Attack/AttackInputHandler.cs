@@ -20,6 +20,14 @@ namespace Game.SceneObjects.Attack
         //NOTE: This tracks the current attack data being used
         private AttackData curAttackData;
 
+        //NOTE: This is the max amount of time that this attack can be held before it is released
+        private const float MAX_ATTACK_CHARGE_TIME = 1f;
+        private float attackChargeTime = 0f;
+
+        //NOTE: This is the max amount of additional damage that can be added to the attack (30%)
+        private const float Max_CHARGE_ATTACK_MULTIPLIER = 1f;
+        private float chargeAttackMultiplier = 0;
+
         private HashSet<ITakeDamage> objectHitByAttack = new HashSet<ITakeDamage>();
 
 
@@ -94,7 +102,12 @@ namespace Game.SceneObjects.Attack
                 {
                     //Check if activly in an attack
                     if (curAttackData != null)
+                    {
                         SetCurrentAttackState(AttackType.Null, curAttackCollection);
+
+                        attackChargeTime = 0;
+                        chargeAttackMultiplier = 0;
+                    }
                 }
             }
         }
@@ -114,7 +127,7 @@ namespace Game.SceneObjects.Attack
                     CheckForAnimationTriggers();
 
                 //Charge Attack
-                CheckChargeAttacksForRelease();
+                UpdateChargeAttack();
                 
             }
         }
@@ -252,10 +265,14 @@ namespace Game.SceneObjects.Attack
         /// <summary>
         /// Determine if a charged attack needs to be released
         /// </summary>
-        private void CheckChargeAttacksForRelease()
+        private void UpdateChargeAttack()
         {
+            //TODO: Should check if that animation is an attack
             if (sceneObject.AnimationHandler.IsAnimationPaused)
             {
+                attackChargeTime += Time.fixedDeltaTime;
+                chargeAttackMultiplier = Mathf.Lerp(0, Max_CHARGE_ATTACK_MULTIPLIER, attackChargeTime / MAX_ATTACK_CHARGE_TIME);
+
                 switch (curAttackState)
                 {
                     case AttackType.UpTilt:
@@ -276,6 +293,7 @@ namespace Game.SceneObjects.Attack
             }
         }
 
+
         /// <summary>
         /// Perform a charged upward attack. <br/>
         /// Pauses animation till release. <br/>
@@ -284,9 +302,8 @@ namespace Game.SceneObjects.Attack
         private void PerformUpChargeAttack()
         {
             if (sceneObject.IsUpAttackActive())
-                sceneObject.AnimationHandler.PauseCurrentAnimation(1);
+                sceneObject.AnimationHandler.PauseCurrentAnimation(MAX_ATTACK_CHARGE_TIME);
         }
-
 
         /// <summary>
         /// Release charged upward attack
@@ -305,13 +322,12 @@ namespace Game.SceneObjects.Attack
         private void PerformForwardChangeAttack()
         {
             if (sceneObject.IsRightAttackActive() && sceneObject.IsFacingRightDirection)
-                sceneObject.AnimationHandler.PauseCurrentAnimation(1);
+                sceneObject.AnimationHandler.PauseCurrentAnimation(MAX_ATTACK_CHARGE_TIME);
 
 
             else if (sceneObject.IsLeftAttackActive() && !sceneObject.IsFacingRightDirection)
-                sceneObject.AnimationHandler.PauseCurrentAnimation(1);
+                sceneObject.AnimationHandler.PauseCurrentAnimation(MAX_ATTACK_CHARGE_TIME);
         }
-
 
         /// <summary>
         /// Release charged forward attack
@@ -334,7 +350,7 @@ namespace Game.SceneObjects.Attack
         private void PerformDownChargeAttack()
         {
             if (sceneObject.IsDownAttackActive())
-                sceneObject.AnimationHandler.PauseCurrentAnimation(1);
+                sceneObject.AnimationHandler.PauseCurrentAnimation(MAX_ATTACK_CHARGE_TIME);
         }
 
 
@@ -427,7 +443,11 @@ namespace Game.SceneObjects.Attack
                 if (!sceneObject.IsFacingRightDirection)
                     launchAngle = 180 - launchAngle;
 
-                target.HitByAttack(curAttackData.Influence, col.ClosestPoint(col.transform.position), curAttackData.GetAttackDamage(curFrame), launchAngle);
+                //Attack Damage
+                float attackDamage = curAttackData.GetAttackDamage(curFrame);
+                attackDamage += attackDamage * chargeAttackMultiplier;
+
+                target.HitByAttack(curAttackData.Influence, col.ClosestPoint(col.transform.position), attackDamage, launchAngle);
             }
         }
 

@@ -42,7 +42,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   launchAngle: 30
   enableCollider:
-    TriggerFrame: 6
+    TriggerFrame: 4
     TriggerType: 2
     WasTriggered: 1
   disableCollider:
