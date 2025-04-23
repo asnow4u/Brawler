@@ -4,15 +4,16 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.VFX;
 
 //NOTE: Solid is not yet implemented. Would want to make a seperate class for it having killzone be an abstract class
 public enum KillZoneType { Left, Right, LeftSolid, RightSolid }
-
 
 public class KillZone : MonoBehaviour
 {
     [SerializeField] private KillZoneType type;
     [SerializeField] private Transform objTransform;
+    [SerializeField] private GameObject VFXDeathEffect;
 
     private const float OFFSCREENDISTANCE = 1.5f;
 
@@ -21,8 +22,11 @@ public class KillZone : MonoBehaviour
 
     public void Initialize(KillZoneType type, Transform objTransform) 
     {
+        if (VFXDeathEffect == null)
+            Debug.LogException(new Exception("VFXDeathEffect is not set in the inspector!"), this);
+
         this.type = type;
-        this.objTransform = objTransform;
+        this.objTransform = objTransform;       
 
         UpdatePosition();
     }
@@ -95,7 +99,10 @@ public class KillZone : MonoBehaviour
                 //TODO: Handle player death
             }
             else
+            {
+                Instantiate(VFXDeathEffect, objTransform.position, Quaternion.Euler(-90, type == KillZoneType.Right ? 180 : 0, 0));
                 Destroy(sceneObject.gameObject);
+            }
         }
     }
 }
