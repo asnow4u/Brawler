@@ -84,9 +84,9 @@ namespace Game.SceneObjects
         /// Log attack state change
         /// </summary>
         /// <param name="type"></param>
-        private void OnAttackStateChanged(AttackType attackState)
+        private void OnAttackStateChanged(AttackType prevAttackState, AttackType currentAttackState)
         {
-            Log(sceneObject.ObjectType + ": " + sceneObject.gameObject.name + ": AttackState: " + attackState);
+            Log(sceneObject.ObjectType + ": " + sceneObject.gameObject.name + ": AttackState: " + currentAttackState + ", from " + prevAttackState);
         }
 
 

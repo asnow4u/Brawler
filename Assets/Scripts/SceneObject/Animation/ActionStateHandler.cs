@@ -40,7 +40,11 @@ namespace Game.SceneObjects.ActionStates
         private void OnGroundedStateChanged(GroundedState groundedState)
         {
             if (groundedState == GroundedState.Grounded)
-                ChangeState(ActionState.Idle);
+            {
+                //NOTE: Attacking state is handled in AttackStateHandler
+                if (curActionState != ActionState.Attacking)
+                    ChangeState(ActionState.Idle);
+            }
         }
 
         #endregion

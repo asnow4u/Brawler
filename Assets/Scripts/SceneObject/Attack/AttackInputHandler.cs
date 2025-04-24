@@ -17,6 +17,9 @@ namespace Game.SceneObjects.Attack
         //Attack Data
         //NOTE: This tracks what attack is currently happening. This prevents multiple attacks from overwriting one another before an attack animation starts
         [SerializeField] private AttackType curAttackState;
+        //NOTE: THis tracks what attack happend before the current attack.
+        [SerializeField] private AttackType previousAttackState;
+
         //NOTE: This tracks the current attack data being used
         private AttackData curAttackData;
 
@@ -31,8 +34,12 @@ namespace Game.SceneObjects.Attack
         private HashSet<ITakeDamage> objectHitByAttack = new HashSet<ITakeDamage>();
 
 
-        //Events
-        public event Action<AttackType> AttackStateChangedEvent;
+        /// <summary>
+        /// Event that is fired when an attack is performed. <br/>
+        /// The first attackType defines the current attack state <br/>
+        /// The second attackType defines the attack to transition to <br/>
+        /// </summary>
+        public event Action<AttackType, AttackType> AttackStateChangedEvent;
 
 
         #region Getters
@@ -57,6 +64,7 @@ namespace Game.SceneObjects.Attack
         public override void RegisterToEvents()
         {
             //Animation Events
+            sceneObject.GroundedStateChangeEvent += OnGroundedStateChanged;
             sceneObject.AnimationHandler.AnimationStartedEvent += OnAnimationStarted;
             sceneObject.AnimationHandler.AnimationEndedEvent += OnAnimationEnded;
         }
@@ -72,6 +80,40 @@ namespace Game.SceneObjects.Attack
         #endregion
 
         #region Events
+
+        /// <summary>
+        /// Handle grounded state changes while performing an aerial attack
+        /// </summary>
+        private void OnGroundedStateChanged(GroundedState groundedState)
+        {
+            if (groundedState == GroundedState.Grounded && curAttackState != AttackType.Null && TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
+            {
+                switch (curAttackState)
+                {
+                    case AttackType.UpAir:
+                        if (sceneObject.IsUpAttackActive())
+                            SetCurrentAttackState(AttackType.UpTilt, curAttackCollection);
+                        else
+                            SetCurrentAttackState(AttackType.Null, curAttackCollection);
+                        break;
+
+                    case AttackType.ForwardAir:
+                        if (sceneObject.IsRightAttackActive() || sceneObject.IsLeftAttackActive())
+                            SetCurrentAttackState(AttackType.ForwardTilt, curAttackCollection);
+                        else
+                            SetCurrentAttackState(AttackType.Null, curAttackCollection);
+                        break;
+
+                    case AttackType.DownAir:
+                        if (sceneObject.IsDownAttackActive())
+                            SetCurrentAttackState(AttackType.DownTilt, curAttackCollection);
+                        else
+                            SetCurrentAttackState(AttackType.Null, curAttackCollection);
+                        break;
+                }
+            }
+        }
+
 
         /// <summary>
         /// Check for attack animation
@@ -100,8 +142,8 @@ namespace Game.SceneObjects.Attack
             {
                 if (curAttackCollection.TryGetAttackByAnimation(clip, out AttackData attackData))
                 {
-                    //Check if activly in an attack
-                    if (curAttackData != null)
+                    //Handle the case where the current attack animation is ended (actionState change)
+                    if (curAttackState == attackData.Type)
                     {
                         SetCurrentAttackState(AttackType.Null, curAttackCollection);
 
@@ -140,31 +182,28 @@ namespace Game.SceneObjects.Attack
         /// Attempt to set the current attack state <br></br>
         /// This will initiate the animation of the attackType
         /// </summary>
-        /// <param name="attackType"></param>
-        /// <returns></returns>
         private void SetCurrentAttackState(AttackType attackType, AttackCollection curAttackCollection)
         {            
             if (attackType != AttackType.Null)
             {
-                //Check not currently attacking and Check that attack exists
-                if (curAttackCollection.TryGetAttackByType(attackType, out AttackData attack))
+                if (curAttackCollection.TryGetAttackByType(attackType, out AttackData attack) && 
+                    sceneObject.ActionStateHandler.TryChangeState(ATTACKSTATE))
                 {
-                    //Change state
-                    if (sceneObject.ActionStateHandler.TryChangeState(ATTACKSTATE))
-                    {
-                        curAttackState = attackType;
-                        AttackStateChangedEvent?.Invoke(attackType);
-                    }
+                    previousAttackState = curAttackState;
+                    curAttackState = attackType;
+                    AttackStateChangedEvent?.Invoke(previousAttackState, curAttackState);
                 }
             }
 
             else
             {
+                previousAttackState = curAttackState;
                 curAttackState = AttackType.Null;
                 curAttackData = null;
                 objectHitByAttack.Clear();
-                AttackStateChangedEvent?.Invoke(AttackType.Null);
+                AttackStateChangedEvent?.Invoke(previousAttackState, curAttackState);
             }
+            
         }
 
         #endregion

@@ -160,14 +160,7 @@ namespace Game.SceneObjects.Animation
         #endregion
 
 
-        #region Events
-
-        /// <summary>
-        /// Listen to needed events
-        /// </summary>
-        private void SetUpEventListeners()
-        { }
-
+        #region Events       
 
         /// <summary>
         /// Action State Changed
@@ -219,15 +212,15 @@ namespace Game.SceneObjects.Animation
         /// Attack state changed
         /// </summary>
         /// <param name="attackState"></param>
-        private void OnAttackStateChanged(AttackType attackState)
+        private void OnAttackStateChanged(AttackType prevAttackState, AttackType currentAttackState)
         {
             //NOTE: 
             // If weapon or other enhancements improve animation speed, add to multiplier here
 
             if (sceneObject.AttackInputHandler.TryGetCurrentAttackCollection(out AttackCollection attackCollection))
             {
-                if (attackCollection.TryGetAttackByType(attackState, out AttackData requestedAttackData))
-                    animationGraph.ChangeAttackStateInput(attackState, requestedAttackData.AnimationSpeedMultiplier);
+                if (attackCollection.TryGetAttackByType(currentAttackState, out AttackData requestedAttackData))
+                    animationGraph.ChangeAttackStateInput(currentAttackState, requestedAttackData.AnimationSpeedMultiplier);
             }
         }
 
