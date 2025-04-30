@@ -3,11 +3,12 @@ using Game.SceneObjects.Attack;
 using Game.SceneObjects.Damage;
 using System;
 using System.ComponentModel;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace Game.SceneObjects.Movement 
 {
-    public enum MovementType { Null, Move, WallLean, AirMove, Jump, AirJump }
+    public enum MovementType { Null, Move, WallLean, AirMove, Climb, Jump, AirJump }
 
     public class MovementInputHandler : SceneObjectHandler
     {
@@ -54,8 +55,8 @@ namespace Game.SceneObjects.Movement
         #region Getters
 
         public MovementType CurMoveState => curMoveState;
-        public float HorizontalInfluence => horizontalInfluence;
 
+        public float VerticalInfluence => verticalInfluence;
 
         /// <summary>
         /// Attempt to get the <paramref name="currentMoveCollection"/> <br/>
@@ -90,13 +91,13 @@ namespace Game.SceneObjects.Movement
 
         public override void RegisterToEvents()
         {
-            sceneObject.GroundedStateChangeEvent += OnGroundedStateChanged;
+            sceneObject.GroundedStateChangedEvent += OnGroundedStateChanged;
             sceneObject.AnimationHandler.AnimationEndedEvent += OnAnimationEnded;
         }
 
         public override void UnregisterToEvents()
         {
-            sceneObject.GroundedStateChangeEvent -= OnGroundedStateChanged;
+            sceneObject.GroundedStateChangedEvent -= OnGroundedStateChanged;
             sceneObject.AnimationHandler.AnimationEndedEvent -= OnAnimationEnded;
         }
 
@@ -128,13 +129,13 @@ namespace Game.SceneObjects.Movement
         {
             if (TryGetCurrentMovementCollection(out MovementCollection curMovementCollection))
             {
-                if (curMovementCollection.TryGetMovementFromAnimation(clip, out MovementData moveData))
+                if (curMovementCollection.TryGetMovementFromAnimation(clip, out _))
                     SetCurrentMoveState(MovementType.Null);
 
                 //End movement after attack
                 if (deceleratingForAttack && sceneObject.AttackInputHandler.TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
                 {
-                    if (curAttackCollection.TryGetAttackByAnimation(clip, out AttackData attackData))
+                    if (curAttackCollection.TryGetAttackByAnimation(clip, out _))
                         SetCurrentMoveState(MovementType.Null);
 
                     deceleratingForAttack = false;
@@ -145,7 +146,7 @@ namespace Game.SceneObjects.Movement
         #endregion
 
 
-        #region Update
+        #region Update        
 
         /// <summary>
         /// Update movement based on grounded status
@@ -153,9 +154,16 @@ namespace Game.SceneObjects.Movement
         public void UpdateMovement()
         {
             if (TryGetCurrentMovementCollection(out MovementCollection curMovementCollection))
-            {
+            {                 
+                //Climb Movement
+                if (sceneObject.CurClimbState == ClimbState.Climbing)
+                {
+                    //NOTE: Hitstun will force sceneObject ClimbState.UnAvailable
+                    UpdateClimbMovement(curMovementCollection);                   
+                }
+
                 //Grounded Movement
-                if (sceneObject.CurGroundedState == GroundedState.Grounded)
+                else if (sceneObject.CurGroundedState == GroundedState.Grounded)
                 {
                     if (sceneObject.ActionStateHandler.CurActionState == ActionState.HitStun)
                         UpdateGroundedHitStunMovement(curMovementCollection);
@@ -163,11 +171,12 @@ namespace Game.SceneObjects.Movement
                         UpdateGroundedAttackingMovement(curMovementCollection);
                     else
                         UpdateGroundedMovement(curMovementCollection);
-                }
+                }                
 
                 //Aerial
-                else
+                else if (sceneObject.CurGroundedState == GroundedState.Airborn && sceneObject.CurClimbState != ClimbState.Climbing)
                 {
+                    //Check if the player is in hitstun and update movement accordingly
                     if (sceneObject.ActionStateHandler.CurActionState == ActionState.HitStun)
                         UpdateAerialHitStunMovement(curMovementCollection.AirMoveData);
                     else
@@ -177,9 +186,8 @@ namespace Game.SceneObjects.Movement
                 //Jump
                 if (sceneObject.ActionStateHandler.CurActionState != ActionState.HitStun)
                     UpdateJumpMovement(curMovementCollection);
-
             }
-        }
+        }        
 
         #endregion
 
@@ -300,7 +308,7 @@ namespace Game.SceneObjects.Movement
         {
             if (inputInfluence > 0)
             {
-                if (sceneObject.CurGroundedState == GroundedState.Grounded)
+                if (sceneObject.CurGroundedState == GroundedState.Grounded || sceneObject.CurClimbState == ClimbState.Climbing)
                     groundedJumpInfluence = inputInfluence;
                 else
                 {
@@ -366,6 +374,9 @@ namespace Game.SceneObjects.Movement
         }
 
 
+        /// <summary>
+        /// Determine if aerial jump movement is allowed based on current movement state
+        /// </summary>
         private bool IsAerialJumpMovementAllowed(AirJumpData airJumpData)
         {
             if (aerialJumpInfluence == 0)
@@ -376,6 +387,21 @@ namespace Game.SceneObjects.Movement
 
             if (airJumpsPerformed > airJumpData.JumpsAvailable)
                 return false;
+
+            return true;
+        }
+
+
+        /// <summary>
+        /// Determine if climb movement is allowed to transition to based on movement state
+        /// </summary>
+        private bool IsClimbMovementAllowed(MovementCollection curMovementCollection)
+        {
+            if (curMovementCollection.ClimbData == null)
+                return false;
+
+            if (verticalInfluence == 0 && horizontalInfluence == 0)
+                return false;            
 
             return true;
         }
@@ -405,7 +431,7 @@ namespace Game.SceneObjects.Movement
 
 
         /// <summary>
-        /// Update movement on the ground based on <see cref="HorizontalInfluence"/>, <see cref="verticalInfluence"/> and <see cref="jumpInfluence"/>
+        /// Update movement on the ground based on <see cref="horizontalInfluence"/>, <see cref="verticalInfluence"/> and <see cref="jumpInfluence"/>
         /// </summary>
         private void UpdateGroundedMovement(MovementCollection curMovementCollection)
         {
@@ -528,8 +554,7 @@ namespace Game.SceneObjects.Movement
             else
                 AerialXDeccelerate(curMovementCollection.AirMoveData);
 
-            //Vertical Movement
-            //TODO: Implement Fast Fall            
+            //Vertical Movement  
             if (IsVerticalMovementAllowed() && TrySetCurrentMoveState(MovementType.AirMove))
                 AerialYAccelerate(curMovementCollection.AirMoveData);
             else
@@ -721,5 +746,35 @@ namespace Game.SceneObjects.Movement
 
         #endregion
 
+
+        #region Climb Movement
+
+        /// <summary>
+        /// Update movement while climbing
+        /// </summary>        
+        private void UpdateClimbMovement(MovementCollection curMovementCollection)
+        {
+            if (IsClimbMovementAllowed(curMovementCollection) && TrySetCurrentMoveState(MovementType.Climb))
+            {
+                float climbXVelocity = horizontalInfluence * curMovementCollection.ClimbData.ClimbXVelocity;
+
+                float climbYVelocity = 0;
+
+                //Climb Up
+                if (verticalInfluence > 0)
+                    climbYVelocity = verticalInfluence * curMovementCollection.ClimbData.ClimbUpYVelocity;
+
+                //Climb Down
+                else if (verticalInfluence < 0)
+                    climbYVelocity = verticalInfluence * curMovementCollection.ClimbData.ClimbDownYVelocity;
+
+                sceneObject.Rb.linearVelocity = new Vector3(climbXVelocity, climbYVelocity, sceneObject.Rb.linearVelocity.z);
+            }
+
+            else
+                sceneObject.Rb.linearVelocity = new Vector3(0, 0, sceneObject.Rb.linearVelocity.z);
+        }
+
+        #endregion
     }
 }

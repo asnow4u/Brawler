@@ -14,9 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MoveData: {fileID: 11400000, guid: 3e83465d7263f9543945eb8dde4f3c56, type: 2}
   AirMoveData: {fileID: 11400000, guid: 86313632ffc058049bd69c313a22c8a5, type: 2}
+  ClimbData: {fileID: 11400000, guid: ef88ae01dbd6bdc458a75d16a155f244, type: 2}
   JumpData: {fileID: 11400000, guid: 4057fb62c44055a4585172b668419a72, type: 2}
   AirJumpData: {fileID: 11400000, guid: e87289f87498f324cac2e0f3e930c00a, type: 2}
-  LandData: {fileID: 11400000, guid: 3e75a8e231615344a85a33d3239e7852, type: 2}
   WallLeanData: {fileID: 11400000, guid: 625a94a27d74ac0428a38b187d7836c2, type: 2}
-  WallSlideData: {fileID: 11400000, guid: 86c4d64ad69948c4b96820b313aab53e, type: 2}
-  WallJumpData: {fileID: 11400000, guid: 6db505fa6d6f0a34d99e7da695ff979f, type: 2}

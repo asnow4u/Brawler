@@ -27,13 +27,13 @@ namespace Game.SceneObjects.ActionStates
 
         public override void RegisterToEvents()
         {
-            sceneObject.GroundedStateChangeEvent += OnGroundedStateChanged;
+            sceneObject.GroundedStateChangedEvent += OnGroundedStateChanged;
         }
 
 
         public override void UnregisterToEvents()
         {
-            sceneObject.GroundedStateChangeEvent -= OnGroundedStateChanged;
+            sceneObject.GroundedStateChangedEvent -= OnGroundedStateChanged;
         }
 
 

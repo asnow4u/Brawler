@@ -22,7 +22,10 @@ namespace Game.SceneObjects
         private void SetupEventListeners()
         {
             //Ground state
-            sceneObject.GroundedStateChangeEvent += OnGroundStateChanged;
+            sceneObject.GroundedStateChangedEvent += OnGroundStateChanged;
+
+            //Climb state
+            sceneObject.ClimbStateChangedEvent += OnClimbStateChanged;
 
             //Action State
             sceneObject.ActionStateHandler.ActionStateChangedEvent += OnActionStateChanged;
@@ -47,6 +50,16 @@ namespace Game.SceneObjects
         private void OnGroundStateChanged(GroundedState groundState)
         {
             Log(sceneObject.ObjectType + ": " + sceneObject.gameObject.name + ": GroundState: " + groundState);
+        }
+
+
+        /// <summary>
+        /// Log climb state change
+        /// </summary>
+        /// <param name="climbState"></param>
+        private void OnClimbStateChanged(ClimbState climbState)
+        {
+            Log(sceneObject.ObjectType + ": " + sceneObject.gameObject.name + ": ClimbState: " + climbState);
         }
 
 

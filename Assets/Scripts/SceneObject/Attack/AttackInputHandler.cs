@@ -64,7 +64,7 @@ namespace Game.SceneObjects.Attack
         public override void RegisterToEvents()
         {
             //Animation Events
-            sceneObject.GroundedStateChangeEvent += OnGroundedStateChanged;
+            sceneObject.GroundedStateChangedEvent += OnGroundedStateChanged;
             sceneObject.AnimationHandler.AnimationStartedEvent += OnAnimationStarted;
             sceneObject.AnimationHandler.AnimationEndedEvent += OnAnimationEnded;
         }

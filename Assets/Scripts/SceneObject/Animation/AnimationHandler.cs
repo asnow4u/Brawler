@@ -87,7 +87,7 @@ namespace Game.SceneObjects.Animation
         public override void RegisterToEvents()
         {
             sceneObject.ActionStateHandler.ActionStateChangedEvent += OnActionStateChanged;
-            sceneObject.GroundedStateChangeEvent += OnGroundedStateChanged;
+            sceneObject.GroundedStateChangedEvent += OnGroundedStateChanged;
             sceneObject.MovementInputHandler.MoveStateChangedEvent += OnMovementStateChanged;
             sceneObject.AttackInputHandler.AttackStateChangedEvent += OnAttackStateChanged;
         }
@@ -95,7 +95,7 @@ namespace Game.SceneObjects.Animation
         public override void UnregisterToEvents()
         {
             sceneObject.ActionStateHandler.ActionStateChangedEvent -= OnActionStateChanged;
-            sceneObject.GroundedStateChangeEvent -= OnGroundedStateChanged;
+            sceneObject.GroundedStateChangedEvent -= OnGroundedStateChanged;
             sceneObject.MovementInputHandler.MoveStateChangedEvent -= OnMovementStateChanged;
             sceneObject.AttackInputHandler.AttackStateChangedEvent -= OnAttackStateChanged;
         }

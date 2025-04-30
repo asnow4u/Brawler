@@ -9,6 +9,7 @@ namespace Game.SceneObjects.Movement
     {
         public MoveData MoveData;
         public AirMoveData AirMoveData;
+        public ClimbData ClimbData;
         public JumpData JumpData;
         public AirJumpData AirJumpData;
         public WallLeanData WallLeanData;
@@ -33,6 +34,14 @@ namespace Game.SceneObjects.Movement
                     if (AirMoveData != null)
                     {
                         requestedMovement = AirMoveData;
+                        return true;
+                    }
+                    break;
+
+                case MovementType.Climb:
+                    if (ClimbData != null)
+                    {
+                        requestedMovement = ClimbData;
                         return true;
                     }
                     break;
@@ -259,6 +268,6 @@ namespace Game.SceneObjects.Movement
             return false;
         }
 
-        #endregion     
+        #endregion
     }
 }
