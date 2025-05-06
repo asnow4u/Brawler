@@ -19,6 +19,8 @@ namespace Game.SceneObjects.Movement
         [SerializeField] private MovementType curMoveState;
 
         //Jump Properties
+        //NOTE: Based on how long the user holds the jump button will determin how high the player jumps
+        [Header("Jump Properties")]        
         public int MAXJUMPFRAMECOUNT = 10;
         [SerializeField] private float curJumpFrameCount;
         [SerializeField] private int airJumpsPerformed;
@@ -92,12 +94,14 @@ namespace Game.SceneObjects.Movement
         public override void RegisterToEvents()
         {
             sceneObject.GroundedStateChangedEvent += OnGroundedStateChanged;
+            sceneObject.ClimbStateChangedEvent += OnGroundedStateChanged;
             sceneObject.AnimationHandler.AnimationEndedEvent += OnAnimationEnded;
         }
 
         public override void UnregisterToEvents()
         {
             sceneObject.GroundedStateChangedEvent -= OnGroundedStateChanged;
+            sceneObject.ClimbStateChangedEvent -= OnGroundedStateChanged;
             sceneObject.AnimationHandler.AnimationEndedEvent -= OnAnimationEnded;
         }
 
@@ -118,6 +122,17 @@ namespace Game.SceneObjects.Movement
                 airJumpsPerformed = 0;
                 SetCurrentMoveState(MovementType.Null);
             }
+        }
+
+
+        /// <summary>
+        /// Handle Climb state changed event
+        /// </summary>
+        private void OnGroundedStateChanged(ClimbState climbState)
+        {
+            //Reset jumps
+            if (climbState == ClimbState.Climbing)
+                airJumpsPerformed = 0;    
         }
 
 
@@ -152,7 +167,7 @@ namespace Game.SceneObjects.Movement
         /// Update movement based on grounded status
         /// </summary>
         public void UpdateMovement()
-        {
+        {            
             if (TryGetCurrentMovementCollection(out MovementCollection curMovementCollection))
             {                 
                 //Climb Movement
@@ -754,7 +769,7 @@ namespace Game.SceneObjects.Movement
         /// </summary>        
         private void UpdateClimbMovement(MovementCollection curMovementCollection)
         {
-            if (IsClimbMovementAllowed(curMovementCollection) && TrySetCurrentMoveState(MovementType.Climb))
+            if (IsClimbMovementAllowed(curMovementCollection) && (curMoveState == MovementType.Climb || TrySetCurrentMoveState(MovementType.Climb)))
             {
                 float climbXVelocity = horizontalInfluence * curMovementCollection.ClimbData.ClimbXVelocity;
 
@@ -772,7 +787,12 @@ namespace Game.SceneObjects.Movement
             }
 
             else
+            {
                 sceneObject.Rb.linearVelocity = new Vector3(0, 0, sceneObject.Rb.linearVelocity.z);
+
+                if (curMoveState != MovementType.Null)
+                    SetCurrentMoveState(MovementType.Null);
+            }
         }
 
         #endregion

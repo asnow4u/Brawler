@@ -36,7 +36,13 @@ namespace Game.SceneObjects
 
         [Header("Ground Status")]
         [SerializeField] private GroundedState curGroundedState;
+
+        [Header("Climb Status")]
         [SerializeField] private ClimbState curClimbState;
+        
+        //NOTE: A delay is placed on the climb action to prevent imediate reclimb when involved with jumping and attacking actions
+        [SerializeField] private float MaxClimbDelay;
+        private float climbDelayTimer;
 
         //Logger
         private SceneObjectLogger logger;
@@ -261,6 +267,10 @@ namespace Game.SceneObjects
             //Update climb state if the collection has climb data                
             if (movementInputHandler.TryGetCurrentMovementCollection(out MovementCollection curMovementCollection) && curMovementCollection.ClimbData != null)
             {
+                //Update climb delay timer
+                if (climbDelayTimer > 0)
+                    climbDelayTimer -= Time.fixedDeltaTime;
+
                 Bounds bounds = Collider.bounds;
                 Vector3 center = bounds.center;
                 Vector3 halfExtents = bounds.extents;
@@ -289,6 +299,11 @@ namespace Game.SceneObjects
                         if (CurGroundedState == GroundedState.Grounded && movementInputHandler.VerticalInfluence < 0)
                             return;
 
+                        if (ActionStateHandler.CurActionState == ActionState.Moving && (movementInputHandler.CurMoveState == MovementType.Jump || movementInputHandler.CurMoveState == MovementType.AirJump) ||
+                            ActionStateHandler.CurActionState == ActionState.Attacking ||
+                            climbDelayTimer > 0)
+                            return;
+
                         SetClimbState(ClimbState.Climbing);
                     }
                 }
@@ -296,17 +311,24 @@ namespace Game.SceneObjects
                 if (CurClimbState == ClimbState.Climbing)
                 {
                     if (hits.Length == 0)
+                    {
                         SetClimbState(ClimbState.Unavailable);
+                        climbDelayTimer = MaxClimbDelay;
+                    }
 
+                    // Hit ground while climbing
                     else if (movementInputHandler.VerticalInfluence < 0 && CurGroundedState == GroundedState.Grounded)
                         SetClimbState(ClimbState.Available);
 
-                    else if (ActionStateHandler.CurActionState == ActionState.Moving && (movementInputHandler.CurMoveState == MovementType.Jump || movementInputHandler.CurMoveState == MovementType.AirJump))
+                    // Jump action performed
+                    // Attack action performed                   
+                    // Sets delay timer
+                    else if (ActionStateHandler.CurActionState == ActionState.Moving && (movementInputHandler.CurMoveState == MovementType.Jump || movementInputHandler.CurMoveState == MovementType.AirJump) ||
+                             ActionStateHandler.CurActionState == ActionState.Attacking)
+                    {
                         SetClimbState(ClimbState.Available);
-
-                    else if (ActionStateHandler.CurActionState == ActionState.Attacking)
-                        SetClimbState(ClimbState.Available);
-
+                        climbDelayTimer = MaxClimbDelay;
+                    }
                 }
             }
         }
@@ -317,21 +339,24 @@ namespace Game.SceneObjects
         /// </summary>
         private void SetClimbState(ClimbState state)
         {
-            if ( CurClimbState != state)
+            if (climbDelayTimer > 0 && state == ClimbState.Climbing)
+                return;
+
+            if (curClimbState == state)
+                return;
+            
+            curClimbState = state;
+
+            if (curClimbState == ClimbState.Climbing)
             {
-                curClimbState = state;
-
-                if (curClimbState == ClimbState.Climbing)
-                {
-                    Rb.linearVelocity = Vector3.zero;
-                    Rb.useGravity = false;
-                }
-
-                else
-                    Rb.useGravity = true;
-
-                ClimbStateChangedEvent?.Invoke(curClimbState);                            
+                Rb.linearVelocity = Vector3.zero;
+                Rb.useGravity = false;
             }
+
+            else
+                Rb.useGravity = true;                    
+
+            ClimbStateChangedEvent?.Invoke(curClimbState);                                        
         }
 
         #endregion

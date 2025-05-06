@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f0f721a897050148ab852dca442054f, type: 3}
   m_Name: SwordClimb
   m_EditorClassIdentifier: 
-  Animation: {fileID: 7400000, guid: 3abba4c05091a044d94386d88267bdca, type: 2}
-  AnimationSpeedMultiplier: 1
+  Animation: {fileID: 7400000, guid: 1ed697c4d93cf2b4697884e8406b899e, type: 2}
+  AnimationSpeedMultiplier: 0.5
   Type: 4
   ClimbXVelocity: 3
   ClimbUpYVelocity: 4
