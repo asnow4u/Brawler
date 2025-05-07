@@ -503,7 +503,7 @@ namespace Game.SceneObjects.Movement
                 if ((sceneObject.IsFacingRightDirection && sceneObject.Rb.linearVelocity.x <= 0) ||
                     (!sceneObject.IsFacingRightDirection && sceneObject.Rb.linearVelocity.x >= 0))
                 {
-                    sceneObject.Rb.linearVelocity = Vector3.zero;
+                    sceneObject.Rb.linearVelocity = new Vector3(0, sceneObject.Rb.linearVelocity.y, sceneObject.Rb.linearVelocity.z);
 
                     if (curMoveState != MovementType.Null)
                         SetCurrentMoveState(MovementType.Null);
