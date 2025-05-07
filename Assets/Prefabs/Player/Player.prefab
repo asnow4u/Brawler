@@ -129,7 +129,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7d0b5a3cd5de804892120c03848d209, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  depedentAnimations: []
+  triggerAnimationData: {fileID: 0}
 --- !u!1 &2253536348902060994
 GameObject:
   m_ObjectHideFlags: 0
@@ -196,7 +196,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7d0b5a3cd5de804892120c03848d209, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  depedentAnimations: []
+  triggerAnimationData: {fileID: 0}
 --- !u!1 &2481771394715211491
 GameObject:
   m_ObjectHideFlags: 0
@@ -263,7 +263,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7d0b5a3cd5de804892120c03848d209, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  depedentAnimations: []
+  triggerAnimationData: {fileID: 0}
 --- !u!1 &4222309936731493003
 GameObject:
   m_ObjectHideFlags: 0
@@ -355,7 +355,8 @@ MonoBehaviour:
   UniqueId: 
   ObjectType: 0
   curGroundedState: 1
-  maxSlopeAngle: 45
+  curClimbState: 0
+  MaxClimbDelay: 0.5
 --- !u!136 &6533080229536739736
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -433,6 +434,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   groundIdleAnimation: {fileID: 7400000, guid: 608859d4aa8996e4da313b9fd8a3f18f, type: 2}
   airIdleAnimation: {fileID: 7400000, guid: 3dde231bf3aca7541a1b3c02353a6f40, type: 2}
+  climbIdleAnimation: {fileID: 7400000, guid: bd0ceb5aab1f49a48bc96806518ba0a4, type: 2}
   curPlayingAnimation: {fileID: 0}
 --- !u!114 &4936789977502989988
 MonoBehaviour:
@@ -460,10 +462,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   curMoveState: 0
+  MAXJUMPFRAMECOUNT: 10
+  curJumpFrameCount: 0
+  airJumpsPerformed: 0
   baseMovementCollection: {fileID: 11400000, guid: 8652b59850fd13948b67834b9abd3160, type: 2}
   horizontalInfluence: 0
   verticalInfluence: 0
-  jumpInfluence: 0
+  groundedJumpInfluence: 0
+  aerialJumpInfluence: 0
 --- !u!114 &8984696060330667455
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -477,6 +483,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   curAttackState: 0
+  previousAttackState: 0
 --- !u!114 &1637262306655890345
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -492,8 +499,8 @@ MonoBehaviour:
   damageTaken: 0
   hitStunState: 0
   hitStunTimer: 0
-  ragdollRoot: {fileID: 0}
   bounceDegrade: 0.9
+  ragdollRoot: {fileID: 0}
 --- !u!114 &9099089115603247555
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -761,7 +768,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7d0b5a3cd5de804892120c03848d209, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  depedentAnimations: []
+  triggerAnimationData: {fileID: 0}
 --- !u!1 &7327773917011577469
 GameObject:
   m_ObjectHideFlags: 0

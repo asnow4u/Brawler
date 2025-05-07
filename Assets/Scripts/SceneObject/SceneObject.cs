@@ -299,6 +299,7 @@ namespace Game.SceneObjects
                         if (CurGroundedState == GroundedState.Grounded && movementInputHandler.VerticalInfluence < 0)
                             return;
 
+                        //NOTE: Cant transition to climbing while jumping, attacking, or while the climbDelay timer is active
                         if (ActionStateHandler.CurActionState == ActionState.Moving && (movementInputHandler.CurMoveState == MovementType.Jump || movementInputHandler.CurMoveState == MovementType.AirJump) ||
                             ActionStateHandler.CurActionState == ActionState.Attacking ||
                             climbDelayTimer > 0)

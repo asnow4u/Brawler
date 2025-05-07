@@ -165,6 +165,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 6533080229533676564, guid: 2d9eaebf25e69ac4896b5a0412679ec5, type: 3}
+      propertyPath: MaxClimbDelay
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6533080229533771824, guid: 2d9eaebf25e69ac4896b5a0412679ec5, type: 3}
       propertyPath: m_LocalPosition.x
       value: -12
@@ -1659,6 +1663,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 470041643676477581, guid: fd7fe2533f19b644ea23f0fb84ce4805, type: 3}
+      propertyPath: climbIdleAnimation
+      value: 
+      objectReference: {fileID: 7400000, guid: c7baf451bbceecd49abfa0364d5dbfb4, type: 2}
     - target: {fileID: 7457357752304205797, guid: fd7fe2533f19b644ea23f0fb84ce4805, type: 3}
       propertyPath: m_LocalPosition.x
       value: -1.23

@@ -94,14 +94,14 @@ namespace Game.SceneObjects.Movement
         public override void RegisterToEvents()
         {
             sceneObject.GroundedStateChangedEvent += OnGroundedStateChanged;
-            sceneObject.ClimbStateChangedEvent += OnGroundedStateChanged;
+            sceneObject.ClimbStateChangedEvent += OnClimbStateChanged;
             sceneObject.AnimationHandler.AnimationEndedEvent += OnAnimationEnded;
         }
 
         public override void UnregisterToEvents()
         {
             sceneObject.GroundedStateChangedEvent -= OnGroundedStateChanged;
-            sceneObject.ClimbStateChangedEvent -= OnGroundedStateChanged;
+            sceneObject.ClimbStateChangedEvent -= OnClimbStateChanged;
             sceneObject.AnimationHandler.AnimationEndedEvent -= OnAnimationEnded;
         }
 
@@ -128,8 +128,11 @@ namespace Game.SceneObjects.Movement
         /// <summary>
         /// Handle Climb state changed event
         /// </summary>
-        private void OnGroundedStateChanged(ClimbState climbState)
+        private void OnClimbStateChanged(ClimbState climbState)
         {
+            if (climbState == ClimbState.Unavailable)
+                SetCurrentMoveState(MovementType.Null);
+
             //Reset jumps
             if (climbState == ClimbState.Climbing)
                 airJumpsPerformed = 0;    

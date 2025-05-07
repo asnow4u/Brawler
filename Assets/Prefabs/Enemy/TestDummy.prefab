@@ -3312,7 +3312,8 @@ MonoBehaviour:
   UniqueId: 
   ObjectType: 1
   curGroundedState: 0
-  maxSlopeAngle: 40
+  curClimbState: 0
+  MaxClimbDelay: 0
 --- !u!54 &7457357752304205802
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3390,6 +3391,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   groundIdleAnimation: {fileID: 7400000, guid: 84ef1f52ccffc884ebd12998b923b6b9, type: 2}
   airIdleAnimation: {fileID: 7400000, guid: c7baf451bbceecd49abfa0364d5dbfb4, type: 2}
+  climbIdleAnimation: {fileID: 7400000, guid: c7baf451bbceecd49abfa0364d5dbfb4, type: 2}
   curPlayingAnimation: {fileID: 0}
 --- !u!114 &7457357752304205799
 MonoBehaviour:
@@ -3417,10 +3419,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   curMoveState: 0
+  MAXJUMPFRAMECOUNT: 10
+  curJumpFrameCount: 0
+  airJumpsPerformed: 0
   baseMovementCollection: {fileID: 11400000, guid: 0cd95caa845b4a74a96fdf9959df2e89, type: 2}
   horizontalInfluence: 0
   verticalInfluence: 0
-  jumpInfluence: 0
+  groundedJumpInfluence: 0
+  aerialJumpInfluence: 0
 --- !u!114 &7457357752304205801
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3434,6 +3440,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   curAttackState: 0
+  previousAttackState: 0
 --- !u!114 &7457357752304205796
 MonoBehaviour:
   m_ObjectHideFlags: 0

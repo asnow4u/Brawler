@@ -22,6 +22,7 @@ namespace Game.SceneObjects.Animation
 
         [SerializeField] private AnimationClip groundIdleAnimation;
         [SerializeField] private AnimationClip airIdleAnimation;
+        [SerializeField] private AnimationClip climbIdleAnimation;
 
         [SerializeField] private AnimationClip curPlayingAnimation;
 
@@ -75,12 +76,14 @@ namespace Game.SceneObjects.Animation
                 throw new NullReferenceException("AnimationHandlers Ground Idle Animation is null");
             if (airIdleAnimation == null)
                 throw new NullReferenceException("AnimationHandlers Aerial Idle Animation is null");
+            if (climbIdleAnimation == null)
+                throw new NullReferenceException("AnimationHandlers Climb Idle Animation is null");
 
             animationGraph = animator.gameObject.AddComponent<AnimationGraph>();
 
             animationGraph.Initialize();
             SetAnimationToGraph();
-            animationGraph.ResetToIdle(sceneObject.CurGroundedState);
+            animationGraph.ResetToIdle(sceneObject.CurGroundedState, sceneObject.CurClimbState);
         }
 
 
@@ -88,6 +91,7 @@ namespace Game.SceneObjects.Animation
         {
             sceneObject.ActionStateHandler.ActionStateChangedEvent += OnActionStateChanged;
             sceneObject.GroundedStateChangedEvent += OnGroundedStateChanged;
+            sceneObject.ClimbStateChangedEvent += OnClimbStateChanged;
             sceneObject.MovementInputHandler.MoveStateChangedEvent += OnMovementStateChanged;
             sceneObject.AttackInputHandler.AttackStateChangedEvent += OnAttackStateChanged;
         }
@@ -96,6 +100,7 @@ namespace Game.SceneObjects.Animation
         {
             sceneObject.ActionStateHandler.ActionStateChangedEvent -= OnActionStateChanged;
             sceneObject.GroundedStateChangedEvent -= OnGroundedStateChanged;
+            sceneObject.ClimbStateChangedEvent -= OnClimbStateChanged;
             sceneObject.MovementInputHandler.MoveStateChangedEvent -= OnMovementStateChanged;
             sceneObject.AttackInputHandler.AttackStateChangedEvent -= OnAttackStateChanged;
         }
@@ -122,7 +127,7 @@ namespace Game.SceneObjects.Animation
         /// </summary>
         private void SetIdleAnimations()
         {
-            animationGraph.SetIdleAnimations(groundIdleAnimation, airIdleAnimation);
+            animationGraph.SetIdleAnimations(groundIdleAnimation, airIdleAnimation, climbIdleAnimation);
         }
 
 
@@ -178,7 +183,13 @@ namespace Game.SceneObjects.Animation
         /// <param name="groundedState"></param>
         private void OnGroundedStateChanged(GroundedState groundedState)
         {
-            animationGraph.ChangeGroundedStateInput(groundedState);
+            animationGraph.ChangeIdleStateInput(groundedState, sceneObject.CurClimbState);
+        }
+
+
+        private void OnClimbStateChanged(ClimbState climbState)
+        {
+            animationGraph.ChangeIdleStateInput(sceneObject.CurGroundedState, climbState);
         }
 
 

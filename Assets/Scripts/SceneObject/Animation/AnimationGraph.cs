@@ -91,7 +91,7 @@ namespace Game.SceneObjects.Animation
         /// </summary>
         private void SetupIdleMixer()
         {
-            idleAnimationMixer = AnimationMixerPlayable.Create(animationGraph, 2);
+            idleAnimationMixer = AnimationMixerPlayable.Create(animationGraph, 3);
             stateAnimationMixer.ConnectInput((int)ActionState.Idle, idleAnimationMixer, 0);
         }
 
@@ -100,7 +100,6 @@ namespace Game.SceneObjects.Animation
         /// Setup movement mixer for move animations
         /// Inputs: (walk, run), jump, airJump, land
         /// </summary>
-        /// <param name="moveCollection"></param>
         private void SetupMovementMixer()
         {
             movementAnimationMixer = AnimationMixerPlayable.Create(animationGraph, Enum.GetValues(typeof(MovementType)).Length);
@@ -112,7 +111,6 @@ namespace Game.SceneObjects.Animation
         /// Setup attack mixer for attack animations
         /// Inputs: forwardTilt, upTilt, downTilt, forwardAir, upAir, downAir
         /// </summary>
-        /// <param name="attackCollection"></param>
         private void SetupAttackMixer()
         {
             attackAnimationMixer = AnimationMixerPlayable.Create(animationGraph, Enum.GetValues(typeof(AttackType)).Length);
@@ -138,22 +136,25 @@ namespace Game.SceneObjects.Animation
         /// <summary>
         /// Set idle animations to use
         /// </summary>
-        /// <param name="groundIdleAnimation"></param>
-        /// <param name="airIdleAnimation"></param>
-        public void SetIdleAnimations(AnimationClip groundIdleAnimation, AnimationClip airIdleAnimation)
+        public void SetIdleAnimations(AnimationClip groundIdleAnimation, AnimationClip airIdleAnimation, AnimationClip climbIdleAnimation)
         {
+            //Grounded
             AnimationClipPlayable groundIdle = AnimationClipPlayable.Create(animationGraph, groundIdleAnimation);
-            AnimationClipPlayable airIdle = AnimationClipPlayable.Create(animationGraph, airIdleAnimation);
-
             idleAnimationMixer.ConnectInput(0, groundIdle, 0);
+            
+            //Areial
+            AnimationClipPlayable airIdle = AnimationClipPlayable.Create(animationGraph, airIdleAnimation);
             idleAnimationMixer.ConnectInput(1, airIdle, 0);
+
+            //Climb
+            AnimationClipPlayable climbIdle = AnimationClipPlayable.Create(animationGraph, climbIdleAnimation);
+            idleAnimationMixer.ConnectInput(2, climbIdle, 0);
         }
 
 
         /// <summary>
         /// Set movement animations to use
         /// </summary>
-        /// <param name="moveCollection"></param>
         public void SetMovementAnimations(MovementCollection moveCollection)
         {
             foreach (MovementType moveType in Enum.GetValues(typeof(MovementType)))
@@ -221,7 +222,7 @@ namespace Game.SceneObjects.Animation
         /// <summary>
         /// Reset all mixers and set weights for idle
         /// </summary>
-        public void ResetToIdle(GroundedState groundState)
+        public void ResetToIdle(GroundedState groundState, ClimbState climbState)
         {
             ResetInputWeights(stateAnimationMixer);
             ResetInputWeights(idleAnimationMixer);
@@ -231,7 +232,9 @@ namespace Game.SceneObjects.Animation
 
             stateAnimationMixer.SetInputWeight(0, 1);
 
-            if (groundState == GroundedState.Airborn)
+            if (climbState == ClimbState.Climbing)
+                idleAnimationMixer.SetInputWeight(2, 1);            
+            else if (groundState == GroundedState.Airborn)
                 idleAnimationMixer.SetInputWeight(1, 1);
             else
                 idleAnimationMixer.SetInputWeight(0, 1);
@@ -253,11 +256,13 @@ namespace Game.SceneObjects.Animation
         /// Change any mixers affected by grounded state to prioritize current grounded state
         /// </summary>
         /// <param name="groundedState"></param>
-        public void ChangeGroundedStateInput(GroundedState groundedState)
+        public void ChangeIdleStateInput(GroundedState groundedState, ClimbState climbState)
         {
             ResetInputWeights(idleAnimationMixer);
 
-            if (groundedState == GroundedState.Airborn)
+            if (climbState == ClimbState.Climbing)
+                idleAnimationMixer.SetInputWeight(2, 1);            
+            else if (groundedState == GroundedState.Airborn)
                 idleAnimationMixer.SetInputWeight(1, 1);
             else
                 idleAnimationMixer.SetInputWeight(0, 1);
