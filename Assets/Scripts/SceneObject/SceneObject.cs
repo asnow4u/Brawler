@@ -557,7 +557,7 @@ namespace Game.SceneObjects
         #region Inputs
 
         /// <inheritdoc/>
-        public abstract void PerformHorizontalMovement(Vector2 movement);
+        public abstract void PerformMovement(Vector2 movement);
 
         /// <inheritdoc/>
         public abstract void StopHorizontalMovement();

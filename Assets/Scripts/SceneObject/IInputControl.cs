@@ -7,7 +7,7 @@ public interface IInputControl
     /// <summary>
     /// Perform horizontal movement based on the <paramref name="movement"/>
     /// </summary>
-    public void PerformHorizontalMovement(Vector2 movement);
+    public void PerformMovement(Vector2 movement);
 
     /// <summary>
     /// Stop horizontal movement

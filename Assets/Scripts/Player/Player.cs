@@ -23,7 +23,7 @@ namespace Game.SceneObjects
         {
             inputHandler = new PlayerInputHandler();
 
-            inputHandler.input.PlayerActions.Movement.performed += HorizontalMovementInput;
+            inputHandler.input.PlayerActions.Movement.performed += MovementInput;
             inputHandler.input.PlayerActions.Movement.canceled += MovementCanceled;
 
             inputHandler.input.PlayerActions.Jump.performed += JumpInput;
@@ -60,13 +60,13 @@ namespace Game.SceneObjects
 
         //Horizontal Movement
 
-        private void HorizontalMovementInput(InputAction.CallbackContext obj)
+        private void MovementInput(InputAction.CallbackContext obj)
         {
-            PerformHorizontalMovement(obj.ReadValue<Vector2>());
+            PerformMovement(obj.ReadValue<Vector2>());
         }
 
         /// <inheritdoc/>
-        public override void PerformHorizontalMovement(Vector2 movement)
+        public override void PerformMovement(Vector2 movement)
         {
             MovementInputHandler.SetMovementInfluence(movement);
         }

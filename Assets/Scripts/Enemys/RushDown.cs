@@ -133,7 +133,7 @@ namespace Game.SceneObjects
             }
         }
 
-        public override void PerformHorizontalMovement(Vector2 movement)
+        public override void PerformMovement(Vector2 movement)
         {
             throw new System.NotImplementedException();
         }
