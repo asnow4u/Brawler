@@ -247,12 +247,15 @@ namespace Game.SceneObjects.Attack
         /// Try to perform a grounded / Air Forward attack <\br>
         /// Turn around if facing the wrong direction
         /// </summary>
-        public void PerformRightAttack()
+        public void PerformForwardAttack()
         {
             if (curAttackState == AttackType.Null && TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
             {                
                 if (sceneObject.CurGroundedState == GroundedState.Grounded)
                 {
+                    //NOTE: Resets y velocity. This helps prevent an areal grounded attack if performed on first few frame of jump
+                    sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, 0, 0);
+
                     SetCurrentAttackState(AttackType.ForwardTilt, curAttackCollection);
 
                     if (!sceneObject.IsFacingRightDirection)

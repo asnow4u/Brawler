@@ -168,7 +168,7 @@ namespace Game.SceneObjects
         /// <inheritdoc/>
         public override void PerformRightAttack()
         {
-            AttackInputHandler.PerformRightAttack();
+            AttackInputHandler.PerformForwardAttack();
         }
 
         //Active Attack Inputs

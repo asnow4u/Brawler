@@ -33,7 +33,7 @@ public class PlayerTester : Editor
 
         if (GUILayout.Button("Perform Forward Attack"))
         {
-            sceneObject.AttackInputHandler.PerformRightAttack();
+            sceneObject.AttackInputHandler.PerformForwardAttack();
         }
 
         if (GUILayout.Button("Perform Down Attack"))
@@ -76,7 +76,7 @@ public class PlayerTester : Editor
                 await Task.Yield();
             }
 
-            attackHandler.PerformRightAttack();
+            attackHandler.PerformForwardAttack();
             moveHandler.SetMovementInfluence(new Vector2(0, 0));
         }
     }

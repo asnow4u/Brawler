@@ -91,7 +91,7 @@ namespace Game.SceneObjects
 
             catch (Exception e)
             {
-                Debug.LogError(e);
+                Debug.LogException(e);
             }
         }
     
@@ -219,7 +219,10 @@ namespace Game.SceneObjects
         /// Casts 10 rays based on the left/right most point of the collider to determine if touching the ground
         /// </summary>
         public bool IsGrounded()
-        {
+        {            
+            if (Rb.linearVelocity.y > 0.001f) //Use of epsilon to prevent false positive due to floating point persision errors
+                return false;
+
             List<RaycastHit> hits = new List<RaycastHit>();
 
             //Create raycasts
@@ -232,9 +235,15 @@ namespace Game.SceneObjects
             {
                 Vector3 origin = leftSidePoint + Vector3.right * spaceBetweenRays * i;
 
-                if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, Collider.bounds.extents.y + 0.3f, LayerMask.GetMask("Environment")))
+                if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, Collider.bounds.extents.y + 0.1f, LayerMask.GetMask("Environment")))
                 {
-                    hits.Add(hit);
+                    if (hit.transform.TryGetComponent(out JumpThroughPlatform platform))
+                    {
+                        if (!platform.IsSceneObjectCollisionIgnored(this))
+                            hits.Add(hit);
+                    }
+                    else
+                        hits.Add(hit);
                 }
             }
 
