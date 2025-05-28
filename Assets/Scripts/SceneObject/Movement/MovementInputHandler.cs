@@ -774,8 +774,9 @@ namespace Game.SceneObjects.Movement
         {
             if (IsClimbMovementAllowed(curMovementCollection) && (curMoveState == MovementType.Climb || TrySetCurrentMoveState(MovementType.Climb)))
             {
-                float climbXVelocity = horizontalInfluence * curMovementCollection.ClimbData.ClimbXVelocity;
+                CheckTurnAround();
 
+                float climbXVelocity = horizontalInfluence * curMovementCollection.ClimbData.ClimbXVelocity;
                 float climbYVelocity = 0;
 
                 //Climb Up
