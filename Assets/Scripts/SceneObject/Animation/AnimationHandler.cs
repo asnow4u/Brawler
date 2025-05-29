@@ -187,7 +187,7 @@ namespace Game.SceneObjects.Animation
         }
 
 
-        private void OnClimbStateChanged(ClimbState climbState)
+        private void OnClimbStateChanged(ClimbState prevClimbState, ClimbState climbState)
         {
             animationGraph.ChangeIdleStateInput(sceneObject.CurGroundedState, climbState);
         }

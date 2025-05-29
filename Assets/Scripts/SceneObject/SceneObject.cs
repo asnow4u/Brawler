@@ -77,7 +77,7 @@ namespace Game.SceneObjects
 
         //Events
         public event Action<GroundedState> GroundedStateChangedEvent;
-        public event Action<ClimbState> ClimbStateChangedEvent;
+        public event Action<ClimbState, ClimbState> ClimbStateChangedEvent;
 
 
         #region Initialize
@@ -237,7 +237,7 @@ namespace Game.SceneObjects
 
                 if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, Collider.bounds.extents.y + 0.1f, LayerMask.GetMask("Environment")))
                 {
-                    if (hit.transform.TryGetComponent(out JumpThroughPlatform platform))
+                    if (hit.transform.TryGetComponent(out TwoWayPlatform platform))
                     {
                         if (!platform.IsSceneObjectCollisionIgnored(this))
                             hits.Add(hit);
@@ -354,7 +354,8 @@ namespace Game.SceneObjects
 
             if (curClimbState == state)
                 return;
-            
+
+            ClimbState prevClimbState = curClimbState;
             curClimbState = state;
 
             if (curClimbState == ClimbState.Climbing)
@@ -366,7 +367,7 @@ namespace Game.SceneObjects
             else
                 Rb.useGravity = true;                    
 
-            ClimbStateChangedEvent?.Invoke(curClimbState);                                        
+            ClimbStateChangedEvent?.Invoke(prevClimbState, curClimbState);                                        
         }
 
         #endregion

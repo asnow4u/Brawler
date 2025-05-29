@@ -22,10 +22,21 @@ namespace Game.SceneObjects.Equipment
         }
 
         public override void RegisterToEvents()
-        { }
+        {
+            sceneObject.ClimbStateChangedEvent += ClimbingStateChanged;
+        }
 
         public override void UnregisterToEvents()
-        { }
+        {
+            sceneObject.ClimbStateChangedEvent -= ClimbingStateChanged;
+        }
+
+
+        private void ClimbingStateChanged(ClimbState prevState, ClimbState state)
+        {
+            if (CurWeapon != null)
+                CurWeapon.gameObject.SetActive(state != ClimbState.Climbing);
+        }
 
         /// <summary>
         /// Initialize <see cref="WeaponCollection"/> if it exists

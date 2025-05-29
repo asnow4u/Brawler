@@ -57,7 +57,7 @@ namespace Game.SceneObjects
         /// Log climb state change
         /// </summary>
         /// <param name="climbState"></param>
-        private void OnClimbStateChanged(ClimbState climbState)
+        private void OnClimbStateChanged(ClimbState prevCLimbState, ClimbState climbState)
         {
             Log(sceneObject.ObjectType + ": " + sceneObject.gameObject.name + ": ClimbState: " + climbState);
         }

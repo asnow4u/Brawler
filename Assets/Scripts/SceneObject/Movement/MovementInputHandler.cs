@@ -128,9 +128,9 @@ namespace Game.SceneObjects.Movement
         /// <summary>
         /// Handle Climb state changed event
         /// </summary>
-        private void OnClimbStateChanged(ClimbState climbState)
+        private void OnClimbStateChanged(ClimbState prevClimbState, ClimbState climbState)
         {
-            if (climbState == ClimbState.Unavailable)
+            if (prevClimbState == ClimbState.Climbing && climbState == ClimbState.Unavailable)
                 SetCurrentMoveState(MovementType.Null);
 
             //Reset jumps
