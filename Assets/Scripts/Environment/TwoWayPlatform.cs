@@ -7,7 +7,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 
 [RequireComponent(typeof(BoxCollider))]
-public class JumpThroughPlatform : MonoBehaviour
+public class TwoWayPlatform : MonoBehaviour
 {
     private BoxCollider platformCollider;
     public List<Collider> collidersIgnored = new List<Collider>();
@@ -20,7 +20,7 @@ public class JumpThroughPlatform : MonoBehaviour
         BoxCollider detectionCollider = gameObject.AddComponent<BoxCollider>();
         detectionCollider.isTrigger = true;
         detectionCollider.center = platformCollider.center;
-        detectionCollider.size = platformCollider.size + platformCollider.size * 0.5f;
+        detectionCollider.size = new Vector3(platformCollider.size.x, platformCollider.size.y + platformCollider.size.y * 0.5f, platformCollider.size.z);
     }
 
 
