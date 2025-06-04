@@ -8,7 +8,7 @@ public class KillZoneFactory : MonoBehaviour
 {   
     public static KillZoneFactory instance;
 
-    [SerializeField] private GameObject killZonePrefab;
+    [SerializeField] private GameObject deathEffectPrefab;
 
     private void Start()
     {
@@ -25,14 +25,19 @@ public class KillZoneFactory : MonoBehaviour
 
     public KillZone[] SpawnKillZones(Transform sceneObjectTransform)
     {
-        GameObject leftKillZoneObj = Instantiate(killZonePrefab);
-        KillZone leftKillZone = leftKillZoneObj.GetComponent<KillZone>();
-        leftKillZone.Initialize(KillZoneType.Left, sceneObjectTransform);
-                
-        GameObject rightKillZoneObj = Instantiate(killZonePrefab);
-        KillZone rightKillZone = rightKillZoneObj.GetComponent<KillZone>();
-        rightKillZone.Initialize(KillZoneType.Right, sceneObjectTransform);
+        GameObject leftKillZoneObj = new GameObject("LeftKillZone");
+        HorizontalKillZone leftKillZone = leftKillZoneObj.AddComponent<HorizontalKillZone>();
+        leftKillZone.Initialize(KillZoneType.Left, sceneObjectTransform, deathEffectPrefab);
 
-        return new KillZone[] { rightKillZone, leftKillZone};
+        GameObject rightKillZoneObj = new GameObject("RightKillZone");
+        HorizontalKillZone rightKillZone = rightKillZoneObj.AddComponent<HorizontalKillZone>();
+        rightKillZone.Initialize(KillZoneType.Right, sceneObjectTransform, deathEffectPrefab);
+
+        GameObject topKillZoneObj = new GameObject("TopKillZone");
+        KillZone topKillZone = topKillZoneObj.AddComponent<KillZone>();
+        topKillZone.transform.position = new Vector3(0, 30f, 0); //TEMP: Change this to be based off of some value
+        topKillZone.Initialize(KillZoneType.Top, sceneObjectTransform);
+
+        return new KillZone[] { rightKillZone, leftKillZone, topKillZone};
     }
 }

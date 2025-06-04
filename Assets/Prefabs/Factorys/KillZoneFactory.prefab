@@ -24,13 +24,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5968155709411691824}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &5968155709411691214
 MonoBehaviour:
@@ -44,4 +44,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5bcfcdd37d943e241b817758e7c49aaa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  killZonePrefab: {fileID: 5416649112707803764, guid: 3f3f23cdbbdabbf4e86e496619508135, type: 3}
+  deathEffectPrefab: {fileID: 1024023124678840629, guid: 3c48b4dade1171747bb9d8a2fb24b0ea, type: 3}

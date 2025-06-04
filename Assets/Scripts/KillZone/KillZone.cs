@@ -7,67 +7,25 @@ using UnityEngine;
 using UnityEngine.VFX;
 
 //NOTE: Solid is not yet implemented. Would want to make a seperate class for it having killzone be an abstract class
-public enum KillZoneType { Left, Right, LeftSolid, RightSolid }
+public enum KillZoneType { Left, Right, Top, LeftSolid, RightSolid, TopSolid }
 
 public class KillZone : MonoBehaviour
 {
-    [SerializeField] private KillZoneType type;
-    [SerializeField] private Transform objTransform;
-    [SerializeField] private GameObject VFXDeathEffect;
+    protected KillZoneType type;
+    protected Transform target;
+    protected GameObject deathVFX;
 
-    private const float OFFSCREENDISTANCE = 1.5f;
-
-
-    #region Initialize
-
-    public void Initialize(KillZoneType type, Transform objTransform) 
+    public virtual void Initialize(KillZoneType type, Transform objTransform, GameObject deathVFX = null) 
     {
-        if (VFXDeathEffect == null)
-            Debug.LogException(new Exception("VFXDeathEffect is not set in the inspector!"), this);
-
-        this.type = type;
-        this.objTransform = objTransform;       
-
-        UpdatePosition();
+        this.type = type;   
+        this.target = objTransform;
+        this.deathVFX = deathVFX;
     }
 
-    #endregion
 
-    private void Update()
+    protected virtual void Update()
     {
-        UpdatePosition();
         CheckForKill();
-    }
-
-
-    /// <summary>
-    /// Update the position of the killzone based on the camera view
-    /// </summary>
-    private void UpdatePosition()
-    {
-        (Vector3 leftView, Vector3 rightView) cameraView = GetCameraViewport();
-
-        if (type == KillZoneType.Left && transform.position.x > cameraView.leftView.x)
-            transform.position = cameraView.leftView;
-
-        else if (type == KillZoneType.Right && transform.position.x < cameraView.rightView.x)
-            transform.position = cameraView.rightView;
-    }
-
-
-    /// <summary>
-    /// Get the left and right side of the camera view
-    /// </summary>
-    private (Vector3, Vector3) GetCameraViewport()
-    {
-        Camera cam = Camera.main;
-        float depth = Mathf.Abs(cam.transform.position.z);
-        float cameraWidth = depth * Mathf.Tan((Camera.main.fieldOfView / 2) * Mathf.Deg2Rad) * Camera.main.aspect;
-
-        Vector3 leftSide = new Vector3(cam.transform.position.x - cameraWidth, cam.transform.position.y, 0) - Vector3.one * OFFSCREENDISTANCE;
-        Vector3 rightSide = new Vector3(cam.transform.position.x + cameraWidth, cam.transform.position.y, 0) + Vector3.one * OFFSCREENDISTANCE;
-
-        return (leftSide, rightSide);
     }
 
 
@@ -76,12 +34,15 @@ public class KillZone : MonoBehaviour
     /// </summary>
     private void CheckForKill()
     {
-        if (objTransform != null)
+        if (target != null)
         {
-            if (type == KillZoneType.Left && objTransform.position.x < transform.position.x)
+            if (type == KillZoneType.Left && target.position.x < transform.position.x)
                 KillObject();
 
-            else if (type == KillZoneType.Right && objTransform.position.x > transform.position.x)
+            else if (type == KillZoneType.Right && target.position.x > transform.position.x)
+                KillObject();
+
+            else if (type == KillZoneType.Top && target.position.y > transform.position.y)
                 KillObject();
         }
     }
@@ -92,7 +53,7 @@ public class KillZone : MonoBehaviour
     /// </summary>
     private void KillObject()
     {
-        if (objTransform.TryGetComponent(out SceneObject sceneObject))
+        if (target.TryGetComponent(out SceneObject sceneObject))
         {
             if (sceneObject is Player player)
             {
@@ -100,9 +61,30 @@ public class KillZone : MonoBehaviour
             }
             else
             {
-                Instantiate(VFXDeathEffect, objTransform.position, Quaternion.Euler(-90, type == KillZoneType.Right ? 180 : 0, 0));
+                SpawnDeathVFX();       
                 Destroy(sceneObject.gameObject);
             }
+        }
+    }
+
+
+    /// <summary>
+    /// Spawn the death VFX at the killzone position
+    /// </summary>
+    private void SpawnDeathVFX()
+    {
+        if (deathVFX == null)
+            return;
+
+        switch (type)
+        {
+            case KillZoneType.Left:
+                Instantiate(deathVFX, target.position, Quaternion.Euler(-90, 0, 0));
+                break;
+
+            case KillZoneType.Right:
+                Instantiate(deathVFX, target.position, Quaternion.Euler(-90, 180, 0));
+                break;
         }
     }
 }
