@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Game.SceneObjects.Movement 
 {
-    public enum MovementType { Null, Move, WallLean, AirMove, Climb, Jump, AirJump }
+    public enum MovementType { Null, Move, WallLean, AirMove, Jump, AirJump, Climb }
 
     public class MovementInputHandler : SceneObjectHandler
     {
@@ -219,9 +219,14 @@ namespace Game.SceneObjects.Movement
         {                                    
             if (sceneObject.ActionStateHandler.TryChangeState(MOVESTATE))
             {
-                if (moveState != curMoveState && moveState > curMoveState)
+                if (moveState != curMoveState)
                 {
-                    SetCurrentMoveState(moveState);                    
+                    //NOTE: Jumping can override any moveState
+                    if (moveState == MovementType.Jump || moveState == MovementType.AirJump)
+                        SetCurrentMoveState(moveState);
+
+                    else if (moveState > curMoveState)
+                        SetCurrentMoveState(moveState);
                 }
 
                 return true;

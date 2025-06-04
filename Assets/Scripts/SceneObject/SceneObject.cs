@@ -39,10 +39,6 @@ namespace Game.SceneObjects
 
         [Header("Climb Status")]
         [SerializeField] private ClimbState curClimbState;
-        
-        //NOTE: A delay is placed on the climb action to prevent imediate reclimb when involved with jumping and attacking actions
-        [SerializeField] private float MaxClimbDelay;
-        private float climbDelayTimer;
 
         //Logger
         private SceneObjectLogger logger;
@@ -276,10 +272,6 @@ namespace Game.SceneObjects
             //Update climb state if the collection has climb data                
             if (movementInputHandler.TryGetCurrentMovementCollection(out MovementCollection curMovementCollection) && curMovementCollection.ClimbData != null)
             {
-                //Update climb delay timer
-                if (climbDelayTimer > 0)
-                    climbDelayTimer -= Time.fixedDeltaTime;
-
                 Bounds bounds = Collider.bounds;
                 Vector3 center = bounds.center;
                 Vector3 halfExtents = bounds.extents;
@@ -305,15 +297,18 @@ namespace Game.SceneObjects
 
                     else if (movementInputHandler.VerticalInfluence != 0)
                     {
+                        // NOTE: Need to climb upwards while on the ground
                         if (CurGroundedState == GroundedState.Grounded && movementInputHandler.VerticalInfluence < 0)
                             return;
 
-                        //NOTE: Cant transition to climbing while jumping, attacking, or while the climbDelay timer is active
-                        if (ActionStateHandler.CurActionState == ActionState.Moving && (movementInputHandler.CurMoveState == MovementType.Jump || movementInputHandler.CurMoveState == MovementType.AirJump) ||
-                            ActionStateHandler.CurActionState == ActionState.Attacking ||
-                            climbDelayTimer > 0)
+                        // Moving upwards
+                        if (ActionStateHandler.CurActionState == ActionState.Moving && Rb.linearVelocity.y > 0)
                             return;
 
+                        // Attacking
+                        if (ActionStateHandler.CurActionState == ActionState.Attacking)
+                            return;
+                                                    
                         SetClimbState(ClimbState.Climbing);
                     }
                 }
@@ -321,24 +316,22 @@ namespace Game.SceneObjects
                 if (CurClimbState == ClimbState.Climbing)
                 {
                     if (hits.Length == 0)
-                    {
                         SetClimbState(ClimbState.Unavailable);
-                        climbDelayTimer = MaxClimbDelay;
-                    }
 
                     // Hit ground while climbing
                     else if (movementInputHandler.VerticalInfluence < 0 && CurGroundedState == GroundedState.Grounded)
                         SetClimbState(ClimbState.Available);
 
                     // Jump action performed
-                    // Attack action performed                   
-                    // Sets delay timer
-                    else if (ActionStateHandler.CurActionState == ActionState.Moving && (movementInputHandler.CurMoveState == MovementType.Jump || movementInputHandler.CurMoveState == MovementType.AirJump) ||
-                             ActionStateHandler.CurActionState == ActionState.Attacking)
+                    else if (ActionStateHandler.CurActionState == ActionState.Moving)
                     {
-                        SetClimbState(ClimbState.Available);
-                        climbDelayTimer = MaxClimbDelay;
+                        if ((movementInputHandler.CurMoveState == MovementType.Jump || movementInputHandler.CurMoveState == MovementType.AirJump) && Rb.linearVelocity.y > 0)
+                            SetClimbState(ClimbState.Available);
                     }
+
+                    // Attack action performed
+                    else if (ActionStateHandler.CurActionState == ActionState.Attacking)
+                        SetClimbState(ClimbState.Available);
                 }
             }
         }
@@ -349,9 +342,6 @@ namespace Game.SceneObjects
         /// </summary>
         private void SetClimbState(ClimbState state)
         {
-            if (climbDelayTimer > 0 && state == ClimbState.Climbing)
-                return;
-
             if (curClimbState == state)
                 return;
 
