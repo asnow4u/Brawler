@@ -15,12 +15,12 @@ MonoBehaviour:
   Type: 5
   Animation: {fileID: 7400000, guid: 73624557c678d8a4782ebb1144e76d6f, type: 2}
   AnimationSpeedMultiplier: 1
-  influence: 0
+  influence: 1
   damageCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 7
+      time: 0
       value: 5
       inSlope: 0
       outSlope: 0
@@ -29,7 +29,7 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 14
+      time: 60
       value: 5
       inSlope: 0
       outSlope: 0
@@ -40,39 +40,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  launchAngleCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 11
-      value: 350
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 14
-      value: 270
-      inSlope: -19.375
-      outSlope: -19.375
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 19
-      value: 195
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
+  launchAngle: 300
   enableCollider:
     TriggerFrame: 11
     TriggerType: 2
@@ -81,8 +49,11 @@ MonoBehaviour:
     TriggerFrame: 19
     TriggerType: 3
     WasTriggered: 0
+  chargeAction:
+    TriggerFrame: 6
+    TriggerType: 4
+    WasTriggered: 0
   end:
     TriggerFrame: 60
     TriggerType: 1
     WasTriggered: 0
-  otherTriggers: []

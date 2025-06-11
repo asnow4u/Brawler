@@ -15,13 +15,13 @@ MonoBehaviour:
   Type: 1
   Animation: {fileID: 7400000, guid: ed1c645ad027e9a42adab2627fc70d9a, type: 2}
   AnimationSpeedMultiplier: 1
-  influence: 0
+  influence: 1
   damageCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 5
-      value: 5
+      time: 0
+      value: 8
       inSlope: 0
       outSlope: 0
       tangentMode: 136
@@ -29,68 +29,8 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 10
-      value: 5
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  launchAngleCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 24
-      value: 10
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 25
-      value: 60
-      inSlope: 52.5
-      outSlope: 52.5
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 26
-      value: 115
-      inSlope: 45
-      outSlope: 45
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 27
-      value: 150
-      inSlope: 30
-      outSlope: 30
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 28
-      value: 175
-      inSlope: 9.999999
-      outSlope: 9.999999
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 29
-      value: 180
+      time: 60
+      value: 8
       inSlope: 0
       outSlope: 0
       tangentMode: 136
@@ -100,16 +40,20 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  launchAngle: 115
   enableCollider:
     TriggerFrame: 24
     TriggerType: 2
     WasTriggered: 1
   disableCollider:
-    TriggerFrame: 29
+    TriggerFrame: 30
     TriggerType: 3
     WasTriggered: 1
+  chargeAction:
+    TriggerFrame: 11
+    TriggerType: 4
+    WasTriggered: 0
   end:
     TriggerFrame: 70
     TriggerType: 1
     WasTriggered: 1
-  otherTriggers: []

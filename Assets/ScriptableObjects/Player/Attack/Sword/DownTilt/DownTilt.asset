@@ -20,7 +20,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 5
+      time: 0
       value: 5
       inSlope: 0
       outSlope: 0
@@ -29,7 +29,7 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 11
+      time: 60
       value: 5
       inSlope: 0
       outSlope: 0
@@ -49,12 +49,11 @@ MonoBehaviour:
     TriggerFrame: 11
     TriggerType: 3
     WasTriggered: 1
-  end:
-    TriggerFrame: 40
-    TriggerType: 1
-    WasTriggered: 0
   chargeAction:
     TriggerFrame: 3
     TriggerType: 4
     WasTriggered: 0
-  otherTriggers: []
+  end:
+    TriggerFrame: 40
+    TriggerType: 1
+    WasTriggered: 0

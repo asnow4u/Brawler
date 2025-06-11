@@ -15,13 +15,13 @@ MonoBehaviour:
   Type: 1
   Animation: {fileID: 7400000, guid: 9e587c8f003e18243a1f98b360819d4a, type: 2}
   AnimationSpeedMultiplier: 1
-  influence: 0
+  influence: 1
   damageCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 5
-      value: 5
+      time: 0
+      value: 8
       inSlope: 0
       outSlope: 0
       tangentMode: 136
@@ -29,77 +29,8 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 12
-      value: 5
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  launchAngleCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 23
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 24
-      value: 30
-      inSlope: 35
-      outSlope: 35
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 25
-      value: 70
-      inSlope: 30
-      outSlope: 30
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 26
-      value: 90
-      inSlope: 20
-      outSlope: 20
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 27
-      value: 110
-      inSlope: 15
-      outSlope: 15
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 28
-      value: 120
-      inSlope: 10
-      outSlope: 10
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 30
-      value: 140
+      time: 80
+      value: 8
       inSlope: 0
       outSlope: 0
       tangentMode: 136
@@ -109,16 +40,20 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  launchAngle: 85
   enableCollider:
     TriggerFrame: 23
     TriggerType: 2
     WasTriggered: 0
   disableCollider:
-    TriggerFrame: 30
+    TriggerFrame: 33
     TriggerType: 3
+    WasTriggered: 0
+  chargeAction:
+    TriggerFrame: 18
+    TriggerType: 4
     WasTriggered: 0
   end:
     TriggerFrame: 80
     TriggerType: 1
     WasTriggered: 0
-  otherTriggers: []

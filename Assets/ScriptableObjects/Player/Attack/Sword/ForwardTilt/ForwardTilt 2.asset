@@ -15,13 +15,13 @@ MonoBehaviour:
   Type: 3
   Animation: {fileID: 7400000, guid: c0b9f68ea89feb64eb482ee539c31f8a, type: 2}
   AnimationSpeedMultiplier: 1
-  influence: 0
+  influence: 1
   damageCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 6
-      value: 5
+      time: 0
+      value: 10
       inSlope: 0
       outSlope: 0
       tangentMode: 136
@@ -29,59 +29,8 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 12
-      value: 5
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  launchAngleCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 26
-      value: 110
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 30
-      value: 90
-      inSlope: -8.333333
-      outSlope: -8.333333
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 32
-      value: 60
-      inSlope: -23.333334
-      outSlope: -23.333334
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 33
-      value: 20
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 35
-      value: 20
+      time: 90
+      value: 10
       inSlope: 0
       outSlope: 0
       tangentMode: 136
@@ -91,16 +40,20 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  launchAngle: 35
   enableCollider:
-    TriggerFrame: 26
+    TriggerFrame: 30
     TriggerType: 2
     WasTriggered: 0
   disableCollider:
-    TriggerFrame: 35
+    TriggerFrame: 37
     TriggerType: 3
     WasTriggered: 0
+  chargeAction:
+    TriggerFrame: 25
+    TriggerType: 4
+    WasTriggered: 0
   end:
-    TriggerFrame: 90
+    TriggerFrame: 80
     TriggerType: 1
     WasTriggered: 0
-  otherTriggers: []

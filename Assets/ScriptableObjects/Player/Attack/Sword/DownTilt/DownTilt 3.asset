@@ -20,8 +20,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 5
-      value: 5
+      time: 0
+      value: 10
       inSlope: 0
       outSlope: 0
       tangentMode: 136
@@ -29,8 +29,8 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 11
-      value: 5
+      time: 80
+      value: 10
       inSlope: 0
       outSlope: 0
       tangentMode: 136
@@ -40,40 +40,20 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  launchAngleCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 19
-      value: 5
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 25
-      value: 5
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
+  launchAngle: 20
   enableCollider:
     TriggerFrame: 19
     TriggerType: 2
     WasTriggered: 1
   disableCollider:
-    TriggerFrame: 25
+    TriggerFrame: 28
     TriggerType: 3
     WasTriggered: 1
+  chargeAction:
+    TriggerFrame: 8
+    TriggerType: 4
+    WasTriggered: 0
   end:
     TriggerFrame: 80
     TriggerType: 1
     WasTriggered: 1
-  otherTriggers: []
