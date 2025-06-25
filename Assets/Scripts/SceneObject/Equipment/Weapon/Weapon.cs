@@ -19,8 +19,10 @@ public class Weapon : Interactable
     private AttackData curAttack;
 
 
-    private void Start()
-    {               
+    protected override void Awake()
+    {
+        base.Awake();
+
         if (MovementCollection == null)
             Debug.LogException(new NullReferenceException("Movement Collection On Weapon " + name + " Is Null!"), this);
 
@@ -49,26 +51,6 @@ public class Weapon : Interactable
     {
         foreach (DamageCollider collider in damageColliders)
             collider.Disable();
-    }
-
-
-    protected override void InputReceived(SceneObject sceneObj)
-    {
-        if (transform.GetChild(0).TryGetComponent(out Weapon weapon))
-        {
-            //Setup add sceneObject attackpoints to weapon
-            if (sceneObj.AttackInputHandler != null)
-            {
-                //foreach (GameObject attackPointObj in sceneObj.AttackInputHandler.BaseAttackCollection.AttackPointCollection.AttackPoints)
-                //{
-                //    weapon.AttackCollection.AttackPointCollection.AttackPoints.Add(attackPointObj);
-                //}
-            }
-
-            //sceneObj.EquipmentHandler.Weapons.AddWeapon(weapon);
-        }
-
-        sceneObj.InteractionHandler.UnregisterToInputEvent(InputReceived);
     }
 }
 

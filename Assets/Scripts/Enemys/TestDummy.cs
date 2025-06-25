@@ -15,11 +15,6 @@ namespace Game.SceneObjects
             throw new System.NotImplementedException();
         }
 
-        public override bool IsInteractionActive()
-        {
-            throw new System.NotImplementedException();
-        }
-
         public override bool IsLeftAttackActive()
         {
             throw new System.NotImplementedException();

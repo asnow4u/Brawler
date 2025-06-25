@@ -65,8 +65,6 @@ namespace Game.SceneObjects.Animation
 
         public override void Setup()
         {
-            base.Setup();
-
             //Animator
             animator = GetComponentInChildren<Animator>();
 

@@ -1,25 +1,55 @@
+using Game.Interactable;
 using Game.SceneObjects;
-using System;
+using Game.SceneObjects.Equipment;
+using NUnit.Framework;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
-namespace Game.Interactable
+public class InteractionHandler : SceneObjectHandler
 {
-    public class InteractionHandler
+    private List<IInteractable> availableInteractables = new List<IInteractable>();        
+
+    public override void RegisterToEvents()
     {
-        private Action<SceneObject> inputAction;
+        
+    }
 
-        public void ReceiveInput(SceneObject sceneObj)
+    public override void UnregisterToEvents()
+    {
+        
+    }
+
+    public override void Setup()
+    { }
+
+    /// <summary>
+    /// Update what available interactables are within interacting range.
+    /// </summary>
+    public void CheckForInteractables()
+    {
+        availableInteractables.Clear();
+
+        //TODO: Refine by making public feilds to be set in inspector
+        Collider[] colliders = Physics.OverlapBox(transform.position, new Vector3(2.5f, 3f, 1f), Quaternion.identity, LayerMask.GetMask("Interactable"), QueryTriggerInteraction.Collide);
+        
+        foreach (Collider collider in colliders)
         {
-            inputAction?.Invoke(sceneObj);
+            collider.TryGetComponent(out IInteractable interactable);
+                availableInteractables.Add(interactable);                
         }
+    }
 
-        public void RegisterToInputEvent(Action<SceneObject> callback)
+    /// <summary>
+    /// Interact with the closest interactable.
+    /// </summary>
+    public void InitiateInteraction()
+    {
+        // TODO: Check which interactable is closest
+        IInteractable interactable = availableInteractables.FirstOrDefault();
+        if (interactable != null && interactable is Weapon weapon)
         {
-            inputAction += callback;
-        }
-
-        public void UnregisterToInputEvent(Action<SceneObject> callback)
-        {
-            inputAction -= callback;
+            sceneObject.EquipmentHandler.WeaponHandler.AddWeapon(weapon);
         }
     }
 }

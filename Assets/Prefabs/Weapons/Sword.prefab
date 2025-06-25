@@ -10,7 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 6629330779945769297}
   - component: {fileID: 9098480070039941668}
-  m_Layer: 0
+  - component: {fileID: 2587851432767301375}
+  m_Layer: 13
   m_Name: Sword
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -49,6 +50,27 @@ MonoBehaviour:
   Type: 0
   MovementCollection: {fileID: 11400000, guid: 8652b59850fd13948b67834b9abd3160, type: 2}
   AttackCollection: {fileID: 11400000, guid: bff4e99318059e644b87d88ebfa76ee0, type: 2}
+--- !u!65 &2587851432767301375
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 816920922995608837}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.5001764, y: 0.8537104, z: 1}
+  m_Center: {x: 0, y: 0.3413428, z: 0}
 --- !u!1 &4800180140017830280
 GameObject:
   m_ObjectHideFlags: 0
@@ -127,7 +149,7 @@ GameObject:
   - component: {fileID: 3335285194236966207}
   - component: {fileID: 4443397071530339115}
   - component: {fileID: 5206027506283050650}
-  m_Layer: 10
+  m_Layer: 0
   m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}

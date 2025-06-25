@@ -22,6 +22,7 @@ namespace Game.SceneObjects
 
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(EquipmentHandler))]
+    [RequireComponent(typeof(InteractionHandler))]
     [RequireComponent(typeof(MovementInputHandler))]
     [RequireComponent(typeof(AttackInputHandler))]
     [RequireComponent(typeof(ActionStateHandler))]
@@ -45,6 +46,7 @@ namespace Game.SceneObjects
 
         //Handlers
         private ActionStateHandler actionStateHandler;
+        private InteractionHandler interactionHandler;
         private EquipmentHandler equipmentHandler;
         private MovementInputHandler movementInputHandler;
         private AttackInputHandler attackInputHandler;
@@ -52,11 +54,10 @@ namespace Game.SceneObjects
         private UIHandler uiHandler;
         private DamageHandler damageHandler;
 
-        public InteractionHandler InteractionHandler;
-
         //Getters
         public SceneObjectLogger Logger => logger;
         public ActionStateHandler ActionStateHandler => actionStateHandler;
+        public InteractionHandler InteractionHandler => interactionHandler;
         public EquipmentHandler EquipmentHandler => equipmentHandler;
         public MovementInputHandler MovementInputHandler => movementInputHandler;
         public AttackInputHandler AttackInputHandler => attackInputHandler;
@@ -117,9 +118,8 @@ namespace Game.SceneObjects
         /// </summary>
         private void GetHandlers()
         {
-            InteractionHandler = new InteractionHandler();
-
             actionStateHandler = GetComponent<ActionStateHandler>();
+            interactionHandler = GetComponent<InteractionHandler>();
             animationHandler = GetComponent<AnimationHandler>();
             uiHandler = GetComponent<UIHandler>();
             equipmentHandler = GetComponent<EquipmentHandler>();
@@ -135,9 +135,10 @@ namespace Game.SceneObjects
         /// </summary>
         private void SetUpHandlers()
         {
-            actionStateHandler.Setup();    
+            actionStateHandler.Setup();
             equipmentHandler.Setup();
-            movementInputHandler.Setup();        
+            interactionHandler.Setup();
+            movementInputHandler.Setup();
             attackInputHandler.Setup();
             animationHandler.Setup();                
             uiHandler.Setup();
@@ -151,6 +152,7 @@ namespace Game.SceneObjects
         private void SetupHandlerEvents()
         {
             actionStateHandler.RegisterToEvents();
+            interactionHandler.RegisterToEvents();
             uiHandler.RegisterToEvents();
             equipmentHandler.RegisterToEvents();
             movementInputHandler.RegisterToEvents();
@@ -166,6 +168,12 @@ namespace Game.SceneObjects
 
 
         #region Update
+
+        protected virtual void Update()
+        {
+            interactionHandler.CheckForInteractables();
+        }
+
 
         protected virtual void FixedUpdate()
         {  
@@ -600,10 +608,7 @@ namespace Game.SceneObjects
 
         /// <inheritdoc/>
         public abstract void PerformInteraction();
-
-        /// <inheritdoc/>
-        public abstract bool IsInteractionActive();
-
+        
         #endregion
 
 

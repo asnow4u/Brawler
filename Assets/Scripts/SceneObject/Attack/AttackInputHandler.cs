@@ -50,8 +50,8 @@ namespace Game.SceneObjects.Attack
         {
             curAttackCollection = null;
 
-            if (sceneObject.EquipmentHandler.CurWeapon != null)
-                curAttackCollection = sceneObject.EquipmentHandler.CurWeapon.AttackCollection;
+            if (sceneObject.EquipmentHandler.WeaponHandler.EquippedWeapon != null)
+                curAttackCollection = sceneObject.EquipmentHandler.WeaponHandler.EquippedWeapon.AttackCollection;
 
             return curAttackCollection != null;
         }
@@ -69,13 +69,15 @@ namespace Game.SceneObjects.Attack
             sceneObject.AnimationHandler.AnimationEndedEvent += OnAnimationEnded;
         }
 
-
         public override void UnregisterToEvents()
         {
             //Animation Events
             sceneObject.AnimationHandler.AnimationStartedEvent -= OnAnimationStarted;
             sceneObject.AnimationHandler.AnimationEndedEvent -= OnAnimationEnded;
         }
+
+        public override void Setup()
+        { }
 
         #endregion
 
@@ -435,11 +437,11 @@ namespace Game.SceneObjects.Attack
             switch (trigger.TriggerType)
             {
                 case AnimationTriggerType.EnableCollider:
-                    sceneObject.EquipmentHandler.CurWeapon.EnableCollidersForAttack(curAttackData, AttackConnected);
+                    sceneObject.EquipmentHandler.WeaponHandler.EquippedWeapon.EnableCollidersForAttack(curAttackData, AttackConnected);
                     break;
 
                 case AnimationTriggerType.DisableCollider:
-                    sceneObject.EquipmentHandler.CurWeapon.DisableAllColliders();
+                    sceneObject.EquipmentHandler.WeaponHandler.EquippedWeapon.DisableAllColliders();
                     break;
 
                 case AnimationTriggerType.ChargeAction:

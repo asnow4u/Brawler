@@ -1,74 +1,43 @@
 using System;
+using System.Linq;
+using UnityEngine;
 
 namespace Game.SceneObjects.Equipment
 {
     public class EquipmentHandler : SceneObjectHandler
     {
-        public Weapon CurWeapon { get; private set; }
-
-
-        private WeaponCollection weaponCollection;
-
-        public event Action<Weapon> OnWeaponEquipped;
-
+        public WeaponHandler WeaponHandler;
 
         #region Initialize
 
         public override void Setup()
         {
-            base.Setup();
-
             SetupWeaponsCollection();
         }
 
         public override void RegisterToEvents()
         {
-            sceneObject.ClimbStateChangedEvent += ClimbingStateChanged;
+            //throw new NotImplementedException();
         }
+
 
         public override void UnregisterToEvents()
         {
-            sceneObject.ClimbStateChangedEvent -= ClimbingStateChanged;
-        }
-
-
-        private void ClimbingStateChanged(ClimbState prevState, ClimbState state)
-        {
-            if (CurWeapon != null)
-                CurWeapon.gameObject.SetActive(state != ClimbState.Climbing);
+            //throw new NotImplementedException();
         }
 
         /// <summary>
-        /// Initialize <see cref="WeaponCollection"/> if it exists
+        /// Initialize <see cref="global::WeaponHandler"/> if it exists
         /// </summary>
         private void SetupWeaponsCollection()
         {
-            weaponCollection = new WeaponCollection(gameObject);
-            EquipWeaponByIndex(0);
+            WeaponHandler = GetComponentInChildren<WeaponHandler>();
+
+            if (WeaponHandler != null)
+                WeaponHandler.Setup();
         }
 
         #endregion
 
-
-        #region Weapon
-
-        /// <summary>
-        /// Equip <see cref="Weapon"/> from <see cref="weaponCollection"/> given <paramref name="index"/>
-        /// </summary>
-        public void EquipWeaponByIndex(int index)
-        {
-            if (weaponCollection != null && weaponCollection.TryGetWeaponByIndex(index, out Weapon weapon))
-            {
-                if (CurWeapon != null)
-                    CurWeapon.gameObject.SetActive(false);
-
-                weapon.gameObject.SetActive(true);
-                CurWeapon = weapon;
-
-                OnWeaponEquipped?.Invoke(weapon);
-            }
-        }
-
-        #endregion
     }
 }

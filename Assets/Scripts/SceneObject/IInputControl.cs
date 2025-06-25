@@ -86,10 +86,5 @@ public interface IInputControl
 
     public void PerformInteraction();
 
-    /// <returns>
-    /// Check if interaction inputs are active
-    ///</returns>
-    public bool IsInteractionActive();
-
     #endregion
 }

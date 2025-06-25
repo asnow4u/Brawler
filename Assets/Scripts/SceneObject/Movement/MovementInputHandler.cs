@@ -67,14 +67,14 @@ namespace Game.SceneObjects.Movement
         public bool TryGetCurrentMovementCollection(out MovementCollection currentMoveCollection)
         {
             currentMoveCollection = null;
+            
+            if (baseMovementCollection == null)
+                return false;            
 
-            if (baseMovementCollection != null)
-            {
-                if (sceneObject.EquipmentHandler.CurWeapon != null)
-                    currentMoveCollection = sceneObject.EquipmentHandler.CurWeapon.MovementCollection;
-                else
-                    currentMoveCollection = baseMovementCollection;
-            }
+            if (sceneObject.EquipmentHandler.WeaponHandler?.EquippedWeapon != null)
+                currentMoveCollection = sceneObject.EquipmentHandler.WeaponHandler.EquippedWeapon.MovementCollection;
+            else
+                currentMoveCollection = baseMovementCollection;
 
             return currentMoveCollection != null;
         }
@@ -84,12 +84,6 @@ namespace Game.SceneObjects.Movement
 
 
         #region Initialize
-
-        public override void Setup()
-        {
-            base.Setup();
-        }
-
 
         public override void RegisterToEvents()
         {
@@ -105,6 +99,8 @@ namespace Game.SceneObjects.Movement
             sceneObject.AnimationHandler.AnimationEndedEvent -= OnAnimationEnded;
         }
 
+        public override void Setup()
+        { }
 
         #endregion
 
@@ -317,7 +313,7 @@ namespace Game.SceneObjects.Movement
         /// Input Value determines how much of the curCollection moveSpeed should be applied
         /// </summary>
         public void SetMovementInfluence(Vector2 inputInfluence)
-        {
+        {            
             horizontalInfluence = Mathf.Clamp(inputInfluence.x, -1, 1);
             verticalInfluence = Mathf.Clamp(inputInfluence.y, -1, 1);
         }

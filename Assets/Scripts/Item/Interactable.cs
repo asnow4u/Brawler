@@ -1,28 +1,29 @@
 using UnityEngine;
 using Game.SceneObjects;
+using System;
 
 namespace Game.Interactable
 {
-    [RequireComponent(typeof(Collider))]
-    public abstract class Interactable : MonoBehaviour
+    public abstract class Interactable : MonoBehaviour, IInteractable
     {
-        private void OnTriggerEnter(Collider col)
-        { 
-            if (col.TryGetComponent(out SceneObject sceneObj))
-            {
-                sceneObj.InteractionHandler.RegisterToInputEvent(InputReceived);
-            }
-        }
+        private Collider interactionCollider;
 
-        private void OnTriggerExit(Collider col)
+        protected virtual void Awake()
         {
-            if (col.TryGetComponent(out SceneObject sceneObj))
-            {
-                sceneObj.InteractionHandler.UnregisterToInputEvent(InputReceived);                       
-            }
+            if (!TryGetComponent(out interactionCollider))
+                Debug.LogException(new MissingComponentException("Interactable " + name + " must have a collider"), this);
         }
 
 
-        protected abstract void InputReceived(SceneObject sceneObj);    
+        public void EnableInteraction()
+        {
+            interactionCollider.enabled = true;
+        }
+
+
+        public void DisableInteraction()
+        {
+            interactionCollider.enabled = false;
+        }
     }
 }

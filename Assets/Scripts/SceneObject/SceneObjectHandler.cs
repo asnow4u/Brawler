@@ -4,17 +4,11 @@ namespace Game.SceneObjects
 {
     public abstract class SceneObjectHandler : MonoBehaviour
     {
-        protected SceneObject sceneObject;
-
-        public virtual void Setup()
-        {
-            sceneObject = GetComponent<SceneObject>();
-
-            if (sceneObject == null)
-                throw new System.NullReferenceException("SceneObject not found on handlers gameobject");
-        }
+        protected SceneObject sceneObject => GetComponent<SceneObject>();
 
         public abstract void RegisterToEvents();
         public abstract void UnregisterToEvents();
+
+        public abstract void Setup();
     }
 }

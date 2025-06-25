@@ -20,7 +20,6 @@ namespace Game.SceneObjects.ActionStates
 
         public override void Setup()
         {
-            base.Setup();
             curActionState = ActionState.Idle;
         }
 

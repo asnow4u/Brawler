@@ -48,8 +48,6 @@ namespace Game.SceneObjects.Damage
 
         public override void Setup()
         {
-            base.Setup();
-
             if (ragdollRoot != null)
             {
                 ragdoll = ragdollRoot.AddComponent<Ragdoll>();

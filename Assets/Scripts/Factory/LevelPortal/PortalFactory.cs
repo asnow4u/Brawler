@@ -17,10 +17,7 @@ namespace Game.Interactable.Factory
             //Grab possible levels
             foreach (LevelPortal portal in portals)
             {
-                if (portal.Destination != GameManager.instance.CurLevelType)
-                {
-                    possibleDestinations.Add(portal);
-                }
+                
             }
 
             int rand = Random.Range(0, possibleDestinations.Count);

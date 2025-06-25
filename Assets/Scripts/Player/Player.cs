@@ -208,15 +208,8 @@ namespace Game.SceneObjects
         /// <inheritdoc/>
         public override void PerformInteraction()
         {
-            InteractionHandler.ReceiveInput(this);
+            InteractionHandler.InitiateInteraction();   
         }
-
-        /// <inheritdoc/>
-        public override bool IsInteractionActive()
-        {
-            return inputHandler.input.PlayerActions.Interaction.IsPressed();
-        }
-
 
         #endregion
 
