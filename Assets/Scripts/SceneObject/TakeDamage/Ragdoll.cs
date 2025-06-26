@@ -83,7 +83,7 @@ namespace Game.SceneObjects.Damage
             {
                 sceneObject.GetComponent<Collider>().enabled = true;
                 sceneObject.Rb.isKinematic = false;
-                sceneObject.Rb.linearVelocity = RB.linearVelocity;
+                sceneObject.Rb.velocity = RB.velocity;
 
                 DisableRagdollParts();
 
@@ -123,7 +123,7 @@ namespace Game.SceneObjects.Damage
                     collider.isTrigger = false;
 
                 if (part.TryGetComponent(out Rigidbody rb))
-                    rb.linearVelocity = sceneObject.Rb.linearVelocity;
+                    rb.velocity = sceneObject.Rb.velocity;
 
                 RB.isKinematic = false;
             }
@@ -151,7 +151,7 @@ namespace Game.SceneObjects.Damage
         /// <param name="bounceDegrade"></param>
         public void CheckRagdollBounce(Bounds bounds, float bounceDegrade)
         {
-            Vector3 velocity = RB.linearVelocity;
+            Vector3 velocity = RB.velocity;
             float distance = velocity.magnitude * Time.fixedDeltaTime;
             Vector3 direction = velocity.normalized;
 
@@ -162,7 +162,7 @@ namespace Game.SceneObjects.Damage
                 foreach (GameObject part in ragdollParts)
                 {
                     if (part.TryGetComponent(out Rigidbody rigidbody))
-                        rigidbody.linearVelocity = bounceVelocity;
+                        rigidbody.velocity = bounceVelocity;
                 }
             }
         }

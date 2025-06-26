@@ -126,7 +126,7 @@ namespace Game.Navigation
                 if (route.Type == EdgeType.Jump)
                 {
                     JumpEdge jumpRoute = (JumpEdge)route;
-                    rb.linearVelocity = new Vector3(jumpRoute.InitialVelocity, rb.linearVelocity.y);
+                    rb.velocity = new Vector3(jumpRoute.InitialVelocity, rb.velocity.y);
                 }
             }
         }
