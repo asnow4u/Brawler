@@ -183,6 +183,8 @@ namespace Game.SceneObjects.Animation
             {
                 if (attackCollection.TryGetAttackByType(attackType, out AttackData attackData))
                 {
+                    attackAnimationMixer.DisconnectInput((int)attackType);
+                    
                     AnimationClipPlayable attackPlayable = AnimationClipPlayable.Create(animationGraph, attackData.Animation);
                     attackAnimationMixer.ConnectInput((int)attackType, attackPlayable, 0);
                 }

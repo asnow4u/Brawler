@@ -14,6 +14,8 @@ public class WeaponHandler : MonoBehaviour
 
     public Weapon EquippedWeapon => equippedWeapon;
 
+    public Action<Weapon> OnWeaponEquipped;
+
     public void Setup()
     {        
         //All Starting Weapons
@@ -63,7 +65,9 @@ public class WeaponHandler : MonoBehaviour
 
         equippedWeapon.transform.parent = grabPoint.transform;
         equippedWeapon.transform.localPosition = Vector3.zero;
-        equippedWeapon.transform.localRotation = Quaternion.identity;              
+        equippedWeapon.transform.localRotation = Quaternion.identity;
+
+        OnWeaponEquipped?.Invoke(equippedWeapon);
     }
     
     /// <summary>

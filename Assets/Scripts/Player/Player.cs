@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Android;
 using UnityEngine.InputSystem;
 
 namespace Game.SceneObjects 
@@ -42,11 +43,7 @@ namespace Game.SceneObjects
             inputHandler.input.PlayerActions.Interaction.performed += InteractInput;
 
             //Weapon Switch
-            inputHandler.input.PlayerActions.WeaponSwitch1.performed += SwitchWeapon1;
-            inputHandler.input.PlayerActions.WeaponSwitch2.performed += SwitchWeapon2;
-            inputHandler.input.PlayerActions.WeaponSwitch3.performed += SwitchWeapon3;
-            inputHandler.input.PlayerActions.WeaponSwitch4.performed += SwitchWeapon4;
-            inputHandler.input.PlayerActions.WeaponSwitch5.performed += SwitchWeapon5;
+            inputHandler.input.PlayerActions.WeaponSwitch.performed += ToggleWeapon;
         }
 
 
@@ -215,38 +212,9 @@ namespace Game.SceneObjects
 
         #region Weapon Selection Input
 
-        private void SwitchWeaponTo(int index)
+        private void ToggleWeapon(InputAction.CallbackContext obj)
         {
-            throw new System.NotImplementedException();
-            //if (AnimationStateHandler.IsStatePossible(ActionState.Moving))
-            //{
-            //    EquipmentHandler.Weapons.SwapWeaponTo(index);
-            //}
-        }
-
-        private void SwitchWeapon1(InputAction.CallbackContext obj)
-        {
-            //SwitchWeaponTo(0);
-        }
-
-        private void SwitchWeapon2(InputAction.CallbackContext obj)
-        {
-            //SwitchWeaponTo(1);
-        }
-
-        private void SwitchWeapon3(InputAction.CallbackContext obj)
-        {
-            //SwitchWeaponTo(2);
-        }
-
-        private void SwitchWeapon4(InputAction.CallbackContext obj)
-        {
-            //SwitchWeaponTo(3);
-        }
-
-        private void SwitchWeapon5(InputAction.CallbackContext obj)
-        {
-            //SwitchWeaponTo(4);
+            EquipmentHandler.WeaponHandler.ToggleEquippedWeapon();
         }
 
         #endregion

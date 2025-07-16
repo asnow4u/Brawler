@@ -92,6 +92,7 @@ namespace Game.SceneObjects.Animation
             sceneObject.ClimbStateChangedEvent += OnClimbStateChanged;
             sceneObject.MovementInputHandler.MoveStateChangedEvent += OnMovementStateChanged;
             sceneObject.AttackInputHandler.AttackStateChangedEvent += OnAttackStateChanged;
+            sceneObject.EquipmentHandler.WeaponHandler.OnWeaponEquipped += OnWeaponEquipped;
         }
 
         public override void UnregisterToEvents()
@@ -101,6 +102,7 @@ namespace Game.SceneObjects.Animation
             sceneObject.ClimbStateChangedEvent -= OnClimbStateChanged;
             sceneObject.MovementInputHandler.MoveStateChangedEvent -= OnMovementStateChanged;
             sceneObject.AttackInputHandler.AttackStateChangedEvent -= OnAttackStateChanged;
+            sceneObject.EquipmentHandler.WeaponHandler.OnWeaponEquipped -= OnWeaponEquipped;
         }
 
         #endregion
@@ -231,6 +233,14 @@ namespace Game.SceneObjects.Animation
                 if (attackCollection.TryGetAttackByType(currentAttackState, out AttackData requestedAttackData))
                     animationGraph.ChangeAttackStateInput(currentAttackState, requestedAttackData.AnimationSpeedMultiplier);
             }
+        }
+
+        /// <summary>
+        /// Handle weapon being equipped
+        /// </summary>
+        private void OnWeaponEquipped(Weapon weapon)
+        {            
+            animationGraph.SetAttackAnimations(weapon.AttackCollection);
         }
 
         #endregion
