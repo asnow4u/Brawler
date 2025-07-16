@@ -205,7 +205,8 @@ namespace Game.SceneObjects
         /// <inheritdoc/>
         public override void PerformInteraction()
         {
-            InteractionHandler.InitiateInteraction();   
+            if (ActionStateHandler.CurActionState == ActionStates.ActionState.Idle || ActionStateHandler.CurActionState == ActionStates.ActionState.Moving)
+                InteractionHandler.InitiateInteraction();
         }
 
         #endregion
@@ -214,7 +215,8 @@ namespace Game.SceneObjects
 
         private void ToggleWeapon(InputAction.CallbackContext obj)
         {
-            EquipmentHandler.WeaponHandler.ToggleEquippedWeapon();
+            if (ActionStateHandler.CurActionState == ActionStates.ActionState.Idle || ActionStateHandler.CurActionState == ActionStates.ActionState.Moving)
+                EquipmentHandler.WeaponHandler.ToggleEquippedWeapon();
         }
 
         #endregion
