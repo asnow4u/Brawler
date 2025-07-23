@@ -103,7 +103,7 @@ namespace Game.SceneObjects
             curGroundedState = GroundedState.Grounded;
             curClimbState = ClimbState.Unavailable;
 
-            Rb.drag = 0;
+            Rb.linearDamping = 0;
 
             GetHandlers();
             SetUpHandlers();
@@ -224,7 +224,7 @@ namespace Game.SceneObjects
         /// </summary>
         public bool IsGrounded()
         {            
-            if (Rb.velocity.y > 0.001f) //Use of epsilon to prevent false positive due to floating point persision errors
+            if (Rb.linearVelocity.y > 0.001f) //Use of epsilon to prevent false positive due to floating point persision errors
                 return false;
 
             List<RaycastHit> hits = new List<RaycastHit>();
@@ -310,7 +310,7 @@ namespace Game.SceneObjects
                             return;
 
                         // Moving upwards
-                        if (ActionStateHandler.CurActionState == ActionState.Moving && Rb.velocity.y > 0)
+                        if (ActionStateHandler.CurActionState == ActionState.Moving && Rb.linearVelocity.y > 0)
                             return;
 
                         // Attacking
@@ -333,7 +333,7 @@ namespace Game.SceneObjects
                     // Jump action performed
                     else if (ActionStateHandler.CurActionState == ActionState.Moving)
                     {
-                        if ((movementInputHandler.CurMoveState == MovementType.Jump || movementInputHandler.CurMoveState == MovementType.AirJump) && Rb.velocity.y > 0)
+                        if ((movementInputHandler.CurMoveState == MovementType.Jump || movementInputHandler.CurMoveState == MovementType.AirJump) && Rb.linearVelocity.y > 0)
                             SetClimbState(ClimbState.Available);
                     }
 
@@ -358,7 +358,7 @@ namespace Game.SceneObjects
 
             if (curClimbState == ClimbState.Climbing)
             {
-                Rb.velocity = Vector3.zero;
+                Rb.linearVelocity = Vector3.zero;
                 Rb.useGravity = false;
             }
 
