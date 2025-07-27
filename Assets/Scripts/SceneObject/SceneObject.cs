@@ -1,16 +1,19 @@
-using System.Collections.Generic;
-using UnityEngine;
-using System;
-using Game.SceneObjects.Equipment;
-using Game.SceneObjects.ActionStates;
-using Game.SceneObjects.Movement;
-using Game.SceneObjects.Attack;
-using Game.SceneObjects.Animation;
-using Game.SceneObjects.Damage;
-using Game.UI.SceneObject;
 using Game.Interactable;
-using UnityEngine.SceneManagement;
+using Game.SceneObjects.ActionStates;
+using Game.SceneObjects.Animation;
+using Game.SceneObjects.Attack;
+using Game.SceneObjects.Damage;
+using Game.SceneObjects.Equipment;
+using Game.SceneObjects.Movement;
+using Game.UI.SceneObject;
+using System;
+using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
+using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
+using static Unity.Cinemachine.IInputAxisOwner.AxisDescriptor;
+using static UnityEngine.UI.Image;
 
 namespace Game.SceneObjects
 {
@@ -201,6 +204,11 @@ namespace Game.SceneObjects
         {
             if (IsGrounded())
             {
+                //Reset vertical velocity if the sceneObject is grounded
+                //Check for hitstun was to resolve an issue where the where the damage velocity in the y direction would be set to 0
+                if (ActionStateHandler.CurActionState != ActionState.HitStun)
+                    Rb.linearVelocity = new Vector3(Rb.linearVelocity.x, 0f, Rb.linearVelocity.z);
+                
                 if (curGroundedState != GroundedState.Grounded)
                 {
                     curGroundedState = GroundedState.Grounded;
@@ -224,44 +232,12 @@ namespace Game.SceneObjects
         /// </summary>
         public bool IsGrounded()
         {            
-            if (Rb.linearVelocity.y > 0.001f) //Use of epsilon to prevent false positive due to floating point persision errors
-                return false;
-
-            List<RaycastHit> hits = new List<RaycastHit>();
-
-            //Create raycasts
-            Vector3 leftSidePoint = Collider.bounds.center + Vector3.left * Collider.bounds.extents.x;
-            Vector3 rightSidePoint = Collider.bounds.center + Vector3.right * Collider.bounds.extents.x;
-            float spaceBetweenRays = (rightSidePoint.x - leftSidePoint.x) / 10;
-
-            //Raycast
-            for (int i = 0; i < 10; i++)
+            if (Physics.Raycast(Collider.bounds.center, Vector3.down, out RaycastHit hit, Collider.bounds.extents.y + 0.1f, LayerMask.GetMask("Environment")))
             {
-                Vector3 origin = leftSidePoint + Vector3.right * spaceBetweenRays * i;
-
-                if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, Collider.bounds.extents.y + 0.1f, LayerMask.GetMask("Environment")))
-                {
-                    if (hit.transform.TryGetComponent(out TwoWayPlatform platform))
-                    {
-                        if (!platform.IsSceneObjectCollisionIgnored(this))
-                            hits.Add(hit);
-                    }
-                    else
-                        hits.Add(hit);
-                }
-            }
-
-            if (hits.Count > 0)
-            {
-                //Average normals
-                Vector3 avgNormal = Vector3.zero;
-
-                foreach (RaycastHit hit in hits)
-                    avgNormal += hit.normal;
-
-                avgNormal /= 10;
-
-                return true;
+                if (hit.transform.TryGetComponent(out TwoWayPlatform platform) && !platform.IsSceneObjectCollisionIgnored(this))
+                    return true;
+                else
+                    return true;
             }
 
             return false;
@@ -626,7 +602,41 @@ namespace Game.SceneObjects
             animationHandler.UnregisterToEvents();
 
             damageHandler.UnregisterToEvents();
-        }      
+        }
+
+        #endregion
+
+
+        #region Debug
+
+        private void OnDrawGizmosSelected()
+        {
+            DrawGroundedCheck();
+        }
+
+
+        private void DrawGroundedCheck()
+        {
+            if (Physics.Raycast(Collider.bounds.center, Vector3.down, out RaycastHit hit, Collider.bounds.extents.y + 0.1f, LayerMask.GetMask("Environment")))
+            {
+                if (hit.transform.TryGetComponent(out TwoWayPlatform platform) && !platform.IsSceneObjectCollisionIgnored(this))
+                {
+                    Gizmos.color = Color.green;
+                    Gizmos.DrawLine(Collider.bounds.center, hit.point);
+                }
+                else
+                {
+                    Gizmos.color = Color.green;
+                    Gizmos.DrawLine(Collider.bounds.center, hit.point);
+                }
+            }
+
+            else
+            {
+                Gizmos.color = Color.red;
+                Gizmos.DrawLine(Collider.bounds.center, new Vector3(Collider.bounds.center.x, Collider.bounds.extents.y + 0.1f, Collider.bounds.center.z));
+            }
+        }
 
         #endregion
     }
