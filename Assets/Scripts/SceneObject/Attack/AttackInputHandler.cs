@@ -203,6 +203,7 @@ namespace Game.SceneObjects.Attack
                 curAttackState = AttackType.Null;
                 curAttackData = null;
                 objectHitByAttack.Clear();
+                sceneObject.ActionStateHandler.ChangeState(ActionState.Idle);
                 AttackStateChangedEvent?.Invoke(previousAttackState, curAttackState);
             }
             
