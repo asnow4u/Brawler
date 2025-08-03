@@ -5,32 +5,24 @@ using UnityEngine;
 [RequireComponent(typeof(Collider))]
 public class DamageCollider : MonoBehaviour
 {
-    private Collider damageCollider;
-    [SerializeField] private DamageCollisionData triggerAnimationData;
-
-    Action<ITakeDamage, Collider> hitCallback;
+    protected Collider damageCollider;   
+    protected Action<ITakeDamage, Collider> hitCallback;
 
 
-    public void Awake()
+    public virtual void Awake()
     {
-        if (triggerAnimationData == null)
-            Debug.LogException(new NullReferenceException("Damage Collision Data Not Set"), this);
-
-        damageCollider = GetComponent<Collider>();
+        damageCollider = GetComponent<Collider>();        
         Disable();
     }
 
 
     /// <summary>
-    /// Enable collider if dependent on <paramref name="clip"/> and establish <paramref name="attackHitCallback"/> if collider hits
+    /// Enable collider and establish <paramref name="attackHitCallback"/> if collider hits
     /// </summary>
-    public void Enable(AnimationClip clip, Action<ITakeDamage, Collider> attackHitCallback)
+    public void Enable(Action<ITakeDamage, Collider> attackHitCallback)
     {
-        if (triggerAnimationData.Contains(clip))
-        {
-            damageCollider.enabled = true;
-            hitCallback = attackHitCallback;
-        }
+        damageCollider.enabled = true;
+        hitCallback = attackHitCallback;
     }
 
 

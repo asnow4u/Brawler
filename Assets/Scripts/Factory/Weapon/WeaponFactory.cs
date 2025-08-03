@@ -51,7 +51,7 @@ namespace Game.Interactable.Factory
 
                 //Get attack points
                 List<GameObject> attackPoints = new List<GameObject>();
-                foreach (DamageCollider attackPoint in weaponGO.GetComponentsInChildren<DamageCollider>())
+                foreach (AttackDamageCollider attackPoint in weaponGO.GetComponentsInChildren<AttackDamageCollider>())
                 {
                     attackPoints.Add(attackPoint.gameObject);
                 }

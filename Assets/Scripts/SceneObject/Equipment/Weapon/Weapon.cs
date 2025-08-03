@@ -14,10 +14,7 @@ public class Weapon : Interactable
     public MovementCollection MovementCollection;
     public AttackCollection AttackCollection;
 
-    private List<DamageCollider> damageColliders = new List<DamageCollider>();
-
-    private AttackData curAttack;
-
+    private List<AttackDamageCollider> damageColliders = new List<AttackDamageCollider>();    
 
     protected override void Awake()
     {
@@ -29,7 +26,7 @@ public class Weapon : Interactable
         if (AttackCollection == null)
             Debug.LogException(new NullReferenceException("Attack Collection On Weapon " + name + " Is Null!"), this);
         
-        foreach (DamageCollider damageCollider in GetComponentsInChildren<DamageCollider>())
+        foreach (AttackDamageCollider damageCollider in GetComponentsInChildren<AttackDamageCollider>())
             damageColliders.Add(damageCollider);
     }
 
@@ -39,7 +36,7 @@ public class Weapon : Interactable
     /// </summary>
     public void EnableCollidersForAttack(AttackData attackData, Action<ITakeDamage, Collider> attackHitCallback)
     {
-        foreach (DamageCollider collider in damageColliders)
+        foreach (AttackDamageCollider collider in damageColliders)
             collider.Enable(attackData.Animation, attackHitCallback);
     }
 
@@ -49,7 +46,7 @@ public class Weapon : Interactable
     /// </summary>
     public void DisableAllColliders()
     {
-        foreach (DamageCollider collider in damageColliders)
+        foreach (AttackDamageCollider collider in damageColliders)
             collider.Disable();
     }
 }
