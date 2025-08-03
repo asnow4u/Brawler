@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Game.SceneObjects
 { 
     public enum EnemyState { Idle, Alert, Attack }
-
+    
     public abstract class Enemy : SceneObject
     {
         protected EnemyState enemyState;

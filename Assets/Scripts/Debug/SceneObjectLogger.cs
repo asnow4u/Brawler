@@ -24,22 +24,27 @@ namespace Game.SceneObjects
             //Ground state
             sceneObject.GroundedStateChangedEvent += OnGroundStateChanged;
 
-            //Climb state
-            sceneObject.ClimbStateChangedEvent += OnClimbStateChanged;
-
             //Action State
             sceneObject.ActionStateHandler.ActionStateChangedEvent += OnActionStateChanged;
 
             //Movement
-            sceneObject.MovementInputHandler.MoveStateChangedEvent += OnMoveStateChanged;
-            sceneObject.MovementInputHandler.MovementCollectionChangedEvent += OnMoveCollectionChanged;
+            if (sceneObject.MovementInputHandler != null)
+            {
+                sceneObject.ClimbStateChangedEvent += OnClimbStateChanged;
+                sceneObject.MovementInputHandler.MoveStateChangedEvent += OnMoveStateChanged;
+                sceneObject.MovementInputHandler.MovementCollectionChangedEvent += OnMoveCollectionChanged;
+            }
 
             //Attack
-            sceneObject.AttackInputHandler.AttackStateChangedEvent += OnAttackStateChanged;
+            if (sceneObject.AttackInputHandler != null)
+                sceneObject.AttackInputHandler.AttackStateChangedEvent += OnAttackStateChanged;
 
             //Animation
-            sceneObject.AnimationHandler.AnimationStartedEvent += OnAnimationStarted;
-            sceneObject.AnimationHandler.AnimationEndedEvent += OnAnimationEnded;
+            if (sceneObject.AnimationHandler != null)
+            {
+                sceneObject.AnimationHandler.AnimationStartedEvent += OnAnimationStarted;
+                sceneObject.AnimationHandler.AnimationEndedEvent += OnAnimationEnded;
+            }
         }
 
 

@@ -1,9 +1,19 @@
+using Game.SceneObjects.Animation;
+using Game.SceneObjects.Attack;
+using Game.SceneObjects.Equipment;
+using Game.SceneObjects.Movement;
 using UnityEngine;
 using UnityEngine.Android;
 using UnityEngine.InputSystem;
 
 namespace Game.SceneObjects 
 {
+
+    [RequireComponent(typeof(EquipmentHandler))]
+    [RequireComponent(typeof(InteractionHandler))]
+    [RequireComponent(typeof(MovementInputHandler))]
+    [RequireComponent(typeof(AttackInputHandler))]
+    [RequireComponent(typeof(AnimationHandler))]
     public class Player : SceneObject
     {
         private float numLives;
@@ -18,6 +28,17 @@ namespace Game.SceneObjects
             ObjectType = SceneObjectType.Player;
 
             InitializeInput();
+        }
+
+        protected override void GetHandlers()
+        {
+            base.GetHandlers();
+
+            EquipmentHandler = GetComponent<EquipmentHandler>();
+            InteractionHandler = GetComponent<InteractionHandler>();
+            MovementInputHandler = GetComponent<MovementInputHandler>();
+            AttackInputHandler = GetComponent<AttackInputHandler>();
+            AnimationHandler = GetComponent<AnimationHandler>();
         }
 
         private void InitializeInput()

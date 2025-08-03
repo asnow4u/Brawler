@@ -23,13 +23,9 @@ namespace Game.SceneObjects
 
     public enum Direction { Right, Left, Up, Down }
 
+    [RequireComponent(typeof(Collider))]
     [RequireComponent(typeof(Rigidbody))]
-    [RequireComponent(typeof(EquipmentHandler))]
-    [RequireComponent(typeof(InteractionHandler))]
-    [RequireComponent(typeof(MovementInputHandler))]
-    [RequireComponent(typeof(AttackInputHandler))]
     [RequireComponent(typeof(ActionStateHandler))]
-    [RequireComponent(typeof(AnimationHandler))]
     [RequireComponent(typeof(UIHandler))]
     [RequireComponent(typeof(DamageHandler))]
     public abstract class SceneObject : MonoBehaviour, IInputControl
@@ -47,28 +43,20 @@ namespace Game.SceneObjects
         //Logger
         private SceneObjectLogger logger;
 
-        //Handlers
-        private ActionStateHandler actionStateHandler;
-        private InteractionHandler interactionHandler;
-        private EquipmentHandler equipmentHandler;
-        private MovementInputHandler movementInputHandler;
-        private AttackInputHandler attackInputHandler;
-        private AnimationHandler animationHandler;
-        private UIHandler uiHandler;
-        private DamageHandler damageHandler;
+        //Required Handlers
+        public ActionStateHandler ActionStateHandler { get; protected set; }
+        public UIHandler UIHandler { get; private set; }
+        public DamageHandler DamageHandler { get; protected set; }
+
+        //Other Handlers
+        public EquipmentHandler EquipmentHandler { get; protected set; }
+        public InteractionHandler InteractionHandler { get; protected set; }
+        public MovementInputHandler MovementInputHandler { get; protected set; }
+        public AttackInputHandler AttackInputHandler { get; protected set; }
+        public AnimationHandler AnimationHandler { get; protected set; }
 
         //Getters
-        public SceneObjectLogger Logger => logger;
-        public ActionStateHandler ActionStateHandler => actionStateHandler;
-        public InteractionHandler InteractionHandler => interactionHandler;
-        public EquipmentHandler EquipmentHandler => equipmentHandler;
-        public MovementInputHandler MovementInputHandler => movementInputHandler;
-        public AttackInputHandler AttackInputHandler => attackInputHandler;
-        public AnimationHandler AnimationHandler => animationHandler;
-        public UIHandler UIHandler => uiHandler;
-        public DamageHandler DamageHandler => damageHandler;
-
-    
+        public SceneObjectLogger Logger => logger;    
         public GroundedState CurGroundedState => curGroundedState;
         public ClimbState CurClimbState => curClimbState;
         public Rigidbody Rb => GetComponent<Rigidbody>();
@@ -93,8 +81,7 @@ namespace Game.SceneObjects
             {
                 Debug.LogException(e);
             }
-        }
-    
+        }    
 
         /// <summary>
         /// Create Unique ID
@@ -115,22 +102,15 @@ namespace Game.SceneObjects
             logger = new SceneObjectLogger(this);
         }
 
-
         /// <summary>
         /// Grab all handlers from gameobject
         /// </summary>
-        private void GetHandlers()
+        protected virtual void GetHandlers()
         {
-            actionStateHandler = GetComponent<ActionStateHandler>();
-            interactionHandler = GetComponent<InteractionHandler>();
-            animationHandler = GetComponent<AnimationHandler>();
-            uiHandler = GetComponent<UIHandler>();
-            equipmentHandler = GetComponent<EquipmentHandler>();
-            movementInputHandler = GetComponent<MovementInputHandler>();
-            attackInputHandler = GetComponent<AttackInputHandler>();
-            damageHandler = GetComponent<DamageHandler>();
+            ActionStateHandler = GetComponent<ActionStateHandler>();                       
+            UIHandler = GetComponent<UIHandler>();            
+            DamageHandler = GetComponent<DamageHandler>();
         }
-
 
         /// <summary>
         /// Set up all handlers <br/>
@@ -138,33 +118,34 @@ namespace Game.SceneObjects
         /// </summary>
         private void SetUpHandlers()
         {
-            actionStateHandler.Setup();
-            equipmentHandler.Setup();
-            interactionHandler.Setup();
-            movementInputHandler.Setup();
-            attackInputHandler.Setup();
-            animationHandler.Setup();                
-            uiHandler.Setup();
-            damageHandler.Setup();
-        }
+            ActionStateHandler.Setup();
+            UIHandler.Setup();
+            DamageHandler.Setup();
 
+            EquipmentHandler?.Setup();
+            InteractionHandler?.Setup();
+            MovementInputHandler?.Setup();
+            AttackInputHandler?.Setup();
+            AnimationHandler?.Setup();
+        }
 
         /// <summary>
         /// Initialize all handlers
         /// </summary>
         private void SetupHandlerEvents()
         {
-            actionStateHandler.RegisterToEvents();
-            interactionHandler.RegisterToEvents();
-            uiHandler.RegisterToEvents();
-            equipmentHandler.RegisterToEvents();
-            movementInputHandler.RegisterToEvents();
-            attackInputHandler.RegisterToEvents();
+            ActionStateHandler.RegisterToEvents();
+            UIHandler.RegisterToEvents();
+            DamageHandler.RegisterToEvents();
+                        
+            EquipmentHandler?.RegisterToEvents();
+            InteractionHandler?.RegisterToEvents();
+            
+            MovementInputHandler?.RegisterToEvents();
+            AttackInputHandler?.RegisterToEvents();
 
             //NOTE: needs to happen after move and attack handlers
-            animationHandler.RegisterToEvents(); 
-
-            damageHandler.RegisterToEvents();
+            AnimationHandler?.RegisterToEvents();
         }
   
         #endregion
@@ -174,7 +155,7 @@ namespace Game.SceneObjects
 
         protected virtual void Update()
         {
-            interactionHandler.CheckForInteractables();
+            InteractionHandler?.CheckForInteractables();
         }
 
 
@@ -184,10 +165,14 @@ namespace Game.SceneObjects
             CheckGroundedStatus();
 
             //Climb State
-            UpdateClimbState();
+            if (MovementInputHandler != null)
+            {
+                UpdateClimbState();
+                MovementInputHandler.UpdateMovement();
+            }
 
-            movementInputHandler.UpdateMovement();
-            attackInputHandler.HandleUpdate();
+            if (AttackInputHandler != null)
+                AttackInputHandler.HandleUpdate();
 
             DamageHandler.HandleUpdate();
         }
@@ -254,7 +239,7 @@ namespace Game.SceneObjects
         private void UpdateClimbState()
         {
             //Update climb state if the collection has climb data                
-            if (movementInputHandler.TryGetCurrentMovementCollection(out MovementCollection curMovementCollection) && curMovementCollection.ClimbData != null)
+            if (MovementInputHandler.TryGetCurrentMovementCollection(out MovementCollection curMovementCollection) && curMovementCollection.ClimbData != null)
             {
                 Bounds bounds = Collider.bounds;
                 Vector3 center = bounds.center;
@@ -279,10 +264,10 @@ namespace Game.SceneObjects
                     if (hits.Length == 0)
                         SetClimbState(ClimbState.Unavailable);
 
-                    else if (movementInputHandler.VerticalInfluence != 0)
+                    else if (MovementInputHandler.VerticalInfluence != 0)
                     {
                         // NOTE: Need to climb upwards while on the ground
-                        if (CurGroundedState == GroundedState.Grounded && movementInputHandler.VerticalInfluence < 0)
+                        if (CurGroundedState == GroundedState.Grounded && MovementInputHandler.VerticalInfluence < 0)
                             return;
 
                         // Moving upwards
@@ -303,13 +288,13 @@ namespace Game.SceneObjects
                         SetClimbState(ClimbState.Unavailable);
 
                     // Hit ground while climbing
-                    else if (movementInputHandler.VerticalInfluence < 0 && CurGroundedState == GroundedState.Grounded)
+                    else if (MovementInputHandler.VerticalInfluence < 0 && CurGroundedState == GroundedState.Grounded)
                         SetClimbState(ClimbState.Available);
 
                     // Jump action performed
                     else if (ActionStateHandler.CurActionState == ActionState.Moving)
                     {
-                        if ((movementInputHandler.CurMoveState == MovementType.Jump || movementInputHandler.CurMoveState == MovementType.AirJump) && Rb.linearVelocity.y > 0)
+                        if ((MovementInputHandler.CurMoveState == MovementType.Jump || MovementInputHandler.CurMoveState == MovementType.AirJump) && Rb.linearVelocity.y > 0)
                             SetClimbState(ClimbState.Available);
                     }
 
@@ -592,16 +577,18 @@ namespace Game.SceneObjects
 
         public void OnDestroy()
         {
-            actionStateHandler.UnregisterToEvents();
-            uiHandler.UnregisterToEvents();
-            equipmentHandler.UnregisterToEvents();
-            movementInputHandler.UnregisterToEvents();
-            attackInputHandler.UnregisterToEvents();
+            ActionStateHandler.UnregisterToEvents();
+            UIHandler.UnregisterToEvents();
+            DamageHandler.UnregisterToEvents();
+
+            EquipmentHandler?.UnregisterToEvents();
+            InteractionHandler?.UnregisterToEvents();
+
+            MovementInputHandler?.UnregisterToEvents();
+            AttackInputHandler?.UnregisterToEvents();
 
             //NOTE: needs to happen after move and attack handlers
-            animationHandler.UnregisterToEvents();
-
-            damageHandler.UnregisterToEvents();
+            AnimationHandler?.UnregisterToEvents();
         }
 
         #endregion

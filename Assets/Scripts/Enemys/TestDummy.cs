@@ -1,10 +1,26 @@
 
+using Game.SceneObjects.Animation;
+using Game.SceneObjects.Attack;
+using Game.SceneObjects.Equipment;
+using Game.SceneObjects.Movement;
 using UnityEngine;
 
 namespace Game.SceneObjects
 {
     public class TestDummy : Enemy
     {
+        protected override void GetHandlers()
+        {
+            base.GetHandlers();
+
+            EquipmentHandler = GetComponent<EquipmentHandler>();
+            InteractionHandler = GetComponent<InteractionHandler>();
+            MovementInputHandler = GetComponent<MovementInputHandler>();
+            AttackInputHandler = GetComponent<AttackInputHandler>();
+            AnimationHandler = GetComponent<AnimationHandler>();
+        }
+
+
         public override bool IsDownAttackActive()
         {
             throw new System.NotImplementedException();

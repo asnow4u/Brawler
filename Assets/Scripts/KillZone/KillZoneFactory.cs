@@ -35,7 +35,7 @@ public class KillZoneFactory : MonoBehaviour
 
         GameObject topKillZoneObj = new GameObject("TopKillZone");
         KillZone topKillZone = topKillZoneObj.AddComponent<KillZone>();
-        topKillZone.transform.position = new Vector3(0, 30f, 0); //TEMP: Change this to be based off of some value
+        topKillZone.transform.position = new Vector3(0, 50f, 0); //TEMP: Change this to be based off of some value
         topKillZone.Initialize(KillZoneType.Top, sceneObjectTransform);
 
         return new KillZone[] { rightKillZone, leftKillZone, topKillZone};
