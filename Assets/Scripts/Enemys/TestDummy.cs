@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Game.SceneObjects
 {
-    public class TestDummy : Enemy
+    public class TestDummy : Enemy, IMovementInput, IAttackInput
     {
         protected override void GetHandlers()
         {
@@ -20,85 +20,74 @@ namespace Game.SceneObjects
             AnimationHandler = GetComponent<AnimationHandler>();
         }
 
-
-        public override bool IsDownAttackActive()
+        public bool IsHorizontalMovementActive()
         {
             throw new System.NotImplementedException();
         }
 
-        public override bool IsHorizontalMovementActive()
+        public bool IsVerticalJumpActive()
         {
             throw new System.NotImplementedException();
         }
 
-        public override bool IsLeftAttackActive()
+        public void PerformMovement(Vector2 movement)
         {
             throw new System.NotImplementedException();
         }
 
-        public override bool IsRightAttackActive()
+        public void PerformVerticalJump(float jumpStrength)
         {
             throw new System.NotImplementedException();
         }
 
-        public override bool IsUpAttackActive()
+        public void StopHorizontalMovement()
         {
             throw new System.NotImplementedException();
         }
 
-        public override bool IsVerticalJumpActive()
+        public void StopJumpMovement()
         {
             throw new System.NotImplementedException();
         }
 
-        public override void PerformDownAttack()
+        public void PerformUpAttack()
         {
             throw new System.NotImplementedException();
         }
 
-        public override void PerformMovement(Vector2 movement)
+        public void PerformDownAttack()
         {
             throw new System.NotImplementedException();
         }
 
-        public override void PerformInteraction()
+        public void PerformLeftAttack()
         {
             throw new System.NotImplementedException();
         }
 
-        public override void PerformLeftAttack()
+        public void PerformRightAttack()
         {
             throw new System.NotImplementedException();
         }
 
-        public override void PerformRightAttack()
+        public bool IsUpAttackActive()
         {
             throw new System.NotImplementedException();
         }
 
-        public override void PerformUpAttack()
+        public bool IsDownAttackActive()
         {
             throw new System.NotImplementedException();
         }
 
-        public override void PerformVerticalJump(float jumpStrength)
+        public bool IsLeftAttackActive()
         {
             throw new System.NotImplementedException();
         }
 
-        public override void StopHorizontalMovement()
+        public bool IsRightAttackActive()
         {
             throw new System.NotImplementedException();
-        }
-
-        public override void StopJumpMovement()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        protected override void FixedUpdate()
-        {
-            base.FixedUpdate();
         }
     }
 }

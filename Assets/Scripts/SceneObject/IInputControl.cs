@@ -1,9 +1,7 @@
 using UnityEngine;
 
-public interface IInputControl
+public interface IMovementInput
 {
-    #region Movement
-
     /// <summary>
     /// Perform horizontal movement based on the <paramref name="movement"/>
     /// </summary>
@@ -33,11 +31,11 @@ public interface IInputControl
     /// Whether inputs for vertical jumps are active
     /// </returns>
     public bool IsVerticalJumpActive();
+}
 
-    #endregion
 
-
-    #region Attack
+public interface IAttackInput
+{
 
     /// <summary>
     /// Perform an attack in the upward direction
@@ -78,13 +76,9 @@ public interface IInputControl
     /// Whether inputs for right attack is active
     /// </returns>
     public bool IsRightAttackActive();
+}
 
-    #endregion
-
-
-    #region Interaction
-
-    public void PerformInteraction();
-
-    #endregion
+public interface IInteractionInput
+{    
+    public void PerformInteraction();    
 }

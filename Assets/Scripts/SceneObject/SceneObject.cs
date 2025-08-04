@@ -28,7 +28,7 @@ namespace Game.SceneObjects
     [RequireComponent(typeof(ActionStateHandler))]
     [RequireComponent(typeof(UIHandler))]
     [RequireComponent(typeof(DamageHandler))]
-    public abstract class SceneObject : MonoBehaviour, IInputControl
+    public abstract class SceneObject : MonoBehaviour
     {
         [Header("SceneObject")]
         public string UniqueId;
@@ -520,56 +520,6 @@ namespace Game.SceneObjects
             return null;
         }
 
-        #endregion
-
-
-        #region Inputs
-
-        /// <inheritdoc/>
-        public abstract void PerformMovement(Vector2 movement);
-
-        /// <inheritdoc/>
-        public abstract void StopHorizontalMovement();
-
-        /// <inheritdoc/>
-        public abstract void PerformVerticalJump(float jumpStrength);
-
-        /// <inheritdoc/>
-        public abstract void StopJumpMovement();
-
-        /// <inheritdoc/>
-        public abstract bool IsHorizontalMovementActive();
-
-        /// <inheritdoc/>
-        public abstract bool IsVerticalJumpActive();
-
-        /// <inheritdoc/>
-        public abstract void PerformUpAttack();
-
-        /// <inheritdoc/>
-        public abstract void PerformDownAttack();
-
-        /// <inheritdoc/>
-        public abstract void PerformLeftAttack();
-
-        /// <inheritdoc/>
-        public abstract void PerformRightAttack();
-
-        /// <inheritdoc/>
-        public abstract bool IsUpAttackActive();
-
-        /// <inheritdoc/>
-        public abstract bool IsDownAttackActive();
-
-        /// <inheritdoc/>
-        public abstract bool IsLeftAttackActive();
-
-        /// <inheritdoc/>
-        public abstract bool IsRightAttackActive();
-
-        /// <inheritdoc/>
-        public abstract void PerformInteraction();
-        
         #endregion
 
 

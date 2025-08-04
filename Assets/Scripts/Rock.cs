@@ -1,4 +1,5 @@
 using Game.SceneObjects;
+using Game.SceneObjects.ActionStates;
 using UnityEngine;
 
 public class Rock : SceneObject
@@ -8,92 +9,27 @@ public class Rock : SceneObject
 
     private DamageCollider damageCollider;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    //void Start()
-    //{
-    //    damageCollider = GetComponent<DamageCollider>();
-    //    damageCollider.Enable(HandleCollision);
-    //}
 
-
-    //private void HandleCollision(ITakeDamage hitTarget, Collider col)
-    //{        
-    //    hitTarget.HitByAttack(1, col.ClosestPoint(col.transform.position), damage, launchAngle);
-    //}
-
-
-    public override void PerformMovement(Vector2 movement)
+    protected override void Initialize()
     {
-        throw new System.NotImplementedException();
+        base.Initialize();
+
+        damageCollider = GetComponentInChildren<DamageCollider>();       
     }
 
-    public override void StopHorizontalMovement()
+
+    protected override void FixedUpdate()
     {
-        throw new System.NotImplementedException();
+        base.FixedUpdate();
+
+        if (Rb.linearVelocity.x != 0)
+            damageCollider.Enable(HandleCollision);
+        else
+            damageCollider.Disable();
     }
 
-    public override void PerformVerticalJump(float jumpStrength)
+    private void HandleCollision(ITakeDamage hitTarget, Collider col)
     {
-        throw new System.NotImplementedException();
-    }
-
-    public override void StopJumpMovement()
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public override bool IsHorizontalMovementActive()
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public override bool IsVerticalJumpActive()
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public override void PerformUpAttack()
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public override void PerformDownAttack()
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public override void PerformLeftAttack()
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public override void PerformRightAttack()
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public override bool IsUpAttackActive()
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public override bool IsDownAttackActive()
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public override bool IsLeftAttackActive()
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public override bool IsRightAttackActive()
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public override void PerformInteraction()
-    {
-        throw new System.NotImplementedException();
+        hitTarget.HitByAttack(1, col.ClosestPoint(col.transform.position), damage, launchAngle);
     }
 }

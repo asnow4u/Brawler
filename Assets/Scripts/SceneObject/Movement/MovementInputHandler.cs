@@ -14,6 +14,8 @@ namespace Game.SceneObjects.Movement
     {
         const ActionState MOVESTATE = ActionState.Moving;
 
+        private IMovementInput movementInput;
+
         //Movement State Data
         [Header("State")]
         [SerializeField] private MovementType curMoveState;
@@ -97,7 +99,12 @@ namespace Game.SceneObjects.Movement
         }
 
         public override void Setup()
-        { }
+        {
+            if (sceneObject is IMovementInput input)
+                movementInput = input;
+            else
+                throw new Exception($"SceneObject {sceneObject.name} does not implement IMovementInput interface");
+        }
 
         #endregion
 

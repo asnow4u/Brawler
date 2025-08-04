@@ -14,7 +14,7 @@ namespace Game.SceneObjects
     [RequireComponent(typeof(MovementInputHandler))]
     [RequireComponent(typeof(AttackInputHandler))]
     [RequireComponent(typeof(AnimationHandler))]
-    public class Player : SceneObject
+    public class Player : SceneObject, IMovementInput, IAttackInput, IInteractionInput
     {
         private float numLives;
         private float numDeaths;
@@ -84,7 +84,7 @@ namespace Game.SceneObjects
         }
 
         /// <inheritdoc/>
-        public override void PerformMovement(Vector2 movement)
+        public void PerformMovement(Vector2 movement)
         {
             MovementInputHandler.SetMovementInfluence(movement);
         }
@@ -95,7 +95,7 @@ namespace Game.SceneObjects
         }
 
         /// <inheritdoc/>
-        public override void StopHorizontalMovement()
+        public void StopHorizontalMovement()
         {
             MovementInputHandler.SetMovementInfluence(Vector2.zero);
         }
@@ -108,7 +108,7 @@ namespace Game.SceneObjects
         }
 
         /// <inheritdoc/>
-        public override void PerformVerticalJump(float jumpInfluence)
+        public void PerformVerticalJump(float jumpInfluence)
         {
             MovementInputHandler.SetJumpInfluence(jumpInfluence);
         }
@@ -119,20 +119,20 @@ namespace Game.SceneObjects
         }
 
         /// <inheritdoc/>
-        public override void StopJumpMovement()
+        public void StopJumpMovement()
         {
             MovementInputHandler.SetJumpInfluence(0);
         }
 
         //Active Movement Inputs
         /// <inheritdoc/>
-        public override bool IsHorizontalMovementActive()
+        public bool IsHorizontalMovementActive()
         {
             return inputHandler.input.PlayerActions.Movement.IsPressed();
         }
 
         /// <inheritdoc/>
-        public override bool IsVerticalJumpActive()
+        public bool IsVerticalJumpActive()
         {
             return inputHandler.input.PlayerActions.Jump.IsPressed();
         }
@@ -148,7 +148,7 @@ namespace Game.SceneObjects
         }
 
         /// <inheritdoc/>
-        public override void PerformUpAttack()
+        public void PerformUpAttack()
         {
             AttackInputHandler.PerformUpAttack();
         }
@@ -160,7 +160,7 @@ namespace Game.SceneObjects
         }
 
         /// <inheritdoc/>
-        public override void PerformDownAttack()
+        public void PerformDownAttack()
         {
             AttackInputHandler.PerformDownAttack();
         }
@@ -172,7 +172,7 @@ namespace Game.SceneObjects
         }
 
         /// <inheritdoc/>
-        public override void PerformLeftAttack()
+        public void PerformLeftAttack()
         {
             AttackInputHandler.PerformLeftAttack();
         }
@@ -184,32 +184,32 @@ namespace Game.SceneObjects
         }
 
         /// <inheritdoc/>
-        public override void PerformRightAttack()
+        public void PerformRightAttack()
         {
             AttackInputHandler.PerformForwardAttack();
         }
 
         //Active Attack Inputs
         /// <inheritdoc/>
-        public override bool IsUpAttackActive()
+        public bool IsUpAttackActive()
         {
             return inputHandler.input.PlayerActions.UpAttack.IsPressed();
         }
 
         /// <inheritdoc/>
-        public override bool IsDownAttackActive()
+        public bool IsDownAttackActive()
         {
             return inputHandler.input.PlayerActions.DownAttack.IsPressed();
         }
 
         /// <inheritdoc/>
-        public override bool IsLeftAttackActive()
+        public bool IsLeftAttackActive()
         {
             return inputHandler.input.PlayerActions.LeftAttack.IsPressed();
         }
 
         /// <inheritdoc/>
-        public override bool IsRightAttackActive()
+        public bool IsRightAttackActive()
         {
             return inputHandler.input.PlayerActions.RightAttack.IsPressed();
         }
@@ -224,7 +224,7 @@ namespace Game.SceneObjects
         }
 
         /// <inheritdoc/>
-        public override void PerformInteraction()
+        public void PerformInteraction()
         {
             if (ActionStateHandler.CurActionState == ActionStates.ActionState.Idle || ActionStateHandler.CurActionState == ActionStates.ActionState.Moving)
                 InteractionHandler.InitiateInteraction();

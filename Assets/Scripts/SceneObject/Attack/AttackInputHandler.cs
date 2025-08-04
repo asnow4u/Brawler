@@ -11,7 +11,9 @@ namespace Game.SceneObjects.Attack
 
     public class AttackInputHandler : SceneObjectHandler
     {
-        const ActionState ATTACKSTATE = ActionState.Attacking;        
+        const ActionState ATTACKSTATE = ActionState.Attacking;
+
+        private IAttackInput attackInput;
 
         [Header("State")]
         //Attack Data
@@ -77,7 +79,12 @@ namespace Game.SceneObjects.Attack
         }
 
         public override void Setup()
-        { }
+        {
+            if (sceneObject is IAttackInput input)
+                this.attackInput = input;
+            else
+                throw new Exception($"SceneObject {sceneObject.name} does not implement AttackInput interface");
+        }
 
         #endregion
 
@@ -93,21 +100,21 @@ namespace Game.SceneObjects.Attack
                 switch (curAttackState)
                 {
                     case AttackType.UpAir:
-                        if (sceneObject.IsUpAttackActive())
+                        if (attackInput.IsUpAttackActive())
                             SetCurrentAttackState(AttackType.UpTilt, curAttackCollection);
                         else
                             SetCurrentAttackState(AttackType.Null, curAttackCollection);
                         break;
 
                     case AttackType.ForwardAir:
-                        if (sceneObject.IsRightAttackActive() || sceneObject.IsLeftAttackActive())
+                        if (attackInput.IsRightAttackActive() || attackInput.IsLeftAttackActive())
                             SetCurrentAttackState(AttackType.ForwardTilt, curAttackCollection);
                         else
                             SetCurrentAttackState(AttackType.Null, curAttackCollection);
                         break;
 
                     case AttackType.DownAir:
-                        if (sceneObject.IsDownAttackActive())
+                        if (attackInput.IsDownAttackActive())
                             SetCurrentAttackState(AttackType.DownTilt, curAttackCollection);
                         else
                             SetCurrentAttackState(AttackType.Null, curAttackCollection);
@@ -346,7 +353,7 @@ namespace Game.SceneObjects.Attack
         /// </summary>
         private void PerformUpChargeAttack()
         {
-            if (sceneObject.IsUpAttackActive())
+            if (attackInput.IsUpAttackActive())
                 sceneObject.AnimationHandler.PauseCurrentAnimation(MAX_ATTACK_CHARGE_TIME);
         }
 
@@ -355,7 +362,7 @@ namespace Game.SceneObjects.Attack
         /// </summary>
         private void ReleaseUpChargeAttack()
         {
-            if (!sceneObject.IsUpAttackActive())
+            if (!attackInput.IsUpAttackActive())
                 sceneObject.AnimationHandler.ResumeCurrentAnimation();
         }
 
@@ -366,11 +373,11 @@ namespace Game.SceneObjects.Attack
         /// </summary>
         private void PerformForwardChangeAttack()
         {
-            if (sceneObject.IsRightAttackActive() && sceneObject.IsFacingRightDirection)
+            if (attackInput.IsRightAttackActive() && sceneObject.IsFacingRightDirection)
                 sceneObject.AnimationHandler.PauseCurrentAnimation(MAX_ATTACK_CHARGE_TIME);
 
 
-            else if (sceneObject.IsLeftAttackActive() && !sceneObject.IsFacingRightDirection)
+            else if (attackInput.IsLeftAttackActive() && !sceneObject.IsFacingRightDirection)
                 sceneObject.AnimationHandler.PauseCurrentAnimation(MAX_ATTACK_CHARGE_TIME);
         }
 
@@ -379,10 +386,10 @@ namespace Game.SceneObjects.Attack
         /// </summary>
         private void ReleaseForwardChargeAttack()
         {
-            if (!sceneObject.IsRightAttackActive() && sceneObject.IsFacingRightDirection)
+            if (!attackInput.IsRightAttackActive() && sceneObject.IsFacingRightDirection)
                 sceneObject.AnimationHandler.ResumeCurrentAnimation();
 
-            else if (!sceneObject.IsLeftAttackActive() && !sceneObject.IsFacingRightDirection)
+            else if (!attackInput.IsLeftAttackActive() && !sceneObject.IsFacingRightDirection)
                 sceneObject.AnimationHandler.ResumeCurrentAnimation();
         }
 
@@ -394,7 +401,7 @@ namespace Game.SceneObjects.Attack
         /// </summary>
         private void PerformDownChargeAttack()
         {
-            if (sceneObject.IsDownAttackActive())
+            if (attackInput.IsDownAttackActive())
                 sceneObject.AnimationHandler.PauseCurrentAnimation(MAX_ATTACK_CHARGE_TIME);
         }
 
@@ -404,7 +411,7 @@ namespace Game.SceneObjects.Attack
         /// </summary>
         private void ReleaseDownChargeAttack()
         {
-            if (!sceneObject.IsDownAttackActive())
+            if (!attackInput.IsDownAttackActive())
                 sceneObject.AnimationHandler.ResumeCurrentAnimation();
         }
 
