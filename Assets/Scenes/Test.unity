@@ -309,6 +309,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 5291025793308947626, guid: 2d9eaebf25e69ac4896b5a0412679ec5, type: 3}
+      propertyPath: MovementCollection
+      value: 
+      objectReference: {fileID: 11400000, guid: 7b7d5155c18dec740a2407dc070c7da2, type: 2}
     - target: {fileID: 6533080229533676560, guid: 2d9eaebf25e69ac4896b5a0412679ec5, type: 3}
       propertyPath: m_Name
       value: Player
@@ -1617,6 +1621,7 @@ GameObject:
   - component: {fileID: 1309384854}
   - component: {fileID: 1309384853}
   - component: {fileID: 1309384852}
+  - component: {fileID: 1309384858}
   m_Layer: 7
   m_Name: Rock
   m_TagString: Untagged
@@ -1804,6 +1809,19 @@ MonoBehaviour:
   curClimbState: 0
   launchAngle: 45
   damage: 5
+--- !u!114 &1309384858
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1309384847}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 910e62b6de5465e48a4bb0fb7bca644e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  baseMovementData: {fileID: 11400000, guid: 69dae82533d2b0442900700a31faba44, type: 2}
 --- !u!1 &1320111665
 GameObject:
   m_ObjectHideFlags: 0
@@ -2498,7 +2516,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1732792489
 Transform:
   m_ObjectHideFlags: 0

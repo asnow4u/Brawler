@@ -48,7 +48,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Type: 0
-  MovementCollection: {fileID: 11400000, guid: 8652b59850fd13948b67834b9abd3160, type: 2}
+  MovementCollection: {fileID: 11400000, guid: 7b7d5155c18dec740a2407dc070c7da2, type: 2}
   AttackCollection: {fileID: 11400000, guid: bff4e99318059e644b87d88ebfa76ee0, type: 2}
 --- !u!65 &2587851432767301375
 BoxCollider:

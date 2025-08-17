@@ -88,9 +88,7 @@ namespace Game.SceneObject.Movement
             //Grounded
             if (sceneObject.CurGroundedState == GroundedState.Grounded)
             {
-                if (inputHandler != null && inputHandler.CurMoveInputState != MovementType.Null)
-                    inputHandler.UpdateGroundedMovement();
-                else
+                if (inputHandler == null || !inputHandler.UpdateGroundedMovement())
                     DeccelerateGroundedMovement();
             }
 

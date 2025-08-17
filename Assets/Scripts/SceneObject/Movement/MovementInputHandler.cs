@@ -444,7 +444,7 @@ namespace Game.SceneObjects.Movement
         /// <summary>
         /// Update movement on the ground based on <see cref="horizontalInfluence"/>, <see cref="verticalInfluence"/> and <see cref="jumpInfluence"/>
         /// </summary>
-        public void UpdateGroundedMovement()
+        public bool UpdateGroundedMovement()
         {
             ////Attacking Movement
             //if (sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking)
@@ -455,8 +455,11 @@ namespace Game.SceneObjects.Movement
                 TrySetCurrentMoveState(MovementType.WallLean);
 
             //Horizontal Movement
-            else if (IsHorizontalMovementAllowed() && TrySetCurrentMoveState(MovementType.Move))
-                UpdateGroundedAcceleration();
+            else if (!IsHorizontalMovementAllowed() || !TrySetCurrentMoveState(MovementType.Move))
+                return false;
+            
+            UpdateGroundedAcceleration();
+            return true;
         }
 
         //NOTE: This method should be removed.
