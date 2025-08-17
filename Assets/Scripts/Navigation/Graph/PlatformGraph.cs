@@ -6,7 +6,7 @@ namespace Game.Navigation
 {
     public class PlatformGraph : Graph
     {
-        public PlatformGraph(TerrainNode startNode, TerrainNode endNode, Bounds bounds, MovementCollection collection) : base(startNode, endNode, bounds, collection)
+        public PlatformGraph(TerrainNode startNode, TerrainNode endNode, Bounds bounds, MovementInputCollection collection) : base(startNode, endNode, bounds, collection)
         {
             type = GraphType.Platform;
         }
@@ -304,15 +304,15 @@ namespace Game.Navigation
         /// <returns></returns>
         private bool IsJumpDistancePossible(Vector3 startPos, Vector3 endPos, float jumpTime, out float xVelocity)
         {
-            float xVelocityLimit = moveCollection.GetGroundedMaxXVelocity();
+            //float xVelocityLimit = moveCollection.GetGroundedMaxXVelocity();
             float jumpDist = endPos.x - startPos.x;
 
-            //At what velocity can the jump be made with no acceleration
+            ////At what velocity can the jump be made with no acceleration
             xVelocity = jumpDist / jumpTime;
 
-            //Can jump be made
-            if (Mathf.Abs(xVelocity) <= xVelocityLimit)
-                return true;
+            ////Can jump be made
+            //if (Mathf.Abs(xVelocity) <= xVelocityLimit)
+            //    return true;
 
             return false;
         }

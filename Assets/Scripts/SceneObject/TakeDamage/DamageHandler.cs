@@ -18,9 +18,7 @@ namespace Game.SceneObjects.Damage
 
         [Header("HitStun")]
         [SerializeField] private HitStunState hitStunState;
-        [SerializeField] private float hitStunTimer;        
-        [Tooltip("Decceleration rate during hitstun")]
-        private const float hitStunDeceleration = 21.5f;
+        [SerializeField] private float hitStunTimer;
 
         [Header("Bounce")]
         [SerializeField] private float bounceDegrade = 0.9f;
@@ -39,7 +37,6 @@ namespace Game.SceneObjects.Damage
 
         public HitStunState HitStunState => hitStunState;
         public float HitStunTimer => hitStunTimer;
-        public float HitStunDeceleration => hitStunDeceleration;
 
         #endregion
 
@@ -249,7 +246,7 @@ namespace Game.SceneObjects.Damage
                 hitStunState = HitStunState.Start;
             }
 
-            hitStunTimer = Mathf.Abs(launchForce.y / (Physics.gravity.y - hitStunDeceleration));
+            hitStunTimer = Mathf.Abs(launchForce.y / (Physics.gravity.y - sceneObject.MovementHandler.AerialXDeccelerationRate));
         }
 
 

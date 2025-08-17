@@ -82,7 +82,7 @@ namespace Game.SceneObjects
         /// Log move collection change
         /// </summary>
         /// <param name="collection"></param>
-        private void OnMoveCollectionChanged(MovementCollection collection)
+        private void OnMoveCollectionChanged(MovementInputCollection collection)
         {
             Log(sceneObject.ObjectType + ": " + sceneObject.gameObject.name + ": Move Collection Changed");
         }

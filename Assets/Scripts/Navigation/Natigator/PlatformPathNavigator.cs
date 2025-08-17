@@ -1,4 +1,5 @@
 
+using Game.SceneObject.Movement;
 using Game.SceneObjects;
 using Game.SceneObjects.Movement;
 
@@ -17,10 +18,10 @@ namespace Game.Navigation
 
         protected override Graph CreateGraph(TerrainNode startNode, TerrainNode endNode)
         {
-            if (moveHandler.TryGetCurrentMovementCollection(out MovementCollection curMovementCollection))
+            if (moveHandler != null)
             {
                 GraphFactory graphFactory = new GraphFactory();
-                return graphFactory.CreateGraph(GraphType.Platform, startNode, endNode, bounds, curMovementCollection);
+                return graphFactory.CreateGraph(GraphType.Platform, startNode, endNode, bounds, moveHandler.CurrentMovementCollection);
             }
 
             return null;
@@ -54,12 +55,12 @@ namespace Game.Navigation
                 TriggerMovementEvent(EdgeType.Ground, 0);
 
                 //Face the direction of the jump
-                if (TryGetComponent(out SceneObject sceneObject))
+                if (TryGetComponent(out MovementHandler moveHandler))
                 {
-                    if ((sceneObject.IsFacingRightDirection && jumpRoute.InitialVelocity < 0f) ||
-                        !sceneObject.IsFacingRightDirection && jumpRoute.InitialVelocity > 0f)
+                    if ((moveHandler.IsFacingRightDirection && jumpRoute.InitialVelocity < 0f) ||
+                        !moveHandler.IsFacingRightDirection && jumpRoute.InitialVelocity > 0f)
                     {
-                        sceneObject.TurnAround();
+                        moveHandler.TurnAround();
                     }
                 }
 

@@ -16,13 +16,7 @@ public class PlayerTester : Editor
         SceneObject sceneObject = (SceneObject)target;
         
         DrawDefaultInspector();
-
-        
-
-        if (GUILayout.Button("Turn Around"))
-        {
-            sceneObject.TurnAround();
-        }
+       
 
         //Attack
         GUILayout.Label("---Attack---");

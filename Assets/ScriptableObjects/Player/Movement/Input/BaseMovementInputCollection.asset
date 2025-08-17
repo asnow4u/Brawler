@@ -9,14 +9,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f56f75752c1d1ec47ab2b7efc90b0fda, type: 3}
-  m_Name: SwordMovementCollection
+  m_Script: {fileID: 11500000, guid: 6e3abd615fe80924baf309a2a2c07b0f, type: 3}
+  m_Name: BaseMovementInputCollection
   m_EditorClassIdentifier: 
   MoveData: {fileID: 0}
   AirMoveData: {fileID: 0}
+  ClimbData: {fileID: 0}
   JumpData: {fileID: 0}
   AirJumpData: {fileID: 0}
-  LandData: {fileID: 0}
   WallLeanData: {fileID: 0}
-  WallSlideData: {fileID: 0}
-  WallJumpData: {fileID: 0}

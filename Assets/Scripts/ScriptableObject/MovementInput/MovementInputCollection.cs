@@ -3,22 +3,22 @@ using UnityEngine;
 
 namespace Game.SceneObjects.Movement
 {
-    [CreateAssetMenu(fileName = "MovementCollection", menuName = "ScriptableObjects/Movement/Collection")]
+    [CreateAssetMenu(fileName = "MovementInputCollection", menuName = "ScriptableObjects/Movement/InputCollection")]
 
-    public class MovementCollection : ScriptableObject
+    public class MovementInputCollection : ScriptableObject
     {
-        public MoveData MoveData;
-        public AirMoveData AirMoveData;
-        public ClimbData ClimbData;
-        public JumpData JumpData;
-        public AirJumpData AirJumpData;
-        public WallLeanData WallLeanData;
+        public MoveInputData MoveData;
+        public AirMoveInputData AirMoveData;
+        public ClimbInputData ClimbData;
+        public JumpInputData JumpData;
+        public AirJumpInputData AirJumpData;
+        public WallLeanInputData WallLeanData;
 
 
         /// <summary>
         /// Attempt to get <paramref name="requestedMovement"/> by <paramref name="movementType"/>
         /// </summary>
-        public bool TryGetMovementByType(MovementType movementType, out MovementData requestedMovement)
+        public bool TryGetMovementByType(MovementType movementType, out MovementInputData requestedMovement)
         {
             switch (movementType)
             {
@@ -75,11 +75,10 @@ namespace Game.SceneObjects.Movement
             return false;
         }
 
-
         /// <summary>
         /// Attempt to get <paramref name="movement"/> by <paramref name="animation"/>
         /// </summary>
-        public bool TryGetMovementFromAnimation(AnimationClip animation, out MovementData movement)
+        public bool TryGetMovementFromAnimation(AnimationClip animation, out MovementInputData movement)
         {
             foreach (MovementType type in Enum.GetValues(typeof(MovementType)))
             {
@@ -97,19 +96,6 @@ namespace Game.SceneObjects.Movement
 
         #region Grounded Movement
 
-        /// <returns>
-        /// Grounded max velocity in collection
-        /// </returns>
-        /// <exception cref="NullReferenceException"></exception>
-        public float GetGroundedMaxXVelocity()
-        {
-            if (MoveData != null)
-                return MoveData.GroundedMaxXVelocity;
-
-            throw new NullReferenceException("MoveData is not set");
-        }
-
-
         /// <summary>
         /// Grounded acceleration in collection
         /// </summary>
@@ -122,20 +108,6 @@ namespace Game.SceneObjects.Movement
 
             throw new NullReferenceException("MoveData is not set");
         }
-
-
-        /// <returns>
-        /// Grounded deceleration in collection
-        /// </returns>
-        /// <exception cref="NullReferenceException"></exception>
-        public float GetGroundedXDeceleration()
-        {
-            if (MoveData != null)
-                return MoveData.GroundedXDeceleration;
-
-            throw new NullReferenceException("MoveData is not set");
-        }
-
 
         /// <returns>
         /// Grounded attack deceleration in collection
@@ -151,35 +123,7 @@ namespace Game.SceneObjects.Movement
 
         #endregion
 
-
-        #region Air Movement
-
-        /// <returns>
-        /// Aeiral max X velocity in collection
-        /// </returns>
-        /// <exception cref="NullReferenceException"></exception>
-        public float GetAerialMaxXVelocity()
-        {
-            if (AirMoveData != null)
-                return AirMoveData.AerialMaxXVelocity;
-
-            throw new NullReferenceException("AirMoveData is not set");
-        }
-
-
-        /// <returns>
-        /// Aeiral max Y velocity in collection
-        /// </returns>
-        /// <exception cref="NullReferenceException"></exception>
-        public float GetAerialMaxYVelocity()
-        {
-            if (AirMoveData != null)
-                return AirMoveData.AerialMaxYVelocity;
-            
-            throw new NullReferenceException("AirMoveData is not set");
-        }
-
-
+        #region Air Movement        
 
         /// <returns>
         /// Aeiral X acceleration in collection
@@ -193,20 +137,6 @@ namespace Game.SceneObjects.Movement
             throw new NullReferenceException("AirMoveData is not set");
         }
 
-
-        /// <returns>
-        /// Aeiral X decceleration in collection
-        /// </returns>
-        /// <exception cref="NullReferenceException"></exception>
-        public float GetAerialXDeceleration()
-        {
-            if (AirMoveData != null)
-                return AirMoveData.AerialXDeceleration;
-
-            throw new NullReferenceException("AirMoveData is not set");
-        }
-
-
         /// <returns>
         /// Aeiral Y acceleration in collection
         /// </returns>
@@ -216,19 +146,6 @@ namespace Game.SceneObjects.Movement
             if (AirMoveData != null)
                 return AirMoveData.AerialYAcceleration;
             
-            throw new NullReferenceException("AirMoveData is not set");
-        }
-
-
-        /// <returns>
-        /// Aeiral Y decceleration in collection
-        /// </returns>
-        /// <exception cref="NullReferenceException"></exception>
-        public float GetAerialYDeceleration()
-        {
-            if (AirMoveData != null)
-                return AirMoveData.AerialYDeceleration;
-
             throw new NullReferenceException("AirMoveData is not set");
         }
 

@@ -325,11 +325,12 @@ GameObject:
   - component: {fileID: 7769173568030621610}
   - component: {fileID: 5151831792701949217}
   - component: {fileID: 8318219785822243922}
+  - component: {fileID: 536761976919074705}
   - component: {fileID: 4936789977502989988}
-  - component: {fileID: 5339731187066271464}
-  - component: {fileID: 8984696060330667455}
   - component: {fileID: 1637262306655890345}
   - component: {fileID: 9099089115603247555}
+  - component: {fileID: 5339731187066271464}
+  - component: {fileID: 8984696060330667455}
   - component: {fileID: 4152884735778822172}
   m_Layer: 14
   m_Name: Player
@@ -451,6 +452,19 @@ MonoBehaviour:
   airIdleAnimation: {fileID: 7400000, guid: 3dde231bf3aca7541a1b3c02353a6f40, type: 2}
   climbIdleAnimation: {fileID: 7400000, guid: bd0ceb5aab1f49a48bc96806518ba0a4, type: 2}
   curPlayingAnimation: {fileID: 0}
+--- !u!114 &536761976919074705
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6533080229533676560}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 910e62b6de5465e48a4bb0fb7bca644e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  baseMovementData: {fileID: 11400000, guid: 69dae82533d2b0442900700a31faba44, type: 2}
 --- !u!114 &4936789977502989988
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -464,41 +478,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damageDisplay: {fileID: 9085548217804773088}
---- !u!114 &5339731187066271464
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6533080229533676560}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 99e0a44c129ecbe4cb1fbf883587990b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  curMoveState: 0
-  MAXJUMPFRAMECOUNT: 10
-  curJumpFrameCount: 0
-  airJumpsPerformed: 0
-  baseMovementCollection: {fileID: 11400000, guid: 8652b59850fd13948b67834b9abd3160, type: 2}
-  horizontalInfluence: 0
-  verticalInfluence: 0
-  groundedJumpInfluence: 0
-  aerialJumpInfluence: 0
---- !u!114 &8984696060330667455
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6533080229533676560}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 323b280502324d249af0cae379a4e74d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  curAttackState: 0
-  previousAttackState: 0
 --- !u!114 &1637262306655890345
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -528,7 +507,43 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 33a7baaf386692b43a6b09116db63a70, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  WeaponHandler: {fileID: 0}
+  WeaponHandler: {fileID: 2202590252149404585}
+--- !u!114 &5339731187066271464
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6533080229533676560}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99e0a44c129ecbe4cb1fbf883587990b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  curMoveInputState: 0
+  MAXJUMPFRAMECOUNT: 10
+  curJumpFrameCount: 0
+  airJumpsPerformed: 0
+  baseMovementCollection: {fileID: 11400000, guid: 8652b59850fd13948b67834b9abd3160, type: 2}
+  currentMovementCollection: {fileID: 0}
+  horizontalInfluence: 0
+  verticalInfluence: 0
+  groundedJumpInfluence: 0
+  aerialJumpInfluence: 0
+--- !u!114 &8984696060330667455
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6533080229533676560}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 323b280502324d249af0cae379a4e74d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  curAttackState: 0
+  previousAttackState: 0
 --- !u!114 &4152884735778822172
 MonoBehaviour:
   m_ObjectHideFlags: 0

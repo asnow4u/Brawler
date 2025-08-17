@@ -1,3 +1,4 @@
+using Game.SceneObject.Movement;
 using Game.SceneObjects.ActionStates;
 using Game.SceneObjects.Movement;
 using NUnit.Framework;
@@ -12,6 +13,8 @@ namespace Game.SceneObjects.Attack
     public class AttackInputHandler : SceneObjectHandler
     {
         const ActionState ATTACKSTATE = ActionState.Attacking;
+
+        private MovementHandler movementHandler => sceneObject.MovementHandler;
 
         private IAttackInput attackInput;
 
@@ -268,16 +271,16 @@ namespace Game.SceneObjects.Attack
 
                     SetCurrentAttackState(AttackType.ForwardTilt, curAttackCollection);
 
-                    if (!sceneObject.IsFacingRightDirection)
-                        sceneObject.TurnAround();                   
+                    if (!movementHandler.IsFacingRightDirection)
+                        movementHandler.TurnAround();                   
                 }
                     
                 else
                 {
                     SetCurrentAttackState(AttackType.ForwardAir, curAttackCollection);
 
-                    if (!sceneObject.IsFacingRightDirection)
-                        sceneObject.TurnAround();
+                    if (!movementHandler.IsFacingRightDirection)
+                        movementHandler.TurnAround();
                 }
             }
         }
@@ -295,16 +298,16 @@ namespace Game.SceneObjects.Attack
                 {
                     SetCurrentAttackState(AttackType.ForwardTilt, curAttackCollection);
 
-                    if (sceneObject.IsFacingRightDirection)
-                        sceneObject.TurnAround();
+                    if (movementHandler.IsFacingRightDirection)
+                        movementHandler.TurnAround();
                 }
 
                 else
                 {
                     SetCurrentAttackState(AttackType.ForwardAir, curAttackCollection);
 
-                    if (sceneObject.IsFacingRightDirection)
-                        sceneObject.TurnAround();
+                    if (movementHandler.IsFacingRightDirection)
+                        movementHandler.TurnAround();
                 }                
             }
         }
@@ -373,11 +376,11 @@ namespace Game.SceneObjects.Attack
         /// </summary>
         private void PerformForwardChangeAttack()
         {
-            if (attackInput.IsRightAttackActive() && sceneObject.IsFacingRightDirection)
+            if (attackInput.IsRightAttackActive() && movementHandler.IsFacingRightDirection)
                 sceneObject.AnimationHandler.PauseCurrentAnimation(MAX_ATTACK_CHARGE_TIME);
 
 
-            else if (attackInput.IsLeftAttackActive() && !sceneObject.IsFacingRightDirection)
+            else if (attackInput.IsLeftAttackActive() && !movementHandler.IsFacingRightDirection)
                 sceneObject.AnimationHandler.PauseCurrentAnimation(MAX_ATTACK_CHARGE_TIME);
         }
 
@@ -386,10 +389,10 @@ namespace Game.SceneObjects.Attack
         /// </summary>
         private void ReleaseForwardChargeAttack()
         {
-            if (!attackInput.IsRightAttackActive() && sceneObject.IsFacingRightDirection)
+            if (!attackInput.IsRightAttackActive() && movementHandler.IsFacingRightDirection)
                 sceneObject.AnimationHandler.ResumeCurrentAnimation();
 
-            else if (!attackInput.IsLeftAttackActive() && !sceneObject.IsFacingRightDirection)
+            else if (!attackInput.IsLeftAttackActive() && !movementHandler.IsFacingRightDirection)
                 sceneObject.AnimationHandler.ResumeCurrentAnimation();
         }
 
@@ -492,7 +495,7 @@ namespace Game.SceneObjects.Attack
 
                 //Launch Angle
                 float launchAngle = curAttackData.LaunchAngle;
-                if (!sceneObject.IsFacingRightDirection)
+                if (!movementHandler.IsFacingRightDirection)
                     launchAngle = 180 - launchAngle;
 
                 //Attack Damage

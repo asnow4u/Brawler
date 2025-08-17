@@ -6,7 +6,7 @@ namespace Game.Navigation
 {
     public class FlyingGraph : Graph
     {
-        public FlyingGraph(TerrainNode startNode, TerrainNode endNode, Bounds bounds, MovementCollection collection) : base(startNode, endNode, bounds, collection)
+        public FlyingGraph(TerrainNode startNode, TerrainNode endNode, Bounds bounds, MovementInputCollection collection) : base(startNode, endNode, bounds, collection)
         {
             type = GraphType.Flying;
         }

@@ -1,4 +1,5 @@
 using Game.Interactable;
+using Game.SceneObject.Movement;
 using Game.SceneObjects.ActionStates;
 using Game.SceneObjects.Animation;
 using Game.SceneObjects.Attack;
@@ -18,7 +19,7 @@ using static UnityEngine.UI.Image;
 namespace Game.SceneObjects
 {
     public enum SceneObjectType { Player, Enemy, Object }
-    public enum GroundedState { Airborn, Grounded }
+    public enum GroundedState { Airborn, Grounded, Climbing }
     public enum ClimbState { Unavailable, Available, Climbing }
 
     public enum Direction { Right, Left, Up, Down }
@@ -26,6 +27,7 @@ namespace Game.SceneObjects
     [RequireComponent(typeof(Collider))]
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(ActionStateHandler))]
+    [RequireComponent(typeof(MovementHandler))]
     [RequireComponent(typeof(UIHandler))]
     [RequireComponent(typeof(DamageHandler))]
     public abstract class SceneObject : MonoBehaviour
@@ -45,6 +47,7 @@ namespace Game.SceneObjects
 
         //Required Handlers
         public ActionStateHandler ActionStateHandler { get; protected set; }
+        public MovementHandler MovementHandler { get; protected set; }
         public UIHandler UIHandler { get; private set; }
         public DamageHandler DamageHandler { get; protected set; }
 
@@ -108,6 +111,7 @@ namespace Game.SceneObjects
         protected virtual void GetHandlers()
         {
             ActionStateHandler = GetComponent<ActionStateHandler>();                       
+            MovementHandler = GetComponent<MovementHandler>();
             UIHandler = GetComponent<UIHandler>();            
             DamageHandler = GetComponent<DamageHandler>();
         }
@@ -119,6 +123,7 @@ namespace Game.SceneObjects
         private void SetUpHandlers()
         {
             ActionStateHandler.Setup();
+            MovementHandler.Setup();
             UIHandler.Setup();
             DamageHandler.Setup();
 
@@ -135,6 +140,7 @@ namespace Game.SceneObjects
         private void SetupHandlerEvents()
         {
             ActionStateHandler.RegisterToEvents();
+            MovementHandler.RegisterToEvents();
             UIHandler.RegisterToEvents();
             DamageHandler.RegisterToEvents();
                         
@@ -164,12 +170,7 @@ namespace Game.SceneObjects
             //Grounded Status
             CheckGroundedStatus();
 
-            //Climb State
-            if (MovementInputHandler != null)
-            {
-                UpdateClimbState();
-                MovementInputHandler.UpdateMovement();
-            }
+            MovementHandler.UpdateMovement();            
 
             if (AttackInputHandler != null)
                 AttackInputHandler.HandleUpdate();
@@ -239,7 +240,7 @@ namespace Game.SceneObjects
         private void UpdateClimbState()
         {
             //Update climb state if the collection has climb data                
-            if (MovementInputHandler.TryGetCurrentMovementCollection(out MovementCollection curMovementCollection) && curMovementCollection.ClimbData != null)
+            if (MovementInputHandler.CurrentMovementCollection.ClimbData != null)
             {
                 Bounds bounds = Collider.bounds;
                 Vector3 center = bounds.center;
@@ -294,7 +295,7 @@ namespace Game.SceneObjects
                     // Jump action performed
                     else if (ActionStateHandler.CurActionState == ActionState.Moving)
                     {
-                        if ((MovementInputHandler.CurMoveState == MovementType.Jump || MovementInputHandler.CurMoveState == MovementType.AirJump) && Rb.linearVelocity.y > 0)
+                        if ((MovementInputHandler.CurMoveInputState == MovementType.Jump || MovementInputHandler.CurMoveInputState == MovementType.AirJump) && Rb.linearVelocity.y > 0)
                             SetClimbState(ClimbState.Available);
                     }
 
@@ -356,44 +357,6 @@ namespace Game.SceneObjects
             } 
         }
 
-        #endregion
-
-
-        #region Direction
-
-        /// <returns>
-        /// Whether the sceneObject is facing the right direction
-        /// </returns>
-        public bool IsFacingRightDirection
-        {
-            get
-            {
-                float angleRightDiff = Vector3.Angle(transform.right, Vector3.right);
-                float angleLeftDiff = Vector3.Angle(transform.right, Vector3.left);
-
-                if (angleRightDiff < angleLeftDiff)
-                {
-                    return true;
-                }
-
-                return false;
-            }
-        }
-
-
-        /// <summary>
-        /// Turn the sceneObject around 
-        /// </summary>
-        public void TurnAround()
-        {
-            if (IsFacingRightDirection)
-                transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
-            else
-                transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
-            
-            UIHandler.RotateDisplayText();
-        }
-      
         #endregion
 
 
@@ -528,6 +491,7 @@ namespace Game.SceneObjects
         public void OnDestroy()
         {
             ActionStateHandler.UnregisterToEvents();
+            MovementHandler.UnregisterToEvents();
             UIHandler.UnregisterToEvents();
             DamageHandler.UnregisterToEvents();
 

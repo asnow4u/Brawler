@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Game.SceneObjects.Movement
 {
-    public class MovementData : ScriptableObject
+    public class MovementInputData : ScriptableObject
     {    
         public AnimationClip Animation;
         public float AnimationSpeedMultiplier;

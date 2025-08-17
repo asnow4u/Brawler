@@ -13,10 +13,10 @@ namespace Game.Navigation
 
         protected override Graph CreateGraph(TerrainNode startNode, TerrainNode endNode)
         {
-            if (moveHandler.TryGetCurrentMovementCollection(out MovementCollection curMovementCollection))
+            if (moveHandler != null)
             {
                 GraphFactory graphFactory = new GraphFactory();
-                return graphFactory.CreateGraph(GraphType.Flying, startNode, endNode, bounds, curMovementCollection);
+                return graphFactory.CreateGraph(GraphType.Flying, startNode, endNode, bounds, moveHandler.CurrentMovementCollection);
             }
 
             return null;

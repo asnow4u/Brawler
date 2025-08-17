@@ -155,11 +155,11 @@ namespace Game.SceneObjects.Animation
         /// <summary>
         /// Set movement animations to use
         /// </summary>
-        public void SetMovementAnimations(MovementCollection moveCollection)
+        public void SetMovementAnimations(MovementInputCollection moveCollection)
         {
             foreach (MovementType moveType in Enum.GetValues(typeof(MovementType)))
             {
-                if (moveCollection.TryGetMovementByType(moveType, out MovementData movementData))
+                if (moveCollection.TryGetMovementByType(moveType, out MovementInputData movementData))
                 {
                     //if (movementData is MoveData moveData)
                     //{

@@ -11,7 +11,7 @@ public class Weapon : Interactable
 {    
     public WeaponType Type;
 
-    public MovementCollection MovementCollection;
+    public MovementInputCollection MovementCollection;
     public AttackCollection AttackCollection;
 
     private List<AttackDamageCollider> damageColliders = new List<AttackDamageCollider>();    

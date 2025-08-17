@@ -1,3 +1,4 @@
+using Game.SceneObject.Movement;
 using Game.SceneObjects.ActionStates;
 using Game.SceneObjects.Attack;
 using Game.SceneObjects.Damage;
@@ -16,9 +17,12 @@ namespace Game.SceneObjects.Movement
 
         private IMovementInput movementInput;
 
+        private Rigidbody rb => sceneObject.Rb;
+        private MovementHandler movementHandler => sceneObject.MovementHandler;
+
         //Movement State Data
         [Header("State")]
-        [SerializeField] private MovementType curMoveState;
+        [SerializeField] private MovementType curMoveInputState;
 
         //Jump Properties
         //NOTE: Based on how long the user holds the jump button will determin how high the player jumps
@@ -30,9 +34,10 @@ namespace Game.SceneObjects.Movement
         //Attack Properties
         private bool deceleratingForAttack;
 
-        //Movement Collection (NOTE: BaseMovementCollection is Required for all sceneObjects)    
+        //Movement Collection (NOTE: BaseMovementCollection is Required for all sceneObjects. Base handles the case where a sceneObject dosent use a weapon but moves)    
         [Header("Collection")]
-        [SerializeField] private MovementCollection baseMovementCollection;
+        [SerializeField] private MovementInputCollection baseMovementCollection;
+        [SerializeField] private MovementInputCollection currentMovementCollection;
 
         [Header("Influence")]
         [Range(-1, 1)]
@@ -49,34 +54,34 @@ namespace Game.SceneObjects.Movement
         [SerializeField] private const float hitStunVelocityTargetMultiplier = 0.25f;
 
         //Events
-        public event Action<MovementCollection> MovementCollectionChangedEvent;
+        public event Action<MovementInputCollection> MovementCollectionChangedEvent;
         public event Action<MovementType> MoveStateChangedEvent;
 
 
         #region Getters
 
-        public MovementType CurMoveState => curMoveState;
-
+        public MovementType CurMoveInputState => curMoveInputState;
+        public MovementInputCollection CurrentMovementCollection => currentMovementCollection;
         public float VerticalInfluence => verticalInfluence;
 
-        /// <summary>
-        /// Attempt to get the <paramref name="currentMoveCollection"/> <br/>
-        /// This will prioritize an equpped <see cref="Weapon"/> movement collection over <see cref="baseMovementCollection"/>
-        /// </summary>
-        public bool TryGetCurrentMovementCollection(out MovementCollection currentMoveCollection)
-        {
-            currentMoveCollection = null;
+        ///// <summary>
+        ///// Attempt to get the <paramref name="currentMoveCollection"/> <br/>
+        ///// This will prioritize an equpped <see cref="Weapon"/> movement collection over <see cref="baseMovementCollection"/>
+        ///// </summary>
+        //public bool TryGetCurrentMovementCollection(out MovementCollection currentMoveCollection)
+        //{
+        //    currentMoveCollection = null;
             
-            if (baseMovementCollection == null)
-                return false;            
+        //    if (baseMovementCollection == null)
+        //        return false;            
 
-            if (sceneObject.EquipmentHandler.WeaponHandler?.EquippedWeapon != null)
-                currentMoveCollection = sceneObject.EquipmentHandler.WeaponHandler.EquippedWeapon.MovementCollection;
-            else
-                currentMoveCollection = baseMovementCollection;
+        //    if (sceneObject.EquipmentHandler.WeaponHandler?.EquippedWeapon != null)
+        //        currentMoveCollection = sceneObject.EquipmentHandler.WeaponHandler.EquippedWeapon.MovementCollection;
+        //    else
+        //        currentMoveCollection = baseMovementCollection;
 
-            return currentMoveCollection != null;
-        }
+        //    return currentMoveCollection != null;
+        //}
 
 
         #endregion
@@ -100,10 +105,17 @@ namespace Game.SceneObjects.Movement
 
         public override void Setup()
         {
+            //Input
             if (sceneObject is IMovementInput input)
                 movementInput = input;
             else
                 throw new Exception($"SceneObject {sceneObject.name} does not implement IMovementInput interface");
+
+            //Movement Collection
+            if (baseMovementCollection != null)
+                currentMovementCollection = baseMovementCollection;
+            else
+                throw new MissingReferenceException("BaseMovementCollection is not set for MovementInputHandler");
         }
 
         #endregion
@@ -145,19 +157,16 @@ namespace Game.SceneObjects.Movement
         /// <param name="clip"></param>
         private void OnAnimationEnded(AnimationClip clip)
         {
-            if (TryGetCurrentMovementCollection(out MovementCollection curMovementCollection))
+            if (currentMovementCollection.TryGetMovementFromAnimation(clip, out _))
+                SetCurrentMoveState(MovementType.Null);
+
+            //End movement after attack
+            if (deceleratingForAttack && sceneObject.AttackInputHandler.TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
             {
-                if (curMovementCollection.TryGetMovementFromAnimation(clip, out _))
+                if (curAttackCollection.TryGetAttackByAnimation(clip, out _))
                     SetCurrentMoveState(MovementType.Null);
 
-                //End movement after attack
-                if (deceleratingForAttack && sceneObject.AttackInputHandler.TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
-                {
-                    if (curAttackCollection.TryGetAttackByAnimation(clip, out _))
-                        SetCurrentMoveState(MovementType.Null);
-
-                    deceleratingForAttack = false;
-                }
+                deceleratingForAttack = false;
             }
         }
 
@@ -169,44 +178,42 @@ namespace Game.SceneObjects.Movement
         /// <summary>
         /// Update movement based on grounded status
         /// </summary>
-        public void UpdateMovement()
-        {            
-            if (TryGetCurrentMovementCollection(out MovementCollection curMovementCollection))
-            {                 
-                //Climb Movement
-                if (sceneObject.CurClimbState == ClimbState.Climbing)
-                {
-                    //NOTE: Hitstun will force sceneObject ClimbState.UnAvailable
-                    UpdateClimbMovement(curMovementCollection);                   
-                }
+        //public void UpdateMovement()
+        //{                     
+        //        //Climb Movement
+        //        if (sceneObject.CurClimbState == ClimbState.Climbing)
+        //        {
+        //            //NOTE: Hitstun will force sceneObject ClimbState.UnAvailable
+        //            UpdateClimbMovement(curMovementCollection);                   
+        //        }
 
-                //Grounded Movement
-                else if (sceneObject.CurGroundedState == GroundedState.Grounded)
-                {
-                    if (sceneObject.ActionStateHandler.CurActionState == ActionState.HitStun)
-                        UpdateGroundedHitStunMovement(curMovementCollection);
-                    else if (sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking)
-                        UpdateGroundedAttackingMovement(curMovementCollection);
-                    else
-                        UpdateGroundedMovement(curMovementCollection);
-                }                
+        //        //Grounded Movement
+        //        else if (sceneObject.CurGroundedState == GroundedState.Grounded)
+        //        {
+        //            if (sceneObject.ActionStateHandler.CurActionState == ActionState.HitStun)
+        //                UpdateGroundedHitStunMovement(curMovementCollection);
+        //            else if (sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking)
+        //                UpdateGroundedAttackingMovement(curMovementCollection);
+        //            else
+        //                UpdateGroundedMovement(curMovementCollection);
+        //        }                
 
-                //Aerial
-                else if (sceneObject.CurGroundedState == GroundedState.Airborn && sceneObject.CurClimbState != ClimbState.Climbing)
-                {
-                    //Check if the player is in hitstun and update movement accordingly
-                    if (sceneObject.ActionStateHandler.CurActionState == ActionState.HitStun)
-                        UpdateAerialHitStunMovement(curMovementCollection.AirMoveData);
-                    else
-                        UpdateAerialMovement(curMovementCollection);
-                }
+        //        //Aerial
+        //        else if (sceneObject.CurGroundedState == GroundedState.Airborn && sceneObject.CurClimbState != ClimbState.Climbing)
+        //        {
+        //            //Check if the player is in hitstun and update movement accordingly
+        //            if (sceneObject.ActionStateHandler.CurActionState == ActionState.HitStun)
+        //                UpdateAerialHitStunMovement(curMovementCollection.AirMoveData);
+        //            else
+        //                UpdateAerialMovement(curMovementCollection);
+        //        }
 
-                //Jump
-                if (sceneObject.ActionStateHandler.CurActionState != ActionState.HitStun)
-                    UpdateJumpMovement(curMovementCollection);
-            }
-        }        
+        //        //Jump
+        //        if (sceneObject.ActionStateHandler.CurActionState != ActionState.HitStun)
+        //            UpdateJumpMovement(curMovementCollection);
+        //}
 
+        
         #endregion
 
 
@@ -214,18 +221,18 @@ namespace Game.SceneObjects.Movement
 
         /// <summary>
         /// Attempt to set the <see cref="ActionState"/> to <see cref="MOVESTATE"/> <br/>
-        /// Then set the <see cref="curMoveState"/> to the <paramref name="moveState"/>        
+        /// Then set the <see cref="curMoveInputState"/> to the <paramref name="moveState"/>        
         private bool TrySetCurrentMoveState(MovementType moveState)
         {                                    
             if (sceneObject.ActionStateHandler.TryChangeState(MOVESTATE))
             {
-                if (moveState != curMoveState)
+                if (moveState != curMoveInputState)
                 {
                     //NOTE: Jumping can override any moveState
                     if (moveState == MovementType.Jump || moveState == MovementType.AirJump)
                         SetCurrentMoveState(moveState);
 
-                    else if (moveState > curMoveState)
+                    else if (moveState > curMoveInputState)
                         SetCurrentMoveState(moveState);
                 }
 
@@ -237,11 +244,11 @@ namespace Game.SceneObjects.Movement
 
 
         /// <summary>
-        /// Set the <see cref="curMoveState"/> to <paramref name="moveState"/>
+        /// Set the <see cref="curMoveInputState"/> to <paramref name="moveState"/>
         /// </summary>
         private void SetCurrentMoveState(MovementType moveState)
         {
-            curMoveState = moveState;
+            curMoveInputState = moveState;
             MoveStateChangedEvent?.Invoke(moveState);
         }
 
@@ -252,16 +259,16 @@ namespace Game.SceneObjects.Movement
 
         private void CheckTurnAround()
         {
-            if (sceneObject.IsFacingRightDirection && horizontalInfluence < 0)
+            if (movementHandler.IsFacingRightDirection && horizontalInfluence < 0)
             {
-                sceneObject.TurnAround();
-                sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x * -1, sceneObject.Rb.linearVelocity.y, 0);                
+                movementHandler.TurnAround();
+                rb.linearVelocity = new Vector3(rb.linearVelocity.x * -1, rb.linearVelocity.y, 0);                
             }
 
-            else if (!sceneObject.IsFacingRightDirection && horizontalInfluence > 0)
+            else if (!movementHandler.IsFacingRightDirection && horizontalInfluence > 0)
             {
-                sceneObject.TurnAround();
-                sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x * -1, sceneObject.Rb.linearVelocity.y, 0);
+                movementHandler.TurnAround();
+                rb.linearVelocity = new Vector3(rb.linearVelocity.x * -1, rb.linearVelocity.y, 0);
             }
         }
 
@@ -283,7 +290,7 @@ namespace Game.SceneObjects.Movement
         /// </summary>
         public bool IsAgainstRightWall()
         {
-            if (sceneObject.IsFacingRightDirection)
+            if (movementHandler.IsFacingRightDirection)
             {
                 if (horizontalInfluence >= 0 && sceneObject.TryDetectCollision(Direction.Right, 0.5f, LayerMask.GetMask("Environment"), out _))
                     return true;
@@ -297,7 +304,7 @@ namespace Game.SceneObjects.Movement
         /// </summary>
         public bool IsAgainstLeftWall()
         {
-            if (!sceneObject.IsFacingRightDirection)
+            if (!movementHandler.IsFacingRightDirection)
             {
                 if (horizontalInfluence <= 0 && sceneObject.TryDetectCollision(Direction.Left, 0.5f, LayerMask.GetMask("Environment"), out _))
                     return true;
@@ -400,7 +407,7 @@ namespace Game.SceneObjects.Movement
         /// <summary>
         /// Determine if aerial jump movement is allowed based on current movement state
         /// </summary>
-        private bool IsAerialJumpMovementAllowed(AirJumpData airJumpData)
+        private bool IsAerialJumpMovementAllowed(AirJumpInputData airJumpData)
         {
             if (aerialJumpInfluence == 0)
                 return false;
@@ -418,7 +425,7 @@ namespace Game.SceneObjects.Movement
         /// <summary>
         /// Determine if climb movement is allowed to transition to based on movement state
         /// </summary>
-        private bool IsClimbMovementAllowed(MovementCollection curMovementCollection)
+        private bool IsClimbMovementAllowed(MovementInputCollection curMovementCollection)
         {
             if (curMovementCollection.ClimbData == null)
                 return false;
@@ -435,95 +442,54 @@ namespace Game.SceneObjects.Movement
         #region Grounded Movement
 
         /// <summary>
-        /// Movement to be performed while in hitstun on the ground
-        /// </summary>
-        private void UpdateGroundedHitStunMovement(MovementCollection curMovementCollection)
-        {
-            //throw new NotImplementedException();
-        }
-
-
-        /// <summary>
-        /// Movement to be performed while attacking on the ground
-        /// </summary>
-        private void UpdateGroundedAttackingMovement(MovementCollection curMovementCollection)
-        {            
-            UpdateGroundedDecceleration(curMovementCollection.GetGroundedAttackDecleration());
-            deceleratingForAttack = true;
-        }       
-
-
-        /// <summary>
         /// Update movement on the ground based on <see cref="horizontalInfluence"/>, <see cref="verticalInfluence"/> and <see cref="jumpInfluence"/>
         /// </summary>
-        private void UpdateGroundedMovement(MovementCollection curMovementCollection)
+        public void UpdateGroundedMovement()
         {
+            ////Attacking Movement
+            //if (sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking)
+            //    UpdateGroundedAttackingMovement();
+
             //Check if moving into a wall
             if ((horizontalInfluence > 0 && IsAgainstRightWall()) || (horizontalInfluence < 0 && IsAgainstLeftWall()))
                 TrySetCurrentMoveState(MovementType.WallLean);
 
             //Horizontal Movement
             else if (IsHorizontalMovementAllowed() && TrySetCurrentMoveState(MovementType.Move))
-                UpdateGroundedAcceleration(curMovementCollection.GetGroundedXAcceleration(), curMovementCollection.GetGroundedMaxXVelocity());
-            
-            else
-                UpdateGroundedDecceleration(curMovementCollection.GetGroundedXDeceleration());
-
+                UpdateGroundedAcceleration();
         }
 
+        //NOTE: This method should be removed.
+        // When an attack state is set the move state should be set to null
+        // MovementHandler should handle the decceleration for the attack
+        /// <summary>
+        /// Movement to be performed while attacking on the ground
+        /// </summary>
+        //private void UpdateGroundedAttackingMovement()
+        //{            
+        //    UpdateGroundedDecceleration(currentMovementCollection.GetGroundedAttackDecleration());
+        //    deceleratingForAttack = true;
+        //}       
 
         /// <summary>
-        /// Accelerate on the ground by <paramref name="acceleration"/> value to a max <paramref name="maxVelocity"/>
+        /// Accelerate on the ground by an acceleration value to a max velocity from <see cref="currentMovementCollection"/>
         /// </summary>
-        private void UpdateGroundedAcceleration(float acceleration, float maxVelocity)
+        private void UpdateGroundedAcceleration()
         {
+            float acceleration = currentMovementCollection.GetGroundedXAcceleration();
+            float maxVelocity = movementHandler.GroundedMaxVelocity;
+
             CheckTurnAround();
 
             float targetXVelocity = maxVelocity * Mathf.Abs(horizontalInfluence);
 
-            sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x + (horizontalInfluence * acceleration * Time.fixedDeltaTime), sceneObject.Rb.linearVelocity.y, 0);
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x + (horizontalInfluence * acceleration * Time.fixedDeltaTime), rb.linearVelocity.y, 0);
 
-            if (sceneObject.Rb.linearVelocity.x > targetXVelocity)
-                sceneObject.Rb.linearVelocity = new Vector3(targetXVelocity, sceneObject.Rb.linearVelocity.y, 0);
+            if (rb.linearVelocity.x > targetXVelocity)
+                rb.linearVelocity = new Vector3(targetXVelocity, rb.linearVelocity.y, 0);
 
-            else if (sceneObject.Rb.linearVelocity.x < -targetXVelocity)
-                sceneObject.Rb.linearVelocity = new Vector3(-targetXVelocity, sceneObject.Rb.linearVelocity.y, 0);
-        }
-
-
-        /// <summary>
-        /// Update velocity while on the ground to slow down by <paramref name="deccelerationValue"/>
-        /// </summary>
-        private void UpdateGroundedDecceleration(float deccelerationValue)
-        {
-            //Prevet deccelerate when jumping from ground
-            if (curMoveState != MovementType.Jump)
-            {
-                //Positive Decceleration
-                if (sceneObject.Rb.linearVelocity.x > 0)
-                {
-                    float decceleratedXValue = sceneObject.Rb.linearVelocity.x - (deccelerationValue * Time.fixedDeltaTime);
-
-                    if (decceleratedXValue < 0)
-                        decceleratedXValue = 0;
-
-                    sceneObject.Rb.linearVelocity = new Vector3(decceleratedXValue, sceneObject.Rb.linearVelocity.y, 0);
-                }
-
-                //Negative Decceleration
-                else if (sceneObject.Rb.linearVelocity.x < 0)
-                {
-                    float decceleratedXValue = sceneObject.Rb.linearVelocity.x + (deccelerationValue * Time.fixedDeltaTime);
-
-                    if (decceleratedXValue > 0)
-                        decceleratedXValue = 0;
-
-                    sceneObject.Rb.linearVelocity = new Vector3(decceleratedXValue, sceneObject.Rb.linearVelocity.y, 0);
-                }                
-
-                if (sceneObject.Rb.linearVelocity.x == 0 && curMoveState != MovementType.Null)
-                    SetCurrentMoveState(MovementType.Null);
-            }
+            else if (rb.linearVelocity.x < -targetXVelocity)
+                rb.linearVelocity = new Vector3(-targetXVelocity, rb.linearVelocity.y, 0);
         }
 
         #endregion
@@ -534,201 +500,120 @@ namespace Game.SceneObjects.Movement
         /// <summary>
         /// Update velocity in the air while in hitstun
         /// </summary>
-        private void UpdateAerialHitStunMovement(AirMoveData airMoveData)
-        {
-            //X Deceleration
-            float targetXVelocity;
+        //private void UpdateAerialHitStunMovement(AirMoveInputData airMoveData)
+        //{
+        //    //X Deceleration
+        //    float targetXVelocity;
 
-            //Right (Pos)
-            if (sceneObject.Rb.linearVelocity.x > 0)
-            {
-                targetXVelocity = airMoveData.AerialMaxXVelocity * hitStunVelocityTargetMultiplier;
+        //    //Right (Pos)
+        //    if (sceneObject.Rb.linearVelocity.x > 0)
+        //    {
+        //        targetXVelocity = airMoveData.AerialMaxXVelocity * hitStunVelocityTargetMultiplier;
 
-                if (sceneObject.Rb.linearVelocity.x > targetXVelocity)
-                    sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x - (sceneObject.DamageHandler.HitStunDeceleration * Time.fixedDeltaTime), sceneObject.Rb.linearVelocity.y, 0);
+        //        if (sceneObject.Rb.linearVelocity.x > targetXVelocity)
+        //            sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x - (sceneObject.DamageHandler.HitStunDeceleration * Time.fixedDeltaTime), sceneObject.Rb.linearVelocity.y, 0);
 
-                if (sceneObject.Rb.linearVelocity.x < targetXVelocity)
-                    sceneObject.Rb.linearVelocity = new Vector3(targetXVelocity, sceneObject.Rb.linearVelocity.y, 0);
-            }
+        //        if (sceneObject.Rb.linearVelocity.x < targetXVelocity)
+        //            sceneObject.Rb.linearVelocity = new Vector3(targetXVelocity, sceneObject.Rb.linearVelocity.y, 0);
+        //    }
 
-            //Left (Neg)
-            else
-            {
-                targetXVelocity = -airMoveData.AerialMaxXVelocity * hitStunVelocityTargetMultiplier;
+        //    //Left (Neg)
+        //    else
+        //    {
+        //        targetXVelocity = -airMoveData.AerialMaxXVelocity * hitStunVelocityTargetMultiplier;
 
-                if (sceneObject.Rb.linearVelocity.x < targetXVelocity)
-                    sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x + (sceneObject.DamageHandler.HitStunDeceleration * Time.fixedDeltaTime), sceneObject.Rb.linearVelocity.y, 0);
+        //        if (sceneObject.Rb.linearVelocity.x < targetXVelocity)
+        //            sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x + (sceneObject.DamageHandler.HitStunDeceleration * Time.fixedDeltaTime), sceneObject.Rb.linearVelocity.y, 0);
 
-                if (sceneObject.Rb.linearVelocity.x > targetXVelocity)
-                    sceneObject.Rb.linearVelocity = new Vector3(targetXVelocity, sceneObject.Rb.linearVelocity.y, 0);
-            }
+        //        if (sceneObject.Rb.linearVelocity.x > targetXVelocity)
+        //            sceneObject.Rb.linearVelocity = new Vector3(targetXVelocity, sceneObject.Rb.linearVelocity.y, 0);
+        //    }
 
 
-            //Y Deceleration
-            float targetYVelocity = -airMoveData.AerialMaxXVelocity * hitStunVelocityTargetMultiplier;
+        //    //Y Deceleration
+        //    float targetYVelocity = -airMoveData.AerialMaxXVelocity * hitStunVelocityTargetMultiplier;
 
-            if (sceneObject.Rb.linearVelocity.y > targetYVelocity)
-                sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, sceneObject.Rb.linearVelocity.y - (sceneObject.DamageHandler.HitStunDeceleration * Time.fixedDeltaTime), 0);
+        //    if (sceneObject.Rb.linearVelocity.y > targetYVelocity)
+        //        sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, sceneObject.Rb.linearVelocity.y - (sceneObject.DamageHandler.HitStunDeceleration * Time.fixedDeltaTime), 0);
 
-            if (sceneObject.Rb.linearVelocity.y < targetYVelocity)
-                sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, targetYVelocity, 0);
-        }
+        //    if (sceneObject.Rb.linearVelocity.y < targetYVelocity)
+        //        sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, targetYVelocity, 0);
+        //}
 
 
         /// <summary>
-        /// Update movement in the air
+        /// Update horizontal movement in the air
         /// </summary>
-        private void UpdateAerialMovement(MovementCollection curMovementCollection)
+        public bool UpdateAerialXMovement()
         {
-            //Horizontal Movement
-            if (IsHorizontalMovementAllowed() && TrySetCurrentMoveState(MovementType.AirMove))
-                AerialXAccelerate(curMovementCollection.AirMoveData);
-            else
-                AerialXDeccelerate(curMovementCollection.AirMoveData);
+            if (!IsHorizontalMovementAllowed() || !TrySetCurrentMoveState(MovementType.AirMove))
+                return false;
+            
+            AerialXAccelerate();            
+            return true;
+        }
 
-            //Vertical Movement  
-            if (IsVerticalMovementAllowed() && TrySetCurrentMoveState(MovementType.AirMove))
-                AerialYAccelerate(curMovementCollection.AirMoveData);
-            else
-                AerialYDeccelerate(curMovementCollection.AirMoveData);               
+        /// <summary>
+        /// Update vertical movement in the air
+        /// </summary>
+        public bool UpdateAerialYMovement()
+        {
+            if (!IsVerticalMovementAllowed() || !TrySetCurrentMoveState(MovementType.AirMove))
+                return false;
 
-            //Gravity
-            ApplyGravityScaler(curMovementCollection.AirMoveData);
+            AerialYAccelerate();
+            return true;
         }
 
 
         /// <summary>
         /// Accelerate in the air on the X axis
         /// </summary>
-        private void AerialXAccelerate(AirMoveData airMoveData)
+        private void AerialXAccelerate()
         {
-            
+            float maxXVelocity = movementHandler.AerialMaxXVelocity;
+            float acceleration = currentMovementCollection.AirMoveData.AerialXAcceleration;
+
             //Positive Acceleration
             if (horizontalInfluence > 0)
             {
-                float acceleratedXValue = sceneObject.Rb.linearVelocity.x + (airMoveData.AerialXAcceleration * Time.fixedDeltaTime);
+                float acceleratedXValue = rb.linearVelocity.x + (acceleration * Time.fixedDeltaTime);
 
-                if (acceleratedXValue > airMoveData.AerialMaxXVelocity)
-                    acceleratedXValue = airMoveData.AerialMaxXVelocity;
+                if (acceleratedXValue > maxXVelocity)
+                    acceleratedXValue = maxXVelocity;
 
-                sceneObject.Rb.linearVelocity = new Vector3(acceleratedXValue, sceneObject.Rb.linearVelocity.y, 0);
+                rb.linearVelocity = new Vector3(acceleratedXValue, rb.linearVelocity.y, 0);
             }
 
             //Negative Acceleration
             else if (horizontalInfluence < 0)
             {
-                float acceleratedXValue = sceneObject.Rb.linearVelocity.x - (airMoveData.AerialXAcceleration * Time.fixedDeltaTime);
+                float acceleratedXValue = rb.linearVelocity.x - (acceleration * Time.fixedDeltaTime);
 
-                if (acceleratedXValue < -airMoveData.AerialMaxXVelocity)
-                    acceleratedXValue = -airMoveData.AerialMaxXVelocity;    
+                if (acceleratedXValue < -maxXVelocity)
+                    acceleratedXValue = -maxXVelocity;    
 
-                sceneObject.Rb.linearVelocity = new Vector3(acceleratedXValue, sceneObject.Rb.linearVelocity.y, 0);
+                rb.linearVelocity = new Vector3(acceleratedXValue, rb.linearVelocity.y, 0);
             }            
         }
-
 
         /// <summary>
         /// Accelerate in the air on the Y axis
         /// </summary>
-        private void AerialYAccelerate(AirMoveData airMoveData)
+        private void AerialYAccelerate()
         {
+            float maxYVelocity = movementHandler.AerialMaxYVelocity;
+            float acceleration = currentMovementCollection.AirMoveData.AerialYAcceleration;
+
             if (verticalInfluence < 0)
             {
-                float acceleratedYValue = sceneObject.Rb.linearVelocity.y - (airMoveData.AerialYAcceleration * Time.fixedDeltaTime);
+                float acceleratedYValue = rb.linearVelocity.y - (acceleration * Time.fixedDeltaTime);
 
-                if (acceleratedYValue < -airMoveData.AerialMaxYVelocity)
-                    acceleratedYValue = -airMoveData.AerialMaxYVelocity;
+                if (acceleratedYValue < -maxYVelocity)
+                    acceleratedYValue = -maxYVelocity;
 
-                sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, acceleratedYValue, 0);
+                rb.linearVelocity = new Vector3(rb.linearVelocity.x, acceleratedYValue, 0);
             }
-        }
-
-
-        /// <summary>
-        /// Deccelerate in the air on the X axis 
-        /// </summary>
-        private void AerialXDeccelerate(AirMoveData airMoveData)
-        {
-            //Only deccelerate if velocity is greater than max velocity
-            if (Mathf.Abs(sceneObject.Rb.linearVelocity.x) > airMoveData.AerialMaxXVelocity)
-            {                
-                //Positive Decceleration
-                if (sceneObject.Rb.linearVelocity.x > 0)
-                {
-                    float decceleratedXValue = sceneObject.Rb.linearVelocity.x - (airMoveData.AerialXDeceleration * Time.fixedDeltaTime);
-
-                    if (decceleratedXValue < 0)
-                        decceleratedXValue = 0;
-
-                    sceneObject.Rb.linearVelocity = new Vector3(decceleratedXValue, sceneObject.Rb.linearVelocity.y, 0);
-                }
-
-                //Negative Decceleration
-                else if (sceneObject.Rb.linearVelocity.x < 0)
-                {
-                    float decceleratedXValue = sceneObject.Rb.linearVelocity.x + (airMoveData.AerialXDeceleration * Time.fixedDeltaTime);
-
-                    if (decceleratedXValue > 0)
-                        decceleratedXValue = 0;
-
-                    sceneObject.Rb.linearVelocity = new Vector3(decceleratedXValue, sceneObject.Rb.linearVelocity.y, 0);
-                }
-            }
-        }
-
-
-        /// <summary>
-        /// Deccelerate in the air on the Y axis 
-        /// </summary>
-        private void AerialYDeccelerate(AirMoveData airMoveData)
-        {
-            if (Mathf.Abs(sceneObject.Rb.linearVelocity.y) > airMoveData.AerialMaxYVelocity)                
-            {
-                //Positive Decceleration
-                if (sceneObject.Rb.linearVelocity.y > 0)
-                {
-                    float decceleratedYValue = sceneObject.Rb.linearVelocity.y - (GetDeccelerationRateWithGravity(airMoveData) * Time.fixedDeltaTime);
-
-                    if (decceleratedYValue < 0)
-                        decceleratedYValue = 0;
-
-                    sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, decceleratedYValue, 0);
-                }
-
-                //Negative Decceleration
-                else if (sceneObject.Rb.linearVelocity.y < 0)
-                {
-                    float decceleratedYValue = sceneObject.Rb.linearVelocity.y + (GetDeccelerationRateWithGravity(airMoveData) * Time.fixedDeltaTime);
-
-                    if (decceleratedYValue > 0)
-                        decceleratedYValue = 0;
-
-                    sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, decceleratedYValue, 0);
-                }
-            }
-        }
-
-
-        /// <returns>
-        /// Return the Y axis decceleration rate with gravity applied <br/>
-        /// The decceleration rate from the collection is what the sceneObject should deccelerate by so adjustments have to be made to account for gravity
-        /// </returns>
-        /// <exception cref="NullReferenceException"></exception>
-        private float GetDeccelerationRateWithGravity(AirMoveData airMoveData)
-        {            
-            if (sceneObject.Rb.linearVelocity.y > 0)
-                return airMoveData.AerialYDeceleration - Physics.gravity.y;
-            else
-                return airMoveData.AerialYDeceleration + Physics.gravity.y;        
-        }
-
-
-        /// <summary>
-        /// Apply additional downward velocity ontop of gravity based on <paramref name="airMoveData"/>
-        /// </summary>
-        private void ApplyGravityScaler(AirMoveData airMoveData)
-        {
-            sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, sceneObject.Rb.linearVelocity.y + (Physics.gravity.y * airMoveData.AdditionalGravityScaler * Time.fixedDeltaTime), 0);
         }
 
         #endregion
@@ -736,7 +621,7 @@ namespace Game.SceneObjects.Movement
 
         #region Jump Movement
 
-        private void UpdateJumpMovement(MovementCollection curMovementCollection)
+        private void UpdateJumpMovement(MovementInputCollection curMovementCollection)
         {
             //Grounded Jump
             if (IsJumpMovementAllowed() && TrySetCurrentMoveState(MovementType.Jump))
@@ -753,10 +638,10 @@ namespace Game.SceneObjects.Movement
         /// <summary>
         /// Velocity applied to rb based on how long the jump button has been held
         /// </summary>
-        private void UpdateGroundedJumpVelocity(JumpData jumpData)
+        private void UpdateGroundedJumpVelocity(JumpInputData jumpData)
         {
             float jumpVelocity = Mathf.Lerp(jumpData.MinJumpVelocity, jumpData.MaxJumpVelocity, curJumpFrameCount / MAXJUMPFRAMECOUNT);
-            sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, jumpVelocity, 0);
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpVelocity, 0);
 
             curJumpFrameCount++;
         }
@@ -766,12 +651,12 @@ namespace Game.SceneObjects.Movement
         /// <summary>
         /// Velocity applied to rb based on jumpInfluence
         /// </summary>
-        private void UpdateAerialJumpVelocity(AirJumpData airJumpData)
+        private void UpdateAerialJumpVelocity(AirJumpInputData airJumpData)
         {
             CheckTurnAround();
 
             float jumpVelocity = Mathf.Lerp(airJumpData.MinAirJumpVelocity, airJumpData.MaxAirJumpVelocity, curJumpFrameCount / MAXJUMPFRAMECOUNT);
-            sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, jumpVelocity, 0);
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpVelocity, 0);
 
             curJumpFrameCount++;
         }
@@ -784,9 +669,9 @@ namespace Game.SceneObjects.Movement
         /// <summary>
         /// Update movement while climbing
         /// </summary>        
-        private void UpdateClimbMovement(MovementCollection curMovementCollection)
+        private void UpdateClimbMovement(MovementInputCollection curMovementCollection)
         {
-            if (IsClimbMovementAllowed(curMovementCollection) && (curMoveState == MovementType.Climb || TrySetCurrentMoveState(MovementType.Climb)))
+            if (IsClimbMovementAllowed(curMovementCollection) && (curMoveInputState == MovementType.Climb || TrySetCurrentMoveState(MovementType.Climb)))
             {
                 CheckTurnAround();
 
@@ -801,14 +686,14 @@ namespace Game.SceneObjects.Movement
                 else if (verticalInfluence < 0)
                     climbYVelocity = verticalInfluence * curMovementCollection.ClimbData.ClimbDownYVelocity;
 
-                sceneObject.Rb.linearVelocity = new Vector3(climbXVelocity, climbYVelocity, 0);
+                rb.linearVelocity = new Vector3(climbXVelocity, climbYVelocity, 0);
             }
 
             else
             {
-                sceneObject.Rb.linearVelocity = new Vector3(0, 0, 0);
+                rb.linearVelocity = new Vector3(0, 0, 0);
 
-                if (curMoveState != MovementType.Null)
+                if (curMoveInputState != MovementType.Null)
                     SetCurrentMoveState(MovementType.Null);
             }
         }

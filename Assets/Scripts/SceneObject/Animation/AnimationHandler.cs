@@ -136,8 +136,8 @@ namespace Game.SceneObjects.Animation
         /// </summary>
         private void SetMovementAnimations()
         {
-            if (sceneObject.MovementInputHandler.TryGetCurrentMovementCollection(out MovementCollection curMovementCollection))
-                animationGraph.SetMovementAnimations(curMovementCollection);
+            if (sceneObject.MovementInputHandler != null)
+                animationGraph.SetMovementAnimations(sceneObject.MovementInputHandler.CurrentMovementCollection);
         }
 
 
@@ -210,11 +210,8 @@ namespace Game.SceneObjects.Animation
                 //NOTE: 
                 // If weapon or other enhancements improve animation speed, add to multiplier here
 
-                if (sceneObject.MovementInputHandler.TryGetCurrentMovementCollection(out MovementCollection moveCollection))
-                {
-                    if (moveCollection.TryGetMovementByType(movementState, out MovementData requestedMovementData))
-                        animationGraph.ChangeMovementStateInput(movementState, requestedMovementData.AnimationSpeedMultiplier);
-                }
+                if (sceneObject.MovementInputHandler.CurrentMovementCollection.TryGetMovementByType(movementState, out MovementInputData requestedMovementData))
+                    animationGraph.ChangeMovementStateInput(movementState, requestedMovementData.AnimationSpeedMultiplier);
             }
         }
 
