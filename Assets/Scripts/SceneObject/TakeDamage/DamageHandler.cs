@@ -172,7 +172,7 @@ namespace Game.SceneObjects.Damage
             //}
 
             //else
-            sceneObject.Rb.linearVelocity = launchVelocity; 
+            sceneObject.Rb.velocity = launchVelocity; 
         }
 
         #endregion
@@ -227,7 +227,7 @@ namespace Game.SceneObjects.Damage
 
             Vector3 bounceVelocity = Vector3.Reflect(velocity, averageNormal) * bounceDegrade;
 
-            sceneObject.Rb.linearVelocity = bounceVelocity;
+            sceneObject.Rb.velocity = bounceVelocity;
         }        
 
         #endregion
@@ -260,7 +260,7 @@ namespace Game.SceneObjects.Damage
                 hitStunTimer -= Time.fixedDeltaTime;
 
                 //Bounce
-                CalculateBounce(sceneObject.Rb.linearVelocity);
+                CalculateBounce(sceneObject.Rb.velocity);
 
                 if (hitStunState == HitStunState.Start)
                 {                    

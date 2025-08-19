@@ -22,7 +22,7 @@ public class Rock : SceneObject
     {
         base.FixedUpdate();
 
-        if (Rb.linearVelocity.x != 0)
+        if (Rb.velocity.x != 0)
             damageCollider.Enable(HandleCollision);
         else
             damageCollider.Disable();

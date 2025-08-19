@@ -9,12 +9,7 @@ using Game.SceneObjects.Movement;
 using Game.UI.SceneObject;
 using System;
 using System.Collections.Generic;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.SceneManagement;
-using static Unity.Cinemachine.IInputAxisOwner.AxisDescriptor;
-using static UnityEngine.UI.Image;
 
 namespace Game.SceneObjects
 {
@@ -96,7 +91,7 @@ namespace Game.SceneObjects
             curGroundedState = GroundedState.Grounded;
             curClimbState = ClimbState.Unavailable;
 
-            Rb.linearDamping = 0;
+            Rb.drag = 0;
 
             GetHandlers();
             SetUpHandlers();
@@ -193,7 +188,7 @@ namespace Game.SceneObjects
                 //Reset vertical velocity if the sceneObject is grounded
                 //Check for hitstun was to resolve an issue where the where the damage velocity in the y direction would be set to 0
                 if (ActionStateHandler.CurActionState != ActionState.HitStun)
-                    Rb.linearVelocity = new Vector3(Rb.linearVelocity.x, 0f, Rb.linearVelocity.z);
+                    Rb.velocity = new Vector3(Rb.velocity.x, 0f, Rb.velocity.z);
                 
                 if (curGroundedState != GroundedState.Grounded)
                 {
@@ -272,7 +267,7 @@ namespace Game.SceneObjects
                             return;
 
                         // Moving upwards
-                        if (ActionStateHandler.CurActionState == ActionState.Moving && Rb.linearVelocity.y > 0)
+                        if (ActionStateHandler.CurActionState == ActionState.Moving && Rb.velocity.y > 0)
                             return;
 
                         // Attacking
@@ -295,7 +290,7 @@ namespace Game.SceneObjects
                     // Jump action performed
                     else if (ActionStateHandler.CurActionState == ActionState.Moving)
                     {
-                        if ((MovementInputHandler.CurMoveInputState == MovementType.Jump || MovementInputHandler.CurMoveInputState == MovementType.AirJump) && Rb.linearVelocity.y > 0)
+                        if ((MovementInputHandler.CurMoveInputState == MovementType.Jump || MovementInputHandler.CurMoveInputState == MovementType.AirJump) && Rb.velocity.y > 0)
                             SetClimbState(ClimbState.Available);
                     }
 
@@ -320,7 +315,7 @@ namespace Game.SceneObjects
 
             if (curClimbState == ClimbState.Climbing)
             {
-                Rb.linearVelocity = Vector3.zero;
+                Rb.velocity = Vector3.zero;
                 Rb.useGravity = false;
             }
 

@@ -38,7 +38,7 @@ namespace Game.SceneObject.Movement
         {
             get 
             {
-                if (rb.linearVelocity.y > 0)
+                if (rb.velocity.y > 0)
                     return (baseMovementData.AerialDecceleration / rb.mass) - Physics.gravity.y * Time.fixedDeltaTime;
                 else
                     return (baseMovementData.AerialDecceleration / rb.mass) + Physics.gravity.y * Time.fixedDeltaTime;
@@ -119,25 +119,25 @@ namespace Game.SceneObject.Movement
         private void DeccelerateGroundedMovement()
         {
             //Positive Decceleration
-            if (rb.linearVelocity.x > 0)
+            if (rb.velocity.x > 0)
             {
-                float decceleratedXValue = rb.linearVelocity.x - GroundedDeccelerationRate;
+                float decceleratedXValue = rb.velocity.x - GroundedDeccelerationRate;
 
                 if (decceleratedXValue < 0)
                     decceleratedXValue = 0;
 
-                rb.linearVelocity = new Vector3(decceleratedXValue, rb.linearVelocity.y, 0);
+                rb.velocity = new Vector3(decceleratedXValue, rb.velocity.y, 0);
             }
 
             //Negative Decceleration
-            else if (rb.linearVelocity.x < 0)
+            else if (rb.velocity.x < 0)
             {
-                float decceleratedXValue = rb.linearVelocity.x + GroundedDeccelerationRate;
+                float decceleratedXValue = rb.velocity.x + GroundedDeccelerationRate;
 
                 if (decceleratedXValue > 0)
                     decceleratedXValue = 0;
 
-                rb.linearVelocity = new Vector3(decceleratedXValue, rb.linearVelocity.y, 0);
+                rb.velocity = new Vector3(decceleratedXValue, rb.velocity.y, 0);
             }
         }
 
@@ -147,28 +147,28 @@ namespace Game.SceneObject.Movement
         private void DeccelerateAerialXMovement()
         {
             //Only deccelerate if velocity is greater than max velocity
-            if (Mathf.Abs(rb.linearVelocity.x) > AerialMaxXVelocity)
+            if (Mathf.Abs(rb.velocity.x) > AerialMaxXVelocity)
             {
                 //Positive Decceleration
-                if (rb.linearVelocity.x > 0)
+                if (rb.velocity.x > 0)
                 {
-                    float decceleratedXValue = rb.linearVelocity.x - AerialXDeccelerationRate;
+                    float decceleratedXValue = rb.velocity.x - AerialXDeccelerationRate;
 
                     if (decceleratedXValue < 0)
                         decceleratedXValue = 0;
 
-                    rb.linearVelocity = new Vector3(decceleratedXValue, rb.linearVelocity.y, 0);
+                    rb.velocity = new Vector3(decceleratedXValue, rb.velocity.y, 0);
                 }
 
                 //Negative Decceleration
-                else if (rb.linearVelocity.x < 0)
+                else if (rb.velocity.x < 0)
                 {
-                    float decceleratedXValue = rb.linearVelocity.x + AerialXDeccelerationRate;
+                    float decceleratedXValue = rb.velocity.x + AerialXDeccelerationRate;
 
                     if (decceleratedXValue > 0)
                         decceleratedXValue = 0;
 
-                    rb.linearVelocity = new Vector3(decceleratedXValue, rb.linearVelocity.y, 0);
+                    rb.velocity = new Vector3(decceleratedXValue, rb.velocity.y, 0);
                 }
             }
         }
@@ -178,28 +178,28 @@ namespace Game.SceneObject.Movement
         /// </summary>
         private void DeccelerateAerialYMovement()
         {
-            if (Mathf.Abs(rb.linearVelocity.y) > AerialMaxYVelocity)
+            if (Mathf.Abs(rb.velocity.y) > AerialMaxYVelocity)
             {
                 //Positive Decceleration
-                if (rb.linearVelocity.y > 0)
+                if (rb.velocity.y > 0)
                 {
-                    float decceleratedYValue = rb.linearVelocity.y - AerialYDeccelerationRate;
+                    float decceleratedYValue = rb.velocity.y - AerialYDeccelerationRate;
 
                     if (decceleratedYValue < 0)
                         decceleratedYValue = 0;
 
-                    rb.linearVelocity = new Vector3(rb.linearVelocity.x, decceleratedYValue, 0);
+                    rb.velocity = new Vector3(rb.velocity.x, decceleratedYValue, 0);
                 }
 
                 //Negative Decceleration
-                else if (rb.linearVelocity.y < 0)
+                else if (rb.velocity.y < 0)
                 {
-                    float decceleratedYValue = rb.linearVelocity.y + AerialYDeccelerationRate;
+                    float decceleratedYValue = rb.velocity.y + AerialYDeccelerationRate;
 
                     if (decceleratedYValue > 0)
                         decceleratedYValue = 0;
 
-                    rb.linearVelocity = new Vector3(rb.linearVelocity.x, decceleratedYValue, 0);
+                    rb.velocity = new Vector3(rb.velocity.x, decceleratedYValue, 0);
                 }
             }
         }
@@ -209,7 +209,7 @@ namespace Game.SceneObject.Movement
         /// </summary>
         private void ApplyGravityScaler()
         {
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, rb.linearVelocity.y + (Physics.gravity.y * GravityScaler * Time.fixedDeltaTime), 0);
+            rb.velocity = new Vector3(rb.velocity.x, rb.velocity.y + (Physics.gravity.y * GravityScaler * Time.fixedDeltaTime), 0);
         }
     }
 }

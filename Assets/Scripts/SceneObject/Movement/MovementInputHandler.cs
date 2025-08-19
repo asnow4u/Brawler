@@ -31,9 +31,6 @@ namespace Game.SceneObjects.Movement
         [SerializeField] private float curJumpFrameCount;
         [SerializeField] private int airJumpsPerformed;
 
-        //Attack Properties
-        private bool deceleratingForAttack;
-
         //Movement Collection (NOTE: BaseMovementCollection is Required for all sceneObjects. Base handles the case where a sceneObject dosent use a weapon but moves)    
         [Header("Collection")]
         [SerializeField] private MovementInputCollection baseMovementCollection;
@@ -159,15 +156,6 @@ namespace Game.SceneObjects.Movement
         {
             if (currentMovementCollection.TryGetMovementFromAnimation(clip, out _))
                 SetCurrentMoveState(MovementType.Null);
-
-            //End movement after attack
-            if (deceleratingForAttack && sceneObject.AttackInputHandler.TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
-            {
-                if (curAttackCollection.TryGetAttackByAnimation(clip, out _))
-                    SetCurrentMoveState(MovementType.Null);
-
-                deceleratingForAttack = false;
-            }
         }
 
         #endregion
@@ -262,13 +250,13 @@ namespace Game.SceneObjects.Movement
             if (movementHandler.IsFacingRightDirection && horizontalInfluence < 0)
             {
                 movementHandler.TurnAround();
-                rb.linearVelocity = new Vector3(rb.linearVelocity.x * -1, rb.linearVelocity.y, 0);                
+                rb.velocity = new Vector3(rb.velocity.x * -1, rb.velocity.y, 0);                
             }
 
             else if (!movementHandler.IsFacingRightDirection && horizontalInfluence > 0)
             {
                 movementHandler.TurnAround();
-                rb.linearVelocity = new Vector3(rb.linearVelocity.x * -1, rb.linearVelocity.y, 0);
+                rb.velocity = new Vector3(rb.velocity.x * -1, rb.velocity.y, 0);
             }
         }
 
@@ -462,18 +450,6 @@ namespace Game.SceneObjects.Movement
             return true;
         }
 
-        //NOTE: This method should be removed.
-        // When an attack state is set the move state should be set to null
-        // MovementHandler should handle the decceleration for the attack
-        /// <summary>
-        /// Movement to be performed while attacking on the ground
-        /// </summary>
-        //private void UpdateGroundedAttackingMovement()
-        //{            
-        //    UpdateGroundedDecceleration(currentMovementCollection.GetGroundedAttackDecleration());
-        //    deceleratingForAttack = true;
-        //}       
-
         /// <summary>
         /// Accelerate on the ground by an acceleration value to a max velocity from <see cref="currentMovementCollection"/>
         /// </summary>
@@ -486,13 +462,13 @@ namespace Game.SceneObjects.Movement
 
             float targetXVelocity = maxVelocity * Mathf.Abs(horizontalInfluence);
 
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x + (horizontalInfluence * acceleration * Time.fixedDeltaTime), rb.linearVelocity.y, 0);
+            rb.velocity = new Vector3(rb.velocity.x + (horizontalInfluence * acceleration * Time.fixedDeltaTime), rb.velocity.y, 0);
 
-            if (rb.linearVelocity.x > targetXVelocity)
-                rb.linearVelocity = new Vector3(targetXVelocity, rb.linearVelocity.y, 0);
+            if (rb.velocity.x > targetXVelocity)
+                rb.velocity = new Vector3(targetXVelocity, rb.velocity.y, 0);
 
-            else if (rb.linearVelocity.x < -targetXVelocity)
-                rb.linearVelocity = new Vector3(-targetXVelocity, rb.linearVelocity.y, 0);
+            else if (rb.velocity.x < -targetXVelocity)
+                rb.velocity = new Vector3(-targetXVelocity, rb.velocity.y, 0);
         }
 
         #endregion
@@ -580,23 +556,23 @@ namespace Game.SceneObjects.Movement
             //Positive Acceleration
             if (horizontalInfluence > 0)
             {
-                float acceleratedXValue = rb.linearVelocity.x + (acceleration * Time.fixedDeltaTime);
+                float acceleratedXValue = rb.velocity.x + (acceleration * Time.fixedDeltaTime);
 
                 if (acceleratedXValue > maxXVelocity)
                     acceleratedXValue = maxXVelocity;
 
-                rb.linearVelocity = new Vector3(acceleratedXValue, rb.linearVelocity.y, 0);
+                rb.velocity = new Vector3(acceleratedXValue, rb.velocity.y, 0);
             }
 
             //Negative Acceleration
             else if (horizontalInfluence < 0)
             {
-                float acceleratedXValue = rb.linearVelocity.x - (acceleration * Time.fixedDeltaTime);
+                float acceleratedXValue = rb.velocity.x - (acceleration * Time.fixedDeltaTime);
 
                 if (acceleratedXValue < -maxXVelocity)
                     acceleratedXValue = -maxXVelocity;    
 
-                rb.linearVelocity = new Vector3(acceleratedXValue, rb.linearVelocity.y, 0);
+                rb.velocity = new Vector3(acceleratedXValue, rb.velocity.y, 0);
             }            
         }
 
@@ -610,12 +586,12 @@ namespace Game.SceneObjects.Movement
 
             if (verticalInfluence < 0)
             {
-                float acceleratedYValue = rb.linearVelocity.y - (acceleration * Time.fixedDeltaTime);
+                float acceleratedYValue = rb.velocity.y - (acceleration * Time.fixedDeltaTime);
 
                 if (acceleratedYValue < -maxYVelocity)
                     acceleratedYValue = -maxYVelocity;
 
-                rb.linearVelocity = new Vector3(rb.linearVelocity.x, acceleratedYValue, 0);
+                rb.velocity = new Vector3(rb.velocity.x, acceleratedYValue, 0);
             }
         }
 
@@ -644,7 +620,7 @@ namespace Game.SceneObjects.Movement
         private void UpdateGroundedJumpVelocity(JumpInputData jumpData)
         {
             float jumpVelocity = Mathf.Lerp(jumpData.MinJumpVelocity, jumpData.MaxJumpVelocity, curJumpFrameCount / MAXJUMPFRAMECOUNT);
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpVelocity, 0);
+            rb.velocity = new Vector3(rb.velocity.x, jumpVelocity, 0);
 
             curJumpFrameCount++;
         }
@@ -659,7 +635,7 @@ namespace Game.SceneObjects.Movement
             CheckTurnAround();
 
             float jumpVelocity = Mathf.Lerp(airJumpData.MinAirJumpVelocity, airJumpData.MaxAirJumpVelocity, curJumpFrameCount / MAXJUMPFRAMECOUNT);
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpVelocity, 0);
+            rb.velocity = new Vector3(rb.velocity.x, jumpVelocity, 0);
 
             curJumpFrameCount++;
         }
@@ -689,12 +665,12 @@ namespace Game.SceneObjects.Movement
                 else if (verticalInfluence < 0)
                     climbYVelocity = verticalInfluence * curMovementCollection.ClimbData.ClimbDownYVelocity;
 
-                rb.linearVelocity = new Vector3(climbXVelocity, climbYVelocity, 0);
+                rb.velocity = new Vector3(climbXVelocity, climbYVelocity, 0);
             }
 
             else
             {
-                rb.linearVelocity = new Vector3(0, 0, 0);
+                rb.velocity = new Vector3(0, 0, 0);
 
                 if (curMoveInputState != MovementType.Null)
                     SetCurrentMoveState(MovementType.Null);
