@@ -2,6 +2,7 @@
 using Game.SceneObjects.ActionStates;
 using Game.SceneObjects.Movement;
 using Game.UI.SceneObject;
+using System;
 using UnityEngine;
 
 namespace Game.SceneObject.Movement
@@ -12,6 +13,8 @@ namespace Game.SceneObject.Movement
 
         private Rigidbody rb => sceneObject.Rb;
         private MovementInputHandler inputHandler => sceneObject.MovementInputHandler;
+
+        public event Action MovementStoppedEvent;
 
         public override void Setup()
         {
@@ -87,7 +90,7 @@ namespace Game.SceneObject.Movement
         {
             //Grounded
             if (sceneObject.CurGroundedState == GroundedState.Grounded)
-            {
+            {                
                 if (inputHandler == null || !inputHandler.UpdateGroundedMovement())
                     DeccelerateGroundedMovement();
             }
@@ -139,6 +142,9 @@ namespace Game.SceneObject.Movement
 
                 rb.velocity = new Vector3(decceleratedXValue, rb.velocity.y, 0);
             }
+
+            if (rb.velocity.x == 0)
+                MovementStoppedEvent?.Invoke();
         }
 
         /// <summary>

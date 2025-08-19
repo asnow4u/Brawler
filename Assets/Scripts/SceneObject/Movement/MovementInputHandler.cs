@@ -90,6 +90,7 @@ namespace Game.SceneObjects.Movement
         {
             sceneObject.GroundedStateChangedEvent += OnGroundedStateChanged;
             sceneObject.ClimbStateChangedEvent += OnClimbStateChanged;
+            sceneObject.MovementHandler.MovementStoppedEvent += OnMovementStopped;
             sceneObject.AnimationHandler.AnimationEndedEvent += OnAnimationEnded;
         }
 
@@ -145,6 +146,15 @@ namespace Game.SceneObjects.Movement
             //Reset jumps
             if (climbState == ClimbState.Climbing)
                 airJumpsPerformed = 0;    
+        }
+
+        /// <summary>
+        /// Handle when movement has stopped
+        /// </summary>
+        private void OnMovementStopped()
+        {
+            if (CurMoveInputState != MovementType.Null)
+                SetCurrentMoveState(MovementType.Null);
         }
 
 
@@ -433,11 +443,7 @@ namespace Game.SceneObjects.Movement
         /// Update movement on the ground based on <see cref="horizontalInfluence"/>, <see cref="verticalInfluence"/> and <see cref="jumpInfluence"/>
         /// </summary>
         public bool UpdateGroundedMovement()
-        {
-            ////Attacking Movement
-            //if (sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking)
-            //    UpdateGroundedAttackingMovement();
-
+        {            
             //Check if moving into a wall
             if ((horizontalInfluence > 0 && IsAgainstRightWall()) || (horizontalInfluence < 0 && IsAgainstLeftWall()))
                 TrySetCurrentMoveState(MovementType.WallLean);
