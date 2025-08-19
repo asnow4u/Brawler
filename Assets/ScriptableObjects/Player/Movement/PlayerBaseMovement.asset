@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PlayerBaseMovement
   m_EditorClassIdentifier: 
   GroundedMaxVelocity: 10
-  GroundedDecceleration: 50
+  GroundedDecceleration: 5000
   AerialMaxXVelocity: 10
   AerialMaxYVelocity: 10
   AerialDecceleration: 25
