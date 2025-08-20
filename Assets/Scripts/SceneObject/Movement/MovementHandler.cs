@@ -90,30 +90,40 @@ namespace Game.SceneObject.Movement
         {
             //Grounded
             if (sceneObject.CurGroundedState == GroundedState.Grounded)
-            {                
-                if (inputHandler == null || !inputHandler.UpdateGroundedMovement())
+            {
+                if (inputHandler != null)
+                    inputHandler.UpdateGroundedMovement(DeccelerateGroundedMovement);
+                else
                     DeccelerateGroundedMovement();
             }
 
             //Aerial
             else if (sceneObject.CurGroundedState == GroundedState.Airborn)
             {
-                if (inputHandler == null || !inputHandler.UpdateAerialXMovement())
-                    DeccelerateAerialXMovement();
+                if (inputHandler != null)
+                {
+                    inputHandler.UpdateAerialXMovement(DeccelerateAerialXMovement);
+                    inputHandler.UpdateAerialYMovement(DeccelerateAerialYMovement);
+                }
 
-                if (inputHandler == null || !inputHandler.UpdateAerialYMovement())
+                else
+                {
+                    DeccelerateAerialXMovement();
                     DeccelerateAerialYMovement();
+                }
 
                 //Gravity
                 ApplyGravityScaler();
             }
 
             //CLimbing
-            //else if (curGroundedState == GroundedState.Climbing)
-            //{
-            //}
-
-            //TODO: Update Climb State
+            else if (sceneObject.CurGroundedState == GroundedState.Climbing)
+            {
+                if (inputHandler != null)
+                    inputHandler.UpdateClimbMovement();
+                else
+                    Debug.LogWarning("How did you start climbing without a MovementInputHandler?");
+            }
         }
 
         /// <summary>

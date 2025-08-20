@@ -390,7 +390,7 @@ namespace Game.SceneObjects.Movement
         /// <summary>
         /// Determine if jump movement is allowed based on current movement state
         /// </summary>
-        private bool IsJumpMovementAllowed()
+        private bool IsGroundedJumpMovementAllowed()
         {            
             if (groundedJumpInfluence == 0)
                 return false;
@@ -405,7 +405,7 @@ namespace Game.SceneObjects.Movement
         /// <summary>
         /// Determine if aerial jump movement is allowed based on current movement state
         /// </summary>
-        private bool IsAerialJumpMovementAllowed(AirJumpInputData airJumpData)
+        private bool IsAerialJumpMovementAllowed()
         {
             if (aerialJumpInfluence == 0)
                 return false;
@@ -413,7 +413,7 @@ namespace Game.SceneObjects.Movement
             if (curJumpFrameCount >= MAXJUMPFRAMECOUNT)
                 return false;
 
-            if (airJumpsPerformed > airJumpData.JumpsAvailable)
+            if (airJumpsPerformed > currentMovementCollection.AirJumpData.JumpsAvailable)
                 return false;
 
             return true;
@@ -423,9 +423,12 @@ namespace Game.SceneObjects.Movement
         /// <summary>
         /// Determine if climb movement is allowed to transition to based on movement state
         /// </summary>
-        private bool IsClimbMovementAllowed(MovementInputCollection curMovementCollection)
+        private bool IsClimbMovementAllowed()
         {
-            if (curMovementCollection.ClimbData == null)
+            if (currentMovementCollection.ClimbData == null)
+                return false;
+
+            if (curMoveInputState == MovementType.Jump || curMoveInputState == MovementType.AirJump)
                 return false;
 
             if (verticalInfluence == 0 && horizontalInfluence == 0)
@@ -442,18 +445,22 @@ namespace Game.SceneObjects.Movement
         /// <summary>
         /// Update movement on the ground based on <see cref="horizontalInfluence"/>, <see cref="verticalInfluence"/> and <see cref="jumpInfluence"/>
         /// </summary>
-        public bool UpdateGroundedMovement()
-        {            
-            //Check if moving into a wall
+        public void UpdateGroundedMovement(Action DeccerationCallback)
+        {
+            //Wall Lean
             if ((horizontalInfluence > 0 && IsAgainstRightWall()) || (horizontalInfluence < 0 && IsAgainstLeftWall()))
                 TrySetCurrentMoveState(MovementType.WallLean);
 
-            //Horizontal Movement
-            else if (!IsHorizontalMovementAllowed() || !TrySetCurrentMoveState(MovementType.Move))
-                return false;
-            
-            UpdateGroundedAcceleration();
-            return true;
+            //Accelerate
+            else if (IsHorizontalMovementAllowed() && TrySetCurrentMoveState(MovementType.Move))
+                UpdateGroundedAcceleration();
+            //Deccelerate
+            else
+                DeccerationCallback();
+
+            //Jump
+            if (IsGroundedJumpMovementAllowed() && TrySetCurrentMoveState(MovementType.Jump))
+                UpdateGroundedJumpVelocity();
         }
 
         /// <summary>
@@ -475,6 +482,20 @@ namespace Game.SceneObjects.Movement
 
             else if (rb.velocity.x < -targetXVelocity)
                 rb.velocity = new Vector3(-targetXVelocity, rb.velocity.y, 0);
+        }
+
+        /// <summary>
+        /// Velocity applied to rb based on how long the jump button has been held
+        /// </summary>
+        private void UpdateGroundedJumpVelocity()
+        {
+            float minVelocity = currentMovementCollection.JumpData.MinJumpVelocity;
+            float maxVelocity = currentMovementCollection.JumpData.MaxJumpVelocity;
+
+            float jumpVelocity = Mathf.Lerp(minVelocity, maxVelocity, curJumpFrameCount / MAXJUMPFRAMECOUNT);
+            rb.velocity = new Vector3(rb.velocity.x, jumpVelocity, 0);
+
+            curJumpFrameCount++;
         }
 
         #endregion
@@ -524,30 +545,32 @@ namespace Game.SceneObjects.Movement
         //    if (sceneObject.Rb.linearVelocity.y < targetYVelocity)
         //        sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, targetYVelocity, 0);
         //}
-
+        
 
         /// <summary>
         /// Update horizontal movement in the air
         /// </summary>
-        public bool UpdateAerialXMovement()
+        public void UpdateAerialXMovement(Action DeccelerationCallback)
         {
-            if (!IsHorizontalMovementAllowed() || !TrySetCurrentMoveState(MovementType.AirMove))
-                return false;
-            
-            AerialXAccelerate();            
-            return true;
+            if (IsHorizontalMovementAllowed() || TrySetCurrentMoveState(MovementType.AirMove))
+                AerialXAccelerate();
+            else
+                DeccelerationCallback();
         }
 
         /// <summary>
         /// Update vertical movement in the air
         /// </summary>
-        public bool UpdateAerialYMovement()
+        public void UpdateAerialYMovement(Action DeccelerationCallback)
         {
-            if (!IsVerticalMovementAllowed() || !TrySetCurrentMoveState(MovementType.AirMove))
-                return false;
+            if (IsVerticalMovementAllowed() || TrySetCurrentMoveState(MovementType.AirMove))
+                AerialYAccelerate();
+            else
+                DeccelerationCallback();
 
-            AerialYAccelerate();
-            return true;
+            if (IsAerialJumpMovementAllowed() && TrySetCurrentMoveState(MovementType.AirJump))
+                UpdateAerialJumpVelocity();
+
         }
 
 
@@ -601,46 +624,17 @@ namespace Game.SceneObjects.Movement
             }
         }
 
-        #endregion
-
-
-        #region Jump Movement
-
-        private void UpdateJumpMovement(MovementInputCollection curMovementCollection)
-        {
-            //Grounded Jump
-            if (IsJumpMovementAllowed() && TrySetCurrentMoveState(MovementType.Jump))
-                UpdateGroundedJumpVelocity(curMovementCollection.JumpData);
-
-            //Aerial Jump
-            else if (IsAerialJumpMovementAllowed(curMovementCollection.AirJumpData) && TrySetCurrentMoveState(MovementType.AirJump))
-                UpdateAerialJumpVelocity(curMovementCollection.AirJumpData);
-
-        }
-
-
-
-        /// <summary>
-        /// Velocity applied to rb based on how long the jump button has been held
-        /// </summary>
-        private void UpdateGroundedJumpVelocity(JumpInputData jumpData)
-        {
-            float jumpVelocity = Mathf.Lerp(jumpData.MinJumpVelocity, jumpData.MaxJumpVelocity, curJumpFrameCount / MAXJUMPFRAMECOUNT);
-            rb.velocity = new Vector3(rb.velocity.x, jumpVelocity, 0);
-
-            curJumpFrameCount++;
-        }
-
-
-
         /// <summary>
         /// Velocity applied to rb based on jumpInfluence
         /// </summary>
-        private void UpdateAerialJumpVelocity(AirJumpInputData airJumpData)
+        private void UpdateAerialJumpVelocity()
         {
+            float minVelocity = currentMovementCollection.AirJumpData.MinAirJumpVelocity;
+            float maxVelocity = currentMovementCollection.AirJumpData.MaxAirJumpVelocity;
+
             CheckTurnAround();
 
-            float jumpVelocity = Mathf.Lerp(airJumpData.MinAirJumpVelocity, airJumpData.MaxAirJumpVelocity, curJumpFrameCount / MAXJUMPFRAMECOUNT);
+            float jumpVelocity = Mathf.Lerp(minVelocity, maxVelocity, curJumpFrameCount / MAXJUMPFRAMECOUNT);
             rb.velocity = new Vector3(rb.velocity.x, jumpVelocity, 0);
 
             curJumpFrameCount++;
@@ -654,22 +648,22 @@ namespace Game.SceneObjects.Movement
         /// <summary>
         /// Update movement while climbing
         /// </summary>        
-        private void UpdateClimbMovement(MovementInputCollection curMovementCollection)
+        public void UpdateClimbMovement()
         {
-            if (IsClimbMovementAllowed(curMovementCollection) && (curMoveInputState == MovementType.Climb || TrySetCurrentMoveState(MovementType.Climb)))
+            if (IsClimbMovementAllowed() && TrySetCurrentMoveState(MovementType.Climb))
             {
                 CheckTurnAround();
 
-                float climbXVelocity = horizontalInfluence * curMovementCollection.ClimbData.ClimbXVelocity;
+                float climbXVelocity = horizontalInfluence * currentMovementCollection.ClimbData.ClimbXVelocity;
                 float climbYVelocity = 0;
 
                 //Climb Up
                 if (verticalInfluence > 0)
-                    climbYVelocity = verticalInfluence * curMovementCollection.ClimbData.ClimbUpYVelocity;
+                    climbYVelocity = verticalInfluence * currentMovementCollection.ClimbData.ClimbUpYVelocity;
 
                 //Climb Down
                 else if (verticalInfluence < 0)
-                    climbYVelocity = verticalInfluence * curMovementCollection.ClimbData.ClimbDownYVelocity;
+                    climbYVelocity = verticalInfluence * currentMovementCollection.ClimbData.ClimbDownYVelocity;
 
                 rb.velocity = new Vector3(climbXVelocity, climbYVelocity, 0);
             }
@@ -681,7 +675,11 @@ namespace Game.SceneObjects.Movement
                 if (curMoveInputState != MovementType.Null)
                     SetCurrentMoveState(MovementType.Null);
             }
-        }
+
+            //Jump
+            if (IsGroundedJumpMovementAllowed() && TrySetCurrentMoveState(MovementType.Jump))
+                UpdateGroundedJumpVelocity();
+        }       
 
         #endregion
     }
