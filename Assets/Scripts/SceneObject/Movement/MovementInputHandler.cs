@@ -90,7 +90,6 @@ namespace Game.SceneObjects.Movement
         {
             sceneObject.GroundedStateChangedEvent += OnGroundedStateChanged;
             sceneObject.ClimbStateChangedEvent += OnClimbStateChanged;
-            sceneObject.MovementHandler.MovementStoppedEvent += OnMovementStopped;
             sceneObject.AnimationHandler.AnimationEndedEvent += OnAnimationEnded;
         }
 
@@ -134,7 +133,6 @@ namespace Game.SceneObjects.Movement
             }
         }
 
-
         /// <summary>
         /// Handle Climb state changed event
         /// </summary>
@@ -149,16 +147,6 @@ namespace Game.SceneObjects.Movement
         }
 
         /// <summary>
-        /// Handle when movement has stopped
-        /// </summary>
-        private void OnMovementStopped()
-        {
-            if (CurMoveInputState != MovementType.Null)
-                SetCurrentMoveState(MovementType.Null);
-        }
-
-
-        /// <summary>
         /// Move Animation Ended reset current moveState
         /// </summary>
         /// <param name="clip"></param>
@@ -169,51 +157,6 @@ namespace Game.SceneObjects.Movement
         }
 
         #endregion
-
-
-        #region Update        
-
-        /// <summary>
-        /// Update movement based on grounded status
-        /// </summary>
-        //public void UpdateMovement()
-        //{                     
-        //        //Climb Movement
-        //        if (sceneObject.CurClimbState == ClimbState.Climbing)
-        //        {
-        //            //NOTE: Hitstun will force sceneObject ClimbState.UnAvailable
-        //            UpdateClimbMovement(curMovementCollection);                   
-        //        }
-
-        //        //Grounded Movement
-        //        else if (sceneObject.CurGroundedState == GroundedState.Grounded)
-        //        {
-        //            if (sceneObject.ActionStateHandler.CurActionState == ActionState.HitStun)
-        //                UpdateGroundedHitStunMovement(curMovementCollection);
-        //            else if (sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking)
-        //                UpdateGroundedAttackingMovement(curMovementCollection);
-        //            else
-        //                UpdateGroundedMovement(curMovementCollection);
-        //        }                
-
-        //        //Aerial
-        //        else if (sceneObject.CurGroundedState == GroundedState.Airborn && sceneObject.CurClimbState != ClimbState.Climbing)
-        //        {
-        //            //Check if the player is in hitstun and update movement accordingly
-        //            if (sceneObject.ActionStateHandler.CurActionState == ActionState.HitStun)
-        //                UpdateAerialHitStunMovement(curMovementCollection.AirMoveData);
-        //            else
-        //                UpdateAerialMovement(curMovementCollection);
-        //        }
-
-        //        //Jump
-        //        if (sceneObject.ActionStateHandler.CurActionState != ActionState.HitStun)
-        //            UpdateJumpMovement(curMovementCollection);
-        //}
-
-        
-        #endregion
-
 
         #region State 
 
@@ -446,7 +389,7 @@ namespace Game.SceneObjects.Movement
         /// Update movement on the ground based on <see cref="horizontalInfluence"/>, <see cref="verticalInfluence"/> and <see cref="jumpInfluence"/>
         /// </summary>
         public void UpdateGroundedMovement(Action DeccerationCallback)
-        {
+        {            
             //Wall Lean
             if ((horizontalInfluence > 0 && IsAgainstRightWall()) || (horizontalInfluence < 0 && IsAgainstLeftWall()))
                 TrySetCurrentMoveState(MovementType.WallLean);
@@ -461,6 +404,10 @@ namespace Game.SceneObjects.Movement
             //Jump
             if (IsGroundedJumpMovementAllowed() && TrySetCurrentMoveState(MovementType.Jump))
                 UpdateGroundedJumpVelocity();
+
+            //Stop
+            if (horizontalInfluence == 0 && curMoveInputState != MovementType.Jump && curMoveInputState != MovementType.Null)
+                SetCurrentMoveState(MovementType.Null);
         }
 
         /// <summary>

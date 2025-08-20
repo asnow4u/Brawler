@@ -14,8 +14,6 @@ namespace Game.SceneObject.Movement
         private Rigidbody rb => sceneObject.Rb;
         private MovementInputHandler inputHandler => sceneObject.MovementInputHandler;
 
-        public event Action MovementStoppedEvent;
-
         public override void Setup()
         {
             if (baseMovementData == null)
@@ -152,9 +150,6 @@ namespace Game.SceneObject.Movement
 
                 rb.velocity = new Vector3(decceleratedXValue, rb.velocity.y, 0);
             }
-
-            if (rb.velocity.x == 0)
-                MovementStoppedEvent?.Invoke();
         }
 
         /// <summary>
