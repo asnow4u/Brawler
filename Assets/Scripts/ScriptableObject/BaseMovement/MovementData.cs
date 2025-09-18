@@ -4,7 +4,7 @@ namespace Game.SceneObjects.Movement
 {
     [CreateAssetMenu(fileName = "BaseMovement", menuName = "ScriptableObjects/Movement/BaseMovement")]
 
-    public class BaseMovementData : ScriptableObject
+    public class MovementData : ScriptableObject
     {
         public float GroundedMaxVelocity;
         public float GroundedDecceleration;

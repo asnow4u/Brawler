@@ -3313,7 +3313,7 @@ MonoBehaviour:
   ObjectType: 1
   curGroundedState: 0
   curClimbState: 0
-  MaxClimbDelay: 0
+  MovementData: {fileID: 11400000, guid: 69dae82533d2b0442900700a31faba44, type: 2}
 --- !u!54 &7457357752304205802
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3418,15 +3418,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 99e0a44c129ecbe4cb1fbf883587990b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  curMoveState: 0
-  MAXJUMPFRAMECOUNT: 10
-  curJumpFrameCount: 0
-  airJumpsPerformed: 0
+  curMoveInputState: 0
   baseMovementCollection: {fileID: 11400000, guid: 0cd95caa845b4a74a96fdf9959df2e89, type: 2}
+  currentMovementCollection: {fileID: 0}
   horizontalInfluence: 0
   verticalInfluence: 0
   groundedJumpInfluence: 0
   aerialJumpInfluence: 0
+  MAXJUMPFRAMECOUNT: 10
+  curJumpFrameCount: 0
+  airJumpsPerformed: 0
 --- !u!114 &7457357752304205801
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3470,6 +3471,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 33a7baaf386692b43a6b09116db63a70, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  WeaponHandler: {fileID: 0}
 --- !u!1 &7969415144874553723
 GameObject:
   m_ObjectHideFlags: 0

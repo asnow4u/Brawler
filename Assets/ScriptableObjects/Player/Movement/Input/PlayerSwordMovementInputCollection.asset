@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6e3abd615fe80924baf309a2a2c07b0f, type: 3}
-  m_Name: BaseMovementInputCollection
+  m_Name: PlayerSwordMovementInputCollection
   m_EditorClassIdentifier: 
   MoveData: {fileID: 11400000, guid: 3e83465d7263f9543945eb8dde4f3c56, type: 2}
   AirMoveData: {fileID: 11400000, guid: 86313632ffc058049bd69c313a22c8a5, type: 2}

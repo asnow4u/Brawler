@@ -1,10 +1,5 @@
-using Game.SceneObject.Movement;
 using Game.SceneObjects.ActionStates;
-using Game.SceneObjects.Attack;
-using Game.SceneObjects.Damage;
 using System;
-using System.ComponentModel;
-using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace Game.SceneObjects.Movement 
@@ -42,11 +37,6 @@ namespace Game.SceneObjects.Movement
         [Range(0, 1)]
         [Tooltip("Target percentage of maxVelocity on X Axis")]
         [SerializeField] private const float hitStunVelocityTargetMultiplier = 0.25f;
-
-        //Movement Properties
-        [Header("Dash Properties")]
-        private const int DASHSTARTFRAMECOUNT = 20;
-        private int curDashFrameCount = 0; //NOTE: Might change to be velocity based instead of frame count
 
         //Jump Properties
         //NOTE: Based on how long the user holds the jump button will determin how high the player jumps
@@ -208,21 +198,13 @@ namespace Game.SceneObjects.Movement
             if (movementHandler.IsFacingRightDirection && horizontalInfluence < 0)
             {
                 movementHandler.TurnAround();
-
-                if (curDashFrameCount < DASHSTARTFRAMECOUNT)
-                    rb.linearVelocity = new Vector3(rb.linearVelocity.x * -1, rb.linearVelocity.y, 0);
-                
-                curDashFrameCount = 0;
+                rb.linearVelocity = new Vector3(rb.linearVelocity.x * -1, rb.linearVelocity.y, 0);
             }
 
             else if (!movementHandler.IsFacingRightDirection && horizontalInfluence > 0)
             {
                 movementHandler.TurnAround();
-                
-                if (curDashFrameCount < DASHSTARTFRAMECOUNT)
-                    rb.linearVelocity = new Vector3(rb.linearVelocity.x * -1, rb.linearVelocity.y, 0);
-
-                curDashFrameCount = 0;
+                rb.linearVelocity = new Vector3(rb.linearVelocity.x * -1, rb.linearVelocity.y, 0);
             }
         }
 
@@ -413,12 +395,7 @@ namespace Game.SceneObjects.Movement
 
             //Deccelerate
             else
-            {
                 DeccerationCallback();
-
-                if (rb.linearVelocity.x == 0)
-                    curDashFrameCount = 0;
-            }
 
             //Jump
             if (IsGroundedJumpMovementAllowed() && TrySetCurrentMoveState(MovementType.Jump))
@@ -448,8 +425,6 @@ namespace Game.SceneObjects.Movement
 
             else if (rb.linearVelocity.x < -targetXVelocity)
                 rb.linearVelocity = new Vector3(-targetXVelocity, rb.linearVelocity.y, 0);
-
-            curDashFrameCount++;
         }
 
         /// <summary>

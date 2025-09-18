@@ -1,6 +1,4 @@
 
-using Game.SceneObject.Movement;
-using Game.SceneObjects;
 using Game.SceneObjects.Movement;
 
 namespace Game.Navigation

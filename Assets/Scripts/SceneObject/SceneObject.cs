@@ -1,5 +1,3 @@
-using Game.Interactable;
-using Game.SceneObject.Movement;
 using Game.SceneObjects.ActionStates;
 using Game.SceneObjects.Animation;
 using Game.SceneObjects.Attack;
@@ -22,7 +20,6 @@ namespace Game.SceneObjects
     [RequireComponent(typeof(Collider))]
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(ActionStateHandler))]
-    [RequireComponent(typeof(MovementHandler))]
     [RequireComponent(typeof(UIHandler))]
     [RequireComponent(typeof(DamageHandler))]
     public abstract class SceneObject : MonoBehaviour
@@ -36,6 +33,9 @@ namespace Game.SceneObjects
 
         [Header("Climb Status")]
         [SerializeField] private ClimbState curClimbState;
+
+        [Header("Movement Settings")]
+        [SerializeField] private MovementData MovementData;
 
         //Logger
         private SceneObjectLogger logger;
@@ -106,9 +106,13 @@ namespace Game.SceneObjects
         protected virtual void GetHandlers()
         {
             ActionStateHandler = GetComponent<ActionStateHandler>();                       
-            MovementHandler = GetComponent<MovementHandler>();
             UIHandler = GetComponent<UIHandler>();            
             DamageHandler = GetComponent<DamageHandler>();
+
+            if (MovementData != null)
+                MovementHandler = new MovementHandler(MovementData, this);
+            else
+                throw new MissingReferenceException("SceneObject Must Contain A MovementData");
         }
 
         /// <summary>
@@ -135,7 +139,6 @@ namespace Game.SceneObjects
         private void SetupHandlerEvents()
         {
             ActionStateHandler.RegisterToEvents();
-            MovementHandler.RegisterToEvents();
             UIHandler.RegisterToEvents();
             DamageHandler.RegisterToEvents();
                         
@@ -501,7 +504,6 @@ namespace Game.SceneObjects
         public void OnDestroy()
         {
             ActionStateHandler.UnregisterToEvents();
-            MovementHandler.UnregisterToEvents();
             UIHandler.UnregisterToEvents();
             DamageHandler.UnregisterToEvents();
 

@@ -1,48 +1,49 @@
 ﻿using Game.SceneObjects;
-using Game.SceneObjects.ActionStates;
 using Game.SceneObjects.Movement;
-using Game.UI.SceneObject;
-using System;
 using UnityEngine;
 
-namespace Game.SceneObject.Movement
+namespace Game.SceneObjects.Movement
 {
-    public class MovementHandler : SceneObjectHandler
+    public class MovementHandler
     {
-        [SerializeField] private BaseMovementData baseMovementData;
-
+        private SceneObject sceneObject;
         private Rigidbody rb => sceneObject.Rb;
         private MovementInputHandler inputHandler => sceneObject.MovementInputHandler;
 
-        public override void Setup()
+        private MovementData movementData;
+
+        public MovementHandler(MovementData movementData, SceneObject sceneObject)
         {
-            if (baseMovementData == null)
-                Debug.LogException(new MissingReferenceException("MovementHandler Must Contain A BaseMovementData"));
+            this.sceneObject = sceneObject;
+            this.movementData = movementData;
         }
 
-        public override void RegisterToEvents()
-        { }
-
-        public override void UnregisterToEvents()
-        { }
+        public void Setup()
+        {
+            if (sceneObject == null)
+                throw new MissingReferenceException("MovementHandelr was not given a reference to a SceneObject");
+            
+            if (movementData == null)
+                throw new MissingReferenceException("MovementHandelr was not given a reference to a MovementData ScriptableObject");
+        }
 
 
         #region Getters
 
-        public float GroundedMaxVelocity => baseMovementData.GroundedMaxVelocity;
-        public float AerialMaxXVelocity => baseMovementData.AerialMaxXVelocity;
-        public float AerialMaxYVelocity => baseMovementData.AerialMaxYVelocity;
-        public float GravityScaler => baseMovementData.GravityScaler;
-        public float GroundedDeccelerationRate => (baseMovementData.GroundedDecceleration / rb.mass) * Time.fixedDeltaTime;
-        public float AerialXDeccelerationRate => (baseMovementData.AerialDecceleration / rb.mass) * Time.fixedDeltaTime;
+        public float GroundedMaxVelocity => movementData.GroundedMaxVelocity;
+        public float AerialMaxXVelocity => movementData.AerialMaxXVelocity;
+        public float AerialMaxYVelocity => movementData.AerialMaxYVelocity;
+        public float GravityScaler => movementData.GravityScaler;
+        public float GroundedDeccelerationRate => (movementData.GroundedDecceleration / rb.mass) * Time.fixedDeltaTime;
+        public float AerialXDeccelerationRate => (movementData.AerialDecceleration / rb.mass) * Time.fixedDeltaTime;
         public float AerialYDeccelerationRate
         {
             get 
             {
                 if (rb.linearVelocity.y > 0)
-                    return (baseMovementData.AerialDecceleration / rb.mass) - Physics.gravity.y * Time.fixedDeltaTime;
+                    return (movementData.AerialDecceleration / rb.mass) - Physics.gravity.y * Time.fixedDeltaTime;
                 else
-                    return (baseMovementData.AerialDecceleration / rb.mass) + Physics.gravity.y * Time.fixedDeltaTime;
+                    return (movementData.AerialDecceleration / rb.mass) + Physics.gravity.y * Time.fixedDeltaTime;
             }
         }
 
@@ -56,8 +57,8 @@ namespace Game.SceneObject.Movement
         {
             get
             {
-                float angleRightDiff = Vector3.Angle(transform.right, Vector3.right);
-                float angleLeftDiff = Vector3.Angle(transform.right, Vector3.left);
+                float angleRightDiff = Vector3.Angle(sceneObject.transform.right, Vector3.right);
+                float angleLeftDiff = Vector3.Angle(sceneObject.transform.right, Vector3.left);
 
                 if (angleRightDiff < angleLeftDiff)
                 {
@@ -74,9 +75,9 @@ namespace Game.SceneObject.Movement
         public void TurnAround()
         {
             if (IsFacingRightDirection)
-                transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
+                sceneObject.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
             else
-                transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
+                sceneObject.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
 
             sceneObject.UIHandler.RotateDisplayText();
         }
