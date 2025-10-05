@@ -10,12 +10,12 @@ namespace Game.SceneObjects.Movement
         private Rigidbody rb => sceneObject.Rb;
         private MovementInputHandler inputHandler => sceneObject.MovementInputHandler;
 
-        private MovementData movementData;
+        private SceneObjectData baseData;
 
-        public MovementHandler(MovementData movementData, SceneObject sceneObject)
+        public MovementHandler(SceneObjectData movementData, SceneObject sceneObject)
         {
             this.sceneObject = sceneObject;
-            this.movementData = movementData;
+            this.baseData = movementData;
         }
 
         public void Setup()
@@ -23,27 +23,27 @@ namespace Game.SceneObjects.Movement
             if (sceneObject == null)
                 throw new MissingReferenceException("MovementHandelr was not given a reference to a SceneObject");
             
-            if (movementData == null)
+            if (baseData == null)
                 throw new MissingReferenceException("MovementHandelr was not given a reference to a MovementData ScriptableObject");
         }
 
 
         #region Getters
 
-        public float GroundedMaxVelocity => movementData.GroundedMaxVelocity;
-        public float AerialMaxXVelocity => movementData.AerialMaxXVelocity;
-        public float AerialMaxYVelocity => movementData.AerialMaxYVelocity;
-        public float GravityScaler => movementData.GravityScaler;
-        public float GroundedDeccelerationRate => (movementData.GroundedDecceleration / rb.mass) * Time.fixedDeltaTime;
-        public float AerialXDeccelerationRate => (movementData.AerialDecceleration / rb.mass) * Time.fixedDeltaTime;
+        public float GroundedMaxVelocity => Mathf.Lerp(baseData.GroundedMaxVelocityMin, baseData.GroundedMaxVelocityMax, 1 - (rb.mass / baseData.MaxMass));
+        public float AerialMaxXVelocity => Mathf.Lerp(baseData.AerialMaxXVelocityMin, baseData.AerialMaxXVelocityMax, 1 - (rb.mass / baseData.MaxMass));
+        public float AerialMaxYVelocity => Mathf.Lerp(baseData.AerialMaxYVelocityMin, baseData.AerialMaxYVelocityMax, 1- (rb.mass / baseData.MaxMass));
+        public float GravityScaler => baseData.GravityScaler;
+        public float GroundedDeccelerationRate => (baseData.GroundedDecceleration / rb.mass) * Time.fixedDeltaTime;
+        public float AerialXDeccelerationRate => (baseData.AerialDecceleration / rb.mass) * Time.fixedDeltaTime;
         public float AerialYDeccelerationRate
         {
             get 
             {
                 if (rb.linearVelocity.y > 0)
-                    return (movementData.AerialDecceleration / rb.mass) - Physics.gravity.y * Time.fixedDeltaTime;
+                    return (baseData.AerialDecceleration / rb.mass) - Physics.gravity.y * Time.fixedDeltaTime;
                 else
-                    return (movementData.AerialDecceleration / rb.mass) + Physics.gravity.y * Time.fixedDeltaTime;
+                    return (baseData.AerialDecceleration / rb.mass) + Physics.gravity.y * Time.fixedDeltaTime;
             }
         }
 

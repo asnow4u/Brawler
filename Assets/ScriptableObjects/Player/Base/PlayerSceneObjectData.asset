@@ -10,11 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3e482dae485748046b5d0bafe4990f98, type: 3}
-  m_Name: PlayerMovementData
+  m_Name: PlayerSceneObjectData
   m_EditorClassIdentifier: 
-  GroundedMaxVelocity: 10
+  MaxMass: 200
+  MinMass: 100
+  GroundedMaxVelocityMax: 10
+  GroundedMaxVelocityMin: 10
+  AerialMaxXVelocityMax: 20
+  AerialMaxXVelocityMin: 10
+  AerialMaxYVelocityMax: 7
+  AerialMaxYVelocityMin: 5
   GroundedDecceleration: 5000
-  AerialMaxXVelocity: 10
-  AerialMaxYVelocity: 10
   AerialDecceleration: 25
   GravityScaler: 1

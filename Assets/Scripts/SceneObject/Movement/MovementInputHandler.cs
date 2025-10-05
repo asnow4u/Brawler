@@ -103,8 +103,8 @@ namespace Game.SceneObjects.Movement
             else
                 throw new Exception($"SceneObject {sceneObject.name} does not implement IMovementInput interface");
 
-            //Movement Collection
-            if (baseMovementCollection != null)
+            //Movement Collection //NOTE: This will later be removed to just get the movement data from the equipped weapon
+            if (baseMovementCollection != null) 
                 currentMovementCollection = baseMovementCollection;
             else
                 throw new MissingReferenceException("BaseMovementCollection is not set for MovementInputHandler");
@@ -411,7 +411,7 @@ namespace Game.SceneObjects.Movement
         /// </summary>
         private void UpdateGroundedAcceleration()
         {
-            float acceleration = currentMovementCollection.GetGroundedXAcceleration();
+            float acceleration = currentMovementCollection.GetGroundedXAcceleration(sceneObject.MassRatio);
             float maxVelocity = movementHandler.GroundedMaxVelocity;
 
             CheckTurnAround();
@@ -523,7 +523,7 @@ namespace Game.SceneObjects.Movement
         private void AerialXAccelerate()
         {
             float maxXVelocity = movementHandler.AerialMaxXVelocity;
-            float acceleration = currentMovementCollection.AirMoveData.AerialXAcceleration;
+            float acceleration = currentMovementCollection.AirMoveData.AerialXMaxAcceleration;
 
             //Positive Acceleration
             if (horizontalInfluence > 0)
@@ -554,7 +554,7 @@ namespace Game.SceneObjects.Movement
         private void AerialYAccelerate()
         {
             float maxYVelocity = movementHandler.AerialMaxYVelocity;
-            float acceleration = currentMovementCollection.AirMoveData.AerialYAcceleration;
+            float acceleration = currentMovementCollection.AirMoveData.AerialYMaxAcceleration;
 
             if (verticalInfluence < 0)
             {

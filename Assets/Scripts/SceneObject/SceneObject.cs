@@ -35,7 +35,7 @@ namespace Game.SceneObjects
         [SerializeField] private ClimbState curClimbState;
 
         [Header("Movement Settings")]
-        [SerializeField] private MovementData MovementData;
+        [SerializeField] private SceneObjectData baseData;
 
         //Logger
         private SceneObjectLogger logger;
@@ -58,6 +58,7 @@ namespace Game.SceneObjects
         public GroundedState CurGroundedState => curGroundedState;
         public ClimbState CurClimbState => curClimbState;
         public Rigidbody Rb => GetComponent<Rigidbody>();
+        public float MassRatio => Rb.mass / baseData.MaxMass;
         public Collider Collider => GetComponent<Collider>();
 
 
@@ -86,11 +87,15 @@ namespace Game.SceneObjects
         /// Setup handlers
         /// </summary>
         protected virtual void Initialize()
-        {               
+        {
+            if (!baseData.IsValid())
+                throw new ArgumentException("SceneObject Base Data is not valid");
+
             UniqueId = Guid.NewGuid().ToString();
             curGroundedState = GroundedState.Grounded;
             curClimbState = ClimbState.Unavailable;
 
+            Rb.mass = baseData.MinMass;
             Rb.linearDamping = 0;
 
             GetHandlers();
@@ -99,6 +104,7 @@ namespace Game.SceneObjects
         
             logger = new SceneObjectLogger(this);
         }
+
 
         /// <summary>
         /// Grab all handlers from gameobject
@@ -109,8 +115,8 @@ namespace Game.SceneObjects
             UIHandler = GetComponent<UIHandler>();            
             DamageHandler = GetComponent<DamageHandler>();
 
-            if (MovementData != null)
-                MovementHandler = new MovementHandler(MovementData, this);
+            if (baseData != null)
+                MovementHandler = new MovementHandler(baseData, this);
             else
                 throw new MissingReferenceException("SceneObject Must Contain A MovementData");
         }

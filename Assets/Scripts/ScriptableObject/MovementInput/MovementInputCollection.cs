@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Game.SceneObjects.Movement
 {
@@ -101,10 +102,10 @@ namespace Game.SceneObjects.Movement
         /// </summary>
         /// <returns></returns>
         /// <exception cref="NullReferenceException"></exception>
-        public float GetGroundedXAcceleration()
-        {
+        public float GetGroundedXAcceleration(float ratio)
+        {            
             if (MoveData != null)
-                return MoveData.GroundedXAcceleration;
+                return Mathf.Lerp(MoveData.GroundedXMaxAcceleration, MoveData.GroundedXMinAcceleration, Mathf.Clamp01(ratio));
 
             throw new NullReferenceException("MoveData is not set");
         }
@@ -129,10 +130,10 @@ namespace Game.SceneObjects.Movement
         /// Aeiral X acceleration in collection
         /// </returns>
         /// <exception cref="NullReferenceException"></exception>
-        public float GetAerialXAcceleration()
+        public float GetAerialXAcceleration(float ratio)
         {
             if (AirMoveData != null)
-                return AirMoveData.AerialXAcceleration;
+                return Mathf.Lerp(AirMoveData.AerialXMaxAcceleration, AirMoveData.AerialXMinAcceleration, Mathf.Clamp01(ratio));
 
             throw new NullReferenceException("AirMoveData is not set");
         }
@@ -141,11 +142,11 @@ namespace Game.SceneObjects.Movement
         /// Aeiral Y acceleration in collection
         /// </returns>
         /// <exception cref="NullReferenceException"></exception>
-        public float GetAerialYAcceleration()
+        public float GetAerialYAcceleration(float ratio)
         {
             if (AirMoveData != null)
-                return AirMoveData.AerialYAcceleration;
-            
+                return Mathf.Lerp(AirMoveData.AerialYMaxAcceleration, AirMoveData.AerialYMinAcceleration, Mathf.Clamp01(ratio));
+
             throw new NullReferenceException("AirMoveData is not set");
         }
 

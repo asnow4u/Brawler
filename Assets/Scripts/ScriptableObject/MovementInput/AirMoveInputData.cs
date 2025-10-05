@@ -6,7 +6,10 @@ namespace Game.SceneObjects.Movement
     public class AirMoveInputData : MovementInputData
     {
         [Header("Arial Acceleration")]
-        public float AerialXAcceleration;
-        public float AerialYAcceleration;
+        public float AerialXMaxAcceleration;
+        public float AerialXMinAcceleration;
+
+        public float AerialYMaxAcceleration;
+        public float AerialYMinAcceleration;
     }
 }

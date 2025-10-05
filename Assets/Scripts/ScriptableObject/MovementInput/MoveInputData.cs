@@ -7,8 +7,10 @@ namespace Game.SceneObjects.Movement
     public class MoveInputData : MovementInputData
     {
         [Header("Grounded Movement")]
-        public float GroundedXAcceleration;
+        public float GroundedXMaxAcceleration;
+        public float GroundedXMinAcceleration;
 
+        [Header("Attack Decleration")]
         [Tooltip("How quickly should the sceneObject slowdow when performing an attack while moving")]
         public float GroundedAttackXDecleration;
     }
