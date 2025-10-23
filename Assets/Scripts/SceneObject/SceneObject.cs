@@ -259,7 +259,7 @@ namespace Game.SceneObjects
         /// </summary>
         private void UpdateClimbState()
         {
-            if (MovementInputHandler == null || MovementInputHandler.CurrentMovementCollection.ClimbData == null) return;
+            if (MovementInputHandler == null || MovementInputHandler.CurrentMovementCollection.GetMovementData<ClimbMoveInputData>() == null) return;
 
             //Update climb state if the collection has climb data                            
             Bounds bounds = Collider.bounds;
@@ -315,7 +315,7 @@ namespace Game.SceneObjects
                 // Jump action performed
                 else if (ActionStateHandler.CurActionState == ActionState.Moving)
                 {
-                    if ((MovementInputHandler.CurMoveInputState == MovementType.Jump || MovementInputHandler.CurMoveInputState == MovementType.AirJump) && Rb.linearVelocity.y > 0)
+                    if ((MovementInputHandler.CurMovementInputData.Type == MovementType.Jump || MovementInputHandler.CurMovementInputData.Type == MovementType.Jump) && Rb.linearVelocity.y > 0)
                         SetClimbState(ClimbState.Available);
                 }
 

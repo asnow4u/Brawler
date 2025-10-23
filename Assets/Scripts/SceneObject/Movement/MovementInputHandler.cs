@@ -1,10 +1,11 @@
 using Game.SceneObjects.ActionStates;
 using System;
+using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 
 namespace Game.SceneObjects.Movement 
 {
-    public enum MovementType { Null, Move, WallLean, AirMove, Jump, AirJump, Climb }
+    public enum MovementType { Null, Move, WallLean, LedgeGrab, Jump, HeavyLanding}
 
     public class MovementInputHandler : SceneObjectHandler
     {
@@ -17,7 +18,8 @@ namespace Game.SceneObjects.Movement
 
         //Movement State Data
         [Header("State")]
-        [SerializeField] private MovementType curMoveInputState;
+        [SerializeField] private MovementType curMoveInputState = MovementType.Null;
+        [SerializeField] private MovementInputData curMovementInputData = null;
 
         //Movement Collection (NOTE: BaseMovementCollection is Required for all sceneObjects. Base handles the case where a sceneObject dosent use a weapon but moves)    
         [Header("Collection")]
@@ -31,7 +33,7 @@ namespace Game.SceneObjects.Movement
         [Range(-1, 1)]
         [SerializeField] private float verticalInfluence;
 
-        [SerializeField] private float groundedJumpInfluence;
+        [SerializeField] private float jumpInfluence;
         [SerializeField] private float aerialJumpInfluence;
 
         [Range(0, 1)]
@@ -47,34 +49,14 @@ namespace Game.SceneObjects.Movement
 
         //Events
         public event Action<MovementInputCollection> MovementCollectionChangedEvent;
-        public event Action<MovementType> MoveStateChangedEvent;
+        public event Action<MovementInputData> InputDataChangedEvent;
 
 
         #region Getters
-
-        public MovementType CurMoveInputState => curMoveInputState;
+        
+        public MovementInputData CurMovementInputData => curMovementInputData;
         public MovementInputCollection CurrentMovementCollection => currentMovementCollection;
-        public float VerticalInfluence => verticalInfluence;
-
-        ///// <summary>
-        ///// Attempt to get the <paramref name="currentMoveCollection"/> <br/>
-        ///// This will prioritize an equpped <see cref="Weapon"/> movement collection over <see cref="baseMovementCollection"/>
-        ///// </summary>
-        //public bool TryGetCurrentMovementCollection(out MovementCollection currentMoveCollection)
-        //{
-        //    currentMoveCollection = null;
-            
-        //    if (baseMovementCollection == null)
-        //        return false;            
-
-        //    if (sceneObject.EquipmentHandler.WeaponHandler?.EquippedWeapon != null)
-        //        currentMoveCollection = sceneObject.EquipmentHandler.WeaponHandler.EquippedWeapon.MovementCollection;
-        //    else
-        //        currentMoveCollection = baseMovementCollection;
-
-        //    return currentMoveCollection != null;
-        //}
-
+        public float VerticalInfluence => verticalInfluence;   
 
         #endregion
 
@@ -105,10 +87,20 @@ namespace Game.SceneObjects.Movement
 
             //Movement Collection //NOTE: This will later be removed to just get the movement data from the equipped weapon
             if (baseMovementCollection != null) 
-                currentMovementCollection = baseMovementCollection;
+                SetUpCollection(baseMovementCollection);
             else
                 throw new MissingReferenceException("BaseMovementCollection is not set for MovementInputHandler");
         }
+
+
+        public void SetUpCollection(MovementInputCollection collection)
+        {
+            currentMovementCollection = baseMovementCollection;
+            currentMovementCollection.IndexData();
+
+            //MovementCollectionChangedEvent?.Invoke(currentMovementCollection);
+        }
+
 
         #endregion
 
@@ -124,7 +116,7 @@ namespace Game.SceneObjects.Movement
             {                     
                 //Reset jumps
                 airJumpsPerformed = 0;
-                SetCurrentMoveState(MovementType.Null);
+                SetCurrentMoveState(null);
             }
         }
 
@@ -134,7 +126,7 @@ namespace Game.SceneObjects.Movement
         private void OnClimbStateChanged(ClimbState prevClimbState, ClimbState climbState)
         {
             if (prevClimbState == ClimbState.Climbing && climbState == ClimbState.Unavailable)
-                SetCurrentMoveState(MovementType.Null);
+                SetCurrentMoveState(null);
 
             //Reset jumps
             if (climbState == ClimbState.Climbing)
@@ -148,7 +140,7 @@ namespace Game.SceneObjects.Movement
         private void OnAnimationEnded(AnimationClip clip)
         {
             if (currentMovementCollection.TryGetMovementFromAnimation(clip, out _))
-                SetCurrentMoveState(MovementType.Null);
+                SetCurrentMoveState(null);
         }
 
         #endregion
@@ -156,36 +148,197 @@ namespace Game.SceneObjects.Movement
         #region State 
 
         /// <summary>
-        /// Attempt to set the <see cref="ActionState"/> to <see cref="MOVESTATE"/> <br/>
-        /// Then set the <see cref="curMoveInputState"/> to the <paramref name="moveState"/>        
-        private bool TrySetCurrentMoveState(MovementType moveState)
-        {                                    
-            if (sceneObject.ActionStateHandler.TryChangeState(MOVESTATE))
+        /// Set the current movement state to <paramref name="inputData"/> if possible
+        /// </summary>
+        private void SetCurrentMoveState(MovementInputData inputData)
+        {            
+            if (inputData == null)
             {
-                if (moveState != curMoveInputState)
-                {
-                    //NOTE: Jumping can override any moveState
-                    if (moveState == MovementType.Jump || moveState == MovementType.AirJump)
-                        SetCurrentMoveState(moveState);
+                bool sendEvent = curMovementInputData != null;
+                curMovementInputData = null;
+                curMoveInputState = MovementType.Null;
 
-                    else if (moveState > curMoveInputState)
-                        SetCurrentMoveState(moveState);
-                }
+                if (sendEvent)
+                    InputDataChangedEvent?.Invoke(null);
 
-                return true;
+                return;
+            }
+
+
+            if (inputData.Type != curMoveInputState && 
+                StateTransitionPossible(inputData.Type) &&
+                sceneObject.ActionStateHandler.TryChangeState(MOVESTATE))
+            {                
+                curMovementInputData = inputData;
+                curMoveInputState = inputData.Type;
+                InputDataChangedEvent?.Invoke(inputData);
+            }
+        }
+
+
+        /// <summary>
+        /// Determine if a transition to <paramref name="moveState"/> is possible based on the current movement state and sceneObject state
+        /// </summary>
+        private bool StateTransitionPossible(MovementType moveState)
+        {
+            switch (curMoveInputState) 
+            {
+                case MovementType.Null:
+
+                    if (sceneObject.CurGroundedState == GroundedState.Grounded &&
+                        (moveState == MovementType.Move ||                        
+                         moveState == MovementType.Jump))
+                        return true;
+
+                    else if (sceneObject.CurGroundedState == GroundedState.Airborn &&
+                        (moveState == MovementType.Move ||
+                         moveState == MovementType.Jump ||
+                         moveState == MovementType.HeavyLanding))
+                        return true;
+
+                    else if (sceneObject.CurClimbState == ClimbState.Climbing &&
+                        (moveState == MovementType.Move ||
+                         moveState == MovementType.Jump))
+                        return true;
+
+                    break;
+
+                case MovementType.Move:
+
+                    if (sceneObject.CurGroundedState == GroundedState.Grounded &&
+                        (moveState == MovementType.Null ||
+                         moveState == MovementType.WallLean ||
+                         moveState == MovementType.Jump ||
+                         moveState == MovementType.LedgeGrab))
+                        return true;
+
+                    else if (sceneObject.CurGroundedState == GroundedState.Airborn &&
+                        (moveState == MovementType.Null ||
+                         moveState == MovementType.Jump ||
+                         moveState == MovementType.HeavyLanding ||
+                         moveState == MovementType.LedgeGrab))
+                        return true;
+
+                    else if (sceneObject.CurClimbState == ClimbState.Climbing &&
+                        (moveState == MovementType.Null ||
+                         moveState == MovementType.Jump ||
+                         moveState == MovementType.LedgeGrab))
+                        return true;
+
+                    break;
+
+                case MovementType.WallLean:
+                    
+                    if (moveState == MovementType.Null ||
+                        moveState == MovementType.Move ||
+                        moveState == MovementType.Jump)
+                        return true;
+
+                    break;
+
+                case MovementType.LedgeGrab:
+
+                    //TODO: Determine if animation has played (This only applies to Null and Move)
+                    if (moveState == MovementType.Null ||
+                        moveState == MovementType.Move ||
+                        moveState == MovementType.Jump)
+                        return true;
+
+                    break;
+
+                case MovementType.Jump:
+
+                    //TODO: Determine if animation has played (This only applies to Null, Move)
+                    if (moveState == MovementType.Null ||
+                        moveState == MovementType.Move ||
+                        moveState == MovementType.LedgeGrab)
+                        return true;
+
+                    break;
+
+                case MovementType.HeavyLanding:
+                    
+                    //TODO: Determine if animation has played
+                    if (moveState == MovementType.Null)
+                        return true;
+
+                    break;               
             }
 
             return false;
         }
 
+        /// <summary>
+        /// Update the current grounded movement state based on input influence and sceneObject state
+        /// </summary>
+        private void UpdateGroundedMovementState()
+        {
+            //Idle
+            if (horizontalInfluence == 0 && jumpInfluence == 0)
+                SetCurrentMoveState(null);
+
+            //Jump
+            else if (jumpInfluence > 0)
+                SetCurrentMoveState(currentMovementCollection.GetMovementData<JumpInputData>());
+
+            //Wall Lean
+            else if (horizontalInfluence != 0 && IsRunningAgainstWall())
+                SetCurrentMoveState(currentMovementCollection.GetMovementData<WallLeanInputData>());
+
+            //Accelerate
+            else if (horizontalInfluence != 0)
+                SetCurrentMoveState(currentMovementCollection.GetMovementData<MoveInputData>());
+        }
 
         /// <summary>
-        /// Set the <see cref="curMoveInputState"/> to <paramref name="moveState"/>
+        /// Update the current aerial movement state based on input influence and sceneObject state
         /// </summary>
-        private void SetCurrentMoveState(MovementType moveState)
+        private void UpdateAerialMovementState()
         {
-            curMoveInputState = moveState;
-            MoveStateChangedEvent?.Invoke(moveState);
+            //Idle
+            if (horizontalInfluence == 0 && verticalInfluence == 0 && jumpInfluence == 0)
+                SetCurrentMoveState(null);
+
+            //Jump
+            else if (IsAerialJumpMovementAllowed())
+                SetCurrentMoveState(currentMovementCollection.GetMovementData<AirJumpInputData>());
+
+            //Accelerate
+            else if (horizontalInfluence != 0 || verticalInfluence != 0)
+                SetCurrentMoveState(currentMovementCollection.GetMovementData<AirMoveInputData>());
+        }
+
+        /// <summary>
+        /// Determine if aerial jump movement is allowed based on current movement state
+        /// </summary>
+        private bool IsAerialJumpMovementAllowed()
+        {
+            if (aerialJumpInfluence == 0)
+                return false;
+
+            AirJumpInputData jumpData = currentMovementCollection.GetMovementData<AirJumpInputData>();
+            if (airJumpsPerformed > jumpData.JumpsAvailable)
+                return false;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Update the current climb movement state based on input influence and sceneObject state
+        /// </summary>
+        private void UpdateClimbMovementState()
+        {
+            //Idle
+            if (horizontalInfluence == 0 && verticalInfluence == 0 && jumpInfluence == 0)
+                SetCurrentMoveState(null);
+
+            //Jump
+            else if (jumpInfluence > 0)
+                SetCurrentMoveState(currentMovementCollection.GetMovementData<JumpInputData>());
+
+            //Accelerate
+            else if (horizontalInfluence != 0 || verticalInfluence != 0)
+                SetCurrentMoveState(currentMovementCollection.GetMovementData<ClimbMoveInputData>());
         }
 
         #endregion
@@ -216,7 +369,7 @@ namespace Game.SceneObjects.Movement
         /// <summary>
         /// Determine if the sceneObject is against a wall
         /// </summary>
-        public bool IsAgainstWall()
+        private bool IsRunningAgainstWall()
         {            
             return IsAgainstRightWall() || IsAgainstLeftWall();
         }
@@ -224,7 +377,7 @@ namespace Game.SceneObjects.Movement
         /// <summary>
         /// Determine if the sceneObject is against a wall on the right side
         /// </summary>
-        public bool IsAgainstRightWall()
+        private bool IsAgainstRightWall()
         {
             if (movementHandler.IsFacingRightDirection)
             {
@@ -238,7 +391,7 @@ namespace Game.SceneObjects.Movement
         /// <summary>
         /// Determine if the sceneObject is against a wall on the left side
         /// </summary>
-        public bool IsAgainstLeftWall()
+        private bool IsAgainstLeftWall()
         {
             if (!movementHandler.IsFacingRightDirection)
             {
@@ -275,7 +428,7 @@ namespace Game.SceneObjects.Movement
             if (inputInfluence > 0)
             {
                 if (sceneObject.CurGroundedState == GroundedState.Grounded || sceneObject.CurClimbState == ClimbState.Climbing)
-                    groundedJumpInfluence = inputInfluence;
+                    jumpInfluence = inputInfluence;
                 else
                 {
                     aerialJumpInfluence = inputInfluence;
@@ -285,7 +438,7 @@ namespace Game.SceneObjects.Movement
 
             else
             {
-                groundedJumpInfluence = 0;
+                jumpInfluence = 0;
                 aerialJumpInfluence = 0;
                 curJumpFrameCount = 0;
             }
@@ -294,117 +447,35 @@ namespace Game.SceneObjects.Movement
         #endregion
 
 
-        #region Movement Permission
-
-        /// <summary>
-        /// Determin if horizontal movement is allowed based on current movement state
-        /// </summary>
-        private bool IsHorizontalMovementAllowed()
-        {
-            //Cant move without influence
-            if (horizontalInfluence == 0)
-                return false;
-            
-            if (IsAgainstWall())
-                return false;
-
-            return true;
-        }
-
-
-        /// <summary>
-        /// Determine if vertical movement is allowed based on current movement state
-        /// </summary>
-        private bool IsVerticalMovementAllowed()
-        {
-            //Cant move without influence
-            if (verticalInfluence == 0)
-                return false;
-
-            return true;
-        }
-
-
-        /// <summary>
-        /// Determine if jump movement is allowed based on current movement state
-        /// </summary>
-        private bool IsGroundedJumpMovementAllowed()
-        {            
-            if (groundedJumpInfluence == 0)
-                return false;
-
-            if (curJumpFrameCount >= MAXJUMPFRAMECOUNT)
-                return false;
-
-            return true;
-        }
-
-
-        /// <summary>
-        /// Determine if aerial jump movement is allowed based on current movement state
-        /// </summary>
-        private bool IsAerialJumpMovementAllowed()
-        {
-            if (aerialJumpInfluence == 0)
-                return false;
-
-            if (curJumpFrameCount >= MAXJUMPFRAMECOUNT)
-                return false;
-
-            if (airJumpsPerformed > currentMovementCollection.AirJumpData.JumpsAvailable)
-                return false;
-
-            return true;
-        }
-
-
-        /// <summary>
-        /// Determine if climb movement is allowed to transition to based on movement state
-        /// </summary>
-        private bool IsClimbMovementAllowed()
-        {
-            if (currentMovementCollection.ClimbData == null)
-                return false;
-
-            if (curMoveInputState == MovementType.Jump || curMoveInputState == MovementType.AirJump)
-                return false;
-
-            if (verticalInfluence == 0 && horizontalInfluence == 0)
-                return false;            
-
-            return true;
-        }
-
-        #endregion
-
-
         #region Grounded Movement
 
         /// <summary>
-        /// Update movement on the ground based on <see cref="horizontalInfluence"/>, <see cref="verticalInfluence"/> and <see cref="jumpInfluence"/>
+        /// Update movement on the ground based on current movement state
         /// </summary>
         public void UpdateGroundedMovement(Action DeccerationCallback)
-        {            
-            //Wall Lean
-            if ((horizontalInfluence > 0 && IsAgainstRightWall()) || (horizontalInfluence < 0 && IsAgainstLeftWall()))
-                TrySetCurrentMoveState(MovementType.WallLean);
+        {
+            UpdateGroundedMovementState();
 
-            //Accelerate
-            else if (IsHorizontalMovementAllowed() && TrySetCurrentMoveState(MovementType.Move))
-                UpdateGroundedAcceleration();
+            switch (curMoveInputState)
+            {
+                case MovementType.Null:
+                    DeccerationCallback();
+                    break;
 
-            //Deccelerate
-            else
-                DeccerationCallback();
+                case MovementType.WallLean:
+                    DeccerationCallback();
+                    //TODO: Handle better?
+                    break;
 
-            //Jump
-            if (IsGroundedJumpMovementAllowed() && TrySetCurrentMoveState(MovementType.Jump))
-                UpdateGroundedJumpVelocity();
+                case MovementType.Move:
+                    UpdateGroundedAcceleration();
+                    break;
 
-            //Stop
-            if (horizontalInfluence == 0 && curMoveInputState != MovementType.Jump && curMoveInputState != MovementType.Null)
-                SetCurrentMoveState(MovementType.Null);
-        }
+                case MovementType.Jump:
+                    UpdateGroundedJumpVelocity();
+                    break;
+            }
+        }        
 
         /// <summary>
         /// Accelerate on the ground by an acceleration value to a max velocity from <see cref="currentMovementCollection"/>
@@ -432,8 +503,9 @@ namespace Game.SceneObjects.Movement
         /// </summary>
         private void UpdateGroundedJumpVelocity()
         {
-            float minVelocity = currentMovementCollection.JumpData.MinJumpVelocity;
-            float maxVelocity = currentMovementCollection.JumpData.MaxJumpVelocity;
+            JumpInputData jumpData = currentMovementCollection.GetMovementData<JumpInputData>();
+            float minVelocity = jumpData.MinJumpVelocity;
+            float maxVelocity = jumpData.MaxJumpVelocity;
 
             float jumpVelocity = Mathf.Lerp(minVelocity, maxVelocity, curJumpFrameCount / MAXJUMPFRAMECOUNT);
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpVelocity, 0);
@@ -493,29 +565,37 @@ namespace Game.SceneObjects.Movement
         /// <summary>
         /// Update horizontal movement in the air
         /// </summary>
-        public void UpdateAerialXMovement(Action DeccelerationCallback)
+        public void UpdateAerialMovement(Action DeccelerationXCallback, Action DeccelerationYCallback)
         {
-            if (IsHorizontalMovementAllowed() || TrySetCurrentMoveState(MovementType.AirMove))
-                AerialXAccelerate();
-            else
-                DeccelerationCallback();
+            UpdateAerialMovementState();
+
+            switch (curMoveInputState)
+            {
+                case MovementType.Null:
+                    DeccelerationXCallback();
+                    DeccelerationYCallback();
+                    break;
+
+                case MovementType.Move:
+                    
+                    //Horizontal Movement
+                    if (horizontalInfluence != 0)
+                        AerialXAccelerate();
+                    else
+                        DeccelerationXCallback();
+
+                    //Vertical Movement
+                    if (verticalInfluence != 0)
+                        AerialYAccelerate();
+                    else
+                        DeccelerationYCallback();
+                    break;
+
+                case MovementType.Jump:
+                    UpdateAerialJumpVelocity();
+                    break;
+            }
         }
-
-        /// <summary>
-        /// Update vertical movement in the air
-        /// </summary>
-        public void UpdateAerialYMovement(Action DeccelerationCallback)
-        {
-            if (IsVerticalMovementAllowed() || TrySetCurrentMoveState(MovementType.AirMove))
-                AerialYAccelerate();
-            else
-                DeccelerationCallback();
-
-            if (IsAerialJumpMovementAllowed() && TrySetCurrentMoveState(MovementType.AirJump))
-                UpdateAerialJumpVelocity();
-
-        }
-
 
         /// <summary>
         /// Accelerate in the air on the X axis
@@ -523,7 +603,9 @@ namespace Game.SceneObjects.Movement
         private void AerialXAccelerate()
         {
             float maxXVelocity = movementHandler.AerialMaxXVelocity;
-            float acceleration = currentMovementCollection.AirMoveData.AerialXMaxAcceleration;
+
+            AirMoveInputData airMoveData = currentMovementCollection.GetMovementData<AirMoveInputData>();
+            float acceleration = airMoveData.AerialXMaxAcceleration;
 
             //Positive Acceleration
             if (horizontalInfluence > 0)
@@ -554,7 +636,9 @@ namespace Game.SceneObjects.Movement
         private void AerialYAccelerate()
         {
             float maxYVelocity = movementHandler.AerialMaxYVelocity;
-            float acceleration = currentMovementCollection.AirMoveData.AerialYMaxAcceleration;
+
+            AirMoveInputData airMoveData = currentMovementCollection.GetMovementData<AirMoveInputData>();
+            float acceleration = airMoveData.AerialYMaxAcceleration;
 
             if (verticalInfluence < 0)
             {
@@ -572,8 +656,9 @@ namespace Game.SceneObjects.Movement
         /// </summary>
         private void UpdateAerialJumpVelocity()
         {
-            float minVelocity = currentMovementCollection.AirJumpData.MinAirJumpVelocity;
-            float maxVelocity = currentMovementCollection.AirJumpData.MaxAirJumpVelocity;
+            AirJumpInputData airJumpData = currentMovementCollection.GetMovementData<AirJumpInputData>();
+            float minVelocity = airJumpData.MinAirJumpVelocity;
+            float maxVelocity = airJumpData.MaxAirJumpVelocity;
 
             CheckTurnAround();
 
@@ -593,36 +678,46 @@ namespace Game.SceneObjects.Movement
         /// </summary>        
         public void UpdateClimbMovement()
         {
-            if (IsClimbMovementAllowed() && TrySetCurrentMoveState(MovementType.Climb))
+            UpdateClimbMovementState();
+
+            switch (curMoveInputState)
             {
-                CheckTurnAround();
+                case MovementType.Null:
+                    rb.linearVelocity = new Vector3(0, 0, 0);
+                    break;
+            
+                case MovementType.Move:
+                    UpdateClimbAcceleration();
+                    break;
+                
+                case MovementType.Jump:
+                    UpdateGroundedJumpVelocity();
+                    break;
+            }            
+        }
 
-                float climbXVelocity = horizontalInfluence * currentMovementCollection.ClimbData.ClimbXVelocity;
-                float climbYVelocity = 0;
+        /// <summary>
+        /// Accelerate while on a climbable surface
+        /// </summary>
+        private void UpdateClimbAcceleration()
+        {
+            CheckTurnAround();
 
-                //Climb Up
-                if (verticalInfluence > 0)
-                    climbYVelocity = verticalInfluence * currentMovementCollection.ClimbData.ClimbUpYVelocity;
+            ClimbMoveInputData climbData = currentMovementCollection.GetMovementData<ClimbMoveInputData>();
 
-                //Climb Down
-                else if (verticalInfluence < 0)
-                    climbYVelocity = verticalInfluence * currentMovementCollection.ClimbData.ClimbDownYVelocity;
+            float climbXVelocity = horizontalInfluence * climbData.ClimbXVelocity;
+            float climbYVelocity = 0;
 
-                rb.linearVelocity = new Vector3(climbXVelocity, climbYVelocity, 0);
-            }
+            //Climb Up
+            if (verticalInfluence > 0)
+                climbYVelocity = verticalInfluence * climbData.ClimbUpYVelocity;
 
-            else
-            {
-                rb.linearVelocity = new Vector3(0, 0, 0);
+            //Climb Down
+            else if (verticalInfluence < 0)
+                climbYVelocity = verticalInfluence * climbData.ClimbDownYVelocity;
 
-                if (curMoveInputState != MovementType.Null)
-                    SetCurrentMoveState(MovementType.Null);
-            }
-
-            //Jump
-            if (IsGroundedJumpMovementAllowed() && TrySetCurrentMoveState(MovementType.Jump))
-                UpdateGroundedJumpVelocity();
-        }       
+            rb.linearVelocity = new Vector3(climbXVelocity, climbYVelocity, 0);
+        }
 
         #endregion
     }

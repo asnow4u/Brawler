@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6e3abd615fe80924baf309a2a2c07b0f, type: 3}
   m_Name: PlayerSwordMovementInputCollection
   m_EditorClassIdentifier: 
-  MoveData: {fileID: 11400000, guid: 3e83465d7263f9543945eb8dde4f3c56, type: 2}
-  AirMoveData: {fileID: 11400000, guid: 86313632ffc058049bd69c313a22c8a5, type: 2}
-  ClimbData: {fileID: 11400000, guid: ef88ae01dbd6bdc458a75d16a155f244, type: 2}
-  JumpData: {fileID: 11400000, guid: 4057fb62c44055a4585172b668419a72, type: 2}
-  AirJumpData: {fileID: 11400000, guid: e87289f87498f324cac2e0f3e930c00a, type: 2}
-  WallLeanData: {fileID: 11400000, guid: 625a94a27d74ac0428a38b187d7836c2, type: 2}
+  MovementData:
+  - {fileID: 11400000, guid: 3e83465d7263f9543945eb8dde4f3c56, type: 2}
+  - {fileID: 11400000, guid: 4057fb62c44055a4585172b668419a72, type: 2}
+  - {fileID: 11400000, guid: 625a94a27d74ac0428a38b187d7836c2, type: 2}
+  - {fileID: 11400000, guid: 86313632ffc058049bd69c313a22c8a5, type: 2}
+  - {fileID: 11400000, guid: e87289f87498f324cac2e0f3e930c00a, type: 2}
+  - {fileID: 11400000, guid: ef88ae01dbd6bdc458a75d16a155f244, type: 2}

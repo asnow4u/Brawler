@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a8cfbdf80a5a4e84a8666be5b4131b3d, type: 3}
   m_Name: SwordAirMove
   m_EditorClassIdentifier: 
+  Index: 3
+  Type: 1
   Animation: {fileID: 7400000, guid: 07b5c2c8205a8a7448403075a4286be5, type: 2}
   AnimationSpeedMultiplier: 1
-  Type: 3
   AerialXMaxAcceleration: 25
   AerialXMinAcceleration: 20
   AerialYMaxAcceleration: 30

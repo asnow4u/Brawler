@@ -1,6 +1,6 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace Game.SceneObjects.Movement
 {
@@ -8,72 +8,28 @@ namespace Game.SceneObjects.Movement
 
     public class MovementInputCollection : ScriptableObject
     {
-        public MoveInputData MoveData;
-        public AirMoveInputData AirMoveData;
-        public ClimbInputData ClimbData;
-        public JumpInputData JumpData;
-        public AirJumpInputData AirJumpData;
-        public WallLeanInputData WallLeanData;
-
+        public List<MovementInputData> MovementData;
 
         /// <summary>
-        /// Attempt to get <paramref name="requestedMovement"/> by <paramref name="movementType"/>
+        /// Establish indices for data lookup
         /// </summary>
-        public bool TryGetMovementByType(MovementType movementType, out MovementInputData requestedMovement)
+        public void IndexData()
         {
-            switch (movementType)
+            foreach (MovementInputData data in MovementData)
+                data.Index = MovementData.IndexOf(data);
+        }
+
+        /// <returns>
+        /// A movementData of type T if found in collection, null otherwise
+        /// </returns>
+        public T GetMovementData<T>() where T : MovementInputData
+        {
+            foreach (var data in MovementData)
             {
-                case MovementType.Move:
-                    if (MoveData != null)
-                    {
-                        requestedMovement = MoveData;
-                        return true;
-                    }
-                    break;
-
-                case MovementType.AirMove:
-                    if (AirMoveData != null)
-                    {
-                        requestedMovement = AirMoveData;
-                        return true;
-                    }
-                    break;
-
-                case MovementType.Climb:
-                    if (ClimbData != null)
-                    {
-                        requestedMovement = ClimbData;
-                        return true;
-                    }
-                    break;
-
-                case MovementType.Jump:
-                    if (JumpData != null)
-                    {
-                        requestedMovement = JumpData;
-                        return true;
-                    }
-                    break;
-
-                case MovementType.AirJump:
-                    if (AirJumpData != null)
-                    {
-                        requestedMovement = AirJumpData;
-                        return true;
-                    }
-                    break;
-
-                case MovementType.WallLean:
-                    if (WallLeanData != null)
-                    {
-                        requestedMovement = WallLeanData;
-                        return true;
-                    }
-                    break;
+                if (data is T typedData)
+                    return typedData;
             }
-
-            requestedMovement = null;
-            return false;
+            return null;
         }
 
         /// <summary>
@@ -81,12 +37,12 @@ namespace Game.SceneObjects.Movement
         /// </summary>
         public bool TryGetMovementFromAnimation(AnimationClip animation, out MovementInputData movement)
         {
-            foreach (MovementType type in Enum.GetValues(typeof(MovementType)))
+            foreach (MovementInputData moveData in MovementData)
             {
-                if (TryGetMovementByType(type, out movement))
+                if (moveData.Animation == animation)
                 {
-                    if (movement.Animation == animation)
-                        return true;
+                    movement = moveData;
+                    return true;
                 }
             }
 
@@ -101,53 +57,58 @@ namespace Game.SceneObjects.Movement
         /// Grounded acceleration in collection
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="NullReferenceException"></exception>
+        /// <exception cref="MissingReferenceException"></exception>
         public float GetGroundedXAcceleration(float ratio)
         {            
-            if (MoveData != null)
-                return Mathf.Lerp(MoveData.GroundedXMaxAcceleration, MoveData.GroundedXMinAcceleration, Mathf.Clamp01(ratio));
+            MoveInputData moveData = GetMovementData<MoveInputData>();
+            if (moveData != null)
+                return Mathf.Lerp(moveData.GroundedXMaxAcceleration, moveData.GroundedXMinAcceleration, Mathf.Clamp01(ratio));
 
-            throw new NullReferenceException("MoveData is not set");
+            throw new MissingReferenceException("MoveData is not set");
         }
 
         /// <returns>
         /// Grounded attack deceleration in collection
         /// </returns>
-        /// <exception cref="NullReferenceException"></exception>
+        /// <exception cref="MissingReferenceException"></exception>
         public float GetGroundedAttackDecleration()
         {
-            if (MoveData != null)
-                return MoveData.GroundedAttackXDecleration;
+            MoveInputData moveData = GetMovementData<MoveInputData>();
+            if (moveData != null)
+                return moveData.GroundedAttackXDecleration;
 
-            throw new NullReferenceException("MoveData is not set");
+            throw new MissingReferenceException("MoveData is not set");
         }
 
         #endregion
+
 
         #region Air Movement        
 
         /// <returns>
         /// Aeiral X acceleration in collection
         /// </returns>
-        /// <exception cref="NullReferenceException"></exception>
+        /// <exception cref="MissingReferenceException"></exception>
         public float GetAerialXAcceleration(float ratio)
         {
-            if (AirMoveData != null)
-                return Mathf.Lerp(AirMoveData.AerialXMaxAcceleration, AirMoveData.AerialXMinAcceleration, Mathf.Clamp01(ratio));
+            AirMoveInputData airMoveData = GetMovementData<AirMoveInputData>();
+            if (airMoveData != null)
+                return Mathf.Lerp(airMoveData.AerialXMaxAcceleration, airMoveData.AerialXMinAcceleration, Mathf.Clamp01(ratio));
 
-            throw new NullReferenceException("AirMoveData is not set");
+            throw new MissingReferenceException("AirMoveData is not set");
         }
 
         /// <returns>
         /// Aeiral Y acceleration in collection
         /// </returns>
-        /// <exception cref="NullReferenceException"></exception>
+        /// <exception cref="MissingReferenceException"></exception>
         public float GetAerialYAcceleration(float ratio)
         {
-            if (AirMoveData != null)
-                return Mathf.Lerp(AirMoveData.AerialYMaxAcceleration, AirMoveData.AerialYMinAcceleration, Mathf.Clamp01(ratio));
+            AirMoveInputData airMoveData = GetMovementData<AirMoveInputData>();
+            if (airMoveData != null)
+                return Mathf.Lerp(airMoveData.AerialYMaxAcceleration, airMoveData.AerialYMinAcceleration, Mathf.Clamp01(ratio));
 
-            throw new NullReferenceException("AirMoveData is not set");
+            throw new MissingReferenceException("AirMoveData is not set");
         }
 
         #endregion
@@ -160,9 +121,10 @@ namespace Game.SceneObjects.Movement
         /// </summary>
         public bool TryGetMinJumpVelocity(out float minJumpVelocity)
         {
-            if (JumpData != null)
+            JumpInputData jumpData = GetMovementData<JumpInputData>();            
+            if (jumpData != null)
             {
-                minJumpVelocity = JumpData.MinJumpVelocity;
+                minJumpVelocity = jumpData.MinJumpVelocity;
                 return true;
             }
 
@@ -176,9 +138,10 @@ namespace Game.SceneObjects.Movement
         /// </summary>
         public bool TryGetMaxJumpVelocity(out float maxJumpVelocity)
         {
-            if (JumpData != null)
+            JumpInputData jumpData = GetMovementData<JumpInputData>();
+            if (jumpData != null)
             {
-                maxJumpVelocity = JumpData.MaxJumpVelocity;
+                maxJumpVelocity = jumpData.MaxJumpVelocity;
                 return true;
             }
 

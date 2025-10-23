@@ -157,18 +157,10 @@ namespace Game.SceneObjects.Animation
         /// </summary>
         public void SetMovementAnimations(MovementInputCollection moveCollection)
         {
-            foreach (MovementType moveType in Enum.GetValues(typeof(MovementType)))
+            foreach (MovementInputData inputData in moveCollection.MovementData)
             {
-                if (moveCollection.TryGetMovementByType(moveType, out MovementInputData movementData))
-                {
-                    //if (movementData is MoveData moveData)
-                    //{
-                    //    //TODO: use to build move mixer
-                    //}
-
-                    AnimationClipPlayable movePlayable = AnimationClipPlayable.Create(animationGraph, movementData.Animation);
-                    movementAnimationMixer.ConnectInput((int)moveType, movePlayable, 0);
-                }
+                AnimationClipPlayable movePlayable = AnimationClipPlayable.Create(animationGraph, inputData.Animation);
+                movementAnimationMixer.ConnectInput(inputData.Index, movePlayable, 0);
             }
         }
 
@@ -275,15 +267,15 @@ namespace Game.SceneObjects.Animation
         /// Change movement mixer to prioritize current move state
         /// </summary>
         /// <param name="moveState"></param>
-        public void ChangeMovementStateInput(MovementType moveState, float speedMultiplier)
-        {
+        public void ChangeMovementStateInput(MovementInputData inputData)
+        {            
             //reset animation clip
-            AnimationClipPlayable clipPlayable = (AnimationClipPlayable)movementAnimationMixer.GetInput((int)moveState);
+            AnimationClipPlayable clipPlayable = (AnimationClipPlayable)movementAnimationMixer.GetInput(inputData.Index);
             clipPlayable.SetTime(0);
-            PlayableExtensions.SetSpeed(clipPlayable, speedMultiplier);            
+            PlayableExtensions.SetSpeed(clipPlayable, inputData.AnimationSpeedMultiplier);            
 
             ResetInputWeights(movementAnimationMixer);
-            movementAnimationMixer.SetInputWeight((int)moveState, 1);
+            movementAnimationMixer.SetInputWeight(inputData.Index, 1);
         }
 
 

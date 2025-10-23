@@ -100,10 +100,7 @@ namespace Game.SceneObjects.Movement
             else if (sceneObject.CurGroundedState == GroundedState.Airborn)
             {
                 if (inputHandler != null)
-                {
-                    inputHandler.UpdateAerialXMovement(DeccelerateAerialXMovement);
-                    inputHandler.UpdateAerialYMovement(DeccelerateAerialYMovement);
-                }
+                    inputHandler.UpdateAerialMovement(DeccelerateAerialXMovement, DeccelerateAerialYMovement);
 
                 else
                 {

@@ -90,7 +90,7 @@ namespace Game.SceneObjects.Animation
             sceneObject.ActionStateHandler.ActionStateChangedEvent += OnActionStateChanged;
             sceneObject.GroundedStateChangedEvent += OnGroundedStateChanged;
             sceneObject.ClimbStateChangedEvent += OnClimbStateChanged;
-            sceneObject.MovementInputHandler.MoveStateChangedEvent += OnMovementStateChanged;
+            sceneObject.MovementInputHandler.InputDataChangedEvent += OnMovementInputChanged;
             sceneObject.AttackInputHandler.AttackStateChangedEvent += OnAttackStateChanged;
             sceneObject.EquipmentHandler.WeaponHandler.OnWeaponEquipped += OnWeaponEquipped;
         }
@@ -100,7 +100,7 @@ namespace Game.SceneObjects.Animation
             sceneObject.ActionStateHandler.ActionStateChangedEvent -= OnActionStateChanged;
             sceneObject.GroundedStateChangedEvent -= OnGroundedStateChanged;
             sceneObject.ClimbStateChangedEvent -= OnClimbStateChanged;
-            sceneObject.MovementInputHandler.MoveStateChangedEvent -= OnMovementStateChanged;
+            sceneObject.MovementInputHandler.InputDataChangedEvent -= OnMovementInputChanged;
             sceneObject.AttackInputHandler.AttackStateChangedEvent -= OnAttackStateChanged;
             sceneObject.EquipmentHandler.WeaponHandler.OnWeaponEquipped -= OnWeaponEquipped;
         }
@@ -197,9 +197,9 @@ namespace Game.SceneObjects.Animation
         /// Movement state changed
         /// </summary>
         /// <param name="movementState"></param>
-        private void OnMovementStateChanged(MovementType movementState)
+        private void OnMovementInputChanged(MovementInputData inputData)
         {
-            if (movementState == MovementType.Null)
+            if (inputData == null)
             {
                 if (sceneObject.ActionStateHandler.CurActionState == ActionState.Moving)
                     sceneObject.ActionStateHandler.ChangeState(ActionState.Idle);
@@ -210,8 +210,7 @@ namespace Game.SceneObjects.Animation
                 //NOTE: 
                 // If weapon or other enhancements improve animation speed, add to multiplier here
 
-                if (sceneObject.MovementInputHandler.CurrentMovementCollection.TryGetMovementByType(movementState, out MovementInputData requestedMovementData))
-                    animationGraph.ChangeMovementStateInput(movementState, requestedMovementData.AnimationSpeedMultiplier);
+                animationGraph.ChangeMovementStateInput(inputData);
             }
         }
 

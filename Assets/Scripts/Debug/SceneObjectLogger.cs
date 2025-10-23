@@ -31,7 +31,7 @@ namespace Game.SceneObjects
             if (sceneObject.MovementInputHandler != null)
             {
                 sceneObject.ClimbStateChangedEvent += OnClimbStateChanged;
-                sceneObject.MovementInputHandler.MoveStateChangedEvent += OnMoveStateChanged;
+                sceneObject.MovementInputHandler.InputDataChangedEvent += OnMoveInputChanged;
                 sceneObject.MovementInputHandler.MovementCollectionChangedEvent += OnMoveCollectionChanged;
             }
 
@@ -92,9 +92,12 @@ namespace Game.SceneObjects
         /// Log move state change
         /// </summary>
         /// <param name="type"></param>
-        private void OnMoveStateChanged(MovementType moveState)
+        private void OnMoveInputChanged(MovementInputData inputData)
         {
-            Log(sceneObject.ObjectType + ": " + sceneObject.gameObject.name + ": MoveState: " + moveState);
+            if (inputData == null)
+                Log(sceneObject.ObjectType + ": " + sceneObject.gameObject.name + ": MoveState: Null");
+            else
+                Log(sceneObject.ObjectType + ": " + sceneObject.gameObject.name + ": MoveState: " + inputData.Type);
         }
 
 
