@@ -170,9 +170,9 @@ namespace Game.SceneObjects
 
 
         protected virtual void FixedUpdate()
-        {  
-            //Grounded Status
-            CheckGroundedStatus();
+        {
+            CheckClimbingState();
+            CheckGroundedState();
 
             MovementHandler.UpdateMovement();            
 
@@ -190,38 +190,69 @@ namespace Game.SceneObjects
         /// <summary>
         /// Use raycasts to determine current status of the ground
         /// </summary>
-        private void CheckGroundedStatus()
+        private void CheckGroundedState()
+        {            
+            switch (curGroundedState)
+            {
+                case GroundedState.Grounded:
+                    UpdateGroundedState();
+                    break;
+
+                case GroundedState.Airborn:
+                    UpdateAirbornState();
+                    break;
+
+                case GroundedState.Climbing:
+                    UpdateClimbingState();
+                    break;
+            }
+        }
+
+
+        private void UpdateGroundedState()
         {
-            if (IsClimbing())
+            //Switch to climbing
+            if (curClimbState == ClimbState.Climbing)
+                //curClimbState == ClimbState.Available &&
+                //MovementInputHandler != null && MovementInputHandler.VerticalInfluence > 0)
             {
-                if (curGroundedState != GroundedState.Climbing)
-                {
-                    curGroundedState = GroundedState.Climbing;
-                    GroundedStateChangedEvent?.Invoke(curGroundedState);
-                }
+                curGroundedState = GroundedState.Climbing;
+                GroundedStateChangedEvent?.Invoke(curGroundedState);
             }
 
-            else if (IsGrounded())
+            //Switch to airborn
+            else if (!GroundCheck())
             {
-                //Reset vertical velocity if the sceneObject is grounded
-                //Check for hitstun was to resolve an issue where the where the damage velocity in the y direction would be set to 0
-                if (ActionStateHandler.CurActionState != ActionState.HitStun)
-                    Rb.linearVelocity = new Vector3(Rb.linearVelocity.x, 0f, Rb.linearVelocity.z);
-                
-                if (curGroundedState != GroundedState.Grounded)
-                {
-                    curGroundedState = GroundedState.Grounded;
-                    GroundedStateChangedEvent?.Invoke(curGroundedState);
-                }
+                 curGroundedState = GroundedState.Airborn;
+                GroundedStateChangedEvent?.Invoke(curGroundedState);
+            }
+        }
+
+        private void UpdateAirbornState()
+        {
+            //Switch to climbing
+            if (curClimbState == ClimbState.Climbing)
+                //curClimbState == ClimbState.Available &&
+                //MovementInputHandler != null && MovementInputHandler.VerticalInfluence != 0)
+            {
+                curGroundedState = GroundedState.Climbing;
+                GroundedStateChangedEvent?.Invoke(curGroundedState);
             }
 
-            else
+            //Switch to grounded
+            else if (GroundCheck())
             {
-                if (curGroundedState != GroundedState.Airborn)
-                {
-                    curGroundedState = GroundedState.Airborn;
-                    GroundedStateChangedEvent?.Invoke(curGroundedState);
-                }
+                curGroundedState = GroundedState.Grounded;
+                GroundedStateChangedEvent?.Invoke(curGroundedState);
+            }
+        }
+        
+        private void UpdateClimbingState()
+        {
+            if (curClimbState != ClimbState.Climbing)
+            {
+                curGroundedState = GroundCheck() ? GroundedState.Grounded : GroundedState.Airborn;
+                GroundedStateChangedEvent?.Invoke(curGroundedState);
             }
         }
 
@@ -229,7 +260,7 @@ namespace Game.SceneObjects
         /// <summary>
         /// Casts 10 rays based on the left/right most point of the collider to determine if touching the ground
         /// </summary>
-        private bool IsGrounded()
+        private bool GroundCheck()
         {            
             if (Physics.Raycast(Collider.bounds.center, Vector3.down, out RaycastHit hit, Collider.bounds.extents.y + 0.1f, LayerMask.GetMask("Environment")))
             {
@@ -242,25 +273,73 @@ namespace Game.SceneObjects
             return false;
         }
 
-
-        private bool IsClimbing()
-        {
-            UpdateClimbState();
-            return curClimbState == ClimbState.Climbing;
-        }
-
         #endregion
 
 
         #region Climb State
 
-        /// <summary>
-        /// Update the climb state of the sceneObject
-        /// </summary>
-        private void UpdateClimbState()
+        private void CheckClimbingState()
         {
-            if (MovementInputHandler == null || MovementInputHandler.CurrentMovementCollection.GetMovementData<ClimbMoveInputData>() == null) return;
+            //Must have movement input handler
+            if (MovementInputHandler == null ||
+                MovementInputHandler.CurrentMovementCollection.GetMovementData<ClimbMoveInputData>() == null)
+                return;
 
+            switch (curClimbState)
+            {
+                case ClimbState.Unavailable:
+                    UpdateUnavailableClimbState();
+                    break;
+                case ClimbState.Available:
+                    UpdateAvailableClimbState();
+                    break;
+                case ClimbState.Climbing:
+                    UpdateClimbingClimbState();
+                    break;
+            }
+        }
+
+        private void UpdateUnavailableClimbState()
+        {
+            if (ClimbSurfaceCheck())
+                SetClimbState(ClimbState.Available);
+        }
+
+        private void UpdateAvailableClimbState()
+        {
+            if (!ClimbSurfaceCheck())
+                SetClimbState(ClimbState.Unavailable);
+
+            else if (MovementInputHandler.VerticalInfluence != 0)
+            {
+                // NOTE: Need to climb upwards while on the ground
+                if (CurGroundedState == GroundedState.Grounded && MovementInputHandler.VerticalInfluence < 0)
+                    return;                
+
+                // Attacking
+                if (ActionStateHandler.CurActionState == ActionState.Attacking)
+                    return;
+
+                SetClimbState(ClimbState.Climbing);
+            }
+        }
+
+        private void UpdateClimbingClimbState()
+        {
+            if (!ClimbSurfaceCheck())
+                SetClimbState(ClimbState.Unavailable);
+
+            // Hit ground while climbing (NOTE: Dont check based on groundedState since climbState is updated first)
+            else if (MovementInputHandler.VerticalInfluence < 0 && GroundCheck())
+                SetClimbState(ClimbState.Available);
+            
+            // Attack action performed
+            else if (ActionStateHandler.CurActionState == ActionState.Attacking)
+                SetClimbState(ClimbState.Available);
+        }
+
+        private bool ClimbSurfaceCheck()
+        {
             //Update climb state if the collection has climb data                            
             Bounds bounds = Collider.bounds;
             Vector3 center = bounds.center;
@@ -274,57 +353,8 @@ namespace Game.SceneObjects
                 QueryTriggerInteraction.Collide
             );
 
-            if (CurClimbState == ClimbState.Unavailable)
-            {
-                if (hits.Length > 0)
-                    SetClimbState(ClimbState.Available);
-            }
-
-            if (CurClimbState == ClimbState.Available)
-            {
-                if (hits.Length == 0)
-                    SetClimbState(ClimbState.Unavailable);
-
-                else if (MovementInputHandler.VerticalInfluence != 0)
-                {
-                    // NOTE: Need to climb upwards while on the ground
-                    if (CurGroundedState == GroundedState.Grounded && MovementInputHandler.VerticalInfluence < 0)
-                        return;
-
-                    // Moving upwards from jump
-                    if (ActionStateHandler.CurActionState == ActionState.Moving && Rb.linearVelocity.y > 0)
-                        return;
-
-                    // Attacking
-                    if (ActionStateHandler.CurActionState == ActionState.Attacking)
-                        return;
-                                                    
-                    SetClimbState(ClimbState.Climbing);
-                }
-            }
-
-            if (CurClimbState == ClimbState.Climbing)
-            {
-                if (hits.Length == 0)
-                    SetClimbState(ClimbState.Unavailable);
-
-                // Hit ground while climbing
-                else if (MovementInputHandler.VerticalInfluence < 0 && CurGroundedState == GroundedState.Grounded)
-                    SetClimbState(ClimbState.Available);
-
-                // Jump action performed
-                else if (ActionStateHandler.CurActionState == ActionState.Moving)
-                {
-                    if ((MovementInputHandler.CurMovementInputData.Type == MovementType.Jump || MovementInputHandler.CurMovementInputData.Type == MovementType.Jump) && Rb.linearVelocity.y > 0)
-                        SetClimbState(ClimbState.Available);
-                }
-
-                // Attack action performed
-                else if (ActionStateHandler.CurActionState == ActionState.Attacking)
-                    SetClimbState(ClimbState.Available);
-            }            
+            return hits.Length > 0;
         }
-
 
         /// <summary>
         /// Set the climb state of the sceneObject to <paramref name="state"/>
