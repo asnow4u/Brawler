@@ -164,108 +164,13 @@ namespace Game.SceneObjects.Movement
                 return;
             }
 
-
-            if (inputData.Type != curMoveInputState && 
-                StateTransitionPossible(inputData.Type) &&
+            if (inputData != curMovementInputData && 
                 sceneObject.ActionStateHandler.TryChangeState(MOVESTATE))
-            {                
+            {                             
                 curMovementInputData = inputData;
                 curMoveInputState = inputData.Type;
                 InputDataChangedEvent?.Invoke(inputData);
             }
-        }
-
-
-        /// <summary>
-        /// Determine if a transition to <paramref name="moveState"/> is possible based on the current movement state and sceneObject state
-        /// </summary>
-        private bool StateTransitionPossible(MovementType moveState)
-        {
-            switch (curMoveInputState) 
-            {
-                case MovementType.Null:
-
-                    if (sceneObject.CurGroundedState == GroundedState.Grounded &&
-                        (moveState == MovementType.Move ||                        
-                         moveState == MovementType.Jump))
-                        return true;
-
-                    else if (sceneObject.CurGroundedState == GroundedState.Airborn &&
-                        (moveState == MovementType.Move ||
-                         moveState == MovementType.Jump ||
-                         moveState == MovementType.HeavyLanding))
-                        return true;
-
-                    else if (sceneObject.CurClimbState == ClimbState.Climbing &&
-                        (moveState == MovementType.Move ||
-                         moveState == MovementType.Jump))
-                        return true;
-
-                    break;
-
-                case MovementType.Move:
-
-                    if (sceneObject.CurGroundedState == GroundedState.Grounded &&
-                        (moveState == MovementType.Null ||
-                         moveState == MovementType.WallLean ||
-                         moveState == MovementType.Jump ||
-                         moveState == MovementType.LedgeGrab))
-                        return true;
-
-                    else if (sceneObject.CurGroundedState == GroundedState.Airborn &&
-                        (moveState == MovementType.Null ||
-                         moveState == MovementType.Jump ||
-                         moveState == MovementType.HeavyLanding ||
-                         moveState == MovementType.LedgeGrab))
-                        return true;
-
-                    else if (sceneObject.CurClimbState == ClimbState.Climbing &&
-                        (moveState == MovementType.Null ||
-                         moveState == MovementType.Jump ||
-                         moveState == MovementType.LedgeGrab))
-                        return true;
-
-                    break;
-
-                case MovementType.WallLean:
-                    
-                    if (moveState == MovementType.Null ||
-                        moveState == MovementType.Move ||
-                        moveState == MovementType.Jump)
-                        return true;
-
-                    break;
-
-                case MovementType.LedgeGrab:
-
-                    //TODO: Determine if animation has played (This only applies to Null and Move)
-                    if (moveState == MovementType.Null ||
-                        moveState == MovementType.Move ||
-                        moveState == MovementType.Jump)
-                        return true;
-
-                    break;
-
-                case MovementType.Jump:
-
-                    //TODO: Determine if animation has played (This only applies to Null, Move)
-                    if (moveState == MovementType.Null ||
-                        moveState == MovementType.Move ||
-                        moveState == MovementType.LedgeGrab)
-                        return true;
-
-                    break;
-
-                case MovementType.HeavyLanding:
-                    
-                    //TODO: Determine if animation has played
-                    if (moveState == MovementType.Null)
-                        return true;
-
-                    break;               
-            }
-
-            return false;
         }
 
         /// <summary>

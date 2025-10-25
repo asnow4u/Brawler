@@ -291,7 +291,7 @@ namespace Game.SceneObjects
                     if (CurGroundedState == GroundedState.Grounded && MovementInputHandler.VerticalInfluence < 0)
                         return;
 
-                    // Moving upwards
+                    // Moving upwards from jump
                     if (ActionStateHandler.CurActionState == ActionState.Moving && Rb.linearVelocity.y > 0)
                         return;
 
@@ -346,7 +346,7 @@ namespace Game.SceneObjects
             else
                 Rb.useGravity = true;                    
 
-            ClimbStateChangedEvent?.Invoke(prevClimbState, curClimbState);                                        
+            ClimbStateChangedEvent?.Invoke(prevClimbState, curClimbState);
         }
 
         #endregion
