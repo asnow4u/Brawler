@@ -183,7 +183,7 @@ namespace Game.SceneObjects.Animation
         /// <param name="groundedState"></param>
         private void OnGroundedStateChanged(GroundedState groundedState)
         {
-            animationGraph.ChangeIdleStateInput(groundedState, sceneObject.CurClimbState);
+            animationGraph.ChangeIdleStateInput(groundedState, sceneObject.CurClimbState);            
         }
 
 

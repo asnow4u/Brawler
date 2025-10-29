@@ -58,7 +58,7 @@ namespace Game.SceneObjects
         public GroundedState CurGroundedState => curGroundedState;
         public ClimbState CurClimbState => curClimbState;
         public Rigidbody Rb => GetComponent<Rigidbody>();
-        public float MassRatio => Rb.mass / baseData.MaxMass;
+        public float MassRatio => Mathf.Clamp(Rb.mass, 0, baseData.MaxMass) / baseData.MaxMass;
         public Collider Collider => GetComponent<Collider>();
 
 

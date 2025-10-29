@@ -1,3 +1,4 @@
+using Game.Navigation;
 using Game.SceneObjects.ActionStates;
 using System;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -33,19 +34,15 @@ namespace Game.SceneObjects.Movement
         [Range(-1, 1)]
         [SerializeField] private float verticalInfluence;
 
+        [Range(0, 1)]
         [SerializeField] private float jumpInfluence;
-        [SerializeField] private float aerialJumpInfluence;
 
         [Range(0, 1)]
         [Tooltip("Target percentage of maxVelocity on X Axis")]
         [SerializeField] private const float hitStunVelocityTargetMultiplier = 0.25f;
 
         //Jump Properties
-        //NOTE: Based on how long the user holds the jump button will determin how high the player jumps
-        [Header("Jump Properties")]
-        public int MAXJUMPFRAMECOUNT = 10;
-        [SerializeField] private float curJumpFrameCount;
-        [SerializeField] private int airJumpsPerformed;
+        private int airJumpsPerformed = 0;
 
         //Events
         public event Action<MovementInputCollection> MovementCollectionChangedEvent;
@@ -55,7 +52,7 @@ namespace Game.SceneObjects.Movement
         #region Getters
         
         public MovementInputData CurMovementInputData => curMovementInputData;
-        public MovementInputCollection CurrentMovementCollection => currentMovementCollection;
+        public MovementInputCollection CurrentMovementCollection => currentMovementCollection;        
         public float VerticalInfluence => verticalInfluence;   
 
         #endregion
@@ -140,7 +137,10 @@ namespace Game.SceneObjects.Movement
         private void OnAnimationEnded(AnimationClip clip)
         {
             if (currentMovementCollection.TryGetMovementFromAnimation(clip, out _))
+            {
+                Debug.Log("CLIP: " + clip.name);
                 SetCurrentMoveState(null);
+            }
         }
 
         #endregion
@@ -184,7 +184,10 @@ namespace Game.SceneObjects.Movement
 
             //Jump
             else if (jumpInfluence > 0)
+            {
                 SetCurrentMoveState(currentMovementCollection.GetMovementData<JumpInputData>());
+                StartGroundedJump();
+            }
 
             //Wall Lean
             else if (horizontalInfluence != 0 && IsRunningAgainstWall())
@@ -206,7 +209,10 @@ namespace Game.SceneObjects.Movement
 
             //Jump
             else if (IsAerialJumpMovementAllowed())
+            {
                 SetCurrentMoveState(currentMovementCollection.GetMovementData<AirJumpInputData>());
+                StartAerialJump();
+            }
 
             //Accelerate
             else if (horizontalInfluence != 0 || verticalInfluence != 0)
@@ -218,7 +224,7 @@ namespace Game.SceneObjects.Movement
         /// </summary>
         private bool IsAerialJumpMovementAllowed()
         {
-            if (aerialJumpInfluence == 0)
+            if (jumpInfluence == 0)
                 return false;
 
             AirJumpInputData jumpData = currentMovementCollection.GetMovementData<AirJumpInputData>();
@@ -330,23 +336,7 @@ namespace Game.SceneObjects.Movement
         /// </summary>
         public void SetJumpInfluence(float inputInfluence)
         {
-            if (inputInfluence > 0)
-            {
-                if (sceneObject.CurGroundedState == GroundedState.Grounded || sceneObject.CurClimbState == ClimbState.Climbing)
-                    jumpInfluence = inputInfluence;
-                else
-                {
-                    aerialJumpInfluence = inputInfluence;
-                    airJumpsPerformed++;
-                }
-            }
-
-            else
-            {
-                jumpInfluence = 0;
-                aerialJumpInfluence = 0;
-                curJumpFrameCount = 0;
-            }
+            jumpInfluence = Mathf.Clamp(inputInfluence, 0, 1);
         }
 
         #endregion
@@ -377,6 +367,7 @@ namespace Game.SceneObjects.Movement
                     break;
 
                 case MovementType.Jump:
+                    UpdateGroundedAcceleration();
                     UpdateGroundedJumpVelocity();
                     break;
             }
@@ -401,22 +392,7 @@ namespace Game.SceneObjects.Movement
 
             else if (rb.linearVelocity.x < -targetXVelocity)
                 rb.linearVelocity = new Vector3(-targetXVelocity, rb.linearVelocity.y, 0);
-        }
-
-        /// <summary>
-        /// Velocity applied to rb based on how long the jump button has been held
-        /// </summary>
-        private void UpdateGroundedJumpVelocity()
-        {
-            JumpInputData jumpData = currentMovementCollection.GetMovementData<JumpInputData>();
-            float minVelocity = jumpData.MinJumpVelocity;
-            float maxVelocity = jumpData.MaxJumpVelocity;
-
-            float jumpVelocity = Mathf.Lerp(minVelocity, maxVelocity, curJumpFrameCount / MAXJUMPFRAMECOUNT);
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpVelocity, 0);
-
-            curJumpFrameCount++;
-        }
+        }     
 
         #endregion
 
@@ -497,6 +473,13 @@ namespace Game.SceneObjects.Movement
                     break;
 
                 case MovementType.Jump:
+
+                    //Horizontal Movement
+                    if (horizontalInfluence != 0)
+                        AerialXAccelerate();
+                    else
+                        DeccelerationXCallback();
+
                     UpdateAerialJumpVelocity();
                     break;
             }
@@ -556,23 +539,6 @@ namespace Game.SceneObjects.Movement
             }
         }
 
-        /// <summary>
-        /// Velocity applied to rb based on jumpInfluence
-        /// </summary>
-        private void UpdateAerialJumpVelocity()
-        {
-            AirJumpInputData airJumpData = currentMovementCollection.GetMovementData<AirJumpInputData>();
-            float minVelocity = airJumpData.MinAirJumpVelocity;
-            float maxVelocity = airJumpData.MaxAirJumpVelocity;
-
-            CheckTurnAround();
-
-            float jumpVelocity = Mathf.Lerp(minVelocity, maxVelocity, curJumpFrameCount / MAXJUMPFRAMECOUNT);
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpVelocity, 0);
-
-            curJumpFrameCount++;
-        }
-
         #endregion
 
 
@@ -622,6 +588,50 @@ namespace Game.SceneObjects.Movement
                 climbYVelocity = verticalInfluence * climbData.ClimbDownYVelocity;
 
             rb.linearVelocity = new Vector3(climbXVelocity, climbYVelocity, 0);
+        }
+
+        #endregion
+
+
+        #region Jump
+
+        private void StartGroundedJump()
+        {
+            if (curMoveInputState == MovementType.Jump)
+            {
+                float jumpVelocity = currentMovementCollection.GetJumpInitialVelocity<JumpInputData>(sceneObject.MassRatio);
+                rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpVelocity, 0);
+            }
+        }
+
+        private void StartAerialJump()
+        {
+            if (curMoveInputState == MovementType.Jump)
+            {
+                float jumpVelocity = currentMovementCollection.GetJumpInitialVelocity<JumpInputData>(sceneObject.MassRatio);
+                rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpVelocity, 0);
+                airJumpsPerformed++;
+            }
+        }
+
+        /// <summary>
+        /// Velocity applied to rb based on how long the jump button has been held
+        /// </summary>
+        private void UpdateGroundedJumpVelocity()
+        {
+            float acceleration = currentMovementCollection.GetJumpAcceleration<JumpInputData>(sceneObject.MassRatio) * jumpInfluence;
+
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, rb.linearVelocity.y + (acceleration * Time.fixedDeltaTime), 0);
+        }
+
+        /// <summary>
+        /// Velocity applied to rb based on jumpInfluence
+        /// </summary>
+        private void UpdateAerialJumpVelocity()
+        {
+            float acceleration = currentMovementCollection.GetJumpAcceleration<AirJumpInputData>(sceneObject.MassRatio) * jumpInfluence;
+
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, rb.linearVelocity.y + (acceleration * Time.fixedDeltaTime), 0);
         }
 
         #endregion

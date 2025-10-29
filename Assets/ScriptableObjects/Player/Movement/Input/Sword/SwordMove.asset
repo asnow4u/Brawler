@@ -17,5 +17,5 @@ MonoBehaviour:
   Animation: {fileID: 7400000, guid: f4cd084d7d74887408bd00de7878d6c9, type: 2}
   AnimationSpeedMultiplier: 1
   GroundedXMaxAcceleration: 50
-  GroundedXMinAcceleration: 15
+  GroundedXMinAcceleration: 30
   GroundedAttackXDecleration: 65

@@ -116,37 +116,28 @@ namespace Game.SceneObjects.Movement
 
         #region Jump
 
-        /// <summary>
-        /// Attempt to get jump velocity if in collection
-        /// </summary>
-        public bool TryGetMinJumpVelocity(out float minJumpVelocity)
+        /// <returns>
+        /// a jumps starting velocity based on <paramref name="ratio"/>
+        /// </returns>
+        public float GetJumpInitialVelocity<T>(float ratio) where T : JumpInputData
         {
-            JumpInputData jumpData = GetMovementData<JumpInputData>();            
+            JumpInputData jumpData = GetMovementData<T>();
             if (jumpData != null)
-            {
-                minJumpVelocity = jumpData.MinJumpVelocity;
-                return true;
-            }
+                return Mathf.Lerp(jumpData.MaxInitialVelocity, jumpData.MinInitialVelocity, Mathf.Clamp01(ratio));
 
-            minJumpVelocity = 0;
-            return false;
+            throw new MissingReferenceException("JumpData is not set");
         }
 
-
-        /// <summary>
-        /// Attempt to get jump velocity if in collection
-        /// </summary>
-        public bool TryGetMaxJumpVelocity(out float maxJumpVelocity)
+        /// <returns>
+        /// a jumps acceleration based on <paramref name="ratio"/>
+        /// </returns>
+        public float GetJumpAcceleration<T>(float ratio) where T : JumpInputData
         {
-            JumpInputData jumpData = GetMovementData<JumpInputData>();
+            JumpInputData jumpData = GetMovementData<T>();
             if (jumpData != null)
-            {
-                maxJumpVelocity = jumpData.MaxJumpVelocity;
-                return true;
-            }
+                return Mathf.Lerp(jumpData.MaxJumpAcceleration, jumpData.MinJumpAcceleration, Mathf.Clamp01(ratio));
 
-            maxJumpVelocity = 0;
-            return false;
+            throw new MissingReferenceException("JumpData is not set");
         }
 
         #endregion
