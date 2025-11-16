@@ -16,7 +16,7 @@ namespace Game.Navigation
         /// <param name="endNode"></param>
         /// <param name="collection"></param>
         /// <returns></returns>
-        public Graph CreateGraph(GraphType type, TerrainNode startNode, TerrainNode endNode, Bounds bounds, MovementInputCollection collection)
+        public Graph CreateGraph(GraphType type, TerrainNode startNode, TerrainNode endNode, Bounds bounds, MovementCollection collection)
         {
             switch (type)
             {

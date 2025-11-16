@@ -16,9 +16,6 @@ namespace Game.SceneObjects
             SetupEventListeners();
         }
 
-
-        #region Events
-
         private void SetupEventListeners()
         {
             //Ground state
@@ -32,12 +29,15 @@ namespace Game.SceneObjects
             {
                 sceneObject.ClimbStateChangedEvent += OnClimbStateChanged;
                 sceneObject.MovementInputHandler.InputDataChangedEvent += OnMoveInputChanged;
-                sceneObject.MovementInputHandler.MovementCollectionChangedEvent += OnMoveCollectionChanged;
+                sceneObject.MovementInputHandler.CollectionChangedEvent += OnMoveCollectionChanged;
             }
 
             //Attack
             if (sceneObject.AttackInputHandler != null)
+            {
                 sceneObject.AttackInputHandler.AttackStateChangedEvent += OnAttackStateChanged;
+                sceneObject.AttackInputHandler.CollectionChangedEvent += OnAttackCollectionChanged;
+            }
 
             //Animation
             if (sceneObject.AnimationHandler != null)
@@ -51,118 +51,90 @@ namespace Game.SceneObjects
         /// <summary>
         /// Log ground state change
         /// </summary>
-        /// <param name="groundedState"></param>
         private void OnGroundStateChanged(GroundedState groundState)
         {
-            Log(sceneObject.ObjectType + ": " + sceneObject.gameObject.name + ": GroundState: " + groundState);
+            Log("GroundState: " + groundState);
         }
 
 
         /// <summary>
         /// Log climb state change
         /// </summary>
-        /// <param name="climbState"></param>
         private void OnClimbStateChanged(ClimbState prevCLimbState, ClimbState climbState)
         {
-            Log(sceneObject.ObjectType + ": " + sceneObject.gameObject.name + ": ClimbState: " + climbState);
+            Log("ClimbState: " + climbState);
         }
 
 
         /// <summary>
         /// Log action state change
         /// </summary>
-        /// <param name="state"></param>    
         private void OnActionStateChanged(ActionState actionState)
         {
-            Log(sceneObject.ObjectType + ": " + sceneObject.gameObject.name + ": ActionState: " + actionState);
+            Log("ActionState: " + actionState);
         }
 
 
         /// <summary>
         /// Log move collection change
         /// </summary>
-        /// <param name="collection"></param>
-        private void OnMoveCollectionChanged(MovementInputCollection collection)
+        private void OnMoveCollectionChanged(MovementCollection collection)
         {
-            Log(sceneObject.ObjectType + ": " + sceneObject.gameObject.name + ": Move Collection Changed");
+            Log("Move Collection Changed");
         }
 
 
         /// <summary>
         /// Log move state change
         /// </summary>
-        /// <param name="type"></param>
         private void OnMoveInputChanged(MovementInputData inputData)
         {
             if (inputData == null)
-                Log(sceneObject.ObjectType + ": " + sceneObject.gameObject.name + ": MoveState: Null");
+                Log("MoveState: Null");
             else
-                Log(sceneObject.ObjectType + ": " + sceneObject.gameObject.name + ": MoveState: " + inputData.Type);
+                Log("MoveState: " + inputData.Type);
         }
 
 
         /// <summary>
         /// Log attack state change
         /// </summary>
-        /// <param name="type"></param>
         private void OnAttackStateChanged(AttackType prevAttackState, AttackType currentAttackState)
         {
-            Log(sceneObject.ObjectType + ": " + sceneObject.gameObject.name + ": AttackState: " + currentAttackState + ", from " + prevAttackState);
+            Log("AttackState: " + currentAttackState + ", from " + prevAttackState);
         }
 
+        /// <summary>
+        /// Log change of Atttack Collection
+        /// </summary>
+        private void OnAttackCollectionChanged(AttackCollection collection)
+        {
+            Log("Attack Collection Changed");
+        }
 
         /// <summary>
         /// Log animation start
         /// </summary>
-        /// <param name="clip"></param>
-        /// <exception cref="NotImplementedException"></exception>
         private void OnAnimationStarted(AnimationClip clip)
         {
-            Log(sceneObject.ObjectType + ": " + sceneObject.gameObject.name + ": Animation Started: " + clip.name);
+            Log("Animation Started: " + clip.name);
         }
 
 
         /// <summary>
         /// Log animation end
         /// </summary>
-        /// <param name="clip"></param>
-        /// <exception cref="NotImplementedException"></exception>
         private void OnAnimationEnded(AnimationClip clip)
         {
-            Log(sceneObject.ObjectType + ": " + sceneObject.gameObject.name + ": Animation Ended: " + clip.name);
+            Log("Animation Ended: " + clip.name);
         }
-
-        #endregion
-
-
-        #region Logs
 
         /// <summary>
         /// Log a debugLog to the console information about a sceneObject
         /// </summary>
         public void Log(string log)
         {
-            Debug.Log(log, sceneObject);
+            Debug.Log($"({sceneObject.ObjectType}) {sceneObject.gameObject.name}: {log}", sceneObject);
         }
-
-
-        /// <summary>
-        /// Log a debugLog to the console information about a sceneObject
-        /// </summary>
-        public void LogWarning(string log)
-        {
-            Debug.Log(log, sceneObject);
-        }
-
-
-        /// <summary>
-        /// Log a debugLog to the console information about a sceneObject
-        /// </summary>
-        public void LogError(string log)
-        {
-            Debug.LogError(log, sceneObject);
-        }
-
-        #endregion
     }
 }

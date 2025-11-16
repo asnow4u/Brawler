@@ -24,8 +24,8 @@ namespace Game.SceneObjects.Movement
 
         //Movement Collection (NOTE: BaseMovementCollection is Required for all sceneObjects. Base handles the case where a sceneObject dosent use a weapon but moves)    
         [Header("Collection")]
-        [SerializeField] private MovementInputCollection baseMovementCollection;
-        [SerializeField] private MovementInputCollection currentMovementCollection;
+        [SerializeField] private MovementCollection baseMovementCollection;
+        [SerializeField] private MovementCollection currentMovementCollection;
 
         [Header("Influence")]
         [Range(-1, 1)]
@@ -46,14 +46,14 @@ namespace Game.SceneObjects.Movement
         private int airJumpsPerformed = 0;
 
         //Events
-        public event Action<MovementInputCollection> MovementCollectionChangedEvent;
         public event Action<MovementInputData> InputDataChangedEvent;
+        public event Action<MovementCollection> CollectionChangedEvent;
 
 
         #region Getters
         
         public MovementInputData CurMovementInputData => curMovementInputData;
-        public MovementInputCollection CurrentMovementCollection => currentMovementCollection;        
+        public MovementCollection CurrentMovementCollection => currentMovementCollection;        
         public float VerticalInfluence => verticalInfluence;   
 
         #endregion
@@ -64,6 +64,7 @@ namespace Game.SceneObjects.Movement
         public override void RegisterToEvents()
         {
             sceneObject.GroundedStateChangedEvent += OnGroundedStateChanged;
+            sceneObject.EquipmentHandler.WeaponHandler.OnWeaponEquippedEvent += OnWeaponEquipped;
             sceneObject.ClimbStateChangedEvent += OnClimbStateChanged;
             sceneObject.AnimationHandler.AnimationEndedEvent += OnAnimationEnded;
         }
@@ -83,20 +84,19 @@ namespace Game.SceneObjects.Movement
             else
                 throw new Exception($"SceneObject {sceneObject.name} does not implement IMovementInput interface");
 
-            //Movement Collection //NOTE: This will later be removed to just get the movement data from the equipped weapon
-            if (baseMovementCollection != null) 
-                SetUpCollection(baseMovementCollection);
-            else
-                throw new MissingReferenceException("BaseMovementCollection is not set for MovementInputHandler");
+            if (currentMovementCollection == null)
+                SetCollection(baseMovementCollection);
         }
 
 
-        public void SetUpCollection(MovementInputCollection collection)
+        private void SetCollection(MovementCollection collection)
         {
-            currentMovementCollection = baseMovementCollection;
+            if (collection == null) return;
+
+            currentMovementCollection = collection;
             currentMovementCollection.IndexData();
 
-            //MovementCollectionChangedEvent?.Invoke(currentMovementCollection);
+            CollectionChangedEvent?.Invoke(currentMovementCollection);
         }
 
 
@@ -129,6 +129,15 @@ namespace Game.SceneObjects.Movement
             //Reset jumps
             if (climbState == ClimbState.Climbing)
                 airJumpsPerformed = 0;    
+        }
+
+        /// <summary>
+        /// Handle when the weapon is equipped and use the weapons movement collection
+        /// </summary>
+        private void OnWeaponEquipped(Weapon weapon)
+        {
+            if (weapon != null && weapon.MovementCollection != null)
+                SetCollection(weapon.MovementCollection);
         }
 
         /// <summary>

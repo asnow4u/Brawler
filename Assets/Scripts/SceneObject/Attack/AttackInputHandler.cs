@@ -26,6 +26,8 @@ namespace Game.SceneObjects.Attack
         //NOTE: This tracks the current attack data being used
         private AttackData curAttackData;
 
+        private AttackCollection curAttackCollection;
+
         //NOTE: This is the max amount of time that this attack can be held before it is released
         private const float MAX_ATTACK_CHARGE_TIME = 1f;
         private float attackChargeTime = 0f;
@@ -43,21 +45,13 @@ namespace Game.SceneObjects.Attack
         /// The second attackType defines the attack to transition to <br/>
         /// </summary>
         public event Action<AttackType, AttackType> AttackStateChangedEvent;
+        public event Action<AttackCollection> CollectionChangedEvent;
 
 
         #region Getters
 
         public AttackData CurAttackData => curAttackData;
-
-        public bool TryGetCurrentAttackCollection(out AttackCollection curAttackCollection)
-        {
-            curAttackCollection = null;
-
-            if (sceneObject.EquipmentHandler.WeaponHandler.EquippedWeapon != null)
-                curAttackCollection = sceneObject.EquipmentHandler.WeaponHandler.EquippedWeapon.AttackCollection;
-
-            return curAttackCollection != null;
-        }
+        public AttackCollection CurAttackCollection => curAttackCollection;
 
         #endregion
 
@@ -66,15 +60,16 @@ namespace Game.SceneObjects.Attack
 
         public override void RegisterToEvents()
         {
-            //Animation Events
             sceneObject.GroundedStateChangedEvent += OnGroundedStateChanged;
+            sceneObject.EquipmentHandler.WeaponHandler.OnWeaponEquippedEvent += OnWeaponEquipped;
             sceneObject.AnimationHandler.AnimationStartedEvent += OnAnimationStarted;
             sceneObject.AnimationHandler.AnimationEndedEvent += OnAnimationEnded;
         }
 
         public override void UnregisterToEvents()
         {
-            //Animation Events
+            sceneObject.GroundedStateChangedEvent -= OnGroundedStateChanged;
+            sceneObject.EquipmentHandler.WeaponHandler.OnWeaponEquippedEvent -= OnWeaponEquipped;
             sceneObject.AnimationHandler.AnimationStartedEvent -= OnAnimationStarted;
             sceneObject.AnimationHandler.AnimationEndedEvent -= OnAnimationEnded;
         }
@@ -96,70 +91,74 @@ namespace Game.SceneObjects.Attack
         /// </summary>
         private void OnGroundedStateChanged(GroundedState groundedState)
         {
-            if (groundedState == GroundedState.Grounded && curAttackState != AttackType.Null && TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
+            if (groundedState == GroundedState.Grounded && curAttackState != AttackType.Null)
             {
                 switch (curAttackState)
                 {
                     case AttackType.UpAir:
                         if (attackInput.IsUpAttackActive())
-                            SetCurrentAttackState(AttackType.UpTilt, curAttackCollection);
+                            SetCurrentAttackState(AttackType.UpTilt);
                         else
-                            SetCurrentAttackState(AttackType.Null, curAttackCollection);
+                            SetCurrentAttackState(AttackType.Null);
                         break;
 
                     case AttackType.ForwardAir:
                         if (attackInput.IsRightAttackActive() || attackInput.IsLeftAttackActive())
-                            SetCurrentAttackState(AttackType.ForwardTilt, curAttackCollection);
+                            SetCurrentAttackState(AttackType.ForwardTilt);
                         else
-                            SetCurrentAttackState(AttackType.Null, curAttackCollection);
+                            SetCurrentAttackState(AttackType.Null);
                         break;
 
                     case AttackType.DownAir:
                         if (attackInput.IsDownAttackActive())
-                            SetCurrentAttackState(AttackType.DownTilt, curAttackCollection);
+                            SetCurrentAttackState(AttackType.DownTilt);
                         else
-                            SetCurrentAttackState(AttackType.Null, curAttackCollection);
+                            SetCurrentAttackState(AttackType.Null);
                         break;
                 }
             }
         }
 
+        /// <summary>
+        /// Handle weapon equipping
+        /// </summary>
+        private void OnWeaponEquipped(Weapon weapon)
+        {
+            if (weapon != null)
+            {
+                curAttackCollection = weapon.AttackCollection;
+                CollectionChangedEvent?.Invoke(curAttackCollection);
+            }
+        }
 
         /// <summary>
         /// Check for attack animation
         /// </summary>
         private void OnAnimationStarted(AnimationClip clip)
         {
-            if (TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
+            if (curAttackCollection != null && curAttackCollection.TryGetAttackByAnimation(clip, out AttackData attackData))
             {
-                if (curAttackCollection.TryGetAttackByAnimation(clip, out AttackData attackData))
-                {
-                    curAttackData = attackData;
+                curAttackData = attackData;
 
-                    foreach (AnimationTrigger trigger in attackData.GetAttackTriggers())
-                        trigger.Reset();
-                }
+                foreach (AnimationTrigger trigger in attackData.GetAttackTriggers())
+                    trigger.Reset();
             }
         }
-
 
         /// <summary>
         /// Check if attack animation ended
         /// </summary>
         private void OnAnimationEnded(AnimationClip clip)
         {
-            if (TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
+            if (curAttackCollection != null && curAttackCollection.TryGetAttackByAnimation(clip, out AttackData attackData))
             {
-                if (curAttackCollection.TryGetAttackByAnimation(clip, out AttackData attackData))
+                //Handle the case where the current attack animation is ended (actionState change)
+                if (curAttackState == attackData.Type)
                 {
-                    //Handle the case where the current attack animation is ended (actionState change)
-                    if (curAttackState == attackData.Type)
-                    {
-                        SetCurrentAttackState(AttackType.Null, curAttackCollection);
+                    SetCurrentAttackState(AttackType.Null);
 
-                        attackChargeTime = 0;
-                        chargeAttackMultiplier = 0;
-                    }
+                    attackChargeTime = 0;
+                    chargeAttackMultiplier = 0;
                 }
             }
         }
@@ -175,15 +174,12 @@ namespace Game.SceneObjects.Attack
             if (sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking && curAttackData != null)
             {
                 //Check Collision
-                if (TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
-                    CheckForAnimationTriggers();
+                CheckForAnimationTriggers();
 
                 //Charge Attack
-                UpdateChargeAttack();
-                
+                UpdateChargeAttack();                
             }
         }
-
 
 
         #region Attack State
@@ -192,7 +188,7 @@ namespace Game.SceneObjects.Attack
         /// Attempt to set the current attack state <br></br>
         /// This will initiate the animation of the attackType
         /// </summary>
-        private void SetCurrentAttackState(AttackType attackType, AttackCollection curAttackCollection)
+        private void SetCurrentAttackState(AttackType attackType)
         {            
             if (attackType != AttackType.Null)
             {
@@ -219,7 +215,6 @@ namespace Game.SceneObjects.Attack
 
         #endregion
 
-
         #region Perform Attack
 
         /// <summary>
@@ -227,32 +222,30 @@ namespace Game.SceneObjects.Attack
         /// </summary>
         public void PerformUpAttack()
         {
-            if (curAttackState == AttackType.Null && TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
+            if (curAttackState == AttackType.Null)
             {
                 if (sceneObject.CurGroundedState == GroundedState.Grounded)
-                    SetCurrentAttackState(AttackType.UpTilt, curAttackCollection);                            
+                    SetCurrentAttackState(AttackType.UpTilt);                            
 
                 else
-                    SetCurrentAttackState(AttackType.UpAir, curAttackCollection);
+                    SetCurrentAttackState(AttackType.UpAir);
             }
         }
-
 
         /// <summary>
         /// Try to perform a grounded / Air Down attack
         /// </summary>
         public void PerformDownAttack()
         {
-            if (curAttackState == AttackType.Null && TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
+            if (curAttackState == AttackType.Null)
             {
                 if (sceneObject.CurGroundedState == GroundedState.Grounded)
-                    SetCurrentAttackState(AttackType.DownTilt, curAttackCollection);
+                    SetCurrentAttackState(AttackType.DownTilt);
 
                 else
-                    SetCurrentAttackState(AttackType.DownAir, curAttackCollection);
+                    SetCurrentAttackState(AttackType.DownAir);
             }
         }
-
 
         /// <summary>
         /// Try to perform a grounded / Air Forward attack <\br>
@@ -260,14 +253,14 @@ namespace Game.SceneObjects.Attack
         /// </summary>
         public void PerformForwardAttack()
         {
-            if (curAttackState == AttackType.Null && TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
+            if (curAttackState == AttackType.Null)
             {                
                 if (sceneObject.CurGroundedState == GroundedState.Grounded)
                 {
                     //NOTE: Resets y velocity. This helps prevent an areal grounded attack if performed on first few frame of jump
                     sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, 0, 0);
 
-                    SetCurrentAttackState(AttackType.ForwardTilt, curAttackCollection);
+                    SetCurrentAttackState(AttackType.ForwardTilt);
 
                     if (!movementHandler.IsFacingRightDirection)
                         movementHandler.TurnAround();                   
@@ -275,7 +268,7 @@ namespace Game.SceneObjects.Attack
                     
                 else
                 {
-                    SetCurrentAttackState(AttackType.ForwardAir, curAttackCollection);
+                    SetCurrentAttackState(AttackType.ForwardAir);
 
                     if (!movementHandler.IsFacingRightDirection)
                         movementHandler.TurnAround();
@@ -283,18 +276,17 @@ namespace Game.SceneObjects.Attack
             }
         }
 
-
         /// <summary>
         /// Try to perform a grounded / Air Forward attack <\br>
         /// Turn around if facing the wrong direction
         /// </summary>
         public void PerformLeftAttack()
         {
-            if (curAttackState == AttackType.Null && TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
+            if (curAttackState == AttackType.Null)
             {
                 if (sceneObject.CurGroundedState == GroundedState.Grounded)
                 {
-                    SetCurrentAttackState(AttackType.ForwardTilt, curAttackCollection);
+                    SetCurrentAttackState(AttackType.ForwardTilt);
 
                     if (movementHandler.IsFacingRightDirection)
                         movementHandler.TurnAround();
@@ -302,7 +294,7 @@ namespace Game.SceneObjects.Attack
 
                 else
                 {
-                    SetCurrentAttackState(AttackType.ForwardAir, curAttackCollection);
+                    SetCurrentAttackState(AttackType.ForwardAir);
 
                     if (movementHandler.IsFacingRightDirection)
                         movementHandler.TurnAround();
@@ -311,7 +303,6 @@ namespace Game.SceneObjects.Attack
         }
 
         #endregion
-
 
         #region Charged Attack
 
@@ -415,7 +406,6 @@ namespace Game.SceneObjects.Attack
             if (!attackInput.IsDownAttackActive())
                 sceneObject.AnimationHandler.ResumeCurrentAnimation();
         }
-
 
         #endregion
 

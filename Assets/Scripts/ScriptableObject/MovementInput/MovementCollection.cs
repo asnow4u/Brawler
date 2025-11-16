@@ -6,7 +6,7 @@ namespace Game.SceneObjects.Movement
 {
     [CreateAssetMenu(fileName = "MovementInputCollection", menuName = "ScriptableObjects/Movement/InputCollection")]
 
-    public class MovementInputCollection : ScriptableObject
+    public class MovementCollection : ScriptableObject
     {
         public List<MovementInputData> MovementData;
 
@@ -26,8 +26,8 @@ namespace Game.SceneObjects.Movement
         {
             foreach (var data in MovementData)
             {
-                if (data is T typedData)
-                    return typedData;
+                if (data.GetType() ==  typeof(T))
+                    return (T)data;
             }
             return null;
         }

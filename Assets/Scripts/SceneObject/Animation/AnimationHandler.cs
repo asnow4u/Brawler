@@ -91,8 +91,9 @@ namespace Game.SceneObjects.Animation
             sceneObject.GroundedStateChangedEvent += OnGroundedStateChanged;
             sceneObject.ClimbStateChangedEvent += OnClimbStateChanged;
             sceneObject.MovementInputHandler.InputDataChangedEvent += OnMovementInputChanged;
+            sceneObject.MovementInputHandler.CollectionChangedEvent += OnMovementCollectionChanged;
             sceneObject.AttackInputHandler.AttackStateChangedEvent += OnAttackStateChanged;
-            sceneObject.EquipmentHandler.WeaponHandler.OnWeaponEquipped += OnWeaponEquipped;
+            sceneObject.AttackInputHandler.CollectionChangedEvent += OnAttackCollectionChanged;
         }
 
         public override void UnregisterToEvents()
@@ -101,8 +102,9 @@ namespace Game.SceneObjects.Animation
             sceneObject.GroundedStateChangedEvent -= OnGroundedStateChanged;
             sceneObject.ClimbStateChangedEvent -= OnClimbStateChanged;
             sceneObject.MovementInputHandler.InputDataChangedEvent -= OnMovementInputChanged;
+            sceneObject.MovementInputHandler.CollectionChangedEvent -= OnMovementCollectionChanged;
             sceneObject.AttackInputHandler.AttackStateChangedEvent -= OnAttackStateChanged;
-            sceneObject.EquipmentHandler.WeaponHandler.OnWeaponEquipped -= OnWeaponEquipped;
+            sceneObject.AttackInputHandler.CollectionChangedEvent -= OnAttackCollectionChanged;
         }
 
         #endregion
@@ -116,11 +118,8 @@ namespace Game.SceneObjects.Animation
         private void SetAnimationToGraph()
         {
             SetIdleAnimations();
-            SetMovementAnimations();
-            SetAttackAnimations();
             SetHitStunAnimations();
         }
-
 
         /// <summary>
         /// Set animationGraphs idle animations
@@ -129,30 +128,6 @@ namespace Game.SceneObjects.Animation
         {
             animationGraph.SetIdleAnimations(groundIdleAnimation, airIdleAnimation, climbIdleAnimation);
         }
-
-
-        /// <summary>
-        /// Set animationGraphs movement animations
-        /// </summary>
-        private void SetMovementAnimations()
-        {
-            if (sceneObject.MovementInputHandler != null)
-                animationGraph.SetMovementAnimations(sceneObject.MovementInputHandler.CurrentMovementCollection);
-        }
-
-
-        /// <summary>
-        /// Set animationGraphs attack animations
-        /// </summary>
-        private void SetAttackAnimations()
-        {
-            if (TryGetComponent(out AttackInputHandler attackInputHandler))
-            {
-                if (attackInputHandler.TryGetCurrentAttackCollection(out AttackCollection curAttackCollection))
-                    animationGraph.SetAttackAnimations(curAttackCollection);
-            }
-        }
-
 
         /// <summary>
         /// Set animationGraphs hitstun animations
@@ -176,7 +151,6 @@ namespace Game.SceneObjects.Animation
             animationGraph.ChangeActionStateInput(actionState);
         }
 
-
         /// <summary>
         /// Grounded State Changed
         /// </summary>
@@ -186,12 +160,13 @@ namespace Game.SceneObjects.Animation
             animationGraph.ChangeIdleStateInput(groundedState, sceneObject.CurClimbState);            
         }
 
-
+        /// <summary>
+        /// Handle change of climb state
+        /// </summary>
         private void OnClimbStateChanged(ClimbState prevClimbState, ClimbState climbState)
         {
             animationGraph.ChangeIdleStateInput(sceneObject.CurGroundedState, climbState);
         }
-
 
         /// <summary>
         /// Movement state changed
@@ -209,11 +184,18 @@ namespace Game.SceneObjects.Animation
             {
                 //NOTE: 
                 // If weapon or other enhancements improve animation speed, add to multiplier here
-
                 animationGraph.ChangeMovementStateInput(inputData);
             }
         }
 
+        /// <summary>
+        /// Handle change of movmement collection
+        /// </summary>
+        private void OnMovementCollectionChanged(MovementCollection movementCollection)
+        {
+            if (movementCollection != null)
+                animationGraph.SetMovementAnimations(movementCollection);
+        }
 
         /// <summary>
         /// Attack state changed
@@ -224,19 +206,17 @@ namespace Game.SceneObjects.Animation
             //NOTE: 
             // If weapon or other enhancements improve animation speed, add to multiplier here
 
-            if (sceneObject.AttackInputHandler.TryGetCurrentAttackCollection(out AttackCollection attackCollection))
-            {
-                if (attackCollection.TryGetAttackByType(currentAttackState, out AttackData requestedAttackData))
-                    animationGraph.ChangeAttackStateInput(currentAttackState, requestedAttackData.AnimationSpeedMultiplier);
-            }
+            AttackInputHandler attackInputHandler = sceneObject.AttackInputHandler;
+            if (attackInputHandler != null && attackInputHandler.CurAttackCollection.TryGetAttackByType(currentAttackState, out AttackData requestedAttackData))
+               animationGraph.ChangeAttackStateInput(currentAttackState, requestedAttackData.AnimationSpeedMultiplier);
         }
 
         /// <summary>
-        /// Handle weapon being equipped
+        /// Handle attack collection changing
         /// </summary>
-        private void OnWeaponEquipped(Weapon weapon)
+        private void OnAttackCollectionChanged(AttackCollection attackCollection)
         {            
-            animationGraph.SetAttackAnimations(weapon.AttackCollection);
+            animationGraph.SetAttackAnimations(attackCollection);
         }
 
         #endregion

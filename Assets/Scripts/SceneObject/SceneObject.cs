@@ -99,10 +99,9 @@ namespace Game.SceneObjects
             Rb.linearDamping = 0;
 
             GetHandlers();
-            SetUpHandlers();
-            SetupHandlerEvents(); 
-        
             logger = new SceneObjectLogger(this);
+            SetupHandlerEvents(); 
+            SetUpHandlers();        
         }
 
 
@@ -127,6 +126,7 @@ namespace Game.SceneObjects
         /// </summary>
         private void SetUpHandlers()
         {
+            AnimationHandler?.Setup();
             ActionStateHandler.Setup();
             MovementHandler.Setup();
             UIHandler.Setup();
@@ -136,7 +136,6 @@ namespace Game.SceneObjects
             InteractionHandler?.Setup();
             MovementInputHandler?.Setup();
             AttackInputHandler?.Setup();
-            AnimationHandler?.Setup();
         }
 
         /// <summary>

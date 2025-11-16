@@ -14,7 +14,7 @@ public class WeaponHandler : MonoBehaviour
 
     public Weapon EquippedWeapon => equippedWeapon;
 
-    public Action<Weapon> OnWeaponEquipped;
+    public event Action<Weapon> OnWeaponEquippedEvent;
 
     public void Setup()
     {        
@@ -67,7 +67,7 @@ public class WeaponHandler : MonoBehaviour
         equippedWeapon.transform.localPosition = Vector3.zero;
         equippedWeapon.transform.localRotation = Quaternion.identity;
 
-        OnWeaponEquipped?.Invoke(equippedWeapon);
+        OnWeaponEquippedEvent?.Invoke(equippedWeapon);
     }
     
     /// <summary>

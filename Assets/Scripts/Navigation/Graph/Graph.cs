@@ -13,7 +13,7 @@ namespace Game.Navigation
         protected List<GraphNode> nodeList = new List<GraphNode>();
 
         protected Bounds bounds;
-        protected MovementInputCollection moveCollection;
+        protected MovementCollection moveCollection;
 
         //Getters
         public GraphType Type => type;
@@ -22,7 +22,7 @@ namespace Game.Navigation
         public List<GraphNode> NodeList => nodeList;
 
 
-        public Graph(TerrainNode startNode, TerrainNode endNode, Bounds bounds, MovementInputCollection collection)
+        public Graph(TerrainNode startNode, TerrainNode endNode, Bounds bounds, MovementCollection collection)
         {
             this.moveCollection = collection;
             this.bounds = bounds;

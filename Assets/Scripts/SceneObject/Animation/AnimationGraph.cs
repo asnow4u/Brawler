@@ -155,8 +155,12 @@ namespace Game.SceneObjects.Animation
         /// <summary>
         /// Set movement animations to use
         /// </summary>
-        public void SetMovementAnimations(MovementInputCollection moveCollection)
+        public void SetMovementAnimations(MovementCollection moveCollection)
         {
+            //Disconnect existing inputs
+            for (int i = 0; i < movementAnimationMixer.GetInputCount(); i++)
+                movementAnimationMixer.DisconnectInput(i);           
+
             foreach (MovementInputData inputData in moveCollection.MovementData)
             {
                 AnimationClipPlayable movePlayable = AnimationClipPlayable.Create(animationGraph, inputData.Animation);

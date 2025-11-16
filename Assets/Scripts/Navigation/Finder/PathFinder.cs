@@ -12,7 +12,7 @@ namespace Game.Navigation
         protected List<GraphNode> visitedNodes = new List<GraphNode>();
 
         protected Graph curGraph;
-        protected MovementInputCollection moveCollection;
+        protected MovementCollection moveCollection;
 
         //Getters
         protected Bounds bounds => go.GetComponent<CapsuleCollider>().bounds;
@@ -30,7 +30,7 @@ namespace Game.Navigation
         /// </summary>
         /// <param name="graph"></param>
         /// <param name="collection"></param>
-        public void Setup(Graph graph, MovementInputCollection collection)
+        public void Setup(Graph graph, MovementCollection collection)
         {
             curGraph = graph;
             moveCollection = collection;

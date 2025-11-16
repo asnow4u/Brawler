@@ -6,7 +6,7 @@ namespace Game.Navigation
 {
     public class PlatformGraph : Graph
     {
-        public PlatformGraph(TerrainNode startNode, TerrainNode endNode, Bounds bounds, MovementInputCollection collection) : base(startNode, endNode, bounds, collection)
+        public PlatformGraph(TerrainNode startNode, TerrainNode endNode, Bounds bounds, MovementCollection collection) : base(startNode, endNode, bounds, collection)
         {
             type = GraphType.Platform;
         }
