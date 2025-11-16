@@ -233,7 +233,7 @@ namespace Game.SceneObjects.Movement
                 return false;
 
             AirJumpInputData jumpData = currentMovementCollection.GetMovementData<AirJumpInputData>();
-            if (airJumpsPerformed > jumpData.JumpsAvailable)
+            if (airJumpsPerformed > jumpData.AdditionalJumpsAvailable)
                 return false;
 
             return true;
@@ -612,7 +612,10 @@ namespace Game.SceneObjects.Movement
             }
 
             if (curMovementInputData is AirJumpInputData)
+            {
+                CheckTurnAround();
                 airJumpsPerformed++;
+            }
 
             jumpInputAvailable = false;
         }

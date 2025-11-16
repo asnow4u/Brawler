@@ -18,5 +18,5 @@ MonoBehaviour:
   AnimationSpeedMultiplier: 1
   MinInitialVelocity: 5
   MaxInitialVelocity: 5
-  MinJumpAcceleration: 20
-  MaxJumpAcceleration: 20
+  MinJumpAcceleration: 25
+  MaxJumpAcceleration: 25

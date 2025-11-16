@@ -15,9 +15,9 @@ MonoBehaviour:
   Index: 4
   Type: 4
   Animation: {fileID: 7400000, guid: 321ce23443f06c544a250836532d3853, type: 2}
-  AnimationSpeedMultiplier: 1
-  MinInitialVelocity: 3
-  MaxInitialVelocity: 3
-  MinJumpAcceleration: 5
-  MaxJumpAcceleration: 5
-  JumpsAvailable: 1
+  AnimationSpeedMultiplier: 3
+  MinInitialVelocity: 4
+  MaxInitialVelocity: 4
+  MinJumpAcceleration: 15
+  MaxJumpAcceleration: 15
+  AdditionalJumpsAvailable: 0

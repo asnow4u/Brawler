@@ -16,7 +16,7 @@ MonoBehaviour:
   Type: 1
   Animation: {fileID: 7400000, guid: 07b5c2c8205a8a7448403075a4286be5, type: 2}
   AnimationSpeedMultiplier: 1
-  AerialXMaxAcceleration: 25
+  AerialXMaxAcceleration: 20
   AerialXMinAcceleration: 20
   AerialYMaxAcceleration: 30
   AerialYMinAcceleration: 25
