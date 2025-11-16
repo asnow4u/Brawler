@@ -111,35 +111,6 @@ namespace Game.SceneObjects.Movement
             throw new MissingReferenceException("AirMoveData is not set");
         }
 
-        #endregion
-
-
-        #region Jump
-
-        /// <returns>
-        /// a jumps starting velocity based on <paramref name="ratio"/>
-        /// </returns>
-        public float GetJumpInitialVelocity<T>(float ratio) where T : JumpInputData
-        {
-            JumpInputData jumpData = GetMovementData<T>();
-            if (jumpData != null)
-                return Mathf.Lerp(jumpData.MaxInitialVelocity, jumpData.MinInitialVelocity, Mathf.Clamp01(ratio));
-
-            throw new MissingReferenceException("JumpData is not set");
-        }
-
-        /// <returns>
-        /// a jumps acceleration based on <paramref name="ratio"/>
-        /// </returns>
-        public float GetJumpAcceleration<T>(float ratio) where T : JumpInputData
-        {
-            JumpInputData jumpData = GetMovementData<T>();
-            if (jumpData != null)
-                return Mathf.Lerp(jumpData.MaxJumpAcceleration, jumpData.MinJumpAcceleration, Mathf.Clamp01(ratio));
-
-            throw new MissingReferenceException("JumpData is not set");
-        }
-
-        #endregion
+        #endregion   
     }
 }
