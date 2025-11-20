@@ -39,5 +39,15 @@ namespace Game.SceneObjects.Equipment
 
         #endregion
 
+
+        public float GetEquipmentMass()
+        {
+            float accumulatedMass = 0f;
+
+            if (WeaponHandler.EquippedWeapon != null)
+                accumulatedMass += WeaponHandler.EquippedWeapon.Mass;
+
+            return accumulatedMass;
+        }
     }
 }

@@ -54,11 +54,12 @@ namespace Game.SceneObjects
         public AnimationHandler AnimationHandler { get; protected set; }
 
         //Getters
-        public SceneObjectLogger Logger => logger;    
+        public SceneObjectLogger Logger => logger;
         public GroundedState CurGroundedState => curGroundedState;
         public ClimbState CurClimbState => curClimbState;
         public Rigidbody Rb => GetComponent<Rigidbody>();
-        public float MassRatio => Mathf.Clamp(Rb.mass, 0, baseData.MaxMass) / baseData.MaxMass;
+        public float Mass => Rb.mass + EquipmentHandler.GetEquipmentMass();
+        public float MassRatio => Mathf.Clamp(Mass, 0, baseData.MaxMass) / baseData.MaxMass;
         public Collider Collider => GetComponent<Collider>();
 
 
@@ -110,8 +111,8 @@ namespace Game.SceneObjects
         /// </summary>
         protected virtual void GetHandlers()
         {
-            ActionStateHandler = GetComponent<ActionStateHandler>();                       
-            UIHandler = GetComponent<UIHandler>();            
+            ActionStateHandler = GetComponent<ActionStateHandler>();
+            UIHandler = GetComponent<UIHandler>();
             DamageHandler = GetComponent<DamageHandler>();
 
             if (baseData != null)
@@ -173,7 +174,7 @@ namespace Game.SceneObjects
             CheckClimbingState();
             CheckGroundedState();
 
-            MovementHandler.UpdateMovement();            
+            MovementHandler.UpdateMovement();
 
             if (AttackInputHandler != null)
                 AttackInputHandler.HandleUpdate();

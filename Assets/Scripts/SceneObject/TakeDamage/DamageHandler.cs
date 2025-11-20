@@ -125,7 +125,7 @@ namespace Game.SceneObjects.Damage
             AddDamage(attackDamage);
 
             //Launch knockback
-            Vector3 launchVelocity = CalculateKnockbackVelocity(influence, damageTaken, launchAngle, sceneObject.Rb.mass);
+            Vector3 launchVelocity = CalculateKnockbackVelocity(influence, damageTaken, launchAngle, sceneObject.Mass);
             
             ApplyLaunchForce(launchVelocity);
             CalculateBounce(launchVelocity);

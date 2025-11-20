@@ -10,7 +10,7 @@ using UnityEngine;
 public class Weapon : Interactable
 {    
     public WeaponType Type;
-
+    public float Mass;
     public MovementCollection MovementCollection;
     public AttackCollection AttackCollection;
 

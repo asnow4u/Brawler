@@ -157,14 +157,35 @@ namespace Game.SceneObjects.Animation
         /// </summary>
         public void SetMovementAnimations(MovementCollection moveCollection)
         {
+            Debug.Log("Set Movement Animations");
+
+            //Get active input index
+            int activeInputIndex = -1;
+            for (int i= 0; i < movementAnimationMixer.GetInputCount(); i++)
+            {
+                if (movementAnimationMixer.GetInputWeight(i) > 0)
+                {
+                    activeInputIndex = i;
+                    break;
+                }
+            }
+
             //Disconnect existing inputs
             for (int i = 0; i < movementAnimationMixer.GetInputCount(); i++)
-                movementAnimationMixer.DisconnectInput(i);           
+                movementAnimationMixer.DisconnectInput(i);
 
+            //Connect inputs from new collection
             foreach (MovementInputData inputData in moveCollection.MovementData)
             {
                 AnimationClipPlayable movePlayable = AnimationClipPlayable.Create(animationGraph, inputData.Animation);
                 movementAnimationMixer.ConnectInput(inputData.Index, movePlayable, 0);
+            }
+
+            //Set active input
+            if (activeInputIndex > -1)
+            {
+                ResetInputWeights(movementAnimationMixer);
+                movementAnimationMixer.SetInputWeight(activeInputIndex, 1);
             }
         }
 
