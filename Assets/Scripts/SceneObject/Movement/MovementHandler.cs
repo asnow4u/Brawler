@@ -30,20 +30,20 @@ namespace Game.SceneObjects.Movement
 
         #region Getters
 
-        public float GroundedMaxVelocity => Mathf.Lerp(baseData.GroundedMaxVelocityMin, baseData.GroundedMaxVelocityMax, 1 - (rb.mass / baseData.MaxMass));
-        public float AerialMaxXVelocity => Mathf.Lerp(baseData.AerialMaxXVelocityMin, baseData.AerialMaxXVelocityMax, 1 - (rb.mass / baseData.MaxMass));
-        public float AerialMaxYVelocity => Mathf.Lerp(baseData.AerialMaxYVelocityMin, baseData.AerialMaxYVelocityMax, 1- (rb.mass / baseData.MaxMass));
+        public float GroundedMaxVelocity => Mathf.Lerp(baseData.GroundedMaxVelocityMin, baseData.GroundedMaxVelocityMax, 1 - (sceneObject.Mass / baseData.MaxMass));
+        public float AerialMaxXVelocity => Mathf.Lerp(baseData.AerialMaxXVelocityMin, baseData.AerialMaxXVelocityMax, 1 - (sceneObject.Mass / baseData.MaxMass));
+        public float AerialMaxYVelocity => Mathf.Lerp(baseData.AerialMaxYVelocityMin, baseData.AerialMaxYVelocityMax, 1- (sceneObject.Mass / baseData.MaxMass));
         public float GravityScaler => baseData.GravityScaler;
-        public float GroundedDeccelerationRate => (baseData.GroundedDecceleration / rb.mass) * Time.fixedDeltaTime;
-        public float AerialXDeccelerationRate => (baseData.AerialDecceleration / rb.mass) * Time.fixedDeltaTime;
+        public float GroundedDeccelerationRate => (baseData.GroundedDecceleration / sceneObject.Mass) * Time.fixedDeltaTime;
+        public float AerialXDeccelerationRate => (baseData.AerialDecceleration / sceneObject.Mass) * Time.fixedDeltaTime;
         public float AerialYDeccelerationRate
         {
             get 
             {
                 if (rb.linearVelocity.y > 0)
-                    return (baseData.AerialDecceleration / rb.mass) - Physics.gravity.y * Time.fixedDeltaTime;
+                    return (baseData.AerialDecceleration / sceneObject.Mass) - Physics.gravity.y * Time.fixedDeltaTime;
                 else
-                    return (baseData.AerialDecceleration / rb.mass) + Physics.gravity.y * Time.fixedDeltaTime;
+                    return (baseData.AerialDecceleration / sceneObject.Mass) + Physics.gravity.y * Time.fixedDeltaTime;
             }
         }
 
