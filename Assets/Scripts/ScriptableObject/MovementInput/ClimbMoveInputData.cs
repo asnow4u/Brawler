@@ -8,5 +8,13 @@ namespace Game.SceneObjects.Movement
         public float ClimbXVelocity;
         public float ClimbUpYVelocity;
         public float ClimbDownYVelocity;
+
+        public float MaxClimbSlideDecceleration;
+        public float MinClimbSlideDecceleration;
+
+        public float GetClimbSlideDecceleration(float ratio)
+        {
+            return Mathf.Lerp(MaxClimbSlideDecceleration, MinClimbSlideDecceleration, Mathf.Clamp01(ratio));
+        }
     }
 }

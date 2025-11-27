@@ -15,7 +15,7 @@ MonoBehaviour:
   MaxMass: 200
   MinMass: 100
   GroundedMaxVelocityMax: 15
-  GroundedMaxVelocityMin: 10
+  GroundedMaxVelocityMin: 5
   AerialMaxXVelocityMax: 15
   AerialMaxXVelocityMin: 10
   AerialMaxYVelocityMax: 7

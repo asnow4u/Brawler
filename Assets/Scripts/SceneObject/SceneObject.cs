@@ -330,9 +330,13 @@ namespace Game.SceneObjects
                 SetClimbState(ClimbState.Unavailable);
 
             // Hit ground while climbing (NOTE: Dont check based on groundedState since climbState is updated first)
-            else if (MovementInputHandler.VerticalInfluence < 0 && GroundCheck())
+            else if (GroundCheck() && !(MovementInputHandler.VerticalInfluence > 0))
                 SetClimbState(ClimbState.Available);
-            
+
+            // Jump while climbing
+            else if (MovementInputHandler.CurMovementInputData != null && MovementInputHandler.CurMovementInputData.Type == MovementType.Jump)
+                SetClimbState(ClimbState.Available);
+
             // Attack action performed
             else if (ActionStateHandler.CurActionState == ActionState.Attacking)
                 SetClimbState(ClimbState.Available);
@@ -368,11 +372,7 @@ namespace Game.SceneObjects
             curClimbState = state;
 
             if (curClimbState == ClimbState.Climbing)
-            {
-                Rb.linearVelocity = Vector3.zero;
                 Rb.useGravity = false;
-            }
-
             else
                 Rb.useGravity = true;                    
 

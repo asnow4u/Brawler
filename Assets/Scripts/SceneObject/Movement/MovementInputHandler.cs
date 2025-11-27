@@ -45,6 +45,11 @@ namespace Game.SceneObjects.Movement
         private bool jumpInputAvailable = true; //Jump available is only true after the user has released the jump button 
         private int airJumpsPerformed = 0;
 
+        //Climb Properties
+        private bool isClimbSliding = false;
+        private const float climbSlideVelocityThreshold = -10f; //When switching to climbing, this determines whether a slide decceleration is applied
+
+
         //Events
         public event Action<MovementInputData> InputDataChangedEvent;
         public event Action<MovementCollection> CollectionChangedEvent;
@@ -121,12 +126,24 @@ namespace Game.SceneObjects.Movement
         /// </summary>
         private void OnClimbStateChanged(ClimbState prevClimbState, ClimbState climbState)
         {
+            isClimbSliding = false;
+
             if (prevClimbState == ClimbState.Climbing && climbState == ClimbState.Unavailable)
                 SetCurrentMoveState(null);
 
             //Reset jumps
             if (climbState == ClimbState.Climbing)
-                airJumpsPerformed = 0;    
+            {
+                airJumpsPerformed = 0;
+
+                if (rb.linearVelocity.y < climbSlideVelocityThreshold)
+                {
+                    rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
+                    isClimbSliding = true;
+                }
+                else
+                    rb.linearVelocity = Vector3.zero;
+            }
         }
 
         /// <summary>
@@ -252,7 +269,7 @@ namespace Game.SceneObjects.Movement
         private void UpdateClimbMovementState()
         {
             //Idle
-            if (horizontalInfluence == 0 && verticalInfluence == 0 && jumpInfluence == 0)
+            if (isClimbSliding || (horizontalInfluence == 0 && verticalInfluence == 0 && jumpInfluence == 0))
                 SetCurrentMoveState(null);
 
             //Jump
@@ -569,7 +586,10 @@ namespace Game.SceneObjects.Movement
             switch (curMoveInputState)
             {
                 case MovementType.Null:
-                    rb.linearVelocity = new Vector3(0, 0, 0);
+                    if (rb.linearVelocity.y > climbSlideVelocityThreshold)
+                        rb.linearVelocity = new Vector3(0, 0, 0);
+                    else
+                        UpdateClimbDecceleration();
                     break;
             
                 case MovementType.Move:
@@ -578,6 +598,7 @@ namespace Game.SceneObjects.Movement
                 
                 case MovementType.Jump:
                     UpdateJumpVelocity();
+
                     break;
             }            
         }
@@ -603,6 +624,27 @@ namespace Game.SceneObjects.Movement
                 climbYVelocity = verticalInfluence * climbData.ClimbDownYVelocity;
 
             rb.linearVelocity = new Vector3(climbXVelocity, climbYVelocity, 0);
+        }
+
+        /// <summary>
+        /// Deccelerate while on a climbable surface <br/>
+        /// This occurs when grabbing a climbable surface while moving downwards
+        /// </summary>
+        private void UpdateClimbDecceleration()
+        {
+            ClimbMoveInputData climbData = currentMovementCollection.GetMovementData<ClimbMoveInputData>();
+
+            float decceleration = climbData.GetClimbSlideDecceleration(sceneObject.MassRatio);
+
+            float velocity = rb.linearVelocity.y + (decceleration * Time.fixedDeltaTime);
+
+            if (velocity > climbSlideVelocityThreshold)
+            {
+                rb.linearVelocity = Vector3.zero;
+                isClimbSliding = false;
+            }
+            else
+                rb.linearVelocity = new Vector3(0, velocity, 0);
         }
 
         #endregion
