@@ -145,7 +145,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a12b99757929a741878ca90a01a60dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  triggerAnimationData: {fileID: 0}
+  triggerAnimationData: {fileID: 11400000, guid: 27b69f023acb6984584cc85738431468, type: 2}
 --- !u!1 &2253536348902060994
 GameObject:
   m_ObjectHideFlags: 0
@@ -212,7 +212,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a12b99757929a741878ca90a01a60dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  triggerAnimationData: {fileID: 0}
+  triggerAnimationData: {fileID: 11400000, guid: a4af2f38e73e18e4c8ba5fa35f9b7274, type: 2}
 --- !u!1 &2481771394715211491
 GameObject:
   m_ObjectHideFlags: 0
@@ -279,7 +279,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a12b99757929a741878ca90a01a60dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  triggerAnimationData: {fileID: 0}
+  triggerAnimationData: {fileID: 11400000, guid: 8b39a04015e04f248b3e203c9d9afad2, type: 2}
 --- !u!1 &4222309936731493003
 GameObject:
   m_ObjectHideFlags: 0
@@ -372,7 +372,7 @@ MonoBehaviour:
   ObjectType: 0
   curGroundedState: 1
   curClimbState: 0
-  MovementData: {fileID: 11400000, guid: 69dae82533d2b0442900700a31faba44, type: 2}
+  baseData: {fileID: 11400000, guid: 69dae82533d2b0442900700a31faba44, type: 2}
 --- !u!136 &6533080229536739736
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -508,15 +508,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   curMoveInputState: 0
+  curMovementInputData: {fileID: 0}
   baseMovementCollection: {fileID: 11400000, guid: 7b7d5155c18dec740a2407dc070c7da2, type: 2}
   currentMovementCollection: {fileID: 0}
   horizontalInfluence: 0
   verticalInfluence: 0
-  groundedJumpInfluence: 0
-  aerialJumpInfluence: 0
-  MAXJUMPFRAMECOUNT: 10
-  curJumpFrameCount: 0
-  airJumpsPerformed: 0
+  jumpInfluence: 0
 --- !u!114 &8984696060330667455
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -767,7 +764,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a12b99757929a741878ca90a01a60dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  triggerAnimationData: {fileID: 0}
+  triggerAnimationData: {fileID: 11400000, guid: 8b39a04015e04f248b3e203c9d9afad2, type: 2}
 --- !u!1 &7327773917011577469
 GameObject:
   m_ObjectHideFlags: 0
