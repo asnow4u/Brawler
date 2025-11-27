@@ -184,7 +184,9 @@ namespace Game.SceneObjects.Animation
             {
                 //NOTE: 
                 // If weapon or other enhancements improve animation speed, add to multiplier here
-                animationGraph.ChangeMovementStateInput(inputData);
+
+                int index = sceneObject.MovementInputHandler.CurrentMovementCollection.GetIndex(inputData);
+                animationGraph.ChangeMovementStateInput(index, inputData.AnimationSpeedMultiplier);
             }
         }
 

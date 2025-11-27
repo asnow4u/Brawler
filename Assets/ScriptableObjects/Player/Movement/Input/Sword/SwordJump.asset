@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b110e1c728de094e97b8a57099a9527, type: 3}
   m_Name: SwordJump
   m_EditorClassIdentifier: 
-  Index: 1
+  Index: 3
   Type: 4
   Animation: {fileID: 7400000, guid: c1c5ebb45dc868242b0039589babf2aa, type: 2}
   AnimationSpeedMultiplier: 1

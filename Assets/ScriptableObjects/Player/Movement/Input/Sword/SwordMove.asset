@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e365b02dcde51004da1f1dcd92c6880e, type: 3}
   m_Name: SwordMove
   m_EditorClassIdentifier: 
-  Index: 0
+  Index: 4
   Type: 1
   Animation: {fileID: 7400000, guid: f4cd084d7d74887408bd00de7878d6c9, type: 2}
   AnimationSpeedMultiplier: 1
   GroundedXMaxAcceleration: 50
-  GroundedXMinAcceleration: 30
+  GroundedXMinAcceleration: 5
   GroundedAttackXDecleration: 65

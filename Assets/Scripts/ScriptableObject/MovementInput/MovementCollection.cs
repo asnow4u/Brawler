@@ -8,16 +8,22 @@ namespace Game.SceneObjects.Movement
 
     public class MovementCollection : ScriptableObject
     {
-        public List<MovementInputData> MovementData;
+        [SerializeField] private MoveInputData moveInput;
+        [SerializeField] private AirMoveInputData airMoveInput;
+        [SerializeField] private JumpInputData jumpInput;
+        [SerializeField] private AirJumpInputData airJumpInput;
+        [SerializeField] private ClimbMoveInputData climbMoveInput;
+        [SerializeField] private WallLeanInputData wallLeanInput;
 
-        /// <summary>
-        /// Establish indices for data lookup
-        /// </summary>
-        public void IndexData()
-        {
-            foreach (MovementInputData data in MovementData)
-                data.Index = MovementData.IndexOf(data);
-        }
+        public List<MovementInputData> MovementData => new List<MovementInputData>() 
+        { 
+            moveInput,
+            airJumpInput,
+            jumpInput,
+            airMoveInput,
+            climbMoveInput,
+            wallLeanInput
+        };
 
         /// <returns>
         /// A movementData of type T if found in collection, null otherwise
@@ -50,6 +56,13 @@ namespace Game.SceneObjects.Movement
             return false;
         }
 
+        /// <returns>
+        /// The index of the given movement input in the collection
+        /// </returns>
+        public int GetIndex(MovementInputData movement)
+        {
+            return MovementData.IndexOf(movement);
+        }
 
         #region Grounded Movement
 

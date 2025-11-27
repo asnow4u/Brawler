@@ -94,8 +94,6 @@ namespace Game.SceneObjects.Movement
             if (collection == null) return;
 
             currentMovementCollection = collection;
-            currentMovementCollection.IndexData();
-
             CollectionChangedEvent?.Invoke(currentMovementCollection);
         }
 
