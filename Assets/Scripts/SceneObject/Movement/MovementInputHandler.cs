@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Game.SceneObjects.Movement 
 {
-    public enum MovementType { Null, Move, WallLean, LedgeGrab, Jump, HeavyLanding}
+    public enum MovementType { Null, Move, WallLean, Vault, Jump, HeavyLanding}
 
     public class MovementInputHandler : SceneObjectHandler
     {
@@ -58,7 +58,8 @@ namespace Game.SceneObjects.Movement
         #region Getters
         
         public MovementInputData CurMovementInputData => curMovementInputData;
-        public MovementCollection CurrentMovementCollection => currentMovementCollection;        
+        public MovementCollection CurrentMovementCollection => currentMovementCollection;
+        public float HorizontalInfluence => horizontalInfluence;
         public float VerticalInfluence => verticalInfluence;   
 
         #endregion
@@ -679,6 +680,16 @@ namespace Game.SceneObjects.Movement
                 float acceleration = jumpInputData.GetJumpAcceleration(sceneObject.MassRatio) * jumpInfluence;
                 rb.linearVelocity = new Vector3(rb.linearVelocity.x, rb.linearVelocity.y + (acceleration * Time.fixedDeltaTime), 0);
             }
+        }
+
+        #endregion
+
+
+        #region Edge Climb
+
+        public void UpdateEdgeClimb()
+        {
+            Debug.LogWarning("Edge Climb Happened");
         }
 
         #endregion

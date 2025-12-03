@@ -5,6 +5,7 @@ using System;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
+using static UnityEditor.Rendering.CameraUI;
 
 
 //TODO:
@@ -68,42 +69,61 @@ namespace Game.SceneObjects.Animation
             stateAnimationMixer = AnimationMixerPlayable.Create(animationGraph, Enum.GetValues(typeof(ActionState)).Length);
             output.SetSourcePlayable(stateAnimationMixer);
 
-            SetupMixers();
-
             animationGraph.Play();
         }
 
+        //public void SetupAnimationMixers(MovementCollection movementCollection, AttackCollection attackCollection)
+        //{
+        //    SetupIdleMixer();
+        //    SetupHitStunMixer();
+
+        //    //Setup movmement mixer if movement is available
+        //    if (movementCollection != null)
+        //        SetupMovementMixer(movementCollection);
+
+        //    //Setup movmement mixer if attacking is available
+        //    if (attackCollection != null)
+        //        SetupAttackMixer(attackCollection);
+
+            
+        //}
 
         #region Setup Mixers
-
-        private void SetupMixers()
-        {
-            SetupIdleMixer();
-            SetupMovementMixer();
-            SetupAttackMixer();
-            SetupHitStunMixer();
-        }
-
 
         /// <summary>
         /// Setup idle mixer for idle animations
         /// Inputs: Grounded, Air
         /// </summary>
-        private void SetupIdleMixer()
+        public void SetupIdleMixer(AnimationClip groundIdleAnimation, AnimationClip airIdleAnimation, AnimationClip climbIdleAnimation)
         {
             idleAnimationMixer = AnimationMixerPlayable.Create(animationGraph, 3);
             stateAnimationMixer.ConnectInput((int)ActionState.Idle, idleAnimationMixer, 0);
+
+            SetIdleAnimations(groundIdleAnimation, airIdleAnimation, climbIdleAnimation);
         }
 
+        /// <summary>
+        /// Setup hit mixer for hit animations
+        /// Input: 
+        /// </summary>
+        public void SetupHitStunMixer(AnimationClip hitStunAnimation)
+        {
+            hitAnimationMixer = AnimationMixerPlayable.Create(animationGraph, 1);
+            stateAnimationMixer.ConnectInput((int)ActionState.HitStun, hitAnimationMixer, 0);
+
+            SetHitStunAnimations(hitStunAnimation);
+        }
 
         /// <summary>
         /// Setup movement mixer for move animations
         /// Inputs: (walk, run), jump, airJump, land
         /// </summary>
-        private void SetupMovementMixer()
+        public void SetupMovementMixer(MovementCollection movementCollection)
         {
-            movementAnimationMixer = AnimationMixerPlayable.Create(animationGraph, Enum.GetValues(typeof(MovementType)).Length);
+            movementAnimationMixer = AnimationMixerPlayable.Create(animationGraph, movementCollection.MovementData.Count);
             stateAnimationMixer.ConnectInput((int)ActionState.Moving, movementAnimationMixer, 0);
+
+            SetMovementAnimations(movementCollection);
         }
 
 
@@ -111,21 +131,12 @@ namespace Game.SceneObjects.Animation
         /// Setup attack mixer for attack animations
         /// Inputs: forwardTilt, upTilt, downTilt, forwardAir, upAir, downAir
         /// </summary>
-        private void SetupAttackMixer()
+        public void SetupAttackMixer(AttackCollection attackCollection)
         {
             attackAnimationMixer = AnimationMixerPlayable.Create(animationGraph, Enum.GetValues(typeof(AttackType)).Length);
             stateAnimationMixer.ConnectInput((int)ActionState.Attacking, attackAnimationMixer, 0);
-        }
 
-
-        /// <summary>
-        /// Setup hit mixer for hit animations
-        /// Input: 
-        /// </summary>
-        private void SetupHitStunMixer()
-        {
-            hitAnimationMixer = AnimationMixerPlayable.Create(animationGraph, 1);
-            stateAnimationMixer.ConnectInput((int)ActionState.HitStun, hitAnimationMixer, 0);
+            SetAttackAnimations(attackCollection);
         }
 
         #endregion
@@ -149,6 +160,17 @@ namespace Game.SceneObjects.Animation
             //Climb
             AnimationClipPlayable climbIdle = AnimationClipPlayable.Create(animationGraph, climbIdleAnimation);
             idleAnimationMixer.ConnectInput(2, climbIdle, 0);
+        }
+
+        /// <summary>
+        /// Set hitstun animations to use
+        /// </summary>
+        public void SetHitStunAnimations(AnimationClip hitStunAnimation)
+        {
+            AnimationClipPlayable hitstunPlayable = AnimationClipPlayable.Create(animationGraph, hitStunAnimation);
+            hitAnimationMixer.ConnectInput(0, hitstunPlayable, 0);
+
+            hitAnimationMixer.SetInputWeight(0, 1);
         }
 
 
@@ -207,18 +229,6 @@ namespace Game.SceneObjects.Animation
                     attackAnimationMixer.ConnectInput((int)attackType, attackPlayable, 0);
                 }
             }
-        }
-
-
-        /// <summary>
-        /// Set hitstun animations to use
-        /// </summary>
-        public void SetHitStunAnimations(AnimationClip hitStunAnimation)
-        {
-            AnimationClipPlayable hitstunPlayable = AnimationClipPlayable.Create(animationGraph, hitStunAnimation);
-            hitAnimationMixer.ConnectInput(0, hitstunPlayable, 0);
-
-            hitAnimationMixer.SetInputWeight(0, 1);
         }
 
         #endregion

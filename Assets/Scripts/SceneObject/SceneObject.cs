@@ -122,12 +122,29 @@ namespace Game.SceneObjects
         }
 
         /// <summary>
+        /// Initialize all handlers
+        /// </summary>
+        private void SetupHandlerEvents()
+        {
+            ActionStateHandler.RegisterToEvents();
+            UIHandler.RegisterToEvents();
+            DamageHandler.RegisterToEvents();
+
+            EquipmentHandler?.RegisterToEvents();
+            InteractionHandler?.RegisterToEvents();
+
+            MovementInputHandler?.RegisterToEvents();
+            AttackInputHandler?.RegisterToEvents();
+
+            AnimationHandler?.RegisterToEvents();
+        }
+
+        /// <summary>
         /// Set up all handlers <br/>
         /// Set up events before performing actions
         /// </summary>
         private void SetUpHandlers()
         {
-            AnimationHandler?.Setup();
             ActionStateHandler.Setup();
             MovementHandler.Setup();
             UIHandler.Setup();
@@ -137,26 +154,9 @@ namespace Game.SceneObjects
             InteractionHandler?.Setup();
             MovementInputHandler?.Setup();
             AttackInputHandler?.Setup();
-        }
 
-        /// <summary>
-        /// Initialize all handlers
-        /// </summary>
-        private void SetupHandlerEvents()
-        {
-            ActionStateHandler.RegisterToEvents();
-            UIHandler.RegisterToEvents();
-            DamageHandler.RegisterToEvents();
-                        
-            EquipmentHandler?.RegisterToEvents();
-            InteractionHandler?.RegisterToEvents();
-            
-            MovementInputHandler?.RegisterToEvents();
-            AttackInputHandler?.RegisterToEvents();
-
-            //NOTE: needs to happen after move and attack handlers
-            AnimationHandler?.RegisterToEvents();
-        }
+            AnimationHandler?.Setup();
+        }      
   
         #endregion
 

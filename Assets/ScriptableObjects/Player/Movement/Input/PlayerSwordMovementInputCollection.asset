@@ -17,4 +17,6 @@ MonoBehaviour:
   jumpInput: {fileID: 11400000, guid: 4057fb62c44055a4585172b668419a72, type: 2}
   airJumpInput: {fileID: 11400000, guid: e87289f87498f324cac2e0f3e930c00a, type: 2}
   climbMoveInput: {fileID: 11400000, guid: ef88ae01dbd6bdc458a75d16a155f244, type: 2}
+  valueInput: {fileID: 11400000, guid: 5b560529cfefee947a2d20fc527de2d8, type: 2}
   wallLeanInput: {fileID: 11400000, guid: 625a94a27d74ac0428a38b187d7836c2, type: 2}
+  heavyLandingInput: {fileID: 11400000, guid: 705ff03b35bfe5d43a76c4d1545bc297, type: 2}

@@ -80,7 +80,7 @@ namespace Game.SceneObjects.Animation
             animationGraph = animator.gameObject.AddComponent<AnimationGraph>();
 
             animationGraph.Initialize();
-            SetAnimationToGraph();
+            CreateGraphMixers();
             animationGraph.ResetToIdle(sceneObject.CurGroundedState, sceneObject.CurClimbState);
         }
 
@@ -115,26 +115,18 @@ namespace Game.SceneObjects.Animation
         /// <summary>
         /// Create animationGraph and set animations
         /// </summary>
-        private void SetAnimationToGraph()
+        private void CreateGraphMixers()
         {
-            SetIdleAnimations();
-            SetHitStunAnimations();
-        }
+            animationGraph.SetupIdleMixer(groundIdleAnimation, airIdleAnimation, climbIdleAnimation);
+            animationGraph.SetupHitStunMixer(airIdleAnimation);
 
-        /// <summary>
-        /// Set animationGraphs idle animations
-        /// </summary>
-        private void SetIdleAnimations()
-        {
-            animationGraph.SetIdleAnimations(groundIdleAnimation, airIdleAnimation, climbIdleAnimation);
-        }
+            MovementInputHandler movementInputHandler = sceneObject.MovementInputHandler;
+            if (movementInputHandler != null)
+                animationGraph.SetupMovementMixer(movementInputHandler.CurrentMovementCollection);
 
-        /// <summary>
-        /// Set animationGraphs hitstun animations
-        /// </summary>
-        private void SetHitStunAnimations()
-        {
-            animationGraph.SetHitStunAnimations(airIdleAnimation);
+            AttackInputHandler attackInputHandler = sceneObject.AttackInputHandler;
+            if (attackInputHandler != null)
+                animationGraph.SetupAttackMixer(attackInputHandler.CurAttackCollection);
         }
 
         #endregion
@@ -196,7 +188,7 @@ namespace Game.SceneObjects.Animation
         private void OnMovementCollectionChanged(MovementCollection movementCollection)
         {
             if (movementCollection != null)
-                animationGraph.SetMovementAnimations(movementCollection);
+                animationGraph?.SetMovementAnimations(movementCollection); //Reason for ?, AnimationGraph can be null during setup, collection will be setup in CreateGraphMixers
         }
 
         /// <summary>
@@ -217,8 +209,9 @@ namespace Game.SceneObjects.Animation
         /// Handle attack collection changing
         /// </summary>
         private void OnAttackCollectionChanged(AttackCollection attackCollection)
-        {            
-            animationGraph.SetAttackAnimations(attackCollection);
+        {
+            if (attackCollection != null)
+                animationGraph?.SetAttackAnimations(attackCollection); //Reason for ?, AnimationGraph can be null during setup, collection will be setup in CreateGraphMixers
         }
 
         #endregion
