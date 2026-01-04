@@ -1,6 +1,8 @@
 using Game.SceneObjects;
 using UnityEngine;
 
+//NOTE: Line the gameobject's position with the corner of the edge
+
 [RequireComponent(typeof(BoxCollider))]
 public class ClimbableEdge : MonoBehaviour
 {   
