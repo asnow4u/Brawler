@@ -42,13 +42,18 @@ namespace Game.SceneObjects.Movement
         [SerializeField] private const float hitStunVelocityTargetMultiplier = 0.25f;
 
         //Jump Properties
+        [SerializeField] private bool isJumping = false;
         private bool jumpInputAvailable = true; //Jump available is only true after the user has released the jump button 
         private int airJumpsPerformed = 0;
 
         //Climb Properties
-        private bool isClimbSliding = false;
+        [SerializeField] private bool isClimbSliding = false;
         private const float climbSlideVelocityThreshold = -10f; //When switching to climbing, this determines whether a slide decceleration is applied
 
+        //Edge Vault Properties        
+        private const float requiredPercentageAboveVaultEdge = 0.3f;
+        [SerializeField] private bool isVaulting = false;
+        private float vaultStoredVelocity;
 
         //Events
         public event Action<MovementInputData> InputDataChangedEvent;
@@ -56,11 +61,11 @@ namespace Game.SceneObjects.Movement
 
 
         #region Getters
-        
+
         public MovementInputData CurMovementInputData => curMovementInputData;
         public MovementCollection CurrentMovementCollection => currentMovementCollection;
         public float HorizontalInfluence => horizontalInfluence;
-        public float VerticalInfluence => verticalInfluence;   
+        public float VerticalInfluence => verticalInfluence;
 
         #endregion
 
@@ -115,10 +120,13 @@ namespace Game.SceneObjects.Movement
         private void OnGroundedStateChanged(GroundedState groundedState)
         {
             if (groundedState == GroundedState.Grounded)
-            {                     
+            {
                 //Reset jumps
                 airJumpsPerformed = 0;
-                SetCurrentMoveState(null);
+
+                ////NOTE: This is to handle cases where the action state is not on movement (ie Attack)
+                //if (curMoveInputState != MovementType.Vault)
+                //    SetCurrentMoveState(null);
             }
         }
 
@@ -165,7 +173,20 @@ namespace Game.SceneObjects.Movement
             if (currentMovementCollection.TryGetMovementFromAnimation(clip, out MovementInputData inputData) &&
                 inputData.Type == curMoveInputState)
             {
-                SetCurrentMoveState(null);
+                if (inputData.Type == MovementType.Jump)
+                    isJumping = false;
+
+                if (inputData.Type == MovementType.Vault)
+                {
+                    isVaulting = false;
+                    rb.linearVelocity = new Vector3(vaultStoredVelocity, rb.linearVelocity.y, 0);
+                }
+
+                //Transition from movement to movement
+                if (sceneObject.ActionStateHandler.CurActionState == MOVESTATE)
+                    sceneObject.MovementHandler.UpdateMovement();
+                else
+                    SetCurrentMoveState(null);
             }
         }
 
@@ -177,7 +198,7 @@ namespace Game.SceneObjects.Movement
         /// Set the current movement state to <paramref name="inputData"/> if possible
         /// </summary>
         private void SetCurrentMoveState(MovementInputData inputData)
-        {            
+        {
             if (inputData == null)
             {
                 bool sendEvent = curMovementInputData != null;
@@ -190,9 +211,9 @@ namespace Game.SceneObjects.Movement
                 return;
             }
 
-            if (inputData != curMovementInputData && 
+            if (inputData != curMovementInputData &&
                 sceneObject.ActionStateHandler.TryChangeState(MOVESTATE))
-            {                             
+            {
                 curMovementInputData = inputData;
                 curMoveInputState = inputData.Type;
                 InputDataChangedEvent?.Invoke(inputData);
@@ -204,24 +225,28 @@ namespace Game.SceneObjects.Movement
         /// </summary>
         private void UpdateGroundedMovementState()
         {
-            //Idle
-            if (horizontalInfluence == 0 && jumpInfluence == 0)
-                SetCurrentMoveState(null);
+            if (isVaulting) 
+                return;
 
             //Jump
-            else if (jumpInfluence > 0 && jumpInputAvailable)
+            if (jumpInfluence > 0 && jumpInputAvailable)
             {
                 SetCurrentMoveState(currentMovementCollection.GetMovementData<JumpInputData>());
                 StartJump();
             }
 
-            //Wall Lean
-            else if (horizontalInfluence != 0 && IsRunningAgainstWall())
-                SetCurrentMoveState(currentMovementCollection.GetMovementData<WallLeanInputData>());
-
-            //Accelerate
+            //Horizontal Movement
             else if (horizontalInfluence != 0)
-                SetCurrentMoveState(currentMovementCollection.GetMovementData<MoveInputData>());
+            {
+                if (IsRunningAgainstWall())
+                    SetCurrentMoveState(currentMovementCollection.GetMovementData<WallLeanInputData>());
+                else
+                    SetCurrentMoveState(currentMovementCollection.GetMovementData<MoveInputData>());
+            }
+
+            //Idle
+            else
+                SetCurrentMoveState(null);
         }
 
         /// <summary>
@@ -229,20 +254,24 @@ namespace Game.SceneObjects.Movement
         /// </summary>
         private void UpdateAerialMovementState()
         {
-            //Idle
-            if (horizontalInfluence == 0 && verticalInfluence == 0 && jumpInfluence == 0)
-                SetCurrentMoveState(null);
-
+            //NOTE: Movement not allowed while in jump animation
+            if (isJumping || isVaulting)
+                return;
+            
             //Jump
-            else if (IsAerialJumpMovementAllowed())
+            if (IsAerialJumpMovementAllowed())
             {
                 SetCurrentMoveState(currentMovementCollection.GetMovementData<AirJumpInputData>());
                 StartJump();
             }
-
+                       
             //Accelerate
-            else if (curMoveInputState != MovementType.Jump && (horizontalInfluence != 0 || verticalInfluence != 0))
+            else if ((horizontalInfluence != 0 || verticalInfluence != 0))
                 SetCurrentMoveState(currentMovementCollection.GetMovementData<AirMoveInputData>());
+
+            //Idle
+            else
+                SetCurrentMoveState(null);
         }
 
         /// <summary>
@@ -250,11 +279,8 @@ namespace Game.SceneObjects.Movement
         /// </summary>
         private bool IsAerialJumpMovementAllowed()
         {
-            if (jumpInfluence == 0 || !jumpInputAvailable)
-                return false;
-
-            //Cant air jump if in the middle of jumping
-            if (curMoveInputState == MovementType.Jump)
+            if (jumpInfluence == 0 ||
+                !jumpInputAvailable)
                 return false;
 
             AirJumpInputData jumpData = currentMovementCollection.GetMovementData<AirJumpInputData>();
@@ -269,17 +295,20 @@ namespace Game.SceneObjects.Movement
         /// </summary>
         private void UpdateClimbMovementState()
         {
-            //Idle
-            if (isClimbSliding || (horizontalInfluence == 0 && verticalInfluence == 0 && jumpInfluence == 0))
-                SetCurrentMoveState(null);
+            if (isVaulting || isJumping || isClimbSliding)
+                return;
 
             //Jump
-            else if (jumpInfluence > 0)
+            if (jumpInfluence > 0)
                 SetCurrentMoveState(currentMovementCollection.GetMovementData<JumpInputData>());
 
             //Accelerate
             else if (horizontalInfluence != 0 || verticalInfluence != 0)
                 SetCurrentMoveState(currentMovementCollection.GetMovementData<ClimbMoveInputData>());
+
+            //Idle
+            else
+                SetCurrentMoveState(null);
         }
 
         #endregion
@@ -311,7 +340,7 @@ namespace Game.SceneObjects.Movement
         /// Determine if the sceneObject is against a wall
         /// </summary>
         private bool IsRunningAgainstWall()
-        {            
+        {
             return IsAgainstRightWall() || IsAgainstLeftWall();
         }
 
@@ -354,7 +383,7 @@ namespace Game.SceneObjects.Movement
         /// Input Value determines how much of the curCollection moveSpeed should be applied
         /// </summary>
         public void SetMovementInfluence(Vector2 inputInfluence)
-        {            
+        {
             horizontalInfluence = Mathf.Clamp(inputInfluence.x, -1, 1);
             verticalInfluence = Mathf.Clamp(inputInfluence.y, -1, 1);
         }
@@ -381,7 +410,7 @@ namespace Game.SceneObjects.Movement
         /// Update movement on the ground based on current movement state
         /// </summary>
         public void UpdateGroundedMovement(Action DeccerationCallback)
-        {
+        {            
             UpdateGroundedMovementState();
 
             switch (curMoveInputState)
@@ -404,7 +433,7 @@ namespace Game.SceneObjects.Movement
                     UpdateJumpVelocity();
                     break;
             }
-        }        
+        }
 
         /// <summary>
         /// Accelerate on the ground by an acceleration value to a max velocity from <see cref="currentMovementCollection"/>
@@ -425,7 +454,7 @@ namespace Game.SceneObjects.Movement
 
             else if (rb.linearVelocity.x < -targetXVelocity)
                 rb.linearVelocity = new Vector3(-targetXVelocity, rb.linearVelocity.y, 0);
-        }     
+        }
 
         #endregion
 
@@ -474,7 +503,7 @@ namespace Game.SceneObjects.Movement
         //    if (sceneObject.Rb.linearVelocity.y < targetYVelocity)
         //        sceneObject.Rb.linearVelocity = new Vector3(sceneObject.Rb.linearVelocity.x, targetYVelocity, 0);
         //}
-        
+
 
         /// <summary>
         /// Update horizontal movement in the air
@@ -491,7 +520,7 @@ namespace Game.SceneObjects.Movement
                     break;
 
                 case MovementType.Move:
-                    
+
                     //Horizontal Movement
                     if (horizontalInfluence != 0)
                         AerialXAccelerate();
@@ -545,10 +574,10 @@ namespace Game.SceneObjects.Movement
                 float acceleratedXValue = rb.linearVelocity.x - (acceleration * Time.fixedDeltaTime);
 
                 if (acceleratedXValue < -maxXVelocity)
-                    acceleratedXValue = -maxXVelocity;    
+                    acceleratedXValue = -maxXVelocity;
 
                 rb.linearVelocity = new Vector3(acceleratedXValue, rb.linearVelocity.y, 0);
-            }            
+            }
         }
 
         /// <summary>
@@ -592,16 +621,16 @@ namespace Game.SceneObjects.Movement
                     else
                         UpdateClimbDecceleration();
                     break;
-            
+
                 case MovementType.Move:
                     UpdateClimbAcceleration();
                     break;
-                
+
                 case MovementType.Jump:
                     StartJump();
 
                     break;
-            }            
+            }
         }
 
         /// <summary>
@@ -668,6 +697,7 @@ namespace Game.SceneObjects.Movement
             }
 
             jumpInputAvailable = false;
+            isJumping = true;
         }
 
         /// <summary>
@@ -676,7 +706,7 @@ namespace Game.SceneObjects.Movement
         private void UpdateJumpVelocity()
         {
             if (curMovementInputData is JumpInputData jumpInputData)
-            {                
+            {
                 float acceleration = jumpInputData.GetJumpAcceleration(sceneObject.MassRatio) * jumpInfluence;
                 rb.linearVelocity = new Vector3(rb.linearVelocity.x, rb.linearVelocity.y + (acceleration * Time.fixedDeltaTime), 0);
             }
@@ -687,9 +717,40 @@ namespace Game.SceneObjects.Movement
 
         #region Edge Climb
 
-        public void UpdateEdgeClimb()
+        public void UpdateEdgeClimb(ClimbableEdge edge)
         {
-            Debug.LogWarning("Edge Climb Happened");
+            if (curMoveInputState == MovementType.Vault) return;
+
+            BoxCollider edgeCollider = edge.transform.GetComponent<BoxCollider>();
+
+            //Scene Object must be above the edge to vault
+            if (sceneObject.Collider.bounds.max.y <= edgeCollider.bounds.max.y) return;
+
+            //Calculate how much of the other collider is above this edge
+            float edgeHeightDifference = sceneObject.Collider.bounds.max.y - edgeCollider.bounds.max.y;
+            float percentageAboveEdge = edgeHeightDifference / sceneObject.Collider.bounds.size.y;            
+
+            //Determine if scene object is heading towards the edge
+            bool correctInfluence = (edge.IsRight && HorizontalInfluence < 0 && edge.transform.position.x < transform.position.x) ||
+                                    (!edge.IsRight && HorizontalInfluence > 0 && edge.transform.position.x > transform.position.x);            
+
+            if (percentageAboveEdge >= requiredPercentageAboveVaultEdge && correctInfluence)
+            {
+                //Turn to face edge if not already facing
+                if ((edge.IsRight && movementHandler.IsFacingRightDirection) ||
+                    (!edge.IsRight && !movementHandler.IsFacingRightDirection))
+                {
+                    movementHandler.TurnAround();
+                }
+
+                vaultStoredVelocity = rb.linearVelocity.x;
+                rb.linearVelocity = Vector3.zero;
+
+                transform.position = edge.transform.position;
+                
+                SetCurrentMoveState(currentMovementCollection.GetMovementData<VaultInputData>());
+                isVaulting = true;
+            }                
         }
 
         #endregion

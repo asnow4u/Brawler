@@ -223,7 +223,7 @@ namespace Game.SceneObjects
             //Switch to airborn
             else if (!GroundCheck())
             {
-                 curGroundedState = GroundedState.Airborn;
+                curGroundedState = GroundedState.Airborn;
                 GroundedStateChangedEvent?.Invoke(curGroundedState);
             }
         }

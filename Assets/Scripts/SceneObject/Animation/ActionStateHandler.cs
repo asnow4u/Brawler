@@ -41,8 +41,12 @@ namespace Game.SceneObjects.ActionStates
             if (groundedState == GroundedState.Grounded)
             {
                 //NOTE: Attacking state is handled in AttackStateHandler
-                if (curActionState != ActionState.Attacking)
-                    ChangeState(ActionState.Idle);
+                if (curActionState == ActionState.Attacking) return;
+
+                //Prevent changing to idle when vaulting (Switching to idle will cancel the vault animation)
+                if (curActionState == ActionState.Moving && sceneObject.MovementInputHandler.CurMovementInputData.Type == Movement.MovementType.Vault) return;
+
+                ChangeState(ActionState.Idle);
             }
         }
 
