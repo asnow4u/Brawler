@@ -120,14 +120,7 @@ namespace Game.SceneObjects.Movement
         private void OnGroundedStateChanged(GroundedState groundedState)
         {
             if (groundedState == GroundedState.Grounded)
-            {
-                //Reset jumps
-                airJumpsPerformed = 0;
-
-                ////NOTE: This is to handle cases where the action state is not on movement (ie Attack)
-                //if (curMoveInputState != MovementType.Vault)
-                //    SetCurrentMoveState(null);
-            }
+                airJumpsPerformed = 0;   
         }
 
         /// <summary>
@@ -321,13 +314,17 @@ namespace Game.SceneObjects.Movement
             if (movementHandler.IsFacingRightDirection && horizontalInfluence < 0)
             {
                 movementHandler.TurnAround();
-                rb.linearVelocity = new Vector3(rb.linearVelocity.x * -1, rb.linearVelocity.y, 0);
+
+                if (rb.linearVelocity.x > 0)
+                    rb.linearVelocity = new Vector3(rb.linearVelocity.x * -1, rb.linearVelocity.y, 0);
             }
 
             else if (!movementHandler.IsFacingRightDirection && horizontalInfluence > 0)
             {
                 movementHandler.TurnAround();
-                rb.linearVelocity = new Vector3(rb.linearVelocity.x * -1, rb.linearVelocity.y, 0);
+
+                if (rb.linearVelocity.x < 0)
+                    rb.linearVelocity = new Vector3(rb.linearVelocity.x * -1, rb.linearVelocity.y, 0);
             }
         }
 
