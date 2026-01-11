@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Game.SceneObjects.Movement 
 {
-    public enum MovementType { Null, Move, WallLean, Vault, Jump, HeavyLanding}
+    public enum MovementType { Null, Move, WallLean, Vault, Jump}
 
     public class MovementInputHandler : SceneObjectHandler
     {

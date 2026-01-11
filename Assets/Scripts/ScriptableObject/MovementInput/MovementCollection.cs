@@ -15,7 +15,6 @@ namespace Game.SceneObjects.Movement
         [SerializeField] private ClimbMoveInputData climbMoveInput;
         [SerializeField] private VaultInputData valueInput;
         [SerializeField] private WallLeanInputData wallLeanInput;
-        [SerializeField] private HeavyLandingInputData heavyLandingInput;
 
         public List<MovementInputData> MovementData => new List<MovementInputData>() 
         { 
@@ -25,8 +24,7 @@ namespace Game.SceneObjects.Movement
             airMoveInput,
             climbMoveInput,
             valueInput,
-            wallLeanInput,
-            heavyLandingInput
+            wallLeanInput
         };
 
         /// <returns>
