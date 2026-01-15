@@ -22,6 +22,8 @@ namespace Game.SceneObjects.Damage
 
         [Header("Bounce")]
         [SerializeField] private float bounceDegrade = 0.9f;
+        private const float bounceCheckOffset = 0.1f; //Distance to offset raycast to avoid pre collision detection
+        private const float groundBounceVelocityThreshold = 20f;
 
         [Header("RagDoll")]
         [SerializeField] private GameObject ragdollRoot;
@@ -183,49 +185,73 @@ namespace Game.SceneObjects.Damage
         private void CalculateBounce(Vector3 velocity)
         {            
             Bounds bounds = collider.bounds;
-            float centralZ = (bounds.max.z + bounds.min.z) / 2;
 
-            Vector3[] points = new Vector3[]
-            {
-                new Vector3(bounds.min.x, bounds.max.y, centralZ), // Top-left
-                new Vector3(bounds.max.x, bounds.max.y, centralZ), // Top-right
-                new Vector3(bounds.min.x, bounds.min.y, centralZ), // Bottom-left
-                new Vector3(bounds.max.x, bounds.min.y, centralZ), // Bottom-right
-
-                //NOTE: Might implement additional points in the future
-                new Vector3(bounds.center.x, bounds.max.y, centralZ), // Top-center
-                new Vector3(bounds.center.x, bounds.min.y, centralZ), // Bottom-center
-                new Vector3(bounds.min.x, bounds.center.y, centralZ), // Left-center
-                new Vector3(bounds.max.x, bounds.center.y, centralZ)  // Right-center
-            };
-
-            // Calculate the direction and distance of the velocity
+            //Calculate the direction and distance of the velocity
             Vector3 direction = velocity.normalized;
             float distance = velocity.magnitude * Time.fixedDeltaTime;
 
-            float offsetDistance = 0.1f;
-            Vector3 offset = -direction * offsetDistance;
+            //Get bound points for bounce check
+            List<Vector3> boundPoints = new List<Vector3>();
+            float centralZ = (bounds.max.z + bounds.min.z) / 2;
 
-            // Check for collision at each point            
-            List<Vector3> hitNormals = new List<Vector3>();
-            foreach (var point in points)
+            //X Direction
+            if (direction.x > 0)
             {
-                if (Physics.Raycast(point + offset, direction, out RaycastHit hit, distance + offsetDistance, LayerMask.GetMask("Environment")))
+                boundPoints.Add(new Vector3(bounds.max.x, bounds.max.y, centralZ)); // Top-right
+                boundPoints.Add(new Vector3(bounds.max.x, bounds.center.y, centralZ));  // Right-center
+                boundPoints.Add(new Vector3(bounds.max.x, bounds.min.y, centralZ)); // Bottom-right
+            }
+            else if (direction.x < 0)
+            {
+                boundPoints.Add(new Vector3(bounds.min.x, bounds.max.y, centralZ)); // Top-left
+                boundPoints.Add(new Vector3(bounds.min.x, bounds.center.y, centralZ));  // Left-center
+                boundPoints.Add(new Vector3(bounds.min.x, bounds.min.y, centralZ)); // Bottom-left
+            }
+
+            //Y Direction
+            if (direction.y > 0)
+            {
+                boundPoints.Add(new Vector3(bounds.min.x, bounds.max.y, centralZ)); // Top-left
+                boundPoints.Add(new Vector3(bounds.center.x, bounds.max.y, centralZ)); // Top-center
+                boundPoints.Add(new Vector3(bounds.max.x, bounds.max.y, centralZ)); // Top-right
+            }
+            else if (direction.y < 0)
+            {
+                boundPoints.Add(new Vector3(bounds.min.x, bounds.min.y, centralZ)); // Bottom-left
+                boundPoints.Add(new Vector3(bounds.center.x, bounds.min.y, centralZ)); // Bottom-center
+                boundPoints.Add(new Vector3(bounds.max.x, bounds.min.y, centralZ)); // Bottom-right
+            }
+
+            if (boundPoints.Count == 0)
+                return;
+
+            //Environment check
+            List<Vector3> hitNormals = new List<Vector3>();
+            foreach (var point in boundPoints)
+            {
+                Vector3 offset = -direction * bounceCheckOffset;
+
+                if (Physics.Raycast(point + offset, direction, out RaycastHit hit, distance + bounceCheckOffset, LayerMask.GetMask("Environment")))
                     hitNormals.Add(hit.normal);
             }
             
             if (hitNormals.Count == 0)
                 return;
 
-            // Calculate bounce velocity
+            //Calculate bounce velocity
             Vector3 averageNormal = Vector3.zero;
             foreach (var normal in hitNormals)
-            {
                 averageNormal += normal;
-            }
             averageNormal /= hitNormals.Count;
-
+            
             Vector3 bounceVelocity = Vector3.Reflect(velocity, averageNormal) * bounceDegrade;
+
+            //Prevent small bounces on ground
+            if (bounceVelocity.magnitude < groundBounceVelocityThreshold &&
+                velocity.y < 0 && bounceVelocity.y > 0)
+            {
+                return;
+            }
 
             sceneObject.Rb.linearVelocity = bounceVelocity;
         }        

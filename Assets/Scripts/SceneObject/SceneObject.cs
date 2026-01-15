@@ -58,7 +58,7 @@ namespace Game.SceneObjects
         public GroundedState CurGroundedState => curGroundedState;
         public ClimbState CurClimbState => curClimbState;
         public Rigidbody Rb => GetComponent<Rigidbody>();
-        public float Mass => Rb.mass + EquipmentHandler.GetEquipmentMass();
+        public float Mass => Rb.mass + (EquipmentHandler != null ? EquipmentHandler.GetEquipmentMass() : 0);
         public float MassRatio => Mathf.Clamp(Mass, 0, baseData.MaxMass) / baseData.MaxMass;
         public Collider Collider => GetComponent<Collider>();
 
@@ -89,6 +89,8 @@ namespace Game.SceneObjects
         /// </summary>
         protected virtual void Initialize()
         {
+            if (baseData == null)
+                throw new MissingReferenceException("SceneObject Must Contain A SceneObjectData");
             if (!baseData.IsValid())
                 throw new ArgumentException("SceneObject Base Data is not valid");
 
@@ -114,11 +116,7 @@ namespace Game.SceneObjects
             ActionStateHandler = GetComponent<ActionStateHandler>();
             UIHandler = GetComponent<UIHandler>();
             DamageHandler = GetComponent<DamageHandler>();
-
-            if (baseData != null)
-                MovementHandler = new MovementHandler(baseData, this);
-            else
-                throw new MissingReferenceException("SceneObject Must Contain A MovementData");
+            MovementHandler = new MovementHandler(baseData, this);
         }
 
         /// <summary>
