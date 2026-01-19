@@ -36,7 +36,8 @@ namespace Game.SceneObjects.Attack
         private const float Max_CHARGE_ATTACK_MULTIPLIER = 1f;
         private float chargeAttackMultiplier = 0;
 
-        private HashSet<ITakeDamage> objectHitByAttack = new HashSet<ITakeDamage>();
+        private const float attackImmunityTimer = 0.2f;
+        private HashSet<string> objectHitByAttack = new HashSet<string>();
 
 
         /// <summary>
@@ -473,13 +474,13 @@ namespace Game.SceneObjects.Attack
         private void AttackConnected(ITakeDamage target, Collider col)
         {
             //Current Attack
-            if (curAttackData != null && !objectHitByAttack.Contains(target))
+            if (curAttackData != null && !objectHitByAttack.Contains(target.SceneObject.UniqueId))
             {
-                objectHitByAttack.Add(target);
+                //Prevent multiple hits to the same object in one attack
+                objectHitByAttack.Add(target.SceneObject.UniqueId);
 
-                //Attack Details
-                SceneObject sceneObject = GetComponentInParent<SceneObject>();
-                int curFrame = sceneObject.AnimationHandler.GetFrameOfCurrentAnimation();
+                //Apply Immunity (Prevent bounce back hits if sceneObject hits wall immediatly)
+                sceneObject.DamageHandler.SetImmunity(target.SceneObject.UniqueId, attackImmunityTimer);
 
                 //Launch Angle
                 float launchAngle = curAttackData.LaunchAngle;
@@ -487,10 +488,11 @@ namespace Game.SceneObjects.Attack
                     launchAngle = 180 - launchAngle;
 
                 //Attack Damage
+                int curFrame = sceneObject.AnimationHandler.GetFrameOfCurrentAnimation();
                 float attackDamage = curAttackData.GetAttackDamage(curFrame);
                 attackDamage += attackDamage * chargeAttackMultiplier;
 
-                target.HitByAttack(curAttackData.Influence, col.ClosestPoint(col.transform.position), attackDamage, launchAngle);
+                target.HitByAttack(col.ClosestPoint(col.transform.position), curAttackData.Influence, attackDamage, launchAngle);
             }
         }
 

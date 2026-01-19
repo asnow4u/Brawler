@@ -30,6 +30,9 @@ public class Rock : SceneObject
 
     private void HandleCollision(ITakeDamage hitTarget, Collider col)
     {
-        hitTarget.HitByAttack(1, col.ClosestPoint(col.transform.position), damage, launchAngle);
+        if (hitTarget.CheckForImmunity(this))
+            return;
+
+        hitTarget.HitByAttack(col.ClosestPoint(col.transform.position), 1, damage, launchAngle);
     }
 }

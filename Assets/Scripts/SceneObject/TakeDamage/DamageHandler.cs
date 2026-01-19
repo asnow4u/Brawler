@@ -29,6 +29,9 @@ namespace Game.SceneObjects.Damage
         [SerializeField] private GameObject ragdollRoot;
         private Ragdoll ragdoll;
 
+        //Immunity
+        private Dictionary<string, float> immunityList = new Dictionary<string, float>();
+
         //KillZones
         private KillZone[] killZones;
 
@@ -39,6 +42,8 @@ namespace Game.SceneObjects.Damage
 
         public HitStunState HitStunState => hitStunState;
         public float HitStunTimer => hitStunTimer;
+
+        public SceneObject SceneObject => sceneObject;
 
         #endregion
 
@@ -69,6 +74,7 @@ namespace Game.SceneObjects.Damage
 
         public void HandleUpdate()
         {
+            UpdateImmunityList();
             HitStunStateUpdate();
             RagdollUpdate();
         }
@@ -118,7 +124,7 @@ namespace Game.SceneObjects.Damage
         /// UI to be displayed on <paramref name="attackPoint"/> <br/>
         /// Damage and Launch force calculated and applied based on <paramref name="influence"/>, <paramref name="attackDamage"/> and <paramref name="launchAngle"/>
         /// </summary>
-        public void HitByAttack(float influence, Vector3 attackPoint, float attackDamage, float launchAngle)
+        public void HitByAttack(Vector3 attackPoint, float influence, float attackDamage, float launchAngle)
         {
             //Damage bubble                    
             UIFactory.Instance.SpawnDamageBubble(attackPoint, attackDamage);
@@ -175,6 +181,32 @@ namespace Game.SceneObjects.Damage
 
             //else
             sceneObject.Rb.linearVelocity = launchVelocity; 
+        }
+
+        #endregion
+
+
+        #region Immunity
+
+        public bool CheckForImmunity(SceneObject attacker)
+        {
+            return immunityList.ContainsKey(attacker.UniqueId);
+        }
+
+        public void SetImmunity(string sceneObjectID, float duration)
+        {
+            if (!immunityList.ContainsKey(sceneObjectID))
+                immunityList.Add(sceneObjectID, duration);
+        }
+
+        public void UpdateImmunityList()
+        {
+            foreach (var kvp in new Dictionary<string, float>(immunityList))
+            {
+                immunityList[kvp.Key] -= Time.fixedDeltaTime;
+                if (immunityList[kvp.Key] <= 0)
+                    immunityList.Remove(kvp.Key);
+            }
         }
 
         #endregion
@@ -445,7 +477,7 @@ namespace Game.SceneObjects.Damage
                 Gizmos.DrawSphere(point, 0.05f);
 
             }
-        }
+        }      
 
         #endregion
     }

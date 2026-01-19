@@ -122,7 +122,7 @@ public class DebuggerEditorMenu : EditorWindow
                 if (data.TargetObject is SceneObject targetSceneObject)
                 {
                     if (targetSceneObject.TryGetComponent(out ITakeDamage damageHandler))
-                        damageHandler.HitByAttack(data.LaunchInfluence, targetSceneObject.transform.position, data.LaunchDamage, data.LaunchAngle);
+                        damageHandler.HitByAttack(targetSceneObject.transform.position, data.LaunchInfluence, data.LaunchDamage, data.LaunchAngle);
                 }
             }
         }
