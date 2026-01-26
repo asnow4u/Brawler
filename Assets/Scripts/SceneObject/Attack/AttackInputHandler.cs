@@ -12,9 +12,8 @@ namespace Game.SceneObjects.Attack
     {
         const ActionState ATTACKSTATE = ActionState.Attacking;
 
-        private MovementHandler movementHandler => sceneObject.MovementHandler;
-
         private IAttackInput attackInput;
+        private MovementHandler movementHandler => sceneObject.MovementHandler;
 
         [Header("State")]
         //Attack Data
@@ -25,8 +24,9 @@ namespace Game.SceneObjects.Attack
 
         //NOTE: This tracks the current attack data being used
         private AttackData curAttackData;
-
         private AttackCollection curAttackCollection;
+        private AttackHandler curAttackHandler;
+
 
         //NOTE: This is the max amount of time that this attack can be held before it is released
         private const float MAX_ATTACK_CHARGE_TIME = 1f;
@@ -36,7 +36,6 @@ namespace Game.SceneObjects.Attack
         private const float Max_CHARGE_ATTACK_MULTIPLIER = 1f;
         private float chargeAttackMultiplier = 0;
 
-        private const float attackImmunityTimer = 0.2f;
         private HashSet<string> objectHitByAttack = new HashSet<string>();
 
 
@@ -123,7 +122,7 @@ namespace Game.SceneObjects.Attack
         /// <summary>
         /// Handle weapon equipping
         /// </summary>
-        private void OnWeaponEquipped(Weapon weapon)
+        private void OnWeaponEquipped(Weapon previousWeapon, Weapon weapon)
         {
             if (weapon != null)
             {
@@ -140,9 +139,13 @@ namespace Game.SceneObjects.Attack
             if (curAttackCollection != null && curAttackCollection.TryGetAttackByAnimation(clip, out AttackData attackData))
             {
                 curAttackData = attackData;
+                curAttackData.ResetAttackTriggers();
 
-                foreach (AnimationTrigger trigger in attackData.GetAttackTriggers())
-                    trigger.Reset();
+                curAttackHandler = new AttackHandler(
+                    curAttackData,
+                    sceneObject.EquipmentHandler.WeaponHandler.EquippedWeapon,
+                    sceneObject.AnimationHandler.GetFrameOfCurrentAnimation,
+                    PerformChargeAttack);
             }
         }
 
@@ -175,7 +178,8 @@ namespace Game.SceneObjects.Attack
             if (sceneObject.ActionStateHandler.CurActionState == ActionState.Attacking && curAttackData != null)
             {
                 //Check Collision
-                CheckForAnimationTriggers();
+                if (curAttackHandler != null)
+                    curAttackHandler.CheckForAnimationTriggers();
 
                 //Charge Attack
                 UpdateChargeAttack();                
@@ -207,6 +211,8 @@ namespace Game.SceneObjects.Attack
                 previousAttackState = curAttackState;
                 curAttackState = AttackType.Null;
                 curAttackData = null;
+                curAttackHandler = null;
+
                 objectHitByAttack.Clear();
                 sceneObject.ActionStateHandler.ChangeState(ActionState.Idle);
                 AttackStateChangedEvent?.Invoke(previousAttackState, curAttackState);
@@ -307,6 +313,27 @@ namespace Game.SceneObjects.Attack
 
         #region Charged Attack
 
+        private void PerformChargeAttack()
+        {
+            switch (curAttackState)
+            {
+                case AttackType.UpTilt:
+                case AttackType.UpAir:
+                    PerformUpChargeAttack();
+                    break;
+
+                case AttackType.ForwardTilt:
+                case AttackType.ForwardAir:
+                    PerformForwardChangeAttack();
+                    break;
+
+                case AttackType.DownTilt:
+                case AttackType.DownAir:
+                    PerformDownChargeAttack();
+                    break;
+            }
+        }
+
         /// <summary>
         /// Determine if a charged attack needs to be released
         /// </summary>
@@ -406,95 +433,7 @@ namespace Game.SceneObjects.Attack
         {
             if (!attackInput.IsDownAttackActive())
                 sceneObject.AnimationHandler.ResumeCurrentAnimation();
-        }
-
-        #endregion
-
-        #region Animation Triggers
-
-        /// <summary>
-        /// Check for animation triggers that need to fire
-        /// </summary>
-        private void CheckForAnimationTriggers()
-        {
-            int curAnimationFrame = sceneObject.AnimationHandler.GetFrameOfCurrentAnimation();
-
-            foreach (AnimationTrigger trigger in curAttackData.GetAttackTriggers())
-            {
-                if (!trigger.WasTriggered && curAnimationFrame >= trigger.TriggerFrame)
-                    ExecuteTrigger(trigger);
-            }
-        }
-
-
-        /// <summary>
-        /// Execute <paramref name="trigger"/>
-        /// </summary>
-        private void ExecuteTrigger(AnimationTrigger trigger)
-        {
-            trigger.WasTriggered = true;
-
-            switch (trigger.TriggerType)
-            {
-                case AnimationTriggerType.EnableCollider:
-                    sceneObject.EquipmentHandler.WeaponHandler.EquippedWeapon.EnableCollidersForAttack(curAttackData, AttackConnected);
-                    break;
-
-                case AnimationTriggerType.DisableCollider:
-                    sceneObject.EquipmentHandler.WeaponHandler.EquippedWeapon.DisableAllColliders();
-                    break;
-
-                case AnimationTriggerType.ChargeAction:
-                    switch (curAttackState)
-                    {
-                        case AttackType.UpTilt:
-                        case AttackType.UpAir:
-                            PerformUpChargeAttack();
-                            break;
-
-                        case AttackType.ForwardTilt:
-                        case AttackType.ForwardAir:
-                            PerformForwardChangeAttack();
-                            break;
-
-                        case AttackType.DownTilt:
-                        case AttackType.DownAir:
-                            PerformDownChargeAttack();
-                            break;
-                    }
-                    break;
-            }
-        }
-
-
-        /// <summary>
-        /// Callback used when an attack makes contact with a <paramref name="col"/> of <paramref name="target"/>
-        /// </summary>
-        /// <param name="target"></param>
-        private void AttackConnected(ITakeDamage target, Collider col)
-        {
-            //Current Attack
-            if (curAttackData != null && !objectHitByAttack.Contains(target.SceneObject.UniqueId))
-            {
-                //Prevent multiple hits to the same object in one attack
-                objectHitByAttack.Add(target.SceneObject.UniqueId);
-
-                //Apply Immunity (Prevent bounce back hits if sceneObject hits wall immediatly)
-                sceneObject.DamageHandler.SetImmunity(target.SceneObject.UniqueId, attackImmunityTimer);
-
-                //Launch Angle
-                float launchAngle = curAttackData.LaunchAngle;
-                if (!movementHandler.IsFacingRightDirection)
-                    launchAngle = 180 - launchAngle;
-
-                //Attack Damage
-                int curFrame = sceneObject.AnimationHandler.GetFrameOfCurrentAnimation();
-                float attackDamage = curAttackData.GetAttackDamage(curFrame);
-                attackDamage += attackDamage * chargeAttackMultiplier;
-
-                target.HitByAttack(col.ClosestPoint(col.transform.position), curAttackData.Influence, attackDamage, launchAngle);
-            }
-        }
+        }      
 
         #endregion
     }

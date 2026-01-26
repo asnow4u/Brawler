@@ -19,12 +19,12 @@ public class AttackDamageCollider : DamageCollider
     /// <summary>
     /// Enable collider if dependent on <paramref name="clip"/> and establish <paramref name="attackHitCallback"/> if collider hits
     /// </summary>
-    public void Enable(AnimationClip clip, Action<ITakeDamage, Collider> attackHitCallback)
+    public void Enable(AnimationClip clip)
     {
         if (triggerAnimationData.Contains(clip))
         {
             damageCollider.enabled = true;
-            hitCallback = attackHitCallback;
+            //hitCallback = attackHitCallback;
         }
     }
 }

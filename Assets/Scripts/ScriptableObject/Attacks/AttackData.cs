@@ -41,17 +41,14 @@ public class AttackData : ScriptableObject
     [Space]
     [Tooltip("Trigger to be fired when attack animation is ending")]
     [SerializeField] private AnimationTrigger end = new AnimationTrigger(AnimationTriggerType.End);
-
     
     public float Influence => influence;
     public float LaunchAngle => launchAngle;
-
 
     public float GetAttackDamage(float frameNumber)
     {
         return damageCurve.Evaluate(frameNumber);
     }
-
 
     public AnimationTrigger[] GetAttackTriggers()
     {
@@ -64,5 +61,11 @@ public class AttackData : ScriptableObject
         };
 
         return triggers.ToArray();
+    }
+
+    public void ResetAttackTriggers()
+    {
+        foreach (AnimationTrigger trigger in GetAttackTriggers())
+            trigger.Reset();
     }
 }

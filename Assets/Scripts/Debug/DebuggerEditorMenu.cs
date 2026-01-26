@@ -113,19 +113,7 @@ public class DebuggerEditorMenu : EditorWindow
 
             GUILayout.EndVertical();
             GUILayout.Space(10f);
-        }
-
-        if (GUILayout.Button("Apply Damage To SceneObjects"))
-        {
-            foreach (var data in sceneObjectsData)
-            {
-                if (data.TargetObject is SceneObject targetSceneObject)
-                {
-                    if (targetSceneObject.TryGetComponent(out ITakeDamage damageHandler))
-                        damageHandler.HitByAttack(targetSceneObject.transform.position, data.LaunchInfluence, data.LaunchDamage, data.LaunchAngle);
-                }
-            }
-        }
+        }        
 
         GUILayout.EndVertical();
     }

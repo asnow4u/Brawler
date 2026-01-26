@@ -151,7 +151,7 @@ namespace Game.SceneObjects.Movement
         /// <summary>
         /// Handle when the weapon is equipped and use the weapons movement collection
         /// </summary>
-        private void OnWeaponEquipped(Weapon weapon)
+        private void OnWeaponEquipped(Weapon previousWeapon, Weapon weapon)
         {
             if (weapon != null && weapon.MovementCollection != null)
                 SetCollection(weapon.MovementCollection);
@@ -348,7 +348,7 @@ namespace Game.SceneObjects.Movement
         {
             if (movementHandler.IsFacingRightDirection)
             {
-                if (horizontalInfluence >= 0 && sceneObject.TryDetectCollision(Direction.Right, 0.5f, LayerMask.GetMask("Environment"), out _))
+                if (horizontalInfluence >= 0 && sceneObject.CollisionHandler.TryDetectCollision(Direction.Right, 0.5f, LayerMask.GetMask("Environment"), out _))
                     return true;
             }
 
@@ -362,7 +362,7 @@ namespace Game.SceneObjects.Movement
         {
             if (!movementHandler.IsFacingRightDirection)
             {
-                if (horizontalInfluence <= 0 && sceneObject.TryDetectCollision(Direction.Left, 0.5f, LayerMask.GetMask("Environment"), out _))
+                if (horizontalInfluence <= 0 && sceneObject.CollisionHandler.TryDetectCollision(Direction.Left, 0.5f, LayerMask.GetMask("Environment"), out _))
                     return true;
             }
 
@@ -721,11 +721,11 @@ namespace Game.SceneObjects.Movement
             BoxCollider edgeCollider = edge.transform.GetComponent<BoxCollider>();
 
             //Scene Object must be above the edge to vault
-            if (sceneObject.Collider.bounds.max.y <= edgeCollider.bounds.max.y) return;
+            if (sceneObject.CollisionHandler.Collider.bounds.max.y <= edgeCollider.bounds.max.y) return;
 
             //Calculate how much of the other collider is above this edge
-            float edgeHeightDifference = sceneObject.Collider.bounds.max.y - edgeCollider.bounds.max.y;
-            float percentageAboveEdge = edgeHeightDifference / sceneObject.Collider.bounds.size.y;            
+            float edgeHeightDifference = sceneObject.CollisionHandler.Collider.bounds.max.y - edgeCollider.bounds.max.y;
+            float percentageAboveEdge = edgeHeightDifference / sceneObject.CollisionHandler.Collider.bounds.size.y;            
 
             //Determine if scene object is heading towards the edge
             bool correctInfluence = (edge.IsRight && HorizontalInfluence < 0 && edge.transform.position.x < transform.position.x) ||

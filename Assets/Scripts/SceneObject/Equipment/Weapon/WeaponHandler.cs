@@ -14,7 +14,10 @@ public class WeaponHandler : MonoBehaviour
 
     public Weapon EquippedWeapon => equippedWeapon;
 
-    public event Action<Weapon> OnWeaponEquippedEvent;
+    /// <summary>
+    /// Event when weapon is equipped, providing previous and new weapon.
+    /// </summary>
+    public event Action<Weapon, Weapon> OnWeaponEquippedEvent;
 
     public void Setup()
     {        
@@ -60,6 +63,7 @@ public class WeaponHandler : MonoBehaviour
         else if (equippedWeapon != null && secondaryWeapon != null && equippedWeapon != weapon && secondaryWeapon != weapon)
             RemoveWeapon(equippedWeapon);
         
+        Weapon previousWeapon = equippedWeapon;
         equippedWeapon = weapon;
         equippedWeapon.gameObject.SetActive(true);
 
@@ -67,7 +71,7 @@ public class WeaponHandler : MonoBehaviour
         equippedWeapon.transform.localPosition = Vector3.zero;
         equippedWeapon.transform.localRotation = Quaternion.identity;
 
-        OnWeaponEquippedEvent?.Invoke(equippedWeapon);
+        OnWeaponEquippedEvent?.Invoke(previousWeapon, equippedWeapon);
     }
     
     /// <summary>

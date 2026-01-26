@@ -14,7 +14,8 @@ public class Weapon : Interactable
     public MovementCollection MovementCollection;
     public AttackCollection AttackCollection;
 
-    private List<AttackDamageCollider> damageColliders = new List<AttackDamageCollider>();    
+    private List<AttackDamageCollider> damageColliders = new List<AttackDamageCollider>();
+    public List<AttackDamageCollider> DamageColliders => damageColliders;
 
     protected override void Awake()
     {
@@ -34,17 +35,17 @@ public class Weapon : Interactable
     /// <summary>
     /// Enable colliders for given <paramref name="attackData"/>
     /// </summary>
-    public void EnableCollidersForAttack(AttackData attackData, Action<ITakeDamage, Collider> attackHitCallback)
+    public void OpenAttackWindow(IDealDamage sourceData)
     {
         foreach (AttackDamageCollider collider in damageColliders)
-            collider.Enable(attackData.Animation, attackHitCallback);
+            collider.Enable(sourceData);
     }
 
 
     /// <summary>
     /// Disable all colliders within collider collection
     /// </summary>
-    public void DisableAllColliders()
+    public void CloseAttackWindow()
     {
         foreach (AttackDamageCollider collider in damageColliders)
             collider.Disable();

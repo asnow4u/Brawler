@@ -1,6 +1,7 @@
 using Game.SceneObjects.ActionStates;
 using Game.SceneObjects.Animation;
 using Game.SceneObjects.Attack;
+using Game.SceneObjects.Collision;
 using Game.SceneObjects.Damage;
 using Game.SceneObjects.Equipment;
 using Game.SceneObjects.Movement;
@@ -14,7 +15,6 @@ namespace Game.SceneObjects
     public enum SceneObjectType { Player, Enemy, Object }
     public enum GroundedState { Airborn, Grounded, Climbing }
     public enum ClimbState { Unavailable, Available, Climbing }
-
     public enum Direction { Right, Left, Up, Down }
 
     [RequireComponent(typeof(Collider))]
@@ -22,10 +22,11 @@ namespace Game.SceneObjects
     [RequireComponent(typeof(ActionStateHandler))]
     [RequireComponent(typeof(UIHandler))]
     [RequireComponent(typeof(DamageHandler))]
+    [RequireComponent(typeof(CollisionHandler))]
     public abstract class SceneObject : MonoBehaviour
     {
         [Header("SceneObject")]
-        public string UniqueId;
+        public Guid UniqueId;
         public SceneObjectType ObjectType;
 
         [Header("Ground Status")]
@@ -40,11 +41,12 @@ namespace Game.SceneObjects
         //Logger
         private SceneObjectLogger logger;
 
-        //Required Handlers
+        //Required Component Handlers
         public ActionStateHandler ActionStateHandler { get; protected set; }
         public MovementHandler MovementHandler { get; protected set; }
         public UIHandler UIHandler { get; private set; }
         public DamageHandler DamageHandler { get; protected set; }
+        public CollisionHandler CollisionHandler { get; protected set; }
 
         //Other Handlers
         public EquipmentHandler EquipmentHandler { get; protected set; }
@@ -59,8 +61,7 @@ namespace Game.SceneObjects
         public ClimbState CurClimbState => curClimbState;
         public Rigidbody Rb => GetComponent<Rigidbody>();
         public float Mass => Rb.mass + (EquipmentHandler != null ? EquipmentHandler.GetEquipmentMass() : 0);
-        public float MassRatio => Mathf.Clamp(Mass, 0, baseData.MaxMass) / baseData.MaxMass;
-        public Collider Collider => GetComponent<Collider>();
+        public float MassRatio => Mathf.Clamp(Mass, 0, baseData.MaxMass) / baseData.MaxMass;        
 
 
         //Events
@@ -94,7 +95,7 @@ namespace Game.SceneObjects
             if (!baseData.IsValid())
                 throw new ArgumentException("SceneObject Base Data is not valid");
 
-            UniqueId = Guid.NewGuid().ToString();
+            UniqueId = Guid.NewGuid();
             curGroundedState = GroundedState.Grounded;
             curClimbState = ClimbState.Unavailable;
 
@@ -116,6 +117,8 @@ namespace Game.SceneObjects
             ActionStateHandler = GetComponent<ActionStateHandler>();
             UIHandler = GetComponent<UIHandler>();
             DamageHandler = GetComponent<DamageHandler>();
+            CollisionHandler = GetComponent<CollisionHandler>();
+
             MovementHandler = new MovementHandler(baseData, this);
         }
 
@@ -127,6 +130,7 @@ namespace Game.SceneObjects
             ActionStateHandler.RegisterToEvents();
             UIHandler.RegisterToEvents();
             DamageHandler.RegisterToEvents();
+            CollisionHandler.RegisterToEvents();
 
             EquipmentHandler?.RegisterToEvents();
             InteractionHandler?.RegisterToEvents();
@@ -147,6 +151,7 @@ namespace Game.SceneObjects
             MovementHandler.Setup();
             UIHandler.Setup();
             DamageHandler.Setup();
+            CollisionHandler.Setup();
 
             EquipmentHandler?.Setup();
             InteractionHandler?.Setup();
@@ -260,13 +265,8 @@ namespace Game.SceneObjects
         /// </summary>
         private bool GroundCheck()
         {            
-            if (Physics.Raycast(Collider.bounds.center, Vector3.down, out RaycastHit hit, Collider.bounds.extents.y + 0.1f, LayerMask.GetMask("Environment")))
-            {
-                if (hit.transform.TryGetComponent(out TwoWayPlatform platform) && !platform.IsSceneObjectCollisionIgnored(this))
-                    return true;
-                else
-                    return true;
-            }
+            if (Physics.Raycast(CollisionHandler.Collider.bounds.center, Vector3.down, out RaycastHit hit, CollisionHandler.Collider.bounds.extents.y + 0.1f, LayerMask.GetMask("Environment")))
+                return true;
 
             return false;
         }
@@ -343,7 +343,7 @@ namespace Game.SceneObjects
         private bool ClimbSurfaceCheck()
         {
             //Update climb state if the collection has climb data                            
-            Bounds bounds = Collider.bounds;
+            Bounds bounds = CollisionHandler.Collider.bounds;
             Vector3 center = bounds.center;
             Vector3 halfExtents = bounds.extents;
 
@@ -379,160 +379,6 @@ namespace Game.SceneObjects
 
         #endregion
 
-
-        #region RigidBody
-
-        /// <summary>
-        /// Returns a list of active rigidbody where the associated collider is not trigger
-        /// </summary>
-        public List<Rigidbody> ActiveRigidbodies 
-        { 
-            get 
-            {
-                List<Rigidbody> activeRbs = new List<Rigidbody>();
-
-                foreach (Rigidbody rb in GetComponentsInChildren<Rigidbody>())
-                {
-                    if (rb.TryGetComponent(out Collider collider))
-                    {
-                        if (collider.enabled == true && collider.isTrigger == false)
-                            activeRbs.Add(rb);
-                    }
-                }
-
-                return activeRbs;
-            } 
-        }
-
-        #endregion
-
-
-        #region Collision Detection
-
-        /// <summary>
-        /// Try to detect if a collider exists
-        /// </summary>
-        public bool TryDetectCollision(Direction direction, float dist, LayerMask mask, out Collider collidingCollider)
-        {        
-            collidingCollider = null;
-
-            switch (direction) 
-            { 
-                case Direction.Left:
-                    collidingCollider = LeftSideCollisionDetection(dist, mask);
-                    break;
-
-                case Direction.Right:
-                    collidingCollider = RightSideCollisionDetection(dist, mask);
-                    break;
-
-                case Direction.Up:
-                    collidingCollider = UpSideCollisionDetection(dist, mask); 
-                    break;
-
-                case Direction.Down:
-                    collidingCollider= DownSideCollisionDetection(dist, mask);
-                    break;        
-            }
-
-            return collidingCollider != null;
-        }  
-
-
-        /// <summary>
-        /// Check right side for any collisions
-        /// </summary>
-        private Collider RightSideCollisionDetection(float dist, LayerMask mask)
-        {
-            Vector3 point1 = Collider.bounds.center + Vector3.up * Collider.bounds.extents.y;
-            Vector3 point2 = Collider.bounds.center + Vector3.down * Collider.bounds.extents.y;
-            float spaceBetweenRays = (point1.y - point2.y) / 10;
-
-            for (int i = 0; i < 10; i++)
-            {
-                Vector3 origin = point1 + Vector3.down * spaceBetweenRays * i;
-
-                if (Physics.Raycast(origin, Vector3.right, out RaycastHit hit, Collider.bounds.extents.x + dist, mask))
-                {
-                    return hit.collider;
-                }
-            }
-
-            return null;
-        }
-
-
-        /// <summary>
-        /// Check left side for any collisions
-        /// </summary>
-        private Collider LeftSideCollisionDetection(float dist, LayerMask mask)
-        {
-            Vector3 point1 = Collider.bounds.center + Vector3.up * Collider.bounds.extents.y;
-            Vector3 point2 = Collider.bounds.center + Vector3.down * Collider.bounds.extents.y;
-            float spaceBetweenRays = (point1.y - point2.y) / 10;
-
-            for (int i = 0; i < 10; i++)
-            {
-                Vector3 origin = point1 + Vector3.down * spaceBetweenRays * i;
-
-                if (Physics.Raycast(origin, Vector3.left, out RaycastHit hit, Collider.bounds.extents.x + dist, mask))
-                {
-                    return hit.collider;
-                }
-            }
-
-            return null;
-        }
-
-
-        /// <summary>
-        /// Check up for any collisions
-        /// </summary>
-        private Collider UpSideCollisionDetection(float dist, LayerMask mask)
-        {
-            Vector3 point1 = Collider.bounds.center + Vector3.right * Collider.bounds.extents.x;
-            Vector3 point2 = Collider.bounds.center + Vector3.left * Collider.bounds.extents.x;
-            float spaceBetweenRays = (point1.x - point2.x) / 10;
-
-            for (int i = 0; i < 10; i++)
-            {
-                Vector3 origin = point1 + Vector3.left * spaceBetweenRays * i;
-
-                if (Physics.Raycast(origin, Vector3.up, out RaycastHit hit, Collider.bounds.extents.y + dist, mask))
-                {
-                    return hit.collider;
-                }
-            }
-
-            return null;
-        }
-
-
-        /// <summary>
-        /// Check down for any collisions
-        /// </summary>
-        private Collider DownSideCollisionDetection(float dist, LayerMask mask)
-        {
-            Vector3 point1 = Collider.bounds.center + Vector3.right * Collider.bounds.extents.x;
-            Vector3 point2 = Collider.bounds.center + Vector3.left * Collider.bounds.extents.x;
-            float spaceBetweenRays = (point1.x - point2.x) / 10;
-
-            for (int i = 0; i < 10; i++)
-            {
-                Vector3 origin = point1 + Vector3.left * spaceBetweenRays * i;
-
-                if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, Collider.bounds.extents.y + dist, mask))
-                {
-                    return hit.collider;
-                }
-            }
-
-            return null;
-        }
-
-        #endregion
-
-
         #region Clean up
 
         public void OnDestroy()
@@ -540,6 +386,7 @@ namespace Game.SceneObjects
             ActionStateHandler.UnregisterToEvents();
             UIHandler.UnregisterToEvents();
             DamageHandler.UnregisterToEvents();
+            CollisionHandler.UnregisterToEvents();  
 
             EquipmentHandler?.UnregisterToEvents();
             InteractionHandler?.UnregisterToEvents();
@@ -549,40 +396,6 @@ namespace Game.SceneObjects
 
             //NOTE: needs to happen after move and attack handlers
             AnimationHandler?.UnregisterToEvents();
-        }
-
-        #endregion
-
-
-        #region Debug
-
-        private void OnDrawGizmosSelected()
-        {
-            DrawGroundedCheck();
-        }
-
-
-        private void DrawGroundedCheck()
-        {
-            if (Physics.Raycast(Collider.bounds.center, Vector3.down, out RaycastHit hit, Collider.bounds.extents.y + 0.1f, LayerMask.GetMask("Environment")))
-            {
-                if (hit.transform.TryGetComponent(out TwoWayPlatform platform) && !platform.IsSceneObjectCollisionIgnored(this))
-                {
-                    Gizmos.color = Color.green;
-                    Gizmos.DrawLine(Collider.bounds.center, hit.point);
-                }
-                else
-                {
-                    Gizmos.color = Color.green;
-                    Gizmos.DrawLine(Collider.bounds.center, hit.point);
-                }
-            }
-
-            else
-            {
-                Gizmos.color = Color.red;
-                Gizmos.DrawLine(Collider.bounds.center, new Vector3(Collider.bounds.center.x, Collider.bounds.extents.y + 0.1f, Collider.bounds.center.z));
-            }
         }
 
         #endregion

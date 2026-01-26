@@ -1,4 +1,5 @@
 using Game.SceneObjects.ActionStates;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,12 +8,12 @@ namespace Game.SceneObjects.Damage
     public enum HitStunState { None, Start, Launch, End }
 
 
-    public class DamageHandler : SceneObjectHandler, ITakeDamage
+    public class DamageHandler : SceneObjectHandler
     {
         [Header("Damage")]
-        [SerializeField] protected float damageTaken;        
+        [SerializeField] protected float damageTaken;
         [Tooltip("Base amount of acceleration that will be applied anytime taking a hit")]
-        const float minKnockBackAcceleration = 10f;        
+        const float minKnockBackAcceleration = 10f;
         [Tooltip("The exponential growth of knockback based on damage")]
         const float exGrowth = 2.8f;
 
@@ -30,7 +31,7 @@ namespace Game.SceneObjects.Damage
         private Ragdoll ragdoll;
 
         //Immunity
-        private Dictionary<string, float> immunityList = new Dictionary<string, float>();
+        private Dictionary<Guid, float> immunityList = new Dictionary<Guid, float>();
 
         //KillZones
         private KillZone[] killZones;
@@ -109,7 +110,6 @@ namespace Game.SceneObjects.Damage
                 damageTaken = 0;
         }
 
-
         /// <summary>
         /// Reset any damage that was previously taken
         /// </summary>
@@ -118,23 +118,14 @@ namespace Game.SceneObjects.Damage
             damageTaken = 0;
         }
 
-
-        /// <summary>
-        /// Handle being hit by an attack. <br/>
-        /// UI to be displayed on <paramref name="attackPoint"/> <br/>
-        /// Damage and Launch force calculated and applied based on <paramref name="influence"/>, <paramref name="attackDamage"/> and <paramref name="launchAngle"/>
-        /// </summary>
-        public void HitByAttack(Vector3 attackPoint, float influence, float attackDamage, float launchAngle)
-        {
-            //Damage bubble                    
-            UIFactory.Instance.SpawnDamageBubble(attackPoint, attackDamage);
-
+        public void HitByCollision(IDealDamage data)
+        {            
             //Damage
-            AddDamage(attackDamage);
+            AddDamage(data.Damage);
 
             //Launch knockback
-            Vector3 launchVelocity = CalculateKnockbackVelocity(influence, damageTaken, launchAngle, sceneObject.Mass);
-            
+            Vector3 launchVelocity = CalculateKnockbackVelocity(data.Influence, damageTaken, data.LaunchAngle, sceneObject.Mass);
+
             ApplyLaunchForce(launchVelocity);
             CalculateBounce(launchVelocity);
 
@@ -158,7 +149,7 @@ namespace Game.SceneObjects.Damage
             Vector3 launchDirection = new Vector2(xLaunch, yLaunch);
 
             //TODO: bounce
-            
+
             return launchDirection * damageForce / mass;
         }
 
@@ -180,7 +171,7 @@ namespace Game.SceneObjects.Damage
             //}
 
             //else
-            sceneObject.Rb.linearVelocity = launchVelocity; 
+            sceneObject.Rb.linearVelocity = launchVelocity;
         }
 
         #endregion
@@ -188,20 +179,20 @@ namespace Game.SceneObjects.Damage
 
         #region Immunity
 
-        public bool CheckForImmunity(SceneObject attacker)
+        public bool CheckForImmunity(Guid ID)
         {
-            return immunityList.ContainsKey(attacker.UniqueId);
+            return immunityList.ContainsKey(ID);
         }
 
-        public void SetImmunity(string sceneObjectID, float duration)
+        public void SetImmunity(Guid ID, float duration)
         {
-            if (!immunityList.ContainsKey(sceneObjectID))
-                immunityList.Add(sceneObjectID, duration);
+            if (!immunityList.ContainsKey(ID))
+                immunityList.Add(ID, duration);
         }
 
         public void UpdateImmunityList()
         {
-            foreach (var kvp in new Dictionary<string, float>(immunityList))
+            foreach (var kvp in new Dictionary<Guid, float>(immunityList))
             {
                 immunityList[kvp.Key] -= Time.fixedDeltaTime;
                 if (immunityList[kvp.Key] <= 0)
@@ -215,7 +206,7 @@ namespace Game.SceneObjects.Damage
         #region Bounce
 
         private void CalculateBounce(Vector3 velocity)
-        {            
+        {
             Bounds bounds = collider.bounds;
 
             //Calculate the direction and distance of the velocity
@@ -266,7 +257,7 @@ namespace Game.SceneObjects.Damage
                 if (Physics.Raycast(point + offset, direction, out RaycastHit hit, distance + bounceCheckOffset, LayerMask.GetMask("Environment")))
                     hitNormals.Add(hit.normal);
             }
-            
+
             if (hitNormals.Count == 0)
                 return;
 
@@ -275,7 +266,7 @@ namespace Game.SceneObjects.Damage
             foreach (var normal in hitNormals)
                 averageNormal += normal;
             averageNormal /= hitNormals.Count;
-            
+
             Vector3 bounceVelocity = Vector3.Reflect(velocity, averageNormal) * bounceDegrade;
 
             //Prevent small bounces on ground
@@ -286,7 +277,7 @@ namespace Game.SceneObjects.Damage
             }
 
             sceneObject.Rb.linearVelocity = bounceVelocity;
-        }        
+        }
 
         #endregion
 
@@ -297,7 +288,7 @@ namespace Game.SceneObjects.Damage
         /// Calculate <see cref="hitStunTimer"/> based on the <paramref name="launchForce"/>
         /// </summary>
         private void ApplyHitStun(Vector3 launchForce)
-        {            
+        {
             if (hitStunState == HitStunState.None)
             {
                 sceneObject.ActionStateHandler.ChangeState(ActionState.HitStun);
@@ -321,7 +312,7 @@ namespace Game.SceneObjects.Damage
                 CalculateBounce(sceneObject.Rb.linearVelocity);
 
                 if (hitStunState == HitStunState.Start)
-                {                    
+                {
                     //Ragdoll
                     //if (ragdoll != null)
                     //{
@@ -347,10 +338,10 @@ namespace Game.SceneObjects.Damage
                     RemoveKillZones();
                     hitStunState = HitStunState.None;
                     sceneObject.ActionStateHandler.ChangeState(ActionState.Idle);
-                }               
+                }
             }
         }
-        
+
 
         #endregion
 
@@ -425,7 +416,7 @@ namespace Game.SceneObjects.Damage
                 foreach (KillZone killZone in killZones)
                     Destroy(killZone.gameObject);
 
-               killZones = null;
+                killZones = null;
             }
         }
 
@@ -456,9 +447,9 @@ namespace Game.SceneObjects.Damage
             float xSpacing = (bounds.max.x - bounds.min.x) / 4;
             float ySpacing = (bounds.max.y - bounds.min.y) / 4;
             Vector3 point;
-            
+
             //Sides
-            for (int i=0; i<5; i++)
+            for (int i = 0; i < 5; i++)
             {
                 //Top
                 point = new Vector3(bounds.min.x + i * xSpacing, bounds.max.y, centralZ);
@@ -477,7 +468,7 @@ namespace Game.SceneObjects.Damage
                 Gizmos.DrawSphere(point, 0.05f);
 
             }
-        }      
+        }
 
         #endregion
     }

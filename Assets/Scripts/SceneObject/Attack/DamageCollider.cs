@@ -1,3 +1,4 @@
+using Game.SceneObjects;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,9 +6,10 @@ using UnityEngine;
 [RequireComponent(typeof(Collider))]
 public class DamageCollider : MonoBehaviour
 {
-    protected Collider damageCollider;   
-    protected Action<ITakeDamage, Collider> hitCallback;
+    protected Collider damageCollider;
+    protected IDealDamage sourceHitData;
 
+    public event Action<DamageCollisionHitData> OnHit;
 
     public virtual void Awake()
     {
@@ -15,39 +17,41 @@ public class DamageCollider : MonoBehaviour
         Disable();
     }
 
-
-    /// <summary>
-    /// Enable collider and establish <paramref name="attackHitCallback"/> if collider hits
-    /// </summary>
-    public void Enable(Action<ITakeDamage, Collider> attackHitCallback)
+    public void Enable(IDealDamage sourceData)
     {
+        sourceHitData = sourceData;
         damageCollider.enabled = true;
-        hitCallback = attackHitCallback;
     }
 
-
-    /// <summary>
-    /// Disable collider. Nullify any established callbacks
-    /// </summary>
     public void Disable()
     {
+        sourceHitData = null;
         damageCollider.enabled = false;
-        hitCallback = null;
     }
-
-
 
     private void OnTriggerEnter(Collider col)
     {
         if (col.gameObject.layer == LayerMask.NameToLayer("Ragdoll") ||
             col.gameObject.layer == LayerMask.NameToLayer("DamageHitBox"))
         {
-            ITakeDamage hitTarget = col.GetComponentInParent<ITakeDamage>();
-            if (hitTarget != null)
-                hitCallback?.Invoke(hitTarget, col);
+            SceneObject target = col.GetComponentInParent<SceneObject>();
+            if (target != null)
+            {
+                DamageCollisionHitData hitData = new DamageCollisionHitData
+                {                    
+                    SourceData = sourceHitData,
+                    TargetData = new TargetHitData
+                    {
+                        SceneObject = target,
+                        HitCollider = col,
+                        ContactPoint = col.ClosestPoint(transform.position)
+                    }
+                };
+
+                OnHit?.Invoke(hitData);
+            }
         }
     }
-
 
 
     public void OnDrawGizmos()
