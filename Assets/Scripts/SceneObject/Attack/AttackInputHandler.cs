@@ -2,6 +2,8 @@ using Game.SceneObjects.ActionStates;
 using Game.SceneObjects.Movement;
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Game.SceneObjects.Attack
@@ -27,14 +29,12 @@ namespace Game.SceneObjects.Attack
         private AttackCollection curAttackCollection;
         private AttackHandler curAttackHandler;
 
-
         //NOTE: This is the max amount of time that this attack can be held before it is released
         private const float MAX_ATTACK_CHARGE_TIME = 1f;
-        private float attackChargeTime = 0f;
-
         //NOTE: This is the max amount of additional damage that can be added to the attack (30%)
         private const float Max_CHARGE_ATTACK_MULTIPLIER = 1f;
         private float chargeAttackMultiplier = 0;
+        private CancellationTokenSource chargeAttackCTS;
 
         private HashSet<string> objectHitByAttack = new HashSet<string>();
 
@@ -160,8 +160,6 @@ namespace Game.SceneObjects.Attack
                 if (curAttackState == attackData.Type)
                 {
                     SetCurrentAttackState(AttackType.Null);
-
-                    attackChargeTime = 0;
                     chargeAttackMultiplier = 0;
                 }
             }
@@ -342,9 +340,6 @@ namespace Game.SceneObjects.Attack
             //TODO: Should check if that animation is an attack
             if (sceneObject.AnimationHandler.IsAnimationPaused)
             {
-                attackChargeTime += Time.fixedDeltaTime;
-                chargeAttackMultiplier = Mathf.Lerp(0, Max_CHARGE_ATTACK_MULTIPLIER, attackChargeTime / MAX_ATTACK_CHARGE_TIME);
-
                 switch (curAttackState)
                 {
                     case AttackType.UpTilt:
@@ -365,7 +360,6 @@ namespace Game.SceneObjects.Attack
             }
         }
 
-
         /// <summary>
         /// Perform a charged upward attack. <br/>
         /// Pauses animation till release. <br/>
@@ -374,7 +368,7 @@ namespace Game.SceneObjects.Attack
         private void PerformUpChargeAttack()
         {
             if (attackInput.IsUpAttackActive())
-                sceneObject.AnimationHandler.PauseCurrentAnimation(MAX_ATTACK_CHARGE_TIME);
+                StartChargeAttack();
         }
 
         /// <summary>
@@ -383,7 +377,7 @@ namespace Game.SceneObjects.Attack
         private void ReleaseUpChargeAttack()
         {
             if (!attackInput.IsUpAttackActive())
-                sceneObject.AnimationHandler.ResumeCurrentAnimation();
+                ExecuteChargeAttack();
         }
 
         /// <summary>
@@ -394,11 +388,10 @@ namespace Game.SceneObjects.Attack
         private void PerformForwardChangeAttack()
         {
             if (attackInput.IsRightAttackActive() && movementHandler.IsFacingRightDirection)
-                sceneObject.AnimationHandler.PauseCurrentAnimation(MAX_ATTACK_CHARGE_TIME);
-
+                StartChargeAttack();
 
             else if (attackInput.IsLeftAttackActive() && !movementHandler.IsFacingRightDirection)
-                sceneObject.AnimationHandler.PauseCurrentAnimation(MAX_ATTACK_CHARGE_TIME);
+                StartChargeAttack();
         }
 
         /// <summary>
@@ -407,12 +400,11 @@ namespace Game.SceneObjects.Attack
         private void ReleaseForwardChargeAttack()
         {
             if (!attackInput.IsRightAttackActive() && movementHandler.IsFacingRightDirection)
-                sceneObject.AnimationHandler.ResumeCurrentAnimation();
+                ExecuteChargeAttack();
 
             else if (!attackInput.IsLeftAttackActive() && !movementHandler.IsFacingRightDirection)
-                sceneObject.AnimationHandler.ResumeCurrentAnimation();
+                ExecuteChargeAttack();
         }
-
 
         /// <summary>
         /// Perform a charged downward attack. <br/>
@@ -422,9 +414,8 @@ namespace Game.SceneObjects.Attack
         private void PerformDownChargeAttack()
         {
             if (attackInput.IsDownAttackActive())
-                sceneObject.AnimationHandler.PauseCurrentAnimation(MAX_ATTACK_CHARGE_TIME);
+                StartChargeAttack();
         }
-
 
         /// <summary>
         /// Release charged downward attack
@@ -432,8 +423,50 @@ namespace Game.SceneObjects.Attack
         private void ReleaseDownChargeAttack()
         {
             if (!attackInput.IsDownAttackActive())
-                sceneObject.AnimationHandler.ResumeCurrentAnimation();
-        }      
+                ExecuteChargeAttack();
+        }
+
+        private void StartChargeAttack()
+        {
+            Debug.Log("Start Charge Attack");
+            chargeAttackCTS?.Cancel();
+            chargeAttackCTS?.Dispose();
+            chargeAttackCTS = new CancellationTokenSource();
+            _ = ChargeAttackTimer(chargeAttackCTS.Token);
+        }
+
+        private void ExecuteChargeAttack()
+        {
+            chargeAttackCTS?.Cancel();
+            chargeAttackCTS?.Dispose();
+            chargeAttackCTS = null;
+        }
+
+        private async Task ChargeAttackTimer(CancellationToken token)
+        {
+            float startTime = Time.realtimeSinceStartup;
+            sceneObject.AnimationHandler.PauseAnimation();
+
+            try
+            {
+                await Task.Delay(TimeSpan.FromSeconds(MAX_ATTACK_CHARGE_TIME), token);
+                Debug.Log("Charge Attack Maxed Out");
+            }
+
+            catch (TaskCanceledException)
+            { 
+                Debug.Log("Charge Attack Released Early");
+            }
+
+            finally
+            {
+                float elapsed = Time.realtimeSinceStartup - startTime;
+                float attackChargeTime = Mathf.Min(elapsed, MAX_ATTACK_CHARGE_TIME);
+                chargeAttackMultiplier = Mathf.Lerp(0, Max_CHARGE_ATTACK_MULTIPLIER, attackChargeTime / MAX_ATTACK_CHARGE_TIME);
+
+                sceneObject.AnimationHandler.ResumeAnimation();
+            }
+        }
 
         #endregion
     }

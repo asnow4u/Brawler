@@ -62,7 +62,7 @@ namespace Game.SceneObjects
         public Rigidbody Rb => GetComponent<Rigidbody>();
         public float Mass => Rb.mass + (EquipmentHandler != null ? EquipmentHandler.GetEquipmentMass() : 0);
         public float MassRatio => Mathf.Clamp(Mass, 0, baseData.MaxMass) / baseData.MaxMass;        
-
+        public bool IsFrozen { get; private set; } = false;
 
         //Events
         public event Action<GroundedState> GroundedStateChangedEvent;
@@ -170,7 +170,6 @@ namespace Game.SceneObjects
         {
             InteractionHandler?.CheckForInteractables();
         }
-
 
         protected virtual void FixedUpdate()
         {
@@ -375,6 +374,25 @@ namespace Game.SceneObjects
                 Rb.useGravity = true;                    
 
             ClimbStateChangedEvent?.Invoke(prevClimbState, curClimbState);
+        }
+
+        #endregion
+
+
+        #region Freeze
+
+        public void Freeze()
+        {
+            MovementHandler.PauseMovement();
+            AnimationHandler?.PauseAnimation();
+            IsFrozen = true;
+        }
+
+        public void UnFreeze()
+        {
+            MovementHandler.ResumeMovement();
+            AnimationHandler?.ResumeAnimation();
+            IsFrozen = false;
         }
 
         #endregion

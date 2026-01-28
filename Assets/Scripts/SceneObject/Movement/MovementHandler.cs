@@ -12,6 +12,8 @@ namespace Game.SceneObjects.Movement
 
         private SceneObjectData baseData;
 
+        private Vector3 pausedVelocity;
+
         public MovementHandler(SceneObjectData movementData, SceneObject sceneObject)
         {
             this.sceneObject = sceneObject;
@@ -219,6 +221,18 @@ namespace Game.SceneObjects.Movement
         private void ApplyGravityScaler()
         {
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, rb.linearVelocity.y + (Physics.gravity.y * GravityScaler * Time.fixedDeltaTime), 0);
+        }
+
+        public void PauseMovement()
+        {
+            pausedVelocity = rb.linearVelocity;
+            rb.linearVelocity = Vector3.zero;
+        }
+
+        public void ResumeMovement()
+        {
+            rb.linearVelocity = pausedVelocity;
+            pausedVelocity = Vector3.zero;
         }
     }
 }

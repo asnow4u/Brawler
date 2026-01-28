@@ -18,7 +18,7 @@ namespace Game.SceneObjects.Animation
         private Animator animator;
 
         //Playables
-        private PlayableGraph animationGraph;
+        internal PlayableGraph Graph;
 
         private AnimationMixerPlayable stateAnimationMixer;
         private AnimationMixerPlayable idleAnimationMixer;
@@ -41,7 +41,7 @@ namespace Game.SceneObjects.Animation
             {
                 if (stateAnimationMixer.GetInputWeight(i) > 0)
                 {
-                    AnimationMixerPlayable mixer = (AnimationMixerPlayable)stateAnimationMixer.GetInput(i);
+                    AnimationMixerPlayable mixer = (AnimationMixerPlayable)stateAnimationMixer.GetInput(i);                    
 
                     for (int j = 0; j < mixer.GetInputCount(); j++)
                     {
@@ -62,14 +62,14 @@ namespace Game.SceneObjects.Animation
             this.animator = GetComponent<Animator>();
 
             //Graph
-            animationGraph = PlayableGraph.Create("AnimationGraph");
-            AnimationPlayableOutput output = AnimationPlayableOutput.Create(animationGraph, "Animation", animator);
+            Graph = PlayableGraph.Create("AnimationGraph");
+            AnimationPlayableOutput output = AnimationPlayableOutput.Create(Graph, "Animation", animator);            
 
             //State Mixer
-            stateAnimationMixer = AnimationMixerPlayable.Create(animationGraph, Enum.GetValues(typeof(ActionState)).Length);
+            stateAnimationMixer = AnimationMixerPlayable.Create(Graph, Enum.GetValues(typeof(ActionState)).Length);
             output.SetSourcePlayable(stateAnimationMixer);
 
-            animationGraph.Play();
+            Graph.Play();
         }
 
         //public void SetupAnimationMixers(MovementCollection movementCollection, AttackCollection attackCollection)
@@ -96,7 +96,7 @@ namespace Game.SceneObjects.Animation
         /// </summary>
         public void SetupIdleMixer(AnimationClip groundIdleAnimation, AnimationClip airIdleAnimation, AnimationClip climbIdleAnimation)
         {
-            idleAnimationMixer = AnimationMixerPlayable.Create(animationGraph, 3);
+            idleAnimationMixer = AnimationMixerPlayable.Create(Graph, 3);
             stateAnimationMixer.ConnectInput((int)ActionState.Idle, idleAnimationMixer, 0);
 
             SetIdleAnimations(groundIdleAnimation, airIdleAnimation, climbIdleAnimation);
@@ -108,7 +108,7 @@ namespace Game.SceneObjects.Animation
         /// </summary>
         public void SetupHitStunMixer(AnimationClip hitStunAnimation)
         {
-            hitAnimationMixer = AnimationMixerPlayable.Create(animationGraph, 1);
+            hitAnimationMixer = AnimationMixerPlayable.Create(Graph, 1);
             stateAnimationMixer.ConnectInput((int)ActionState.HitStun, hitAnimationMixer, 0);
 
             SetHitStunAnimations(hitStunAnimation);
@@ -120,7 +120,7 @@ namespace Game.SceneObjects.Animation
         /// </summary>
         public void SetupMovementMixer(MovementCollection movementCollection)
         {
-            movementAnimationMixer = AnimationMixerPlayable.Create(animationGraph, movementCollection.MovementData.Count);
+            movementAnimationMixer = AnimationMixerPlayable.Create(Graph, movementCollection.MovementData.Count);
             stateAnimationMixer.ConnectInput((int)ActionState.Moving, movementAnimationMixer, 0);
 
             SetMovementAnimations(movementCollection);
@@ -133,7 +133,7 @@ namespace Game.SceneObjects.Animation
         /// </summary>
         public void SetupAttackMixer(AttackCollection attackCollection)
         {
-            attackAnimationMixer = AnimationMixerPlayable.Create(animationGraph, Enum.GetValues(typeof(AttackType)).Length);
+            attackAnimationMixer = AnimationMixerPlayable.Create(Graph, Enum.GetValues(typeof(AttackType)).Length);
             stateAnimationMixer.ConnectInput((int)ActionState.Attacking, attackAnimationMixer, 0);
 
             SetAttackAnimations(attackCollection);
@@ -150,15 +150,15 @@ namespace Game.SceneObjects.Animation
         public void SetIdleAnimations(AnimationClip groundIdleAnimation, AnimationClip airIdleAnimation, AnimationClip climbIdleAnimation)
         {
             //Grounded
-            AnimationClipPlayable groundIdle = AnimationClipPlayable.Create(animationGraph, groundIdleAnimation);
+            AnimationClipPlayable groundIdle = AnimationClipPlayable.Create(Graph, groundIdleAnimation);
             idleAnimationMixer.ConnectInput(0, groundIdle, 0);
             
             //Areial
-            AnimationClipPlayable airIdle = AnimationClipPlayable.Create(animationGraph, airIdleAnimation);
+            AnimationClipPlayable airIdle = AnimationClipPlayable.Create(Graph, airIdleAnimation);
             idleAnimationMixer.ConnectInput(1, airIdle, 0);
 
             //Climb
-            AnimationClipPlayable climbIdle = AnimationClipPlayable.Create(animationGraph, climbIdleAnimation);
+            AnimationClipPlayable climbIdle = AnimationClipPlayable.Create(Graph, climbIdleAnimation);
             idleAnimationMixer.ConnectInput(2, climbIdle, 0);
         }
 
@@ -167,7 +167,7 @@ namespace Game.SceneObjects.Animation
         /// </summary>
         public void SetHitStunAnimations(AnimationClip hitStunAnimation)
         {
-            AnimationClipPlayable hitstunPlayable = AnimationClipPlayable.Create(animationGraph, hitStunAnimation);
+            AnimationClipPlayable hitstunPlayable = AnimationClipPlayable.Create(Graph, hitStunAnimation);
             hitAnimationMixer.ConnectInput(0, hitstunPlayable, 0);
 
             hitAnimationMixer.SetInputWeight(0, 1);
@@ -200,7 +200,7 @@ namespace Game.SceneObjects.Animation
                 MovementInputData inputData = moveCollection.MovementData[i];
 
                 if (inputData == null || inputData.Animation == null) continue;
-                AnimationClipPlayable movePlayable = AnimationClipPlayable.Create(animationGraph, inputData.Animation);
+                AnimationClipPlayable movePlayable = AnimationClipPlayable.Create(Graph, inputData.Animation);
                 movementAnimationMixer.ConnectInput(i, movePlayable, 0);
             }
 
@@ -225,7 +225,7 @@ namespace Game.SceneObjects.Animation
                 {
                     attackAnimationMixer.DisconnectInput((int)attackType);
                     
-                    AnimationClipPlayable attackPlayable = AnimationClipPlayable.Create(animationGraph, attackData.Animation);
+                    AnimationClipPlayable attackPlayable = AnimationClipPlayable.Create(Graph, attackData.Animation);
                     attackAnimationMixer.ConnectInput((int)attackType, attackPlayable, 0);
                 }
             }
@@ -355,7 +355,7 @@ namespace Game.SceneObjects.Animation
 
         private void OnDestroy()
         {
-            animationGraph.Destroy();
+            Graph.Destroy();
         }
     }
 }

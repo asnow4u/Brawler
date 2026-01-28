@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Game.SceneObjects.Collision
@@ -8,7 +9,8 @@ namespace Game.SceneObjects.Collision
     {
         [SerializeField] DamageCollider baseDamageCollider; //TODO: This will become more than a single collider in the future.        
 
-        private const float collisionResolveTimer = 0.2f;
+        private const float INVICIBILITY_TIME_AFTER_HIT = 0.2f;
+        private const float MAX_COLLISION_RESOLVE_TIME = 0.1f;
 
         public Collider Collider => GetComponent<Collider>();
 
@@ -55,20 +57,29 @@ namespace Game.SceneObjects.Collision
         #endregion
 
 
-        private void HandleCollision(DamageCollisionHitData data)
+        private async void HandleCollision(DamageCollisionHitData data)
         {
             SceneObject targetSO = data.TargetData.SceneObject;
 
             if (targetSO.DamageHandler.CheckForImmunity(sceneObject.UniqueId))
-                return;
+                return;            
 
-            //TODO: Animation freeze for both source and target
-            // May need to set full immunity frames for both while animation freeze is happening
+            //TODO: Calculate resolveTime based on damage and totalDamage
+            float resolveTime = MAX_COLLISION_RESOLVE_TIME;
 
             //Apply Immunity (Prevent bounce back hits if sceneObject hits wall immediatly)
-            sceneObject.DamageHandler.SetImmunity(targetSO.UniqueId, collisionResolveTimer);
+            sceneObject.DamageHandler.SetImmunity(targetSO.UniqueId, INVICIBILITY_TIME_AFTER_HIT);
             //Apply Immunity to target to prevent multi hits from single attack
-            targetSO.DamageHandler.SetImmunity(sceneObject.UniqueId, collisionResolveTimer);
+            targetSO.DamageHandler.SetImmunity(sceneObject.UniqueId, INVICIBILITY_TIME_AFTER_HIT);
+
+            //Pause animations
+            sceneObject.Freeze();
+            targetSO.Freeze();
+
+            await Task.Delay(TimeSpan.FromSeconds(resolveTime));
+
+            sceneObject.UnFreeze();
+            targetSO.UnFreeze();
 
             UIFactory.Instance.SpawnDamageBubble(data.TargetData.ContactPoint, data.SourceData.Damage);            
             targetSO.DamageHandler.HitByCollision(data.SourceData);
