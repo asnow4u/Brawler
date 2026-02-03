@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public enum WeaponType { Sword }
+public enum WeaponType { Sword, Axe }
 
 public class WeaponHandler : MonoBehaviour
 {

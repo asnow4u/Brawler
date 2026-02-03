@@ -69,6 +69,9 @@ namespace Game.SceneObjects.Animation
             stateAnimationMixer = AnimationMixerPlayable.Create(Graph, Enum.GetValues(typeof(ActionState)).Length);
             output.SetSourcePlayable(stateAnimationMixer);
 
+            animator.Rebind();
+            animator.Update(0);
+
             Graph.Play();
         }
 

@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07bf9f87110ac5b49ae1e4c2ac361da7, type: 3}
+  m_Name: Player_Axe_DamageCollider
+  m_EditorClassIdentifier: 
+  triggerAnimations:
+  - {fileID: 7400000, guid: 43145cbd0990e25479febc8674acd8d9, type: 2}
+  - {fileID: 7400000, guid: c7b88b302550d754a89f7f906d74e4ab, type: 2}
+  - {fileID: 7400000, guid: 8725234b7ac80af4ab2feb39ba1e8a33, type: 2}
+  - {fileID: 7400000, guid: 191ac87902530e847a56a3f60dd53cb5, type: 2}
+  - {fileID: 7400000, guid: 9b16809034cd41441855a5d8f379596d, type: 2}
+  - {fileID: 7400000, guid: ad97e2d882e51894bb7adfc2b4d45b8f, type: 2}
+  - {fileID: 7400000, guid: 212f60627a16dd843a3f27fc3710daf9, type: 2}

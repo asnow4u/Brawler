@@ -4,11 +4,6 @@
 TagManager:
   serializedVersion: 3
   tags:
-  - Platforms
-  - PlayerFist
-  - Item
-  - AttackSword
-  - UIDamageDisplay
   - GrabPoint
   layers:
   - Default

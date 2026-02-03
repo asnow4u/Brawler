@@ -62,6 +62,9 @@ namespace Game.SceneObjects.Animation
 
         public override void Setup()
         {
+            try
+            {
+
             //Animator
             animator = GetComponentInChildren<Animator>();
 
@@ -79,6 +82,12 @@ namespace Game.SceneObjects.Animation
             animationGraph.Initialize();
             CreateGraphMixers();
             animationGraph.ResetToIdle(sceneObject.CurGroundedState, sceneObject.CurClimbState);
+            }
+
+            catch (Exception e)
+            {
+                Debug.LogError($"AnimationHandler Setup Exception: {e.Message}\n{e.StackTrace}", sceneObject);
+            }
         }
 
 
@@ -269,7 +278,7 @@ namespace Game.SceneObjects.Animation
             if (curPlayingAnimation != null &&
                 curPlayingAnimation == clip)
             {
-                AnimationEndedEvent?.Invoke(curPlayingAnimation);                
+                AnimationEndedEvent?.Invoke(curPlayingAnimation);
             }
         }
     }

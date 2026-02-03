@@ -371,7 +371,7 @@ namespace Game.SceneObjects
             if (curClimbState == ClimbState.Climbing)
                 Rb.useGravity = false;
             else
-                Rb.useGravity = true;                    
+                Rb.useGravity = true;
 
             ClimbStateChangedEvent?.Invoke(prevClimbState, curClimbState);
         }
@@ -387,7 +387,7 @@ namespace Game.SceneObjects
             AnimationHandler?.PauseAnimation();
             IsFrozen = true;
         }
-
+        
         public void UnFreeze()
         {
             MovementHandler.ResumeMovement();
