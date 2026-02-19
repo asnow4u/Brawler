@@ -42,18 +42,18 @@ MonoBehaviour:
     m_RotationOrder: 4
   launchAngle: 30
   enableCollider:
-    TriggerFrame: 10
+    TriggerFrame: 5
     TriggerType: 2
     WasTriggered: 1
   disableCollider:
-    TriggerFrame: 15
+    TriggerFrame: 9
     TriggerType: 3
     WasTriggered: 1
   chargeAction:
-    TriggerFrame: 8
+    TriggerFrame: 3
     TriggerType: 4
     WasTriggered: 1
   end:
-    TriggerFrame: 23
+    TriggerFrame: 18
     TriggerType: 1
-    WasTriggered: 1
+    WasTriggered: 0
