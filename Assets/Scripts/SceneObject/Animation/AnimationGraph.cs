@@ -75,21 +75,6 @@ namespace Game.SceneObjects.Animation
             Graph.Play();
         }
 
-        //public void SetupAnimationMixers(MovementCollection movementCollection, AttackCollection attackCollection)
-        //{
-        //    SetupIdleMixer();
-        //    SetupHitStunMixer();
-
-        //    //Setup movmement mixer if movement is available
-        //    if (movementCollection != null)
-        //        SetupMovementMixer(movementCollection);
-
-        //    //Setup movmement mixer if attacking is available
-        //    if (attackCollection != null)
-        //        SetupAttackMixer(attackCollection);
-
-            
-        //}
 
         #region Setup Mixers
 
@@ -259,9 +244,12 @@ namespace Game.SceneObjects.Animation
         {
             ResetInputWeights(stateAnimationMixer);
             ResetInputWeights(idleAnimationMixer);
-            ResetInputWeights(movementAnimationMixer);
-            ResetInputWeights(attackAnimationMixer);
-            //ResetInputWeights(hitAnimationMixer);
+
+            if (movementAnimationMixer.IsValid())
+                ResetInputWeights(movementAnimationMixer);
+
+            if (attackAnimationMixer.IsValid())
+                ResetInputWeights(attackAnimationMixer);
 
             stateAnimationMixer.SetInputWeight(0, 1);
 
@@ -337,23 +325,6 @@ namespace Game.SceneObjects.Animation
         }
 
         #endregion
-
-
-
-        //TODO: Implement blending from different animations over a period of time
-        //private IEnumerator AnimationClipBlending(AnimationMixerPlayable mixer, int firstInput, int secondInput, Func<float> GetBlendWeight)
-        //{
-        //    while (true)
-        //    {
-        //        float blendedWeight = Mathf.Clamp01(GetBlendWeight());
-
-        //        mixer.SetInputWeight(firstInput, 1.0f - blendedWeight);
-        //        mixer.SetInputWeight(secondInput, blendedWeight);
-
-        //        yield return null;
-        //    }
-        //}
-
 
 
         private void OnDestroy()

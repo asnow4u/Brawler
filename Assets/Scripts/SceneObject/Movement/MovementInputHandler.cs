@@ -625,7 +625,6 @@ namespace Game.SceneObjects.Movement
 
                 case MovementType.Jump:
                     StartJump();
-
                     break;
             }
         }

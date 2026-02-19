@@ -64,24 +64,23 @@ namespace Game.SceneObjects.Animation
         {
             try
             {
+                //Animator
+                animator = GetComponentInChildren<Animator>();
 
-            //Animator
-            animator = GetComponentInChildren<Animator>();
+                if (animator == null)
+                    throw new NullReferenceException("Animator is null");
+                if (groundIdleAnimation == null)
+                    throw new NullReferenceException("AnimationHandlers Ground Idle Animation is null");
+                if (airIdleAnimation == null)
+                    throw new NullReferenceException("AnimationHandlers Aerial Idle Animation is null");
+                if (climbIdleAnimation == null)
+                    throw new NullReferenceException("AnimationHandlers Climb Idle Animation is null");
 
-            if (animator == null)
-                throw new NullReferenceException("Animator is null");
-            if (groundIdleAnimation == null)
-                throw new NullReferenceException("AnimationHandlers Ground Idle Animation is null");
-            if (airIdleAnimation == null)
-                throw new NullReferenceException("AnimationHandlers Aerial Idle Animation is null");
-            if (climbIdleAnimation == null)
-                throw new NullReferenceException("AnimationHandlers Climb Idle Animation is null");
+                animationGraph = animator.gameObject.AddComponent<AnimationGraph>();
 
-            animationGraph = animator.gameObject.AddComponent<AnimationGraph>();
-
-            animationGraph.Initialize();
-            CreateGraphMixers();
-            animationGraph.ResetToIdle(sceneObject.CurGroundedState, sceneObject.CurClimbState);
+                animationGraph.Initialize();
+                CreateGraphMixers();
+                animationGraph.ResetToIdle(sceneObject.CurGroundedState, sceneObject.CurClimbState);
             }
 
             catch (Exception e)
@@ -96,10 +95,21 @@ namespace Game.SceneObjects.Animation
             sceneObject.ActionStateHandler.ActionStateChangedEvent += OnActionStateChanged;
             sceneObject.GroundedStateChangedEvent += OnGroundedStateChanged;
             sceneObject.ClimbStateChangedEvent += OnClimbStateChanged;
-            sceneObject.MovementInputHandler.InputDataChangedEvent += OnMovementInputChanged;
-            sceneObject.MovementInputHandler.CollectionChangedEvent += OnMovementCollectionChanged;
-            sceneObject.AttackInputHandler.AttackStateChangedEvent += OnAttackStateChanged;
-            sceneObject.AttackInputHandler.CollectionChangedEvent += OnAttackCollectionChanged;
+
+            MovementInputHandler movementInputHandler = sceneObject.MovementInputHandler;
+            if (movementInputHandler != null)
+            {
+                movementInputHandler.InputDataChangedEvent += OnMovementInputChanged;
+                movementInputHandler.CollectionChangedEvent += OnMovementCollectionChanged;
+            }
+
+            AttackInputHandler attackInputHandler = sceneObject.AttackInputHandler;
+            if (attackInputHandler != null)
+            {
+                attackInputHandler.AttackStateChangedEvent += OnAttackStateChanged;
+                attackInputHandler.CollectionChangedEvent += OnAttackCollectionChanged;
+            }
+
         }
 
         public override void UnregisterToEvents()
@@ -107,10 +117,20 @@ namespace Game.SceneObjects.Animation
             sceneObject.ActionStateHandler.ActionStateChangedEvent -= OnActionStateChanged;
             sceneObject.GroundedStateChangedEvent -= OnGroundedStateChanged;
             sceneObject.ClimbStateChangedEvent -= OnClimbStateChanged;
-            sceneObject.MovementInputHandler.InputDataChangedEvent -= OnMovementInputChanged;
-            sceneObject.MovementInputHandler.CollectionChangedEvent -= OnMovementCollectionChanged;
-            sceneObject.AttackInputHandler.AttackStateChangedEvent -= OnAttackStateChanged;
-            sceneObject.AttackInputHandler.CollectionChangedEvent -= OnAttackCollectionChanged;
+
+            MovementInputHandler movementInputHandler = sceneObject.MovementInputHandler;
+            if (movementInputHandler != null)
+            {
+                sceneObject.MovementInputHandler.InputDataChangedEvent -= OnMovementInputChanged;
+                sceneObject.MovementInputHandler.CollectionChangedEvent -= OnMovementCollectionChanged;
+            }
+
+            AttackInputHandler attackInputHandler = sceneObject.AttackInputHandler;
+            if (attackInputHandler != null)
+            {
+                sceneObject.AttackInputHandler.AttackStateChangedEvent -= OnAttackStateChanged;
+                sceneObject.AttackInputHandler.CollectionChangedEvent -= OnAttackCollectionChanged;
+            }
         }
 
         #endregion

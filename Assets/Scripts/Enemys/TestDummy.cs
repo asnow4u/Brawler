@@ -13,10 +13,6 @@ namespace Game.SceneObjects
         {
             base.GetHandlers();
 
-            EquipmentHandler = GetComponent<EquipmentHandler>();
-            InteractionHandler = GetComponent<InteractionHandler>();
-            MovementInputHandler = GetComponent<MovementInputHandler>();
-            AttackInputHandler = GetComponent<AttackInputHandler>();
             AnimationHandler = GetComponent<AnimationHandler>();
         }
 

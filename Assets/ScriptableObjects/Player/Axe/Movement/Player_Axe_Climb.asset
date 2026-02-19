@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Player_Axe_Climb
   m_EditorClassIdentifier: 
   Type: 1
-  Animation: {fileID: 7400000, guid: e2b5423e848eeea4fa6461691f6b4028, type: 2}
+  Animation: {fileID: 7400000, guid: cf910206bb66e40479ad1ee712d87322, type: 2}
   AnimationSpeedMultiplier: 3
   ClimbXVelocity: 3
   ClimbUpYVelocity: 4

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Player_Axe_FA
   m_EditorClassIdentifier: 
   Type: 6
-  Animation: {fileID: 7400000, guid: 3184cbb75af1de242a3378a043eb060f, type: 2}
+  Animation: {fileID: 7400000, guid: 2d08b7e2304448e44a7207a7d52fcda4, type: 2}
   AnimationSpeedMultiplier: 1
   influence: 1
   damageCurve:

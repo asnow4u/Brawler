@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: Player_Axe_WallLean
   m_EditorClassIdentifier: 
   Type: 2
-  Animation: {fileID: 7400000, guid: 6e8096bb38f4ecd488858986c6a1e29f, type: 2}
+  Animation: {fileID: 7400000, guid: f3ccb1e1586731a41ab7ca2e57c88d50, type: 2}
   AnimationSpeedMultiplier: 1

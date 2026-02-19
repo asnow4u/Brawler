@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Player_Axe_FT
   m_EditorClassIdentifier: 
   Type: 3
-  Animation: {fileID: 7400000, guid: 3184cbb75af1de242a3378a043eb060f, type: 2}
+  Animation: {fileID: 7400000, guid: 9248b12f81d88e24b97fbbe4e7197d99, type: 2}
   AnimationSpeedMultiplier: 1
   influence: 1
   damageCurve:
@@ -42,18 +42,18 @@ MonoBehaviour:
     m_RotationOrder: 4
   launchAngle: 30
   enableCollider:
-    TriggerFrame: 3
+    TriggerFrame: 10
     TriggerType: 2
     WasTriggered: 1
   disableCollider:
-    TriggerFrame: 8
+    TriggerFrame: 15
     TriggerType: 3
     WasTriggered: 1
   chargeAction:
-    TriggerFrame: 2
+    TriggerFrame: 8
     TriggerType: 4
     WasTriggered: 1
   end:
-    TriggerFrame: 18
+    TriggerFrame: 23
     TriggerType: 1
-    WasTriggered: 0
+    WasTriggered: 1
