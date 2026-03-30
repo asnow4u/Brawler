@@ -1,0 +1,19 @@
+{
+    "name": "SceneObject.Equipment",
+    "rootNamespace": "",
+    "references": [
+        "GUID:ab16a484669f87b4f9fd7610ae8b2d49",
+        "GUID:43ba8182e97c6d74686c3f2b19c6404f",
+        "GUID:16ab2fa799df6264890b2e5a8613670a",
+        "GUID:9cc72b0a92ea69041afa42d2e66dc25d"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

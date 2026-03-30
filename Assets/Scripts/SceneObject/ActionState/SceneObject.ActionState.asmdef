@@ -1,0 +1,16 @@
+{
+    "name": "SceneObject.ActionState",
+    "rootNamespace": "",
+    "references": [
+        "GUID:ab16a484669f87b4f9fd7610ae8b2d49"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

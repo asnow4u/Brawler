@@ -1,0 +1,16 @@
+{
+    "name": "Interactable",
+    "rootNamespace": "",
+    "references": [
+        "GUID:9cc72b0a92ea69041afa42d2e66dc25d"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

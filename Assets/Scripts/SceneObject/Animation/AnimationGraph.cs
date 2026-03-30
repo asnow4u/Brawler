@@ -1,335 +1,232 @@
-using Game.SceneObjects.ActionStates;
-using Game.SceneObjects.Attack;
-using Game.SceneObjects.Movement;
 using System;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
-using static UnityEditor.Rendering.CameraUI;
 
-
-//TODO:
-//Want to remove monobehaviour from this class
-
-namespace Game.SceneObjects.Animation 
+internal class AnimationGraph : IDisposable
 {
-    public class AnimationGraph : MonoBehaviour
+    //Playables
+    private PlayableGraph Graph;
+
+    private AnimationMixerPlayable stateAnimationMixer;
+    private AnimationMixerPlayable idleAnimationMixer;
+    private AnimationMixerPlayable movementAnimationMixer;
+    private AnimationMixerPlayable attackAnimationMixer;
+    private AnimationMixerPlayable hitAnimationMixer;
+
+    public AnimationGraph(Animator animator)
     {
-        private Animator animator;
+        //Graph
+        Graph = PlayableGraph.Create("AnimationGraph");
+        AnimationPlayableOutput output = AnimationPlayableOutput.Create(Graph, "Animation", animator);
 
-        //Playables
-        internal PlayableGraph Graph;
+        //State Mixer
+        stateAnimationMixer = AnimationMixerPlayable.Create(Graph, Enum.GetValues(typeof(ActionState)).Length - 1);
+        output.SetSourcePlayable(stateAnimationMixer);
 
-        private AnimationMixerPlayable stateAnimationMixer;
-        private AnimationMixerPlayable idleAnimationMixer;
-        private AnimationMixerPlayable movementAnimationMixer;
-        private AnimationMixerPlayable attackAnimationMixer;
-        private AnimationMixerPlayable hitAnimationMixer;
+        //Idle Mixer
+        idleAnimationMixer = AnimationMixerPlayable.Create(Graph, Enum.GetValues(typeof(IdleState)).Length - 1); //Subtract 1 to account for null state
+        stateAnimationMixer.ConnectInput((int)ActionState.Idle - 1, idleAnimationMixer, 0);
+
+        //Movement Mixer
+        movementAnimationMixer = AnimationMixerPlayable.Create(Graph, Enum.GetValues(typeof(MovementState)).Length - 1); //Subtract 1 to account for null state
+        stateAnimationMixer.ConnectInput((int)ActionState.Moving - 1, movementAnimationMixer, 0);
+
+        //Attack Mixer
+        attackAnimationMixer = AnimationMixerPlayable.Create(Graph, Enum.GetValues(typeof(AttackState)).Length - 1); //Subtract 1 to account for null state 
+        stateAnimationMixer.ConnectInput((int)ActionState.Attacking - 1, attackAnimationMixer, 0);
+
+        //Hitstun Mixer
+        hitAnimationMixer = AnimationMixerPlayable.Create(Graph, 1);
+        stateAnimationMixer.ConnectInput((int)ActionState.HitStun - 1, hitAnimationMixer, 0);
+
+        animator.Rebind();
+        animator.Update(0);
+
+        Graph.Play();
+    }
 
 
-        #region Getters
+    #region Getters
 
-        /// <summary>
-        /// Get the current animationClipPlayable that is currently playing
-        /// </summary>
-        /// <returns></returns>
-        public AnimationClipPlayable GetCurrentAnimationPlayable()
+    /// <summary>
+    /// Get the current animationClipPlayable that is currently playing
+    /// </summary>
+    public AnimationClipPlayable GetCurrentAnimationPlayable()
+    {
+        AnimationClipPlayable playable = new AnimationClipPlayable();
+
+        for (int i = 0; i < stateAnimationMixer.GetInputCount(); i++)
         {
-            AnimationClipPlayable playable = new AnimationClipPlayable();
-
-            for (int i = 0; i < stateAnimationMixer.GetInputCount(); i++)
+            if (stateAnimationMixer.GetInputWeight(i) > 0)
             {
-                if (stateAnimationMixer.GetInputWeight(i) > 0)
-                {
-                    AnimationMixerPlayable mixer = (AnimationMixerPlayable)stateAnimationMixer.GetInput(i);                    
+                AnimationMixerPlayable mixer = (AnimationMixerPlayable)stateAnimationMixer.GetInput(i);                    
 
-                    for (int j = 0; j < mixer.GetInputCount(); j++)
-                    {
-                        if (mixer.GetInputWeight(j) > 0)
-                            playable = (AnimationClipPlayable)mixer.GetInput(j);
-                    }
+                for (int j = 0; j < mixer.GetInputCount(); j++)
+                {
+                    if (mixer.GetInputWeight(j) > 0)
+                        playable = (AnimationClipPlayable)mixer.GetInput(j);
                 }
             }
-
-            return playable;
         }
 
-        #endregion
+        return playable;
+    }
+
+    #endregion
 
 
-        public void Initialize()
-        {
-            this.animator = GetComponent<Animator>();
+    #region Mixer Animations
 
-            //Graph
-            Graph = PlayableGraph.Create("AnimationGraph");
-            AnimationPlayableOutput output = AnimationPlayableOutput.Create(Graph, "Animation", animator);            
-
-            //State Mixer
-            stateAnimationMixer = AnimationMixerPlayable.Create(Graph, Enum.GetValues(typeof(ActionState)).Length);
-            output.SetSourcePlayable(stateAnimationMixer);
-
-            animator.Rebind();
-            animator.Update(0);
-
-            Graph.Play();
-        }
-
-
-        #region Setup Mixers
-
-        /// <summary>
-        /// Setup idle mixer for idle animations
-        /// Inputs: Grounded, Air
-        /// </summary>
-        public void SetupIdleMixer(AnimationClip groundIdleAnimation, AnimationClip airIdleAnimation, AnimationClip climbIdleAnimation)
-        {
-            idleAnimationMixer = AnimationMixerPlayable.Create(Graph, 3);
-            stateAnimationMixer.ConnectInput((int)ActionState.Idle, idleAnimationMixer, 0);
-
-            SetIdleAnimations(groundIdleAnimation, airIdleAnimation, climbIdleAnimation);
-        }
-
-        /// <summary>
-        /// Setup hit mixer for hit animations
-        /// Input: 
-        /// </summary>
-        public void SetupHitStunMixer(AnimationClip hitStunAnimation)
-        {
-            hitAnimationMixer = AnimationMixerPlayable.Create(Graph, 1);
-            stateAnimationMixer.ConnectInput((int)ActionState.HitStun, hitAnimationMixer, 0);
-
-            SetHitStunAnimations(hitStunAnimation);
-        }
-
-        /// <summary>
-        /// Setup movement mixer for move animations
-        /// Inputs: (walk, run), jump, airJump, land
-        /// </summary>
-        public void SetupMovementMixer(MovementCollection movementCollection)
-        {
-            movementAnimationMixer = AnimationMixerPlayable.Create(Graph, movementCollection.MovementData.Count);
-            stateAnimationMixer.ConnectInput((int)ActionState.Moving, movementAnimationMixer, 0);
-
-            SetMovementAnimations(movementCollection);
-        }
-
-
-        /// <summary>
-        /// Setup attack mixer for attack animations
-        /// Inputs: forwardTilt, upTilt, downTilt, forwardAir, upAir, downAir
-        /// </summary>
-        public void SetupAttackMixer(AttackCollection attackCollection)
-        {
-            attackAnimationMixer = AnimationMixerPlayable.Create(Graph, Enum.GetValues(typeof(AttackType)).Length);
-            stateAnimationMixer.ConnectInput((int)ActionState.Attacking, attackAnimationMixer, 0);
-
-            SetAttackAnimations(attackCollection);
-        }
-
-        #endregion
-
-
-        #region Mixer Animations
-
-        /// <summary>
-        /// Set idle animations to use
-        /// </summary>
-        public void SetIdleAnimations(AnimationClip groundIdleAnimation, AnimationClip airIdleAnimation, AnimationClip climbIdleAnimation)
-        {
-            //Grounded
-            AnimationClipPlayable groundIdle = AnimationClipPlayable.Create(Graph, groundIdleAnimation);
-            idleAnimationMixer.ConnectInput(0, groundIdle, 0);
+    /// <summary>
+    /// Set idle animations to use
+    /// </summary>
+    public void SetIdleAnimations(AnimationClip groundIdleAnimation, AnimationClip airIdleAnimation, AnimationClip climbIdleAnimation)
+    {
+        //Grounded
+        AnimationClipPlayable groundIdle = AnimationClipPlayable.Create(Graph, groundIdleAnimation);
+        idleAnimationMixer.ConnectInput(0, groundIdle, 0);
             
-            //Areial
-            AnimationClipPlayable airIdle = AnimationClipPlayable.Create(Graph, airIdleAnimation);
-            idleAnimationMixer.ConnectInput(1, airIdle, 0);
+        //Areial
+        AnimationClipPlayable airIdle = AnimationClipPlayable.Create(Graph, airIdleAnimation);
+        idleAnimationMixer.ConnectInput(1, airIdle, 0);
 
-            //Climb
-            AnimationClipPlayable climbIdle = AnimationClipPlayable.Create(Graph, climbIdleAnimation);
-            idleAnimationMixer.ConnectInput(2, climbIdle, 0);
-        }
+        //Climb
+        AnimationClipPlayable climbIdle = AnimationClipPlayable.Create(Graph, climbIdleAnimation);
+        idleAnimationMixer.ConnectInput(2, climbIdle, 0);
+    }
 
-        /// <summary>
-        /// Set hitstun animations to use
-        /// </summary>
-        public void SetHitStunAnimations(AnimationClip hitStunAnimation)
+    /// <summary>
+    /// Set hitstun animations to use
+    /// </summary>
+    public void SetHitStunAnimations(AnimationClip hitStunAnimation)
+    {
+        AnimationClipPlayable hitstunPlayable = AnimationClipPlayable.Create(Graph, hitStunAnimation);
+        hitAnimationMixer.ConnectInput(0, hitstunPlayable, 0);
+
+        hitAnimationMixer.SetInputWeight(0, 1);
+    }
+
+    /// <summary>
+    /// Set movement animations to use
+    /// </summary>
+    public void SetMovementAnimations(AnimationClip[] movementAnimations)
+    {
+        if (movementAnimations == null) return;
+
+        //Account for switching animations mid movement by keeping the active input
+        int activeInputIndex = -1;
+        for (int i= 0; i < movementAnimationMixer.GetInputCount(); i++)
         {
-            AnimationClipPlayable hitstunPlayable = AnimationClipPlayable.Create(Graph, hitStunAnimation);
-            hitAnimationMixer.ConnectInput(0, hitstunPlayable, 0);
-
-            hitAnimationMixer.SetInputWeight(0, 1);
-        }
-
-
-        /// <summary>
-        /// Set movement animations to use
-        /// </summary>
-        public void SetMovementAnimations(MovementCollection moveCollection)
-        {
-            //Get active input index
-            int activeInputIndex = -1;
-            for (int i= 0; i < movementAnimationMixer.GetInputCount(); i++)
+            if (movementAnimationMixer.GetInputWeight(i) > 0)
             {
-                if (movementAnimationMixer.GetInputWeight(i) > 0)
-                {
-                    activeInputIndex = i;
-                    break;
-                }
-            }
-
-            //Disconnect existing inputs
-            for (int i = 0; i < movementAnimationMixer.GetInputCount(); i++)
-                movementAnimationMixer.DisconnectInput(i);
-
-            //Connect inputs from new collection
-            for (int i=0; i < moveCollection.MovementData.Count; i++)
-            {
-                MovementInputData inputData = moveCollection.MovementData[i];
-
-                if (inputData == null || inputData.Animation == null) continue;
-                AnimationClipPlayable movePlayable = AnimationClipPlayable.Create(Graph, inputData.Animation);
-                movementAnimationMixer.ConnectInput(i, movePlayable, 0);
-            }
-
-            //Set active input
-            if (activeInputIndex > -1)
-            {
-                ResetInputWeights(movementAnimationMixer);
-                movementAnimationMixer.SetInputWeight(activeInputIndex, 1);
+                activeInputIndex = i;
+                break;
             }
         }
-
-
-        /// <summary>
-        /// Set attack animations to use
-        /// </summary>
-        /// <param name="attackCollection"></param>
-        public void SetAttackAnimations(AttackCollection attackCollection)
+       
+        for (int i = 0; i < movementAnimations.Length; i++)
         {
-            foreach (AttackType attackType in Enum.GetValues(typeof(AttackType)))
-            {
-                if (attackCollection.TryGetAttackByType(attackType, out AttackData attackData))
-                {
-                    attackAnimationMixer.DisconnectInput((int)attackType);
-                    
-                    AnimationClipPlayable attackPlayable = AnimationClipPlayable.Create(Graph, attackData.Animation);
-                    attackAnimationMixer.ConnectInput((int)attackType, attackPlayable, 0);
-                }
-            }
-        }
+            movementAnimationMixer.DisconnectInput(i);
 
-        #endregion
+            if (movementAnimations[i] == null) continue;
+            AnimationClipPlayable movePlayable = AnimationClipPlayable.Create(Graph, movementAnimations[i]);
+            movementAnimationMixer.ConnectInput(i, movePlayable, 0);
+        }       
 
-
-        #region Input Changes
-
-        /// <summary>
-        /// Reset all inputs for given mixer
-        /// </summary>
-        /// <param name="mixer"></param>
-        private void ResetInputWeights(AnimationMixerPlayable mixer)
+        //Set active input
+        if (activeInputIndex > -1)
         {
-            for (int i = 0; i < mixer.GetInputCount(); i++)
-            {
-                mixer.SetInputWeight(i, 0);
-            }
-        }
-
-
-        /// <summary>
-        /// Reset all mixers and set weights for idle
-        /// </summary>
-        public void ResetToIdle(GroundedState groundState, ClimbState climbState)
-        {
-            ResetInputWeights(stateAnimationMixer);
-            ResetInputWeights(idleAnimationMixer);
-
-            if (movementAnimationMixer.IsValid())
-                ResetInputWeights(movementAnimationMixer);
-
-            if (attackAnimationMixer.IsValid())
-                ResetInputWeights(attackAnimationMixer);
-
-            stateAnimationMixer.SetInputWeight(0, 1);
-
-            if (climbState == ClimbState.Climbing)
-                idleAnimationMixer.SetInputWeight(2, 1);            
-            else if (groundState == GroundedState.Airborn)
-                idleAnimationMixer.SetInputWeight(1, 1);
-            else
-                idleAnimationMixer.SetInputWeight(0, 1);
-        }
-
-
-        /// <summary>
-        /// Change stateMixer to prioritize current actionState
-        /// </summary>
-        /// <param name="actionState"></param>
-        public void ChangeActionStateInput(ActionState actionState)
-        {
-            ResetInputWeights(stateAnimationMixer);
-            stateAnimationMixer.SetInputWeight((int)actionState, 1);
-        }
-
-
-        /// <summary>
-        /// Change any mixers affected by grounded state to prioritize current grounded state
-        /// </summary>
-        /// <param name="groundedState"></param>
-        public void ChangeIdleStateInput(GroundedState groundedState, ClimbState climbState)
-        {
-            ResetInputWeights(idleAnimationMixer);
-
-            if (climbState == ClimbState.Climbing)
-                idleAnimationMixer.SetInputWeight(2, 1);            
-            else if (groundedState == GroundedState.Airborn)
-                idleAnimationMixer.SetInputWeight(1, 1);
-            else
-                idleAnimationMixer.SetInputWeight(0, 1);
-        }
-
-
-        /// <summary>
-        /// Change movement mixer to prioritize current move state
-        /// </summary>
-        /// <param name="moveState"></param>
-        public void ChangeMovementStateInput(int index, float animationSpeed)
-        {
-            //reset animation clip
-            AnimationClipPlayable clipPlayable = (AnimationClipPlayable)movementAnimationMixer.GetInput(index);
-            clipPlayable.SetTime(0);
-            PlayableExtensions.SetSpeed(clipPlayable, animationSpeed);            
-
             ResetInputWeights(movementAnimationMixer);
-            movementAnimationMixer.SetInputWeight(index, 1);
+            movementAnimationMixer.SetInputWeight(activeInputIndex, 1);
         }
+    }
 
+    /// <summary>
+    /// Set attack animations to use
+    /// </summary>
+    public void SetAttackAnimations(AnimationClip[] attackAnimations)
+    {
+        if (attackAnimations == null) return;
 
-        /// <summary>
-        /// Change attack mixer to prioritize current attack state
-        /// </summary>
-        /// <param name="attackState"></param>
-        public void ChangeAttackStateInput(AttackType attackState, float speedMultiplier)
+        for (int i = 0; i < attackAnimations.Length; i++)
         {
-            if (attackState != AttackType.Null)
-            {
-                //reset animation clip
-                AnimationClipPlayable clipPlayable = (AnimationClipPlayable)attackAnimationMixer.GetInput((int)attackState);
-                clipPlayable.SetTime(0);
-                PlayableExtensions.SetSpeed(clipPlayable, speedMultiplier);
+            attackAnimationMixer.DisconnectInput(i);
 
-                ResetInputWeights(attackAnimationMixer);
-                attackAnimationMixer.SetInputWeight((int)attackState, 1);
-            }
+            if (attackAnimations[i] == null) continue;
+            AnimationClipPlayable attackPlayable = AnimationClipPlayable.Create(Graph, attackAnimations[i]);
+            attackAnimationMixer.ConnectInput(i, attackPlayable, 0);
         }
+    }
 
-        #endregion
+    #endregion
 
 
-        private void OnDestroy()
+    #region Input Changes
+
+    /// <summary>
+    /// Reset all inputs for given mixer
+    /// </summary>
+    private void ResetInputWeights(AnimationMixerPlayable mixer)
+    {
+        for (int i = 0; i < mixer.GetInputCount(); i++)
         {
-            Graph.Destroy();
+            mixer.SetInputWeight(i, 0);
         }
+    }
+
+    /// <summary>
+    /// Change stateMixer to prioritize current actionState
+    /// </summary>
+    public void ChangeActionStateInput(ActionState actionState)
+    {
+        ResetInputWeights(stateAnimationMixer);
+        stateAnimationMixer.SetInputWeight((int)actionState - 1, 1); //Subtract 1 to account for null state
+    }
+
+    /// <summary>
+    /// Change any mixers affected by grounded state to prioritize current grounded state
+    /// </summary>
+    public void ChangeIdleStateInput(IdleState idleState)
+    {
+        ResetInputWeights(idleAnimationMixer);
+        idleAnimationMixer.SetInputWeight((int)idleState - 1, 1); //Subtract 1 to account for null state
+    }
+
+    /// <summary>
+    /// Change movement mixer to prioritize current move state
+    /// </summary>
+    public void ChangeMovementStateInput(MovementState moveState)
+    {
+        ResetInputWeights(movementAnimationMixer);
+
+        //Reset animation clip
+        AnimationClipPlayable clipPlayable = (AnimationClipPlayable)attackAnimationMixer.GetInput((int)moveState - 1); //Subtract 1 to account for null state
+        if (!clipPlayable.IsNull())
+            clipPlayable.SetTime(0);
+
+        movementAnimationMixer.SetInputWeight((int)moveState - 1, 1); //Subtract 1 to account for null state
+    }
+
+    /// <summary>
+    /// Change attack mixer to prioritize current attack state
+    /// </summary>
+    public void ChangeAttackStateInput(AttackState attackState)
+    {        
+        ResetInputWeights(attackAnimationMixer);
+
+        //Reset animation clip
+        AnimationClipPlayable clipPlayable = (AnimationClipPlayable)attackAnimationMixer.GetInput((int)attackState - 1); //Subtract 1 to account for null state
+        if (!clipPlayable.IsNull())
+            clipPlayable.SetTime(0);
+
+        attackAnimationMixer.SetInputWeight((int)attackState - 1, 1); //Subtract 1 to account for null state
+    }
+
+    #endregion
+
+    public void Dispose()
+    {
+        Graph.Destroy();
     }
 }

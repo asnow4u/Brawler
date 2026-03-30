@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e482dae485748046b5d0bafe4990f98, type: 3}
+  m_Name: Player_Base
+  m_EditorClassIdentifier: 
+  MaxMass: 200
+  MinMass: 100
+  GroundedMaxVelocityMax: 15
+  GroundedMaxVelocityMin: 5
+  GroundedDecceleration: 5000
+  AerialMaxXVelocityMax: 15
+  AerialMaxXVelocityMin: 10
+  AerialXDecceleration: 100
+  AerialMaxYVelocityMax: 7
+  AerialMaxYVelocityMin: 5
+  AerialYDecceleration: 100
+  GravityMultiplier: 1
+  AnimationCollection: {fileID: 11400000, guid: b10aa38545bee094c864b83b9fe14b93, type: 2}
+  MovementCollection: {fileID: 11400000, guid: 245cbd7ac52e237409f25943ff190ab6, type: 2}

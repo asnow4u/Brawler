@@ -1,10 +1,5 @@
 using Game.SceneObjects;
-using Game.SceneObjects.ActionStates;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.VFX;
 
 //NOTE: Solid is not yet implemented. Would want to make a seperate class for it having killzone be an abstract class
 public enum KillZoneType { Left, Right, Top, LeftSolid, RightSolid, TopSolid }
@@ -53,18 +48,18 @@ public class KillZone : MonoBehaviour
     /// </summary>
     private void KillObject()
     {
-        if (target.TryGetComponent(out SceneObject sceneObject))
-        {
-            if (sceneObject is Player player)
-            {
-                //TODO: Handle player death
-            }
-            else
-            {
-                SpawnDeathVFX();       
-                Destroy(sceneObject.gameObject);
-            }
-        }
+        //if (target.TryGetComponent(out SceneObject sceneObject))
+        //{
+        //    if (sceneObject is Player player)
+        //    {
+        //        //TODO: Handle player death
+        //    }
+        //    else
+        //    {
+        //        SpawnDeathVFX();       
+        //        Destroy(sceneObject.gameObject);
+        //    }
+        //}
     }
 
 

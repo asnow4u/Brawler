@@ -47,10 +47,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 78813f4c6a905db4a89f79a7a10eb5d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Type: 1
-  Mass: 20
-  MovementCollection: {fileID: 0}
-  AttackCollection: {fileID: 0}
+  mass: 0
+  weaponData:
+    groundIdleAnimation: {fileID: 0}
+    AirIdleAnimation: {fileID: 0}
+    climbIdleAnimation: {fileID: 0}
+    moveData: {fileID: 0}
+    airMoveData: {fileID: 0}
+    jumpData: {fileID: 0}
+    airJumpData: {fileID: 0}
+    climbMoveData: {fileID: 0}
+    vaultData: {fileID: 0}
+    wallLeanData: {fileID: 0}
+    UpTiltData: {fileID: 0}
+    UpAirData: {fileID: 0}
+    DownTiltData: {fileID: 0}
+    DownAirData: {fileID: 0}
+    ForwardTiltData: {fileID: 0}
+    ForwardAirData: {fileID: 0}
 --- !u!65 &8289891962429799261
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -82,7 +96,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2866058608940501886}
   - component: {fileID: 792686636730187167}
-  - component: {fileID: 5556123800425787726}
   m_Layer: 8
   m_Name: DamageCollider
   m_TagString: Untagged
@@ -126,19 +139,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.21774828, y: 0.046696007, z: 1.5298218}
   m_Center: {x: 0.21941209, y: 0.0635536, z: 0.7819956}
---- !u!114 &5556123800425787726
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4216318443309913915}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0a12b99757929a741878ca90a01a60dc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  triggerAnimationData: {fileID: 11400000, guid: c36098c3a75169e4aad4b4b9d9ae0bc6, type: 2}
 --- !u!1 &8961261510897898568
 GameObject:
   m_ObjectHideFlags: 0
@@ -192,6 +192,8 @@ MeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -213,9 +215,11 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!33 &8337167169568144015
 MeshFilter:
