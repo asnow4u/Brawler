@@ -84,14 +84,17 @@ internal class AnimationGraph : IDisposable
     public void SetIdleAnimations(AnimationClip groundIdleAnimation, AnimationClip airIdleAnimation, AnimationClip climbIdleAnimation)
     {
         //Grounded
+        idleAnimationMixer.DisconnectInput(0);
         AnimationClipPlayable groundIdle = AnimationClipPlayable.Create(Graph, groundIdleAnimation);
         idleAnimationMixer.ConnectInput(0, groundIdle, 0);
-            
+
         //Areial
+        idleAnimationMixer.DisconnectInput(1);
         AnimationClipPlayable airIdle = AnimationClipPlayable.Create(Graph, airIdleAnimation);
         idleAnimationMixer.ConnectInput(1, airIdle, 0);
 
         //Climb
+        idleAnimationMixer.DisconnectInput(2);
         AnimationClipPlayable climbIdle = AnimationClipPlayable.Create(Graph, climbIdleAnimation);
         idleAnimationMixer.ConnectInput(2, climbIdle, 0);
     }
@@ -101,6 +104,7 @@ internal class AnimationGraph : IDisposable
     /// </summary>
     public void SetHitStunAnimations(AnimationClip hitStunAnimation)
     {
+        hitAnimationMixer.DisconnectInput(0);
         AnimationClipPlayable hitstunPlayable = AnimationClipPlayable.Create(Graph, hitStunAnimation);
         hitAnimationMixer.ConnectInput(0, hitstunPlayable, 0);
 

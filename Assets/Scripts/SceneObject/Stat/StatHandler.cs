@@ -45,7 +45,10 @@ internal class StatHandler : MonoBehaviour, IStats
     }
 
     protected virtual void RegisterToEvents()
-    { }
+    {
+        //Debug
+        baseSceneObjectData.MovementCollection.OnChangedEvent += MovementCollectionChanged;
+    }
 
     protected virtual void Start()
     {
@@ -58,13 +61,22 @@ internal class StatHandler : MonoBehaviour, IStats
     }
 
     protected virtual void UnregisterFromEvents()
-    { }
+    {
+        //Debug
+        baseSceneObjectData.MovementCollection.OnChangedEvent += MovementCollectionChanged;
+    }
+
+    private void MovementCollectionChanged()
+    {
+        UpdateMovementStats(baseSceneObjectData.MovementCollection);
+    }
 
     #endregion
 
 
     #region Data
 
+    [ContextMenu("Update Stats")]
     private void UpdateSceneObjectStats()
     {
         UpdateAnimationStats(baseSceneObjectData.MovementCollection);
@@ -102,6 +114,8 @@ internal class StatHandler : MonoBehaviour, IStats
 
         if (movementData != null)
         {
+            //NOTE: Order needs to match that of the ActionState.MovementState enum
+
             List<AnimationClip> movementAnimations = new List<AnimationClip>();
 
             if (movementData.MoveData != null)
@@ -119,16 +133,6 @@ internal class StatHandler : MonoBehaviour, IStats
             else
                 movementAnimations.Add(null);
 
-            if (movementData.JumpData != null)
-                movementAnimations.Add(movementData.JumpData.Animation);
-            else
-                movementAnimations.Add(null);
-
-            if (movementData.AirJumpData != null)
-                movementAnimations.Add(movementData.AirJumpData.Animation);
-            else
-                movementAnimations.Add(null);
-
             if (movementData.WallLeanData != null)
                 movementAnimations.Add(movementData.WallLeanData.Animation);
             else
@@ -136,6 +140,16 @@ internal class StatHandler : MonoBehaviour, IStats
 
             if (movementData.VaultData != null)
                 movementAnimations.Add(movementData.VaultData.Animation);
+            else
+                movementAnimations.Add(null);
+
+            if (movementData.JumpData != null)
+                movementAnimations.Add(movementData.JumpData.Animation);
+            else
+                movementAnimations.Add(null);
+
+            if (movementData.AirJumpData != null)
+                movementAnimations.Add(movementData.AirJumpData.Animation);
             else
                 movementAnimations.Add(null);
 
@@ -199,12 +213,16 @@ internal class StatHandler : MonoBehaviour, IStats
         statData.GravityMultiplier = baseSceneObjectData.GravityMultiplier;
 
         if (data.MoveData != null)
+        {
             statData.GroundedAcceleration = Mathf.Lerp(data.MoveData.GroundedXMaxAcceleration, data.MoveData.GroundedXMinAcceleration, MassRatio);
+            statData.GroundedMovementValid = data.MoveData.IsValid();
+        }
 
         if (data.AirMoveData != null)
         {
             statData.AerialXAcceleration = Mathf.Lerp(data.AirMoveData.AerialXMaxAcceleration, data.AirMoveData.AerialXMinAcceleration, MassRatio);
             statData.AerialYAcceleration = Mathf.Lerp(data.AirMoveData.AerialYMaxAcceleration, data.AirMoveData.AerialYMinAcceleration, MassRatio);
+            statData.AerialMovementValid = data.AirMoveData.IsValid();
         }
 
         if (data.ClimbMoveData != null)
@@ -213,12 +231,14 @@ internal class StatHandler : MonoBehaviour, IStats
             statData.MaxClimbUpYVelocity = data.ClimbMoveData.ClimbUpYVelocity;
             statData.MaxClimbDownYVelocity = data.ClimbMoveData.ClimbDownYVelocity;
             statData.ClimbSlideDecceleration = Mathf.Lerp(data.ClimbMoveData.MaxClimbSlideDecceleration, data.ClimbMoveData.MinClimbSlideDecceleration, MassRatio);
+            statData.ClimbMovementValid = data.ClimbMoveData.IsValid();
         }
 
         if (data.JumpData != null)
         {
             statData.InitialJumpVelocity = Mathf.Lerp(data.JumpData.MaxInitialVelocity, data.JumpData.MinInitialVelocity, MassRatio);
             statData.JumpAcceleration = Mathf.Lerp(data.JumpData.MaxJumpAcceleration, data.JumpData.MinJumpAcceleration, MassRatio);
+            statData.GroundedJumpValid = data.JumpData.IsValid();
         }
 
         if (data.AirJumpData != null)
@@ -226,6 +246,17 @@ internal class StatHandler : MonoBehaviour, IStats
             statData.InitialAirJumpVelocity = Mathf.Lerp(data.AirJumpData.MaxInitialVelocity, data.AirJumpData.MinInitialVelocity, MassRatio);
             statData.AirJumpAcceleration = Mathf.Lerp(data.AirJumpData.MaxJumpAcceleration, data.AirJumpData.MinJumpAcceleration, MassRatio);
             statData.AirJumpsAvailable = data.AirJumpData.AdditionalJumpsAvailable;
+            statData.AerialJumpValid = data.AirJumpData.IsValid();
+        }
+
+        if (data.VaultData != null)
+        {
+            statData.VaultValid = data.VaultData.IsValid();
+        }
+
+        if (data.WallLeanData != null)
+        {
+            statData.WallLeanValid = data.WallLeanData.IsValid();
         }
 
         return statData;

@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: PlayerMove
   m_EditorClassIdentifier: StatData::MoveData
   Animation: {fileID: 7400000, guid: ab848177e3c0ab844b2fa67f188d8c9c, type: 2}
-  GroundedXMaxAcceleration: 15
-  GroundedXMinAcceleration: 5
+  GroundedXMaxAcceleration: 25
+  GroundedXMinAcceleration: 24

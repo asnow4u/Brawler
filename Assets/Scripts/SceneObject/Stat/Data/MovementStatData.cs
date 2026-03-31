@@ -2,6 +2,14 @@ using UnityEngine;
 
 public class MovementStatData
 {
+    public bool GroundedMovementValid = false;
+    public bool AerialMovementValid = false;
+    public bool ClimbMovementValid = false;
+    public bool GroundedJumpValid = false;
+    public bool AerialJumpValid = false;
+    public bool VaultValid = false;
+    public bool WallLeanValid = false;
+
     //Grounded Movement
     public float MaxGroundedVelocity;
     public float GroundedAcceleration;
