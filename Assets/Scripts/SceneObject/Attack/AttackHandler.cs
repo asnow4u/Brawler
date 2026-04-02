@@ -48,7 +48,7 @@ internal class AttackHandler : MonoBehaviour, IAttack
 
     private void RegisterToEvents()
     {
-        sceneObject.GroundedStateChangedEvent += OnGroundedStateChanged;
+        actionState.GroundedStateChangedEvent += OnGroundedStateChanged;
         stats.AttackStatsChangedEvent += OnAttackStatsChanged;
 
         attackInput.UpAttackPerformedEvent += PerformUpAttack;
@@ -64,7 +64,7 @@ internal class AttackHandler : MonoBehaviour, IAttack
 
     private void UnregisterFromEvents()
     {
-        sceneObject.GroundedStateChangedEvent -= OnGroundedStateChanged;
+        actionState.GroundedStateChangedEvent -= OnGroundedStateChanged;
         stats.AttackStatsChangedEvent -= OnAttackStatsChanged;
 
         attackInput.UpAttackPerformedEvent -= PerformUpAttack;
@@ -119,7 +119,7 @@ internal class AttackHandler : MonoBehaviour, IAttack
         if (curAttackState != AttackState.Null || curAttackData == null)
             return;
 
-        if (sceneObject.CurGroundedState == GroundedState.Grounded)
+        if (actionState.CurGroundedState == GroundedState.Grounded)
         {
             if (curAttackData.UpTilt == null) return;
             SetCurrentAttackState(AttackState.UpTilt);                            
@@ -139,7 +139,7 @@ internal class AttackHandler : MonoBehaviour, IAttack
         if (curAttackState != AttackState.Null || curAttackData == null)
             return;
         
-        if (sceneObject.CurGroundedState == GroundedState.Grounded)
+        if (actionState.CurGroundedState == GroundedState.Grounded)
         {
             if (curAttackData.DownTilt == null) return;
             SetCurrentAttackState(AttackState.DownTilt);
@@ -160,7 +160,7 @@ internal class AttackHandler : MonoBehaviour, IAttack
         if (curAttackState != AttackState.Null || curAttackData == null)
             return;
 
-        if (sceneObject.CurGroundedState == GroundedState.Grounded)
+        if (actionState.CurGroundedState == GroundedState.Grounded)
         {                
             if (curAttackData.ForwardTilt == null) return;
 
@@ -192,7 +192,7 @@ internal class AttackHandler : MonoBehaviour, IAttack
         if (curAttackState != AttackState.Null || curAttackData == null)
             return;
 
-        if (sceneObject.CurGroundedState == GroundedState.Grounded)
+        if (actionState.CurGroundedState == GroundedState.Grounded)
         {
             if (curAttackData.ForwardTilt == null) return;
 

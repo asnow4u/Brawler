@@ -12,6 +12,6 @@ public class MoveData : BaseMovementData
         return Animation != null &&
                GroundedXMaxAcceleration > 0 &&
                GroundedXMinAcceleration > 0 &&
-               GroundedXMaxAcceleration > GroundedXMinAcceleration;
+               GroundedXMaxAcceleration >= GroundedXMinAcceleration;
     }
 }

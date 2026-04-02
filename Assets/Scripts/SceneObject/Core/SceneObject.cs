@@ -9,28 +9,15 @@ internal abstract class SceneObject : MonoBehaviour, ISceneObject
     [SerializeField] private Guid uniqueID;
     public SceneObjectType ObjectType;
 
-    [Header("Ground Status")]
-    [SerializeField] private GroundedState curGroundedState;
-
-    [Header("Climb Status")]
-    [SerializeField] private ClimbState curClimbState;
-
     private Collider col;
     private Rigidbody rb;    
 
     #region Getters        
     
     public Guid UniqueID => uniqueID;   
-    public Bounds Bounds => col.bounds; //TODO: This will represent all colliders, this is the volume of the sceneObject
-
-    public GroundedState CurGroundedState => curGroundedState;
-    public ClimbState CurClimbState => curClimbState;             
+    public Bounds Bounds => col.bounds; //TODO: This will represent all colliders, this is the volume of the sceneObject 
 
     #endregion
-
-    //Events
-    public event Action<GroundedState> GroundedStateChangedEvent;
-    public event Action<ClimbState, ClimbState> ClimbStateChangedEvent;
 
 
     #region Initialize
@@ -38,23 +25,10 @@ internal abstract class SceneObject : MonoBehaviour, ISceneObject
     protected virtual void Awake()
     {        
         uniqueID = Guid.NewGuid();
-        curGroundedState = GroundedState.Grounded;
-        curClimbState = ClimbState.Unavailable;
 
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
     }    
-
-    #endregion
-
-
-    #region Update
-
-    private void FixedUpdate()
-    {
-        CheckClimbingState();
-        CheckGroundedState();
-    }
 
     #endregion
 
@@ -91,171 +65,6 @@ internal abstract class SceneObject : MonoBehaviour, ISceneObject
             transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
 
         //sceneObject.UIHandler.RotateDisplayText(); //TODO: UI should handle this
-    }
-
-    #endregion
-
-
-    #region Ground State
-
-    /// <summary>
-    /// Use raycasts to determine current status of the ground
-    /// </summary>
-    private void CheckGroundedState()
-    {            
-        switch (curGroundedState)
-        {
-            case GroundedState.Grounded:
-                UpdateGroundedState();
-                break;
-
-            case GroundedState.Airborn:
-                UpdateAirbornState();
-                break;
-
-            case GroundedState.Climbing:
-                UpdateClimbingState();
-                break;
-        }
-    }
-
-    private void UpdateGroundedState()
-    {
-        //Switch to climbing
-        if (curClimbState == ClimbState.Climbing)            
-        {
-            curGroundedState = GroundedState.Climbing;
-            GroundedStateChangedEvent?.Invoke(curGroundedState);
-        }
-
-        //Switch to airborn
-        else if (!GroundCheck())
-        {
-            curGroundedState = GroundedState.Airborn;
-            GroundedStateChangedEvent?.Invoke(curGroundedState);
-        }
-    }
-
-    private void UpdateAirbornState()
-    {
-        //Switch to climbing
-        if (curClimbState == ClimbState.Climbing)
-        {
-            curGroundedState = GroundedState.Climbing;
-            GroundedStateChangedEvent?.Invoke(curGroundedState);
-        }
-
-        //Switch to grounded
-        else if (GroundCheck())
-        {
-            curGroundedState = GroundedState.Grounded;
-            GroundedStateChangedEvent?.Invoke(curGroundedState);
-        }
-    }
-        
-    private void UpdateClimbingState()
-    {
-        if (curClimbState != ClimbState.Climbing)
-        {
-            curGroundedState = GroundCheck() ? GroundedState.Grounded : GroundedState.Airborn;
-            GroundedStateChangedEvent?.Invoke(curGroundedState);
-        }
-    }
-
-    private bool GroundCheck()
-    {
-        return true; //TODO: Temp
-        //return CheckForEnvironmentCollision(Vector3.down, col.bounds.extents.y + 0.01f, out RaycastHit hitInfo);
-    }
-
-    #endregion
-
-
-    #region Climb State
-
-    private void CheckClimbingState()
-    {
-        switch (curClimbState)
-        {
-            case ClimbState.Unavailable:
-                UpdateUnavailableClimbState();
-                break;
-            case ClimbState.Available:
-                UpdateAvailableClimbState();
-                break;
-            case ClimbState.Climbing:
-                UpdateClimbingClimbState();
-                break;
-        }
-    }
-
-    private void UpdateUnavailableClimbState()
-    {
-        if (ClimbSurfaceCheck())
-            SetClimbState(ClimbState.Available);
-    }
-
-    private void UpdateAvailableClimbState()
-    {
-        if (!ClimbSurfaceCheck())
-            SetClimbState(ClimbState.Unavailable);
-
-        //else if (MovementInputHandler.VerticalInfluence != 0)
-        //{
-        //    // NOTE: Need to climb upwards while on the ground
-        //    if (CurGroundedState == GroundedState.Grounded && MovementInputHandler.VerticalInfluence < 0)
-        //        return;                
-
-        //    SetClimbState(ClimbState.Climbing);
-        //}
-    }
-
-    private void UpdateClimbingClimbState()
-    {
-        if (!ClimbSurfaceCheck())
-            SetClimbState(ClimbState.Unavailable);
-
-        //// Hit ground while climbing (NOTE: Dont check based on groundedState since climbState is updated first)
-        //else if (GroundCheck() && !(MovementInputHandler.VerticalInfluence > 0))
-        //    SetClimbState(ClimbState.Available);
-
-        //// Jump while climbing
-        //else if (MovementInputHandler.CurMovementInputData != null && MovementInputHandler.CurMovementInputData.Type == MovementType.Jump)
-        //    SetClimbState(ClimbState.Available);
-
-        //// Attack action performed
-        //else if (ActionStateHandler.CurActionState == ActionState.Attacking)
-        //    SetClimbState(ClimbState.Available);
-    }
-
-    private bool ClimbSurfaceCheck()
-    {
-        return true; //TODO: Temp
-        //return CheckForClimbableSurface();
-    }
-
-    public void UpdateClimbState(ClimbState climbState)
-    {
-        SetClimbState(climbState);
-    }
-
-    /// <summary>
-    /// Set the climb state of the sceneObject to <paramref name="state"/>
-    /// </summary>
-    private void SetClimbState(ClimbState state)
-    {
-        if (curClimbState == state)
-            return;
-
-        ClimbState prevClimbState = curClimbState;
-        curClimbState = state;
-
-        if (curClimbState == ClimbState.Climbing)
-            rb.useGravity = false;
-        else
-            rb.useGravity = true;
-
-        ClimbStateChangedEvent?.Invoke(prevClimbState, curClimbState);
     }
 
     #endregion
@@ -385,7 +194,7 @@ internal abstract class SceneObject : MonoBehaviour, ISceneObject
         return Physics.Raycast(Bounds.center, direction.normalized, out hitInfo, dist, LayerMask.GetMask("Environment"));
     }
 
-    public bool CheckForClimbableSurface()
+    public bool ClimbableSurfaceAvailable()
     {        
         Vector3 center = Bounds.center;
         Vector3 halfExtents = Bounds.extents;
@@ -412,7 +221,6 @@ internal abstract class SceneObject : MonoBehaviour, ISceneObject
     }
 
     #endregion
-
 }
 
 

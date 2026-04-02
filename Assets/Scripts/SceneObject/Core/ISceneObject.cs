@@ -2,8 +2,6 @@ using System;
 using UnityEngine;
 
 public enum SceneObjectType { Player, Enemy, Object }
-public enum GroundedState { Airborn, Grounded, Climbing }
-public enum ClimbState { Unavailable, Available, Climbing }
 public enum Direction { Right, Left, Up, Down }
 
 public interface ISceneObject
@@ -18,13 +16,8 @@ public interface ISceneObject
     //Collision
     public Bounds Bounds { get; }
     public bool TryDetectCollision(Direction direction, float dist, LayerMask mask, out Collider collidingCollider);
-
-    //States
-    public GroundedState CurGroundedState { get; }
-    public ClimbState CurClimbState { get; }
-
-    public event Action<GroundedState> GroundedStateChangedEvent;
-    public event Action<ClimbState, ClimbState> ClimbStateChangedEvent;
+    public bool CheckForEnvironmentCollision(Vector3 direction, float dist, out RaycastHit hitInfo);
+    public bool ClimbableSurfaceAvailable();
 
     //Debug
     public void Log(string log);

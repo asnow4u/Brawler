@@ -20,8 +20,8 @@ MonoBehaviour:
   AerialMaxXVelocityMax: 15
   AerialMaxXVelocityMin: 10
   AerialXDecceleration: 100
-  AerialMaxYVelocityMax: 7
-  AerialMaxYVelocityMin: 5
+  AerialMaxYVelocityMax: 25
+  AerialMaxYVelocityMin: 25
   AerialYDecceleration: 100
   GravityMultiplier: 1
   AnimationCollection: {fileID: 11400000, guid: b10aa38545bee094c864b83b9fe14b93, type: 2}

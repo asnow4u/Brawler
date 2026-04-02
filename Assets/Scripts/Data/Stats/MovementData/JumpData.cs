@@ -13,9 +13,9 @@ public class JumpData : BaseMovementData
         return Animation != null &&
                MaxInitialVelocity > 0 &&
                MinInitialVelocity > 0 &&
-               MaxInitialVelocity > MinInitialVelocity &&
+               MaxInitialVelocity >= MinInitialVelocity &&
                MaxJumpAcceleration > 0 &&
                MinJumpAcceleration > 0 &&
-               MaxJumpAcceleration > MinJumpAcceleration;
+               MaxJumpAcceleration >= MinJumpAcceleration;
     }
 }

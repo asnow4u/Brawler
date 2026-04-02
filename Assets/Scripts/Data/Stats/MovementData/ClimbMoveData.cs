@@ -21,6 +21,6 @@ public class ClimbMoveData : BaseMovementData
                ClimbDownYVelocity > 0 &&
                MaxClimbSlideDecceleration > 0 &&
                MinClimbSlideDecceleration > 0 &&
-               MaxClimbSlideDecceleration > MinClimbSlideDecceleration;
+               MaxClimbSlideDecceleration >= MinClimbSlideDecceleration;
     }
 }

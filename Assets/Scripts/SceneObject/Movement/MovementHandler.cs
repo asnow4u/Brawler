@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -33,8 +34,10 @@ internal class MovementHandler : MonoBehaviour, IMovement
     [SerializeField] private float jumpInfluence;    
 
     //Jump Properties
-    [SerializeField] private bool isJumping = false;
-    private bool jumpInputAvailable = true; //Jump available is only true after the user has released the jump button 
+    private bool isJumping = false;
+    private bool jumpInputAvailable = true; //Jump available is only true after the user has released the jump button
+    private const int JUMPFRAMECOUNT = 2; //How many frames does it take for a jump before user is actionable
+    private Coroutine jumpCoroutine;
     private int airJumpsPerformed = 0;
 
     //Climb Properties
@@ -52,23 +55,22 @@ internal class MovementHandler : MonoBehaviour, IMovement
     private const float minGroundBounceVelocity = 20f;
 
     //Conditions
-    private bool groundedMovementAllowed => curMovementData.GroundedAcceleration > 0 &&
+    private bool groundedMovementAllowed => curMovementData.GroundedMovementValid &&
                                             horizontalInfluence != 0;
-    private bool aerialMovementAllowed => curMovementData.AerialXAcceleration > 0 && 
-                                          curMovementData.AerialYAcceleration > 0 &&
+    private bool aerialMovementAllowed => curMovementData.AerialMovementValid &&
                                           (horizontalInfluence != 0 || verticalInfluence != 0);
-    private bool climbMovementAllowed => curMovementData.MaxClimbUpYVelocity > 0 &&
-                                         curMovementData.MaxClimbDownYVelocity > 0 &&
-                                         curMovementData.MaxClimbXVelocity > 0 &&
+    private bool climbMovementAllowed => curMovementData.ClimbMovementValid &&
                                          (horizontalInfluence != 0 || verticalInfluence != 0);
-    private bool jumpMovementAllowed => curMovementData.JumpAcceleration > 0 &&
+    private bool jumpMovementAllowed => curMovementData.GroundedJumpValid &&
                                         jumpInfluence > 0 &&
                                         jumpInputAvailable;
-    private bool aerialJumpMovementAllowed => curMovementData.AirJumpAcceleration > 0 &&
+    private bool aerialJumpMovementAllowed => curMovementData.AerialJumpValid &&
                                               jumpInfluence > 0 &&
                                               jumpInputAvailable &&
                                               airJumpsPerformed < curMovementData.AirJumpsAvailable;
-
+    private bool wallLeanAllowed => curMovementData.WallLeanValid &&
+                                    IsRunningAgainstWall();
+    private bool vaultMovementAllowed => curMovementData.VaultValid;
 
     #region Getters
 
@@ -105,8 +107,8 @@ internal class MovementHandler : MonoBehaviour, IMovement
 
     private void RegisterToEvents()
     {
-        sceneObject.GroundedStateChangedEvent += OnGroundedStateChanged;
-        sceneObject.ClimbStateChangedEvent += OnClimbStateChanged;
+        actionState.GroundedStateChangedEvent += OnGroundedStateChanged;
+        actionState.ClimbStateChangedEvent += OnClimbStateChanged;
 
         stats.MovementStatsChangedEvent += OnMovementStatsChanged;
 
@@ -126,8 +128,8 @@ internal class MovementHandler : MonoBehaviour, IMovement
 
     private void UnregisterToEvents()
     {
-        sceneObject.GroundedStateChangedEvent -= OnGroundedStateChanged;
-        sceneObject.ClimbStateChangedEvent -= OnClimbStateChanged;
+        actionState.GroundedStateChangedEvent -= OnGroundedStateChanged;
+        actionState.ClimbStateChangedEvent -= OnClimbStateChanged;
 
         stats.MovementStatsChangedEvent -= OnMovementStatsChanged;
 
@@ -152,31 +154,6 @@ internal class MovementHandler : MonoBehaviour, IMovement
 
     #endregion
 
-    /// <summary>
-    /// Move Animation Ended reset current moveState
-    /// </summary>
-    /// <param name="clip"></param>
-    //private void OnAnimationEnded(AnimationClip clip)
-    //{
-    //    if (currentMovementCollection.TryGetMovementFromAnimation(clip, out MovementInputData inputData) &&
-    //        inputData.Type == curMoveState)
-    //    {
-    //        if (inputData.Type == MovementState.Jump)
-    //            isJumping = false;
-
-    //        if (inputData.Type == MovementState.Vault)
-    //        {
-    //            isVaulting = false;
-    //            rb.linearVelocity = new Vector3(vaultStoredVelocity, rb.linearVelocity.y, 0);
-    //        }
-
-    //        //Transition from movement to movement
-    //        if (actionState.CurActionState == MOVESTATE)
-    //            sceneObject.MovementHandler.UpdateMovement();
-    //        else
-    //            SetCurrentMoveState(null);
-    //    }
-    //}
 
     #region State
 
@@ -192,7 +169,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
     /// <summary>
     /// Handle Climb state changed event
     /// </summary>
-    private void OnClimbStateChanged(ClimbState prevClimbState, ClimbState climbState)
+    private void OnClimbStateChanged(ClimbState climbState)
     {
         isClimbSliding = false;        
 
@@ -200,6 +177,8 @@ internal class MovementHandler : MonoBehaviour, IMovement
         if (climbState == ClimbState.Climbing)
         {
             airJumpsPerformed = 0;
+
+            rb.useGravity = false;
 
             if (rb.linearVelocity.y < climbSlideVelocityThreshold)
             {
@@ -209,6 +188,9 @@ internal class MovementHandler : MonoBehaviour, IMovement
             else
                 rb.linearVelocity = Vector3.zero;
         }
+
+        else
+            rb.useGravity = true;
     }
 
     /// <summary>
@@ -224,7 +206,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
     /// </summary>
     private void UpdateGroundedMovementState()
     {
-        if (isVaulting) 
+        if (isJumping || isVaulting) 
             return;
 
         //Jump
@@ -237,7 +219,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
         //Horizontal Movement
         else if (groundedMovementAllowed)
         {
-            if (IsRunningAgainstWall())
+            if (wallLeanAllowed)
                 SetCurrentMoveState(MovementState.WallLean);
             else
                 SetCurrentMoveState(MovementState.Move);
@@ -278,12 +260,12 @@ internal class MovementHandler : MonoBehaviour, IMovement
     /// </summary>
     private void UpdateClimbMovementState()
     {
-        if (isVaulting || isJumping || isClimbSliding)
+        if (isClimbSliding)
             return;
 
         //Jump
         if (jumpMovementAllowed)
-            SetCurrentMoveState(MovementState.AirJump);
+            SetCurrentMoveState(MovementState.Jump);
 
         //Accelerate
         else if (climbMovementAllowed)
@@ -292,30 +274,6 @@ internal class MovementHandler : MonoBehaviour, IMovement
         //Idle
         else
             SetCurrentMoveState(MovementState.Null);
-    }
-
-    #endregion
-
-
-    #region Turn Around
-
-    private void CheckTurnAround()
-    {
-        if (sceneObject.IsFacingRightDirection && horizontalInfluence < 0)
-        {
-            sceneObject.TurnAround();
-
-            if (rb.linearVelocity.x > 0)
-                rb.linearVelocity = new Vector3(rb.linearVelocity.x * -1, rb.linearVelocity.y, 0);
-        }
-
-        else if (!sceneObject.IsFacingRightDirection && horizontalInfluence > 0)
-        {
-            sceneObject.TurnAround();
-
-            if (rb.linearVelocity.x < 0)
-                rb.linearVelocity = new Vector3(rb.linearVelocity.x * -1, rb.linearVelocity.y, 0);
-        }
     }
 
     #endregion
@@ -399,23 +357,17 @@ internal class MovementHandler : MonoBehaviour, IMovement
 
     private void FixedUpdate()
     {
-        CheckForBounce();
+        CheckForHitStunBounce();
+        CheckForClimbingStateChange();
 
-        switch (sceneObject.CurGroundedState)
-        {
-            case GroundedState.Grounded:
-                UpdateGroundedMovement();
-                break;
+        if (actionState.CurClimbState == ClimbState.Climbing)
+            UpdateClimbMovement();
 
-            case GroundedState.Airborn:
-                UpdateAerialMovement();
-                break;
+        else if (actionState.CurGroundedState == GroundedState.Grounded)
+            UpdateGroundedMovement();
 
-            case GroundedState.Climbing:
-                UpdateClimbMovement();
-                break;
-        }
-
+        else if (actionState.CurGroundedState == GroundedState.Airborn)
+            UpdateAerialMovement();
     }
 
     #endregion
@@ -469,17 +421,28 @@ internal class MovementHandler : MonoBehaviour, IMovement
     /// </summary>
     private void UpdateGroundedAcceleration()
     {
-        CheckTurnAround();
+        float currentX = rb.linearVelocity.x;
 
-        float targetXVelocity = curMovementData.MaxGroundedVelocity * Mathf.Abs(horizontalInfluence);
+        // 1. Kill momentum if reversing
+        if (horizontalInfluence != 0 && Mathf.Sign(horizontalInfluence) != Mathf.Sign(currentX))
+        {
+            currentX = 0;
+        }
 
-        rb.linearVelocity = new Vector3(rb.linearVelocity.x + (horizontalInfluence * curMovementData.GroundedAcceleration * Time.fixedDeltaTime), rb.linearVelocity.y, 0);
+        // 2. Apply acceleration
+        currentX += horizontalInfluence * curMovementData.GroundedAcceleration * Time.fixedDeltaTime;
 
-        if (rb.linearVelocity.x > targetXVelocity)
-            rb.linearVelocity = new Vector3(targetXVelocity, rb.linearVelocity.y, 0);
+        // 3. Clamp
+        float maxSpeed = curMovementData.MaxGroundedVelocity;
+        currentX = Mathf.Clamp(currentX, -maxSpeed, maxSpeed);
 
-        else if (rb.linearVelocity.x < -targetXVelocity)
-            rb.linearVelocity = new Vector3(-targetXVelocity, rb.linearVelocity.y, 0);
+        rb.linearVelocity = new Vector3(currentX, rb.linearVelocity.y, 0);
+
+        if (sceneObject.IsFacingRightDirection && rb.linearVelocity.x < 0 ||
+            !sceneObject.IsFacingRightDirection && rb.linearVelocity.x > 0)
+        {
+            sceneObject.TurnAround();
+        }
     }
 
     /// <summary>
@@ -529,7 +492,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
                 DeccelerateAerialYMovement();
                 break;
 
-            case MovementState.Move:
+            case MovementState.AirMove:
 
                 //Horizontal Movement
                 if (horizontalInfluence != 0)
@@ -678,9 +641,32 @@ internal class MovementHandler : MonoBehaviour, IMovement
 
     #region Climb Movement
 
-    /// <summary>
-    /// Update movement while climbing
-    /// </summary>        
+    private void CheckForClimbingStateChange()
+    {
+        if (!curMovementData.ClimbMovementValid ||
+            isJumping ||
+            verticalInfluence == 0 ||
+            actionState.CurClimbState == ClimbState.Unavailable)
+        {
+            return;
+        }
+
+        if (actionState.CurClimbState == ClimbState.Available)
+        {
+            if (actionState.CurGroundedState == GroundedState.Grounded && verticalInfluence > 0)
+                actionState.ChangeClimbState(ClimbState.Climbing);
+
+            else if (actionState.CurGroundedState == GroundedState.Airborn && verticalInfluence != 0)
+                actionState.ChangeClimbState(ClimbState.Climbing);
+        }
+
+        else if (actionState.CurClimbState == ClimbState.Climbing)
+        {
+            if (actionState.CurGroundedState == GroundedState.Grounded && verticalInfluence < 0)
+                actionState.ChangeClimbState(ClimbState.Available);
+        }
+    }    
+
     private void UpdateClimbMovement()
     {
         UpdateClimbMovementState();
@@ -694,12 +680,13 @@ internal class MovementHandler : MonoBehaviour, IMovement
                     UpdateClimbDecceleration();
                 break;
 
-            case MovementState.Move:
+            case MovementState.ClimbMove:
                 UpdateClimbAcceleration();
                 break;
 
             case MovementState.Jump:
                 StartJump();
+                actionState.ChangeClimbState(ClimbState.Available);
                 break;
         }
     }
@@ -709,8 +696,6 @@ internal class MovementHandler : MonoBehaviour, IMovement
     /// </summary>
     private void UpdateClimbAcceleration()
     {
-        CheckTurnAround();
-        
         float climbXVelocity = horizontalInfluence * curMovementData.MaxClimbXVelocity;
         float climbYVelocity = 0;
 
@@ -758,7 +743,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
 
         else if (curMoveState == MovementState.AirJump)
         {
-            CheckTurnAround();
+            //CheckTurnAround();
             airJumpsPerformed++;
             jumpVelocity = curMovementData.InitialAirJumpVelocity;
         }
@@ -767,8 +752,24 @@ internal class MovementHandler : MonoBehaviour, IMovement
         {
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpVelocity, 0);
             jumpInputAvailable = false;
-            isJumping = true;
+            jumpCoroutine = StartCoroutine(JumpFrameCounter());
         }
+    }
+
+
+    private IEnumerator JumpFrameCounter()
+    {
+        int frameCount = 0;
+        
+        isJumping = true;
+
+        while (frameCount < JUMPFRAMECOUNT)
+        {
+            frameCount++;
+            yield return null;
+        }
+
+        isJumping = false;
     }
 
     /// <summary>
@@ -795,7 +796,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
 
     public void UpdateEdgeClimb(ClimbableEdge edge)
     {
-        if (curMoveState == MovementState.Vault) return;
+        if (curMoveState == MovementState.Vault || !vaultMovementAllowed) return;
 
         BoxCollider edgeCollider = edge.transform.GetComponent<BoxCollider>();
 
@@ -834,7 +835,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
 
     #region Bounce
 
-    private void CheckForBounce()
+    private void CheckForHitStunBounce()
     {
         if (actionState.CurActionState != ActionState.HitStun)
             return;

@@ -47,7 +47,7 @@ internal class StatHandler : MonoBehaviour, IStats
     protected virtual void RegisterToEvents()
     {
         //Debug
-        baseSceneObjectData.MovementCollection.OnChangedEvent += MovementCollectionChanged;
+        baseSceneObjectData.OnChangedEvent += soDataChanged;
     }
 
     protected virtual void Start()
@@ -63,12 +63,12 @@ internal class StatHandler : MonoBehaviour, IStats
     protected virtual void UnregisterFromEvents()
     {
         //Debug
-        baseSceneObjectData.MovementCollection.OnChangedEvent += MovementCollectionChanged;
+        baseSceneObjectData.MovementCollection.OnChangedEvent += soDataChanged;
     }
 
-    private void MovementCollectionChanged()
+    private void soDataChanged()
     {
-        UpdateMovementStats(baseSceneObjectData.MovementCollection);
+        UpdateSceneObjectStats();
     }
 
     #endregion
@@ -129,7 +129,10 @@ internal class StatHandler : MonoBehaviour, IStats
                 movementAnimations.Add(null);
 
             if (movementData.ClimbMoveData != null)
+            {
                 movementAnimations.Add(movementData.ClimbMoveData.Animation);
+                statData.ClimbIdleAnimation = movementData.ClimbMoveData.IdleAnimation;
+            }                
             else
                 movementAnimations.Add(null);
 

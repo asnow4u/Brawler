@@ -15,10 +15,9 @@ public class AirMoveData : BaseMovementData
         return Animation != null &&
                AerialXMaxAcceleration > 0 &&
                AerialXMinAcceleration > 0 &&
-               AerialXMaxAcceleration > AerialXMinAcceleration &&
+               AerialXMaxAcceleration >= AerialXMinAcceleration &&
                AerialYMaxAcceleration > 0 &&
                AerialYMinAcceleration > 0 &&
-               AerialYMaxAcceleration > AerialYMinAcceleration;
-
+               AerialYMaxAcceleration >= AerialYMinAcceleration;
     }
 }

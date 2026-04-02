@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "SceneObjectBase", menuName = "ScriptableObjects/SceneObject/BaseData")]
@@ -21,9 +22,9 @@ public class SceneObjectData : ScriptableObject
     public float GravityMultiplier = 1;
     
     public BaseAnimationCollection AnimationCollection;
-
     public MovementDataCollection MovementCollection;
 
+    public event Action OnChangedEvent;
 
     public bool IsValid()
     {
@@ -55,4 +56,44 @@ public class SceneObjectData : ScriptableObject
 
         return true;
     }
+
+
+#if UNITY_EDITOR
+
+    private void OnEnable()
+    {
+        RegisterToChangeEvents();
+    }
+
+    private void OnDisable()
+    {
+        UnregisterToChangeEvents();
+    }
+
+    private void RegisterToChangeEvents()
+    {
+        if (MovementCollection != null)
+            MovementCollection.OnChangedEvent += DataChanged;
+    }
+
+    private void UnregisterToChangeEvents()
+    {
+        if (MovementCollection != null)
+            MovementCollection.OnChangedEvent -= DataChanged;
+    }
+
+    private void DataChanged()
+    {
+        OnChangedEvent?.Invoke();
+    }
+
+    private void OnValidate()
+    {
+        DataChanged();
+
+        UnregisterToChangeEvents();
+        RegisterToChangeEvents();
+    }
+
+#endif
 }

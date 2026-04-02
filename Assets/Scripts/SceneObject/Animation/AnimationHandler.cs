@@ -72,7 +72,6 @@ internal class AnimationHandler : MonoBehaviour, IAnimation
             Debug.LogError("AnimationHandler IEquipment is null", gameObject);
 
         animationGraph = new AnimationGraph(animator);
-
         
         RegisterToEvents();
     }
@@ -109,10 +108,6 @@ internal class AnimationHandler : MonoBehaviour, IAnimation
 
     #region Events       
 
-    /// <summary>
-    /// Action State Changed
-    /// </summary>
-    /// <param name="actionState"></param>
     private void OnActionStateChanged(ActionState actionState)
     {
         animationGraph.ChangeActionStateInput(actionState);
@@ -160,8 +155,6 @@ internal class AnimationHandler : MonoBehaviour, IAnimation
     /// </summary>
     private void Update()
     {
-        //TODO: Check that the animationGraph is setup with animations
-
         //Get animationClip from graph
         AnimationClipPlayable clipPlayable = animationGraph.GetCurrentAnimationPlayable();
 

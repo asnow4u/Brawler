@@ -65,7 +65,7 @@ public class MovementDataCollection : ScriptableObject
 
     private void OnValidate()
     {
-        OnChangedEvent?.Invoke();
+        MovementDataChanged();
 
         Unsubscribe();
         Subscribe();

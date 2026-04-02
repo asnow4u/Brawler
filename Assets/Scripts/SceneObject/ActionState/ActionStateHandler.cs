@@ -6,6 +6,12 @@ internal class ActionStateHandler : MonoBehaviour, IActionState
 {
     private ISceneObject sceneObject;
 
+    [SerializeField] private GroundedState curGroundedState;
+    public GroundedState CurGroundedState => curGroundedState;
+
+    [SerializeField] private ClimbState curClimbState;
+    public ClimbState CurClimbState => curClimbState;
+
     [SerializeField] private ActionState curActionState;
     public ActionState CurActionState => curActionState;
 
@@ -24,6 +30,9 @@ internal class ActionStateHandler : MonoBehaviour, IActionState
     [SerializeField] private float hitStunFreezeTimer = 0.033f;
     private Coroutine hitStunTimerCoroutine = null;
 
+    public event Action<GroundedState> GroundedStateChangedEvent;
+    public event Action<ClimbState> ClimbStateChangedEvent;
+
     public event Action<ActionState> ActionStateChangedEvent;
     public event Action<IdleState> IdleStateChangedEvent;
     public event Action<MovementState> MovementStateChangedEvent;
@@ -37,14 +46,6 @@ internal class ActionStateHandler : MonoBehaviour, IActionState
         sceneObject = GetComponent<ISceneObject>();
         if (sceneObject == null)
             Debug.LogError("No ISceneObject found on " + gameObject.name);
-
-        RegisterToEvents();
-    }
-
-    private void RegisterToEvents()
-    {
-        sceneObject.GroundedStateChangedEvent += OnGroundedStateChanged;
-        sceneObject.ClimbStateChangedEvent += OnClimbStateChanged;
     }
 
     private void Start()
@@ -52,62 +53,44 @@ internal class ActionStateHandler : MonoBehaviour, IActionState
         ChangeState(ActionState.Idle);
     }
 
-    private void OnDestroy()
+    private void FixedUpdate()
     {
-        UnregisterToEvents();
+        UpdateGroundedState();
+        CheckClimbingAvailability();
     }
 
-    public void UnregisterToEvents()
+    private void UpdateGroundedState()
     {
-        sceneObject.GroundedStateChangedEvent -= OnGroundedStateChanged;
-        sceneObject.ClimbStateChangedEvent -= OnClimbStateChanged;
-    }
+        GroundedState groundedState = curGroundedState;
 
+        //Switch to climbing
+        bool groundCollision = sceneObject.TryDetectCollision(Direction.Down, 0.01f, LayerMask.GetMask("Environment"), out _);
+        groundedState = groundCollision ? GroundedState.Grounded : GroundedState.Airborn;
 
-    private void OnGroundedStateChanged(GroundedState groundedState)
-    {
-        if (groundedState == GroundedState.Grounded)
+        if (groundedState != curGroundedState)
         {
-            //NOTE: Attacking state is handled in AttackStateHandler
-            if (curActionState == ActionState.Attacking) return;
-
-            //Prevent changing to idle when vaulting (Switching to idle will cancel the vault animation)
-            if (curActionState == ActionState.Moving && curMovementState == MovementState.Vault) return;
-
-            ChangeState(ActionState.Idle);
+            curGroundedState = groundedState;
+            sceneObject.Log("Grounded State: " + curGroundedState);
+            GroundedStateChangedEvent?.Invoke(curGroundedState);
+            
+            UpdateIdleState();
         }
-
-        UpdateIdleState();
     }
 
-    private void OnClimbStateChanged(ClimbState prevClimbState, ClimbState climbState)
+    private void CheckClimbingAvailability()
     {
-        UpdateIdleState();
+        if (!sceneObject.ClimbableSurfaceAvailable())
+            ChangeClimbState(ClimbState.Unavailable);
+        
+        else if (curClimbState == ClimbState.Unavailable)
+            ChangeClimbState(ClimbState.Available);
     }
-
-    private void UpdateIdleState()
-    {
-        if (sceneObject.CurClimbState == ClimbState.Climbing)
-            curIdleState = IdleState.ClimbIdle;
-        else if (sceneObject.CurGroundedState == GroundedState.Grounded)
-            curIdleState = IdleState.GroundIdle;
-        else
-            curIdleState = IdleState.AirIdle;
-
-        sceneObject.Log("Idle State: " + curIdleState);
-        IdleStateChangedEvent?.Invoke(curIdleState);
-    }
-
 
     #endregion
 
 
     #region States
 
-    /// <summary>
-    /// Change the action state without consideration for priority
-    /// </summary>
-    /// <param name="newState"></param>
     private void ChangeState(ActionState newState)
     {
         if (newState != curActionState)
@@ -116,15 +99,14 @@ internal class ActionStateHandler : MonoBehaviour, IActionState
 
             sceneObject.Log("ActionState State: " + curActionState);
             ActionStateChangedEvent?.Invoke(curActionState);
+
+            //Cancel Climbing in some states
+            if (curClimbState == ClimbState.Climbing && 
+               (curActionState == ActionState.Attacking || curActionState == ActionState.HitStun))
+                ChangeClimbState(ClimbState.Available);
         }
     }
 
-
-    /// <summary>
-    /// Atempt to change action state based on if newState takes more priority
-    /// </summary>
-    /// <param name="newState"></param>
-    /// <returns></returns>
     private bool TryChangeState(ActionState newState)
     {
         if (newState > curActionState)
@@ -139,6 +121,30 @@ internal class ActionStateHandler : MonoBehaviour, IActionState
         return false;
     }
 
+    private void UpdateIdleState()
+    {
+        if (curClimbState == ClimbState.Climbing)
+            curIdleState = IdleState.ClimbIdle;
+        else if (curGroundedState == GroundedState.Grounded)
+            curIdleState = IdleState.GroundIdle;
+        else
+            curIdleState = IdleState.AirIdle;
+
+        sceneObject.Log("Idle State: " + curIdleState);
+        IdleStateChangedEvent?.Invoke(curIdleState);
+    }
+
+    public void ChangeClimbState(ClimbState climbState)
+    {
+        if (climbState != curClimbState)
+        {
+            curClimbState = climbState;
+            sceneObject.Log("Climb State: " + curClimbState);
+            ClimbStateChangedEvent?.Invoke(curClimbState);
+
+            UpdateIdleState();
+        }
+    }
 
     public void ChangeMovementState(MovementState movementState)
     {
@@ -177,6 +183,7 @@ internal class ActionStateHandler : MonoBehaviour, IActionState
     }
 
     #endregion
+
 
     #region Hitstun
 

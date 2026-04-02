@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: PlayerMovementCollection
   m_EditorClassIdentifier: StatData::MovementDataCollection
   MoveData: {fileID: 11400000, guid: f851337051793cf4d9c5062dd684a084, type: 2}
-  AirMoveData: {fileID: 0}
-  JumpData: {fileID: 0}
-  AirJumpData: {fileID: 0}
-  ClimbMoveData: {fileID: 0}
+  AirMoveData: {fileID: 11400000, guid: 69ad812bb38469341a2f5b88d8908c5c, type: 2}
+  JumpData: {fileID: 11400000, guid: 2163aa4363d5679408411f29b0b14f84, type: 2}
+  AirJumpData: {fileID: 11400000, guid: c9f63594ad4c83048a3162f847ff9fd4, type: 2}
+  ClimbMoveData: {fileID: 11400000, guid: 1bdf2fa6695ad3646af2d7dad4072eb3, type: 2}
   VaultData: {fileID: 0}
   WallLeanData: {fileID: 11400000, guid: 24c8dd332f454f0458846b820d17eeb0, type: 2}
