@@ -14,15 +14,15 @@ TagManager:
   - UI
   - Environment
   - SceneObject
-  - AttackHitBox
-  - DamageHitBox
-  - Ragdoll
-  - KillZone
-  - PlayerEvent
   - Interactable
-  - Player
-  - Enemy
   - Climbable
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
   - 
   - 
   - 

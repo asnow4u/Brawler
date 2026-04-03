@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PlayerAirMove
   m_EditorClassIdentifier: StatData::AirMoveData
   Animation: {fileID: 7400000, guid: e4af2bdcb9165c24ebe4d4941634d994, type: 2}
-  AerialXMaxAcceleration: 50
-  AerialXMinAcceleration: 50
+  AerialXMaxAcceleration: 25
+  AerialXMinAcceleration: 25
   AerialYMaxAcceleration: 30
   AerialYMinAcceleration: 30

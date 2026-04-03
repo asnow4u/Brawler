@@ -161,15 +161,12 @@ internal class StatHandler : MonoBehaviour, IStats
 
         if (attackData != null)
         {
+            //NOTE: Order needs to match that of the ActionState.AttackState enum
+
             List<AnimationClip> attackAnimations = new List<AnimationClip>();
 
             if (attackData.UpTiltData != null)
                 attackAnimations.Add(attackData.UpTiltData.Animation);
-            else
-                attackAnimations.Add(null);
-
-            if (attackData.ForwardTiltData != null)
-                attackAnimations.Add(attackData.ForwardTiltData.Animation);
             else
                 attackAnimations.Add(null);
 
@@ -178,18 +175,23 @@ internal class StatHandler : MonoBehaviour, IStats
             else
                 attackAnimations.Add(null);
 
-            if (attackData.UpAirData != null)
-                attackAnimations.Add(attackData.UpAirData.Animation);
+            if (attackData.ForwardTiltData != null)
+                attackAnimations.Add(attackData.ForwardTiltData.Animation);
             else
                 attackAnimations.Add(null);
 
-            if (attackData.ForwardAirData != null)
+            if (attackData.UpAirData != null)
                 attackAnimations.Add(attackData.UpAirData.Animation);
             else
                 attackAnimations.Add(null);
 
             if (attackData.DownAirData != null)
                 attackAnimations.Add(attackData.DownAirData.Animation);
+            else
+                attackAnimations.Add(null);
+
+            if (attackData.ForwardAirData != null)
+                attackAnimations.Add(attackData.ForwardAirData.Animation);
             else
                 attackAnimations.Add(null);
 

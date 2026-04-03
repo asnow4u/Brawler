@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(ISceneObject))]
@@ -18,6 +19,8 @@ internal class AttackHandler : MonoBehaviour, IAttack
     private AttackState curAttackState => actionState.CurAttackState;
     
     private AttackStatData curAttackData;
+
+    private Coroutine attackFrameCounterCoroutine;
 
     #region Initialize    
 
@@ -75,9 +78,6 @@ internal class AttackHandler : MonoBehaviour, IAttack
 
     #endregion
 
-    /// <summary>
-    /// Handle grounded state changes while performing an aerial attack
-    /// </summary>
     private void OnGroundedStateChanged(GroundedState groundedState)
     {
         if (groundedState == GroundedState.Grounded && curAttackState != AttackState.Null)
@@ -86,9 +86,6 @@ internal class AttackHandler : MonoBehaviour, IAttack
         }
     }
 
-    /// <summary>
-    /// Handle weapon equipping
-    /// </summary>
     private void OnAttackStatsChanged(AttackStatData data)
     {        
         curAttackData = data;
@@ -97,13 +94,42 @@ internal class AttackHandler : MonoBehaviour, IAttack
 
     #region Attack State
 
-    /// <summary>
-    /// Attempt to set the current attack state <br></br>
-    /// This will initiate the animation of the attackType
-    /// </summary>
     private void SetCurrentAttackState(AttackState attackState)
     {       
         actionState.ChangeAttackState(attackState);
+
+        AnimationClip clip = null;
+
+        switch (actionState.CurAttackState)
+        {
+            case AttackState.UpTilt:
+                clip = curAttackData.UpTilt.Animation;
+                break;
+
+            case AttackState.UpAir:
+                clip = curAttackData.UpAir.Animation;
+                break;
+
+            case AttackState.ForwardTilt:
+                clip = curAttackData.ForwardTilt.Animation;
+                break;
+
+            case AttackState.ForwardAir:
+                clip = curAttackData.ForwardAir.Animation;
+                break;
+
+            case AttackState.DownTilt:
+                clip = curAttackData.DownTilt.Animation;
+                break;
+
+            case AttackState.DownAir:
+                clip = curAttackData.DownAir.Animation;
+                break;
+        }
+
+        if (clip != null)
+            attackFrameCounterCoroutine = StartCoroutine(AttackFrameCounter(clip));
+        
     }
 
     #endregion
@@ -111,9 +137,6 @@ internal class AttackHandler : MonoBehaviour, IAttack
 
     #region Perform Attack
 
-    /// <summary>
-    /// Try to perform a grounded / Air Up attack
-    /// </summary>
     public void PerformUpAttack()
     {
         if (curAttackState != AttackState.Null || curAttackData == null)
@@ -131,9 +154,6 @@ internal class AttackHandler : MonoBehaviour, IAttack
         }
     }
 
-    /// <summary>
-    /// Try to perform a grounded / Air Down attack
-    /// </summary>
     public void PerformDownAttack()
     {
         if (curAttackState != AttackState.Null || curAttackData == null)
@@ -151,10 +171,6 @@ internal class AttackHandler : MonoBehaviour, IAttack
         }
     }
 
-    /// <summary>
-    /// Try to perform a grounded / Air Forward attack <\br>
-    /// Turn around if facing the wrong direction
-    /// </summary>
     public void PerformRightAttack()
     {
         if (curAttackState != AttackState.Null || curAttackData == null)
@@ -183,10 +199,6 @@ internal class AttackHandler : MonoBehaviour, IAttack
         }
     }
 
-    /// <summary>
-    /// Try to perform a grounded / Air Forward attack <\br>
-    /// Turn around if facing the wrong direction
-    /// </summary>
     public void PerformLeftAttack()
     {
         if (curAttackState != AttackState.Null || curAttackData == null)
@@ -216,4 +228,11 @@ internal class AttackHandler : MonoBehaviour, IAttack
     }
 
     #endregion   
+
+
+    private IEnumerator AttackFrameCounter(AnimationClip animation)
+    {
+        yield return new WaitForSeconds(animation.length);
+        actionState.ChangeAttackState(AttackState.Null);
+    }
 }

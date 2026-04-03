@@ -164,11 +164,14 @@ internal class ActionStateHandler : MonoBehaviour, IActionState
 
     public void ChangeAttackState(AttackState attackState)
     {
-        if (curAttackState != AttackState.Null)
+        if (curAttackState == attackState)
             return;
 
-        if (TryChangeState(ActionState.Attacking))
+        if (attackState == AttackState.Null || TryChangeState(ActionState.Attacking))
         {
+            if (attackState == AttackState.Null)
+                ChangeState(ActionState.Idle);
+
             curAttackState = attackState;
             sceneObject.Log("Attack State: " + curAttackState);
             AttackStateChangedEvent?.Invoke(curAttackState);

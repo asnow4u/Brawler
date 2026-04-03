@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: StatData::ClimbMoveData
   Animation: {fileID: 7400000, guid: cf910206bb66e40479ad1ee712d87322, type: 2}
   IdleAnimation: {fileID: 7400000, guid: a635dc5448054b449a52dede2b98bd93, type: 2}
-  ClimbXVelocity: 7
-  ClimbUpYVelocity: 7
-  ClimbDownYVelocity: 10
-  MaxClimbSlideDecceleration: 5
-  MinClimbSlideDecceleration: 5
+  ClimbXVelocity: 5
+  ClimbUpYVelocity: 5
+  ClimbDownYVelocity: 5
+  MaxClimbSlideDecceleration: 15
+  MinClimbSlideDecceleration: 15

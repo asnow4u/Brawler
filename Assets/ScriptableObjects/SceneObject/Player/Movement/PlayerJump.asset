@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PlayerJump
   m_EditorClassIdentifier: StatData::JumpData
   Animation: {fileID: 7400000, guid: 3c7980860f2414345b03ea2be2673e4b, type: 2}
-  MaxInitialVelocity: 6
-  MinInitialVelocity: 6
+  MaxInitialVelocity: 8
+  MinInitialVelocity: 8
   MaxJumpAcceleration: 1
   MinJumpAcceleration: 1
