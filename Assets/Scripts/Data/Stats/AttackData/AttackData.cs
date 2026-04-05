@@ -19,12 +19,4 @@ public class AttackData : ScriptableObject
 
     [Tooltip("Launch angle is assuming that\n 0 is the forward\n 90 is the up\n 180 is backwards\n 270 is down")]
     [SerializeField] public float LaunchAngle;
-
-    [Header("Animation Frame Triggers")]
-    [Tooltip("Frame attack colliders should be enabled")]
-    [SerializeField] public int EnableColliderFrame;
-
-    [Space]
-    [Tooltip("Frame when attack colliders should be disabled")]
-    [SerializeField] public int DisableColliderFrame;
 }

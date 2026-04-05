@@ -8,8 +8,6 @@ public class AttackStatData
     {
         public AttackState State;
         public AnimationClip Animation;
-        public int EnableColliderFrame;
-        public int DisableColliderFrame;
         public float Influence;
         public float LaunchAngle;
 
@@ -19,8 +17,6 @@ public class AttackStatData
         {
             State = state;
             Animation = data.Animation;
-            EnableColliderFrame = data.EnableColliderFrame;
-            DisableColliderFrame = data.DisableColliderFrame;
             Influence = data.Influence;
             LaunchAngle = data.LaunchAngle;
             this.damageCurve = data.DamageCurve;
