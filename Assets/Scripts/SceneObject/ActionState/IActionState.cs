@@ -6,7 +6,7 @@ public enum ActionState { Null, Idle, Moving, Attacking, HitStun };
 public enum IdleState { Null, GroundIdle, AirIdle, ClimbIdle };
 public enum MovementState { Null, Move, AirMove, ClimbMove, WallLean, Vault, Jump, AirJump }
 public enum AttackState { Null, UpTilt, DownTilt, ForwardTilt, UpAir, DownAir, ForwardAir };
-public enum HitStunState { Null, Freeze, Launch }
+public enum HitStunState { Null, Stop, Launch }
 
 public interface IActionState
 {
@@ -20,7 +20,7 @@ public interface IActionState
     public void ChangeClimbState(ClimbState climbState);
     public void ChangeMovementState(MovementState movementState);
     public void ChangeAttackState(AttackState attackState);
-    public void SetHitStun(float hitStunTimer);
+    public void ChangeHitStunState(HitStunState hitStunState);
 
     public event Action<GroundedState> GroundedStateChangedEvent;
     public event Action<ClimbState> ClimbStateChangedEvent;

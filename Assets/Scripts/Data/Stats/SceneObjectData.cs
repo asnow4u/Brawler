@@ -51,9 +51,6 @@ public class SceneObjectData : ScriptableObject
         if (AnimationCollection == null) 
             return false;
 
-        if (MovementCollection == null) 
-            return false;
-
         return true;
     }
 

@@ -2,30 +2,28 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static AttackStatData;
 
 [RequireComponent(typeof(ISceneObject))]
 [RequireComponent(typeof(IActionState))]
 [RequireComponent(typeof(IStats))]
-[RequireComponent(typeof(IAnimation))]
 [RequireComponent(typeof(IHurtBoxHandler))]
 internal class HitBoxHandler : MonoBehaviour, IHitBoxHandler
 {
     private ISceneObject sceneObject;
     private IActionState actionState;
     private IStats stats;
-    private IAnimation animationHandler;
+    private IAnimation animation;
     private IHurtBoxHandler hurtBoxHandler;
 
     //SceneObject
-    [Tooltip("The root of the sceneObject mesh that will be used to find all hitboxs")]
+    [Tooltip("The root of the sceneObject that will be used to find all sceneObject based hitboxs")]
     [SerializeField] private GameObject sceneObjectRoot;
     private HitBox[] sceneObjectHitboxs;
 
     //Weapon
     private List<HitBox> weaponHitboxs = new List<HitBox>();
-    private List<AttackStatData.AttackStats> weaponAttackDatas = null;
-    private AttackStatData.AttackStats curWeaponAttackData = null;
-    private Coroutine animationEventRoutine = null;
+    private Dictionary<AttackState, AttackStats> weaponAttackDatas = null;        
 
     #region Initialize
 
@@ -43,9 +41,9 @@ internal class HitBoxHandler : MonoBehaviour, IHitBoxHandler
         if (stats == null)
             Debug.LogError("HitBoxHandler equipment is null", gameObject);
 
-        animationHandler = GetComponent<IAnimation>();
-        if (animationHandler == null)
-            Debug.LogError("HitBoxHandler animationHandler is null", gameObject);
+        animation = GetComponent<IAnimation>();
+        if (animation == null)
+            Debug.LogError("HitBoxHandler animation is null", gameObject);
 
         hurtBoxHandler = GetComponent<IHurtBoxHandler>();
         if (hurtBoxHandler == null)
@@ -55,7 +53,7 @@ internal class HitBoxHandler : MonoBehaviour, IHitBoxHandler
         {
             sceneObjectHitboxs = sceneObjectRoot.GetComponentsInChildren<HitBox>(true);
             if (sceneObjectHitboxs == null || sceneObjectHitboxs.Length == 0)
-                Debug.LogError("HitBoxHandler No Hitboxs found", gameObject);
+                Debug.LogError("HitBoxHandler No SceneObject Hitboxs found", gameObject);
         }
         else
             Debug.LogError("HitBoxHandler SceneObjectRoot not set", gameObject);
@@ -67,7 +65,7 @@ internal class HitBoxHandler : MonoBehaviour, IHitBoxHandler
     {
         actionState.ActionStateChangedEvent += OnActionStateChanged;
         stats.AttackStatsChangedEvent += OnAttackStatsChanged;
-        animationHandler.AnimationStartedEvent += OnAnimationStarted;
+        animation.AnimationEventFiredEvent += OnAnimationEvent;
     }
 
     private void OnDestroy()
@@ -79,16 +77,12 @@ internal class HitBoxHandler : MonoBehaviour, IHitBoxHandler
     {
         actionState.ActionStateChangedEvent -= OnActionStateChanged;
         stats.AttackStatsChangedEvent -= OnAttackStatsChanged;
-        animationHandler.AnimationStartedEvent -= OnAnimationStarted;
+        animation.AnimationEventFiredEvent -= OnAnimationEvent;
     }    
 
     private void OnActionStateChanged(ActionState state)
     {
         DisableAllHitBoxs();
-        curWeaponAttackData = null;
-
-        if (animationEventRoutine != null)
-            StopCoroutine(animationEventRoutine);
 
         if (state == ActionState.HitStun)
             EnableSceneObjectHitBoxs();
@@ -100,54 +94,33 @@ internal class HitBoxHandler : MonoBehaviour, IHitBoxHandler
             return;
         
         weaponHitboxs = data.WeaponRootGameObject.GetComponentsInChildren<HitBox>(true).ToList();
-        weaponAttackDatas = new List<AttackStatData.AttackStats>();
+        weaponAttackDatas = new Dictionary<AttackState, AttackStats>();
 
         if (data.UpTilt != null)
-            weaponAttackDatas.Add(data.UpTilt);
+            weaponAttackDatas.Add(AttackState.UpTilt, data.UpTilt);
         if (data.ForwardTilt != null)
-            weaponAttackDatas.Add(data.ForwardTilt);
+            weaponAttackDatas.Add(AttackState.ForwardTilt, data.ForwardTilt);
         if (data.DownTilt != null)
-            weaponAttackDatas.Add(data.DownTilt);
+            weaponAttackDatas.Add(AttackState.DownTilt, data.DownTilt);
         if (data.UpAir != null)
-            weaponAttackDatas.Add(data.UpAir);
+            weaponAttackDatas.Add(AttackState.UpAir, data.UpAir);
         if (data.ForwardAir != null)
-            weaponAttackDatas.Add(data.ForwardAir);
+            weaponAttackDatas.Add(AttackState.ForwardAir, data.ForwardAir);
         if (data.DownAir != null)
-            weaponAttackDatas.Add(data.DownAir);
+            weaponAttackDatas.Add(AttackState.DownAir, data.DownAir);
     }
 
-    private void OnAnimationStarted(AnimationClip clip)
+    private void OnAnimationEvent(AnimationEventState eventState)
     {
-        if (actionState.CurActionState == ActionState.Attacking)
+        switch (eventState)
         {
-            foreach (var attackData in weaponAttackDatas)
-            {
-                if (attackData.Animation == clip)
-                {
-                    curWeaponAttackData = attackData;
-
-                    if (animationEventRoutine != null)
-                        StopCoroutine(animationEventRoutine);
-                    animationEventRoutine = StartCoroutine(CheckForAnimationEvents());
-
-                    break;
-                }
-            }
-        }
-    }
-
-    private IEnumerator CheckForAnimationEvents()
-    {
-        while (curWeaponAttackData != null)
-        {
-            int frame = animationHandler.GetFrameOfCurrentAnimation();
-
-            if (frame >= curWeaponAttackData.DisableColliderFrame)
-                DisableWeaponHitboxs();
-            else if (frame >= curWeaponAttackData.EnableColliderFrame)
+            case AnimationEventState.EnableHitbox:
                 EnableWeaponHitboxs();
+                break;
 
-            yield return null;
+            case AnimationEventState.DisableHitbox:
+                DisableWeaponHitboxs();
+                break;
         }
     }
 
@@ -210,11 +183,12 @@ internal class HitBoxHandler : MonoBehaviour, IHitBoxHandler
 
     private void OnWeaponHit(IHurtBox hurtBox)
     {
-        if (curWeaponAttackData == null)
+        if (actionState.CurAttackState == AttackState.Null)
             return;
 
-        int frame = animationHandler.GetFrameOfCurrentAnimation();
-        hurtBox.Hit(new HitData(sceneObject.UniqueID, curWeaponAttackData.Influence, curWeaponAttackData.LaunchAngle, curWeaponAttackData.GetAttackDamage(frame)));
+        AttackStats curAttackStats = weaponAttackDatas[actionState.CurAttackState];
+        int curAnimationFrame = animation.GetFrameOfCurrentAnimation();
+        hurtBox.Hit(new HitData(sceneObject.UniqueID, curAttackStats.Influence, curAttackStats.LaunchAngle, curAttackStats.GetAttackDamage(curAnimationFrame)));
 
         //Prevent being hit by sceneObject after making contact
         hurtBoxHandler.SetImmunityFrom(hurtBox.SceneObjectID);

@@ -25,10 +25,7 @@ internal class ActionStateHandler : MonoBehaviour, IActionState
     public AttackState CurAttackState => curAttackState;
 
     [SerializeField] private HitStunState curHitStunState;
-    public HitStunState CurHitStunState => curHitStunState;
-
-    [SerializeField] private float hitStunFreezeTimer = 0.033f;
-    private Coroutine hitStunTimerCoroutine = null;
+    public HitStunState CurHitStunState => curHitStunState;    
 
     public event Action<GroundedState> GroundedStateChangedEvent;
     public event Action<ClimbState> ClimbStateChangedEvent;
@@ -178,36 +175,21 @@ internal class ActionStateHandler : MonoBehaviour, IActionState
         }
     }
 
-    private void ChangeHitStunState(HitStunState hitStunState)
+    public void ChangeHitStunState(HitStunState hitStunState)
     {
-        curHitStunState = hitStunState;
-        sceneObject.Log("HitStun State: " + curHitStunState);
-        HitStunStateChangedEvent?.Invoke(curHitStunState);
+        if (curHitStunState == hitStunState)
+            return;
+
+        if (hitStunState == HitStunState.Null || TryChangeState(ActionState.HitStun))
+        {
+            if (hitStunState == HitStunState.Null)
+                ChangeState(ActionState.Idle);
+
+            curHitStunState = hitStunState;
+            sceneObject.Log("HitStun State: " + curHitStunState);
+            HitStunStateChangedEvent?.Invoke(curHitStunState);
+        }
     }
 
-    #endregion
-
-
-    #region Hitstun
-
-    public void SetHitStun(float timer)
-    {
-        if (hitStunTimerCoroutine != null)
-            StopCoroutine(hitStunTimerCoroutine);
-
-        hitStunTimerCoroutine = StartCoroutine(HitStunTimer(timer));
-    }
-
-    private IEnumerator HitStunTimer(float timer)
-    {
-        ChangeHitStunState(HitStunState.Freeze);
-        yield return new WaitForSeconds(hitStunFreezeTimer);
-
-        ChangeHitStunState(HitStunState.Launch);
-        yield return new WaitForSeconds(timer);
-
-        ChangeHitStunState(HitStunState.Null);
-    }
-
-    #endregion
+    #endregion    
 }

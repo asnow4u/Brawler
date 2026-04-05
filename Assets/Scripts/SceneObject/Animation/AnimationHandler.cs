@@ -12,14 +12,14 @@ using UnityEngine.Playables;
 
 [RequireComponent(typeof(IActionState))]
 [RequireComponent(typeof(IStats))]
-internal class AnimationHandler : MonoBehaviour, IAnimation
+public class AnimationHandler : MonoBehaviour, IAnimation, IAnimationEditor
 {
     //Dependencies
     IActionState actionState;
     IStats stats;
-
-    //Components
+    
     private Animator animator;
+    private AnimationEventHandler eventHandler;    
     private AnimationGraph animationGraph;
 
     private AnimationClip curPlayingAnimation;
@@ -27,18 +27,10 @@ internal class AnimationHandler : MonoBehaviour, IAnimation
     //Events
     public event Action<AnimationClip> AnimationStartedEvent;
     public event Action<AnimationClip> AnimationEndedEvent;
-
+    public event Action<AnimationEventState> AnimationEventFiredEvent;
 
     #region Getters
 
-    public Animator Animator => animator;
-    public bool IsAnimationPaused { get; private set; }
-
-
-    /// <summary>
-    /// Get the current frame that the animation is on
-    /// </summary>
-    /// <returns></returns>
     public int GetFrameOfCurrentAnimation()
     {
         AnimationClipPlayable clipPlayable = animationGraph.GetCurrentAnimationPlayable();
@@ -58,10 +50,13 @@ internal class AnimationHandler : MonoBehaviour, IAnimation
 
     private void Awake()
     {
-        //Animator
         animator = GetComponentInChildren<Animator>();
         if (animator == null)
             Debug.LogError("AnimationHandler Animator is null", gameObject);
+        
+        eventHandler = animator.GetComponentInChildren<AnimationEventHandler>();
+        if (eventHandler == null)
+            Debug.LogError("AnimationHandler AnimatorEventHandler is null", gameObject);
 
         actionState = GetComponent<IActionState>();
         if (actionState == null)
@@ -84,6 +79,8 @@ internal class AnimationHandler : MonoBehaviour, IAnimation
         actionState.AttackStateChangedEvent += OnAttackStateChanged;
 
         stats.AnimationStatsChangedEvent += OnAnimationStatsChanged;
+
+        eventHandler.OnEventFired += HandleAnimationEvent;
     }
 
     private void OnDestroy()
@@ -101,13 +98,14 @@ internal class AnimationHandler : MonoBehaviour, IAnimation
         actionState.AttackStateChangedEvent -= OnAttackStateChanged;
 
         stats.AnimationStatsChangedEvent -= OnAnimationStatsChanged;
+
+        eventHandler.OnEventFired += HandleAnimationEvent;
     }
 
     #endregion 
 
 
     #region Events       
-
     private void OnActionStateChanged(ActionState actionState)
     {
         animationGraph.ChangeActionStateInput(actionState);
@@ -145,6 +143,11 @@ internal class AnimationHandler : MonoBehaviour, IAnimation
         animationGraph.SetHitStunAnimations(data.HitStunAnimation);
     }
 
+    private void HandleAnimationEvent(AnimationEventState state)
+    {
+        AnimationEventFiredEvent?.Invoke(state);
+    }
+
     #endregion
 
 
@@ -155,6 +158,12 @@ internal class AnimationHandler : MonoBehaviour, IAnimation
     /// </summary>
     private void Update()
     {
+        if (debugMode)
+        {
+            DebugUpdate();
+            return;
+        }
+
         //Get animationClip from graph
         AnimationClipPlayable clipPlayable = animationGraph.GetCurrentAnimationPlayable();
 
@@ -181,20 +190,6 @@ internal class AnimationHandler : MonoBehaviour, IAnimation
         }
     }
 
-    //public void PauseAnimation()
-    //{
-    //    Debug.Log("Pausing Animation");
-    //    animationGraph.Graph.Stop();
-    //    IsAnimationPaused = true;
-    //}
-
-    //public void ResumeAnimation()
-    //{
-    //    animationGraph.Graph.Play();
-    //    IsAnimationPaused = false;
-    //    Debug.Log("Resuming Animation");
-    //}
-
     /// <summary>
     /// End the animation if currently playing and go to Idle
     /// </summary>
@@ -206,4 +201,158 @@ internal class AnimationHandler : MonoBehaviour, IAnimation
             AnimationEndedEvent?.Invoke(curPlayingAnimation);
         }
     }
+
+
+    #region Debug / Editor
+
+    private bool debugMode = false;
+    public bool DebugMode => debugMode;
+    
+    private AttackState debugAttackState = AttackState.Null;
+    public AttackState DebugAttackState => debugAttackState;
+
+    private bool isDebugAnimationPlaying;
+    public bool IsDebugAnimationPlaying => isDebugAnimationPlaying;
+
+    private float currentDebugAnimationTime;
+    public float CurrentDebugAnimationTime => currentDebugAnimationTime;
+
+    private AnimationClip currentDebugAnimationClip;
+    public AnimationClip CurrentDebugAnimationClip => currentDebugAnimationClip;
+
+    private AnimationClipPlayable currentDebugClipPlayable;
+    private float previousDebugAnimationTime;
+
+    private void DebugUpdate()
+    {
+        if (currentDebugAnimationClip == null)
+            return;
+
+        if (isDebugAnimationPlaying)
+        {
+            previousDebugAnimationTime = currentDebugAnimationTime;
+            currentDebugAnimationTime += Time.deltaTime;
+
+            ClampTime();
+
+            if (currentDebugAnimationTime >= currentDebugAnimationClip.length)
+                isDebugAnimationPlaying = false;
+        }
+
+        UpdatePlayable();
+    }
+
+    private void ClampTime()
+    {
+        if (currentDebugAnimationClip == null)
+            return;
+
+        currentDebugAnimationTime = Mathf.Clamp(currentDebugAnimationTime, 0f, currentDebugAnimationClip.length);
+    }
+
+    private void UpdatePlayable()
+    {
+        if (currentDebugClipPlayable.IsNull())
+            return;
+
+        currentDebugClipPlayable.SetTime(currentDebugAnimationTime);
+    }
+
+    public void SetDebugMode(bool enabled)
+    {
+        debugMode = enabled;
+
+        if (!debugMode)
+        {
+            isDebugAnimationPlaying = false;
+            currentDebugAnimationClip = null;
+        }
+    }
+
+    public void SetDebugAttackState(AttackState state)
+    {
+        debugAttackState = state;
+
+        if (state == AttackState.Null)
+        {
+            isDebugAnimationPlaying = false;
+            currentDebugAnimationClip = null;
+            return;
+        }
+
+        OnActionStateChanged(ActionState.Attacking);
+        OnAttackStateChanged(state);
+
+        AnimationClipPlayable clipPlayable = animationGraph.GetCurrentAnimationPlayable();
+        if (clipPlayable.IsNull() || clipPlayable.GetAnimationClip() == null)
+            return;
+
+        currentDebugClipPlayable = clipPlayable;
+        currentDebugAnimationClip = clipPlayable.GetAnimationClip();
+
+        currentDebugAnimationTime = 0f;
+        previousDebugAnimationTime = 0f;
+    }
+
+    public void PlayDebugAnimation()
+    {
+        if (currentDebugAnimationTime >= currentDebugAnimationClip.length)
+        {
+            currentDebugAnimationTime = 0f;
+            UpdatePlayable();
+        }
+
+        isDebugAnimationPlaying = true;
+    }
+
+    public void PauseDebugAnimation()
+    {
+        isDebugAnimationPlaying = false;
+    }
+
+    public void JumpDebugAnimationToStart()
+    {
+        if (currentDebugAnimationClip == null || isDebugAnimationPlaying) return;
+
+        previousDebugAnimationTime = currentDebugAnimationTime;
+        currentDebugAnimationTime = 0f;
+        UpdatePlayable();
+    }
+
+    public void JumpDebugAnimationToEnd()
+    {
+        if (currentDebugAnimationClip == null || isDebugAnimationPlaying) return;
+
+        previousDebugAnimationTime = currentDebugAnimationTime;
+        currentDebugAnimationTime = currentDebugAnimationClip.length;
+        UpdatePlayable();
+    }
+
+    public void StepDebugAnimationForward()
+    {
+        if (currentDebugAnimationClip == null || isDebugAnimationPlaying) return;
+
+        float frameTime = 1f / currentDebugAnimationClip.frameRate;
+
+        previousDebugAnimationTime = currentDebugAnimationTime;
+        currentDebugAnimationTime += frameTime;
+
+        ClampTime();
+        UpdatePlayable();
+    }
+
+    public void StepDebugAnimationBackward()
+    {
+        if (currentDebugAnimationClip == null || isDebugAnimationPlaying) return;
+
+        float frameTime = 1f / currentDebugAnimationClip.frameRate;
+
+        previousDebugAnimationTime = currentDebugAnimationTime;
+        currentDebugAnimationTime -= frameTime;
+
+        ClampTime();
+        UpdatePlayable();
+    }    
+    
+    #endregion
 }

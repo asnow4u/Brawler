@@ -1,0 +1,19 @@
+{
+    "name": "SceneObject.Animation.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:f80909d12c184c9488e043884c19b270",
+        "GUID:43ba8182e97c6d74686c3f2b19c6404f"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

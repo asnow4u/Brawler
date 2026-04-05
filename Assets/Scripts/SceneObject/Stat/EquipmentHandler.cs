@@ -77,7 +77,7 @@ internal class EquipmentHandler : StatHandler
         UpdateRBMass();
         UpdateAnimationStats(weapon.WeaponData.MovementCollection, weapon.WeaponData.AttackCollection);
         UpdateMovementStats(weapon.WeaponData.MovementCollection);
-        UpdateAttackStats(weapon.WeaponData.AttackCollection);
+        UpdateAttackStats(ParseWeaponAttackData(weapon));
     }
 
     private void UpdateRBMass()
@@ -88,5 +88,35 @@ internal class EquipmentHandler : StatHandler
             accumulatedMass += weaponHandler.EquippedWeapon.Mass;
 
         rb.mass = Mathf.Clamp(baseSceneObjectData.MinMass + accumulatedMass, baseSceneObjectData.MinMass, baseSceneObjectData.MaxMass);
+    }
+
+    protected virtual AttackStatData ParseWeaponAttackData(IWeapon weapon)
+    {
+        if (weapon == null || weapon.WeaponData == null) return null;
+
+        AttackStatData data = new AttackStatData();
+        data.WeaponRootGameObject = weapon.gameObject;
+
+        AttackDataCollection attackData = weapon.WeaponData.AttackCollection;
+
+        if (attackData.UpTiltData != null)
+            data.UpTilt = new AttackStatData.AttackStats(AttackState.UpTilt, attackData.UpTiltData);
+
+        if (attackData.ForwardTiltData != null)
+            data.ForwardTilt = new AttackStatData.AttackStats(AttackState.ForwardTilt, attackData.ForwardTiltData);
+
+        if (attackData.DownTiltData != null)
+            data.DownTilt = new AttackStatData.AttackStats(AttackState.DownTilt, attackData.DownTiltData);
+
+        if (attackData.UpAirData != null)
+            data.UpAir = new AttackStatData.AttackStats(AttackState.UpAir, attackData.UpAirData);
+
+        if (attackData.ForwardAirData != null)
+            data.ForwardAir = new AttackStatData.AttackStats(AttackState.ForwardAir, attackData.ForwardAirData);
+
+        if (attackData.DownAirData != null)
+            data.DownAir = new AttackStatData.AttackStats(AttackState.DownAir, attackData.DownAirData);
+
+        return data;
     }
 }

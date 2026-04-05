@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: AttackCollection
   m_EditorClassIdentifier: StatData::AttackDataCollection
   UpTiltData: {fileID: 11400000, guid: cf6ac635f08f31f4f8f8b6d3f2d66cb9, type: 2}
-  UpAirData: {fileID: 0}
-  DownTiltData: {fileID: 0}
+  UpAirData: {fileID: 11400000, guid: eb6bec95ec61921418e32dc2b8c79861, type: 2}
+  DownTiltData: {fileID: 11400000, guid: 75e0b71f81dbb92459c1ec53d693d344, type: 2}
   DownAirData: {fileID: 0}
-  ForwardTiltData: {fileID: 0}
-  ForwardAirData: {fileID: 0}
+  ForwardTiltData: {fileID: 11400000, guid: 808e3a1650b75d54c9387b34d6fdc05e, type: 2}
+  ForwardAirData: {fileID: 11400000, guid: a4e7c09424f67754c85790432be71695, type: 2}

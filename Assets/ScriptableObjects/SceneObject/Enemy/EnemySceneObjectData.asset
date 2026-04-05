@@ -10,16 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3e482dae485748046b5d0bafe4990f98, type: 3}
-  m_Name: RockSceneObjectData
+  m_Name: EnemySceneObjectData
   m_EditorClassIdentifier: 
   MaxMass: 100
   MinMass: 100
   GroundedMaxVelocityMax: 10
   GroundedMaxVelocityMin: 10
+  GroundedDecceleration: 3500
   AerialMaxXVelocityMax: 10
   AerialMaxXVelocityMin: 10
-  AerialMaxYVelocityMax: 5
-  AerialMaxYVelocityMin: 5
-  GroundedDecceleration: 3500
-  AerialDecceleration: 30
-  GravityScaler: 2
+  AerialXDecceleration: 100
+  AerialMaxYVelocityMax: 25
+  AerialMaxYVelocityMin: 25
+  AerialYDecceleration: 100
+  GravityMultiplier: 1
+  AnimationCollection: {fileID: 11400000, guid: b97227ff6321bb24a835f88b0b1f3e58, type: 2}
+  MovementCollection: {fileID: 0}

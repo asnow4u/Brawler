@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,14 +17,9 @@ internal class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler
     //Componenets
     private Rigidbody rb;
 
-    private float deccelerationRate;
 
     //Hurt boxs
     private HurtBox[] hurtBoxes;
-
-    //Immunity
-    [SerializeField] private float immunityTime = 1.0f;
-    private Dictionary<Guid, float> immunityList = new Dictionary<Guid, float>();
 
     //Damage
     [SerializeField] protected float damageTaken = 0;
@@ -31,6 +27,16 @@ internal class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler
     const float minKnockBackAcceleration = 10f;
     //"The exponential growth of knockback based on damage"
     const float exGrowth = 2.8f;
+
+    //Hit stun
+    private float deccelerationRate;
+    [SerializeField] private float hitStopTimer = 0.033f;
+    private Coroutine hitStunTimerCoroutine;
+
+    //Immunity
+    private float immunityTime = 1.0f;
+    private Dictionary<Guid, float> immunityList = new Dictionary<Guid, float>();
+
 
     private void Awake()
     {
@@ -75,6 +81,11 @@ internal class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler
             hurtBox.OnHitEvent -= OnHit;
     }
 
+    private void Update()
+    {
+        UpdateImmunityList();
+    }
+
     private void OnMovementStatsChanged(MovementStatData statData)
     {
         deccelerationRate = statData.AerialUpYDecceleration;
@@ -94,9 +105,8 @@ internal class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler
         Vector3 launchVelocity = CalculateKnockbackVelocity(hitData.Influence, damageTaken, hitData.LauchAngle, rb.mass);
 
         rb.linearVelocity = launchVelocity;
-
-        float hitStunTimer = Mathf.Abs(launchVelocity.y / deccelerationRate);
-        actionState.SetHitStun(hitStunTimer);
+        float hitStunTime = Mathf.Abs(launchVelocity.y / deccelerationRate);        
+        ApplyHitStun(hitStunTime);
     }
 
     public Vector3 CalculateKnockbackVelocity(float influence, float totalDamage, float launchAngle, float mass)
@@ -109,12 +119,32 @@ internal class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler
         Vector3 launchDirection = new Vector2(xLaunch, yLaunch);
 
         return launchDirection * damageForce / mass;
+    }    
+
+    #region HitStun
+
+    private void ApplyHitStun(float hitStunTime)
+    {
+        if (hitStunTimerCoroutine != null)
+            StopCoroutine(hitStunTimerCoroutine);
+
+        hitStunTimerCoroutine = StartCoroutine(HitStunTimer(hitStunTime));
     }
 
-    private void Update()
+    private IEnumerator HitStunTimer(float timer)
     {
-        UpdateImmunityList();
+        actionState.ChangeHitStunState(HitStunState.Stop);
+        yield return new WaitForSeconds(hitStopTimer);
+
+        actionState.ChangeHitStunState(HitStunState.Launch);
+        yield return new WaitForSeconds(timer);
+
+        actionState.ChangeHitStunState(HitStunState.Null);
     }
+
+    #endregion
+
+    #region Immunity
 
     public void SetImmunityFrom(Guid sceneObjectID)
     {
@@ -133,5 +163,16 @@ internal class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler
             if (immunityList[kvp.Key] <= 0)
                 immunityList.Remove(kvp.Key);
         }
+    }
+
+    #endregion
+
+
+    [ContextMenu("Test Hit")]
+    public void TestHit()
+    {
+        //Test
+        HitData hitTestData = new HitData(Guid.NewGuid(), 1, 45, 20);
+        OnHit(hitTestData);
     }
 }

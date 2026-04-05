@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7641846617730945933}
   - component: {fileID: 2513023753728245893}
   - component: {fileID: 8289891962429799261}
-  m_Layer: 13
+  m_Layer: 8
   m_Name: Axe
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -49,7 +49,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mass: 15
   weaponData:
-    MovementCollection: {fileID: 0}
+    MovementCollection: {fileID: 11400000, guid: 245cbd7ac52e237409f25943ff190ab6, type: 2}
     AttackCollection: {fileID: 11400000, guid: aadcd91403f2bfc4c8459c3ac531855f, type: 2}
 --- !u!65 &8289891962429799261
 BoxCollider:
@@ -82,8 +82,9 @@ GameObject:
   m_Component:
   - component: {fileID: 2866058608940501886}
   - component: {fileID: 792686636730187167}
-  m_Layer: 0
-  m_Name: DamageCollider
+  - component: {fileID: 5520505725586911011}
+  m_Layer: 8
+  m_Name: Hitbox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -121,10 +122,22 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 1
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 0.21774828, y: 0.046696007, z: 1.5298218}
   m_Center: {x: 0.21941209, y: 0.0635536, z: 0.7819956}
+--- !u!114 &5520505725586911011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4216318443309913915}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56c7468362ed82848861a431fc88c1d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SceneObject.Hitbox::HitBox
 --- !u!1 &8961261510897898568
 GameObject:
   m_ObjectHideFlags: 0
@@ -136,7 +149,7 @@ GameObject:
   - component: {fileID: 587169032431247981}
   - component: {fileID: 6608077760511677916}
   - component: {fileID: 8337167169568144015}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}

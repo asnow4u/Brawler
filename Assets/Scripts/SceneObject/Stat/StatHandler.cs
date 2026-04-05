@@ -97,11 +97,10 @@ internal class StatHandler : MonoBehaviour, IStats
             MovementStatsChangedEvent?.Invoke(statData);
     }
 
-    protected void UpdateAttackStats(AttackDataCollection attackData)
+    protected void UpdateAttackStats(AttackStatData attackStats)
     {
-        AttackStatData statData = ParseAttackData(attackData);
-        if (statData != null)
-            AttackStatsChangedEvent?.Invoke(statData);
+        if (attackStats != null)
+            AttackStatsChangedEvent?.Invoke(attackStats);
     }
 
     private AnimationStatData ParseAnimationData(MovementDataCollection movementData = null, AttackDataCollection attackData = null)
@@ -202,9 +201,7 @@ internal class StatHandler : MonoBehaviour, IStats
     }   
 
     private MovementStatData ParseMovementData(MovementDataCollection data)
-    {
-        if (data == null) return null;
-
+    {        
         MovementStatData statData = new MovementStatData();
 
         statData.MaxGroundedVelocity = Mathf.Lerp(baseSceneObjectData.GroundedMaxVelocityMax, baseSceneObjectData.GroundedMaxVelocityMin, MassRatio);
@@ -216,6 +213,9 @@ internal class StatHandler : MonoBehaviour, IStats
         statData.AerialUpYDecceleration = baseSceneObjectData.AerialYDecceleration + Mathf.Abs(Physics.gravity.y) * baseSceneObjectData.GravityMultiplier;
         statData.AerialDownYDecceleration = baseSceneObjectData.AerialYDecceleration - Mathf.Abs(Physics.gravity.y) * baseSceneObjectData.GravityMultiplier;
         statData.GravityMultiplier = baseSceneObjectData.GravityMultiplier;
+
+        if (data == null)
+            return statData;
 
         if (data.MoveData != null)
         {
@@ -265,33 +265,6 @@ internal class StatHandler : MonoBehaviour, IStats
         }
 
         return statData;
-    }
-
-    private AttackStatData ParseAttackData(AttackDataCollection data)
-    {
-        if (data == null) return null;
-
-        AttackStatData attackData = new AttackStatData();
-
-        if (data.UpTiltData != null)
-            attackData.UpTilt = new AttackStatData.AttackStats(AttackState.UpTilt, data.UpTiltData);
-
-        if (data.ForwardTiltData != null)
-            attackData.ForwardTilt = new AttackStatData.AttackStats(AttackState.ForwardTilt, data.ForwardTiltData);
-
-        if (data.DownTiltData != null)
-            attackData.DownTilt = new AttackStatData.AttackStats(AttackState.DownTilt, data.DownTiltData);
-
-        if (data.UpAirData != null)
-            attackData.UpAir = new AttackStatData.AttackStats(AttackState.UpAir, data.UpAirData);
-
-        if (data.ForwardAirData != null)
-            attackData.ForwardAir = new AttackStatData.AttackStats(AttackState.ForwardAir, data.ForwardAirData);
-
-        if (data.DownAirData != null)
-            attackData.DownAir = new AttackStatData.AttackStats(AttackState.DownAir, data.DownAirData);
-
-        return attackData;
     }
 
     #endregion
