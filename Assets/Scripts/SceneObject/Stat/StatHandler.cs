@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(SceneObject))]
+[RequireComponent(typeof(ISceneObject))]
 [RequireComponent(typeof(ActionStateHandler))]
 [RequireComponent(typeof(Rigidbody))]
 public class StatHandler : MonoBehaviour, IStats
@@ -30,7 +30,10 @@ public class StatHandler : MonoBehaviour, IStats
         if (!baseSceneObjectData.IsValid())
             Debug.LogError("StatHandler: SceneObject Base Data is not valid", gameObject);
 
-        sceneObject = GetComponent<ISceneObject>();        
+        sceneObject = GetComponent<ISceneObject>();
+        if (sceneObject == null)
+            Debug.LogError("StatHandler: No ISceneObject component found", gameObject);
+
         actionState = GetComponent<IActionState>();
         rb = GetComponent<Rigidbody>();
         rb.mass = baseSceneObjectData.MinMass;

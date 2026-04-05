@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-[RequireComponent(typeof(SceneObject))]
+[RequireComponent(typeof(ISceneObject))]
 [RequireComponent(typeof(ActionStateHandler))]
 [RequireComponent(typeof(StatHandler))]
 [RequireComponent(typeof(Rigidbody))]
@@ -26,11 +26,14 @@ internal class AttackHandler : MonoBehaviour, IAttack
 
     private void Awake()
     {
+        sceneObject = GetComponent<ISceneObject>();
+        if (sceneObject == null)
+            Debug.LogError($"No ISceneObject found on {gameObject.name}.", gameObject);
+
         attackInput = GetComponent<IAttackInput>();
         if (attackInput == null)
             Debug.LogError($"No IAttackInput found on {gameObject.name}.", gameObject);
 
-        sceneObject = GetComponent<ISceneObject>();
         actionState = GetComponent<IActionState>();
         statHandler = GetComponent<IStats>();
         rb = GetComponent<Rigidbody>();

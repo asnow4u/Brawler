@@ -3,7 +3,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(Collider))]
 [RequireComponent(typeof(Rigidbody))]
-public abstract class SceneObject : MonoBehaviour, ISceneObject
+internal abstract class SceneObject : MonoBehaviour, ISceneObject
 {
     [Header("SceneObject")]
     [SerializeField] private Guid uniqueID;

@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using static AttackStatData;
 
-[RequireComponent(typeof(SceneObject))]
+[RequireComponent(typeof(ISceneObject))]
 [RequireComponent(typeof(ActionStateHandler))]
 [RequireComponent(typeof(StatHandler))]
 [RequireComponent(typeof(HurtBoxHandler))]
@@ -31,6 +31,9 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
     private void Awake()
     {
         sceneObject = GetComponent<ISceneObject>();
+        if (sceneObject == null)
+            Debug.LogError("HitBoxHandler No ISceneObject found", gameObject);
+
         actionState = GetComponent<IActionState>();
         statHandler = GetComponent<IStats>();        
         animationHandler = GetComponent<IAnimation>();

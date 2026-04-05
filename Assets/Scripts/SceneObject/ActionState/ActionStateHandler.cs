@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-[RequireComponent(typeof(SceneObject))]
+[RequireComponent(typeof(ISceneObject))]
 public class ActionStateHandler : MonoBehaviour, IActionState
 {
     private ISceneObject sceneObject;
@@ -42,6 +42,8 @@ public class ActionStateHandler : MonoBehaviour, IActionState
     private void Awake()
     {
         sceneObject = GetComponent<ISceneObject>();
+        if (sceneObject == null)
+            Debug.LogError("ActionStateHandler requires a component that implements ISceneObject.");
     }
 
     private void Start()

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(SceneObject))]
+[RequireComponent(typeof(ISceneObject))]
 [RequireComponent(typeof(ActionStateHandler))]
 [RequireComponent(typeof(StatHandler))]
 [RequireComponent(typeof(Rigidbody))]
@@ -85,6 +85,9 @@ internal class MovementHandler : MonoBehaviour, IMovement
     private void Awake()
     {
         sceneObject = GetComponent<ISceneObject>();
+        if (sceneObject == null)
+            Debug.LogError("MovementHandler requires a component that implements ISceneObject");
+
         actionState = GetComponent<IActionState>();
         statHandler = GetComponent<IStats>();
         
