@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(ISceneObject))]
-[RequireComponent(typeof(IActionState))]
+[RequireComponent(typeof(SceneObject))]
+[RequireComponent(typeof(ActionStateHandler))]
 [RequireComponent(typeof(Rigidbody))]
-internal class StatHandler : MonoBehaviour, IStats
+public class StatHandler : MonoBehaviour, IStats
 {
     //Dependecies
     protected ISceneObject sceneObject;
@@ -25,19 +25,13 @@ internal class StatHandler : MonoBehaviour, IStats
 
     protected virtual void Awake()
     {
-        sceneObject = GetComponent<ISceneObject>();
-        if (sceneObject == null)
-            Debug.LogError("StatHandler: No SceneObject found.", gameObject);
-
-        actionState = GetComponent<IActionState>();
-        if (actionState == null)
-            Debug.LogError("StatHandler: No ActionStateHandler found.", gameObject);
-
         if (baseSceneObjectData == null)
             Debug.LogError("StatHandler: No SceneObject Base Data found", gameObject);
         if (!baseSceneObjectData.IsValid())
             Debug.LogError("StatHandler: SceneObject Base Data is not valid", gameObject);
 
+        sceneObject = GetComponent<ISceneObject>();        
+        actionState = GetComponent<IActionState>();
         rb = GetComponent<Rigidbody>();
         rb.mass = baseSceneObjectData.MinMass;
 

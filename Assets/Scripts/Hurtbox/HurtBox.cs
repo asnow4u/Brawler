@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 
+[RequireComponent(typeof(SceneObject))]
 [RequireComponent(typeof(Collider))]
 internal class HurtBox : MonoBehaviour, IHurtBox
 {

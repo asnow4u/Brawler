@@ -4,16 +4,17 @@ using System.Linq;
 using UnityEngine;
 using static AttackStatData;
 
-[RequireComponent(typeof(ISceneObject))]
-[RequireComponent(typeof(IActionState))]
-[RequireComponent(typeof(IStats))]
-[RequireComponent(typeof(IHurtBoxHandler))]
-internal class HitBoxHandler : MonoBehaviour, IHitBoxHandler
+[RequireComponent(typeof(SceneObject))]
+[RequireComponent(typeof(ActionStateHandler))]
+[RequireComponent(typeof(StatHandler))]
+[RequireComponent(typeof(HurtBoxHandler))]
+[RequireComponent(typeof(AnimationHandler))]
+public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
 {
     private ISceneObject sceneObject;
     private IActionState actionState;
-    private IStats stats;
-    private IAnimation animation;
+    private IStats statHandler;
+    private IAnimation animationHandler;
     private IHurtBoxHandler hurtBoxHandler;
 
     //SceneObject
@@ -30,24 +31,10 @@ internal class HitBoxHandler : MonoBehaviour, IHitBoxHandler
     private void Awake()
     {
         sceneObject = GetComponent<ISceneObject>();
-        if (sceneObject == null)
-            Debug.LogError("HitBoxHandler sceneObject is null", gameObject);
-
         actionState = GetComponent<IActionState>();
-        if (actionState == null)
-            Debug.LogError("HitBoxHandler actionState is null", gameObject);
-
-        stats = GetComponent<IStats>();
-        if (stats == null)
-            Debug.LogError("HitBoxHandler equipment is null", gameObject);
-
-        animation = GetComponent<IAnimation>();
-        if (animation == null)
-            Debug.LogError("HitBoxHandler animation is null", gameObject);
-
-        hurtBoxHandler = GetComponent<IHurtBoxHandler>();
-        if (hurtBoxHandler == null)
-            Debug.LogError("HitBoxHandler hurtBoxHandler is null", gameObject);
+        statHandler = GetComponent<IStats>();        
+        animationHandler = GetComponent<IAnimation>();
+        hurtBoxHandler = GetComponent<IHurtBoxHandler>();        
 
         if (sceneObjectRoot != null)
         {
@@ -64,8 +51,8 @@ internal class HitBoxHandler : MonoBehaviour, IHitBoxHandler
     private void RegisterToEvents()
     {
         actionState.ActionStateChangedEvent += OnActionStateChanged;
-        stats.AttackStatsChangedEvent += OnAttackStatsChanged;
-        animation.AnimationEventFiredEvent += OnAnimationEvent;
+        statHandler.AttackStatsChangedEvent += OnAttackStatsChanged;
+        animationHandler.AnimationEventFiredEvent += OnAnimationEvent;
     }
 
     private void OnDestroy()
@@ -76,8 +63,8 @@ internal class HitBoxHandler : MonoBehaviour, IHitBoxHandler
     private void UnregisterToEvents()
     {
         actionState.ActionStateChangedEvent -= OnActionStateChanged;
-        stats.AttackStatsChangedEvent -= OnAttackStatsChanged;
-        animation.AnimationEventFiredEvent -= OnAnimationEvent;
+        statHandler.AttackStatsChangedEvent -= OnAttackStatsChanged;
+        animationHandler.AnimationEventFiredEvent -= OnAnimationEvent;
     }    
 
     private void OnActionStateChanged(ActionState state)
@@ -187,7 +174,7 @@ internal class HitBoxHandler : MonoBehaviour, IHitBoxHandler
             return;
 
         AttackStats curAttackStats = weaponAttackDatas[actionState.CurAttackState];
-        int curAnimationFrame = animation.GetFrameOfCurrentAnimation();
+        int curAnimationFrame = animationHandler.GetFrameOfCurrentAnimation();
         hurtBox.Hit(new HitData(sceneObject.UniqueID, curAttackStats.Influence, curAttackStats.LaunchAngle, curAttackStats.GetAttackDamage(curAnimationFrame)));
 
         //Prevent being hit by sceneObject after making contact

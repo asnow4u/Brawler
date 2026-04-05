@@ -2,7 +2,8 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-internal class ActionStateHandler : MonoBehaviour, IActionState
+[RequireComponent(typeof(SceneObject))]
+public class ActionStateHandler : MonoBehaviour, IActionState
 {
     private ISceneObject sceneObject;
 
@@ -41,8 +42,6 @@ internal class ActionStateHandler : MonoBehaviour, IActionState
     private void Awake()
     {
         sceneObject = GetComponent<ISceneObject>();
-        if (sceneObject == null)
-            Debug.LogError("No ISceneObject found on " + gameObject.name);
     }
 
     private void Start()

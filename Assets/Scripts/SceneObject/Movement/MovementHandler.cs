@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(ISceneObject))]
-[RequireComponent(typeof(IActionState))]
-[RequireComponent(typeof(IStats))]
+[RequireComponent(typeof(SceneObject))]
+[RequireComponent(typeof(ActionStateHandler))]
+[RequireComponent(typeof(StatHandler))]
 [RequireComponent(typeof(Rigidbody))]
 internal class MovementHandler : MonoBehaviour, IMovement
 {
@@ -13,7 +13,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
     private ISceneObject sceneObject;
     private IMovementInput movementInput;
     private IActionState actionState;
-    private IStats stats;
+    private IStats statHandler;
 
     //Components
     private Rigidbody rb;
@@ -85,17 +85,9 @@ internal class MovementHandler : MonoBehaviour, IMovement
     private void Awake()
     {
         sceneObject = GetComponent<ISceneObject>();
-        if (sceneObject == null)
-            Debug.LogError($"No ISceneObject found on {gameObject.name}.", gameObject);
-
         actionState = GetComponent<IActionState>();
-        if (actionState == null)
-            Debug.LogError($"No IActionState found on {gameObject.name}.", gameObject);
-
-        stats = GetComponent<IStats>();
-        if (stats == null)
-            Debug.LogError($"No IEquipment found on {gameObject.name}.", gameObject);
-
+        statHandler = GetComponent<IStats>();
+        
         rb = GetComponent<Rigidbody>();
         rb.linearDamping = 0;
 
@@ -110,7 +102,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
         actionState.GroundedStateChangedEvent += OnGroundedStateChanged;
         actionState.ClimbStateChangedEvent += OnClimbStateChanged;
 
-        stats.MovementStatsChangedEvent += OnMovementStatsChanged;
+        statHandler.MovementStatsChangedEvent += OnMovementStatsChanged;
 
         if (movementInput != null)
         {
@@ -131,7 +123,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
         actionState.GroundedStateChangedEvent -= OnGroundedStateChanged;
         actionState.ClimbStateChangedEvent -= OnClimbStateChanged;
 
-        stats.MovementStatsChangedEvent -= OnMovementStatsChanged;
+        statHandler.MovementStatsChangedEvent -= OnMovementStatsChanged;
 
         if (movementInput != null)
         {

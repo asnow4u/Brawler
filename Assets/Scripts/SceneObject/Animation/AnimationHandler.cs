@@ -10,13 +10,13 @@ using UnityEngine.Playables;
     Methods like animator.GetCurrentAnimatorClipInfo() will not work while using the playable api
 */
 
-[RequireComponent(typeof(IActionState))]
-[RequireComponent(typeof(IStats))]
+[RequireComponent(typeof(ActionStateHandler))]
+[RequireComponent(typeof(StatHandler))]
 public class AnimationHandler : MonoBehaviour, IAnimation, IAnimationEditor
 {
     //Dependencies
     IActionState actionState;
-    IStats stats;
+    IStats statHandler;
     
     private Animator animator;
     private AnimationEventHandler eventHandler;    
@@ -59,12 +59,7 @@ public class AnimationHandler : MonoBehaviour, IAnimation, IAnimationEditor
             Debug.LogError("AnimationHandler AnimatorEventHandler is null", gameObject);
 
         actionState = GetComponent<IActionState>();
-        if (actionState == null)
-            Debug.LogError("AnimationHandler IActionState is null", gameObject);
-
-        stats = GetComponent<IStats>();
-        if (stats == null)
-            Debug.LogError("AnimationHandler IEquipment is null", gameObject);
+        statHandler = GetComponent<IStats>();        
 
         animationGraph = new AnimationGraph(animator);
         
@@ -78,7 +73,7 @@ public class AnimationHandler : MonoBehaviour, IAnimation, IAnimationEditor
         actionState.MovementStateChangedEvent += OnMovementStateChanged;
         actionState.AttackStateChangedEvent += OnAttackStateChanged;
 
-        stats.AnimationStatsChangedEvent += OnAnimationStatsChanged;
+        statHandler.AnimationStatsChangedEvent += OnAnimationStatsChanged;
 
         eventHandler.OnEventFired += HandleAnimationEvent;
     }
@@ -97,7 +92,7 @@ public class AnimationHandler : MonoBehaviour, IAnimation, IAnimationEditor
         actionState.MovementStateChangedEvent -= OnMovementStateChanged;
         actionState.AttackStateChangedEvent -= OnAttackStateChanged;
 
-        stats.AnimationStatsChangedEvent -= OnAnimationStatsChanged;
+        statHandler.AnimationStatsChangedEvent -= OnAnimationStatsChanged;
 
         eventHandler.OnEventFired += HandleAnimationEvent;
     }

@@ -4,19 +4,18 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(ISceneObject))]
-[RequireComponent(typeof(IActionState))]
-[RequireComponent(typeof(IStats))]
+[RequireComponent(typeof(ActionStateHandler))]
+[RequireComponent(typeof(StatHandler))]
 [RequireComponent(typeof(Rigidbody))]
-internal class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler
+public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler
 {
     //Dependecies
     private ISceneObject sceneObject;
     private IActionState actionState;
-    private IStats stats;
+    private IStats statHandler;
 
     //Componenets
     private Rigidbody rb;
-
 
     //Hurt boxs
     private HurtBox[] hurtBoxes;
@@ -41,17 +40,8 @@ internal class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler
     private void Awake()
     {
         sceneObject = GetComponent<ISceneObject>();
-        if (sceneObject == null)
-            Debug.LogError("No SceneObject found on " + gameObject.name, gameObject);
-
         actionState = GetComponent<IActionState>();
-        if (actionState == null)
-            Debug.LogError("No IActionState found on " + gameObject.name, gameObject);
-
-        stats = GetComponent<IStats>();
-        if (stats == null)
-            Debug.LogError("Not IStats found on " + gameObject.name, gameObject);
-
+        statHandler = GetComponent<IStats>();
         rb = GetComponent<Rigidbody>();
 
         //Get hurtboxs
@@ -62,7 +52,7 @@ internal class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler
 
     private void RegisterToEvents()
     {
-        stats.MovementStatsChangedEvent += OnMovementStatsChanged;
+        statHandler.MovementStatsChangedEvent += OnMovementStatsChanged;
 
         foreach (HurtBox hurtBox in hurtBoxes)
             hurtBox.OnHitEvent += OnHit;
@@ -75,7 +65,7 @@ internal class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler
 
     private void UnRegisterFromEvents()
     {
-        stats.MovementStatsChangedEvent += OnMovementStatsChanged;
+        statHandler.MovementStatsChangedEvent += OnMovementStatsChanged;
 
         foreach (HurtBox hurtBox in hurtBoxes)
             hurtBox.OnHitEvent -= OnHit;
