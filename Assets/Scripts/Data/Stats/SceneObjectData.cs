@@ -5,23 +5,49 @@ using UnityEngine;
 
 public class SceneObjectData : ScriptableObject
 {
+    [Header("Mass")]
+    [Tooltip("The maximum amount of mass a sceneObject can have.\n" +
+        "NOTE: The ratio of currentMass over MaxMass impacts all movement options.")]
     public float MaxMass;
+    [Tooltip("The minimum amount of mass a sceneObject can have, also the starting mass.\n" +
+        "NOTE: The ratio of currentMass over MaxMass impacts all movement options.")]
     public float MinMass;
 
+    [Header("Grounded Movement")]
+    [Tooltip("This is the highest value a sceneObjects ground speed can be set to.\n" +
+        "NOTE: The ground speed used is based on the sceneObejcts MassRatio")]
     public float GroundedMaxVelocityMax;
+    [Tooltip("This is the lowest value a sceneObjects ground speed can be set to.\n" +
+        "NOTE: The ground speed used is based on the sceneObejcts MassRatio")]
     public float GroundedMaxVelocityMin;
+    [Tooltip("Rate at which the sceneObject will slow down")]
     public float GroundedDecceleration;
 
+    [Header("Aerial Movement")]
+    [Tooltip("This is the highest value a sceneObjects horizontal air speed can be set to.\n" +
+        "NOTE: The horizontal air speed used is based on the sceneObejcts MassRatio")]
     public float AerialMaxXVelocityMax;
+    [Tooltip("This is the lowest value a sceneObjects horizontal air speed can be set to.\n" +
+        "NOTE: The horizontal air speed used is based on the sceneObejcts MassRatio")]
     public float AerialMaxXVelocityMin;
+    [Tooltip("Rate at which the sceneObject will slow down horizontally in the air")]
     public float AerialXDecceleration;
-
+    [Tooltip("This is the highest value a sceneObjects vertical air speed can be set to.\n" +
+        "NOTE: The vertical air speed used is based on the sceneObejcts MassRatio")]
     public float AerialMaxYVelocityMax;
+    [Tooltip("This is the lowest value a sceneObjects vertical air speed can be set to.\n" +
+        "NOTE: The vertical air speed used is based on the sceneObejcts MassRatio")]
     public float AerialMaxYVelocityMin;
+    [Tooltip("Rate at which the sceneObject will slow down vertically in the air")]
     public float AerialYDecceleration;
+    [Tooltip("Multiplier for the gravity applied to the sceneObject.\n" +
+        "NOTE: This is multiplied by the global gravity value, so a value of 1 means normal gravity, 0.5 means half gravity, and 2 means double gravity.")]
     public float GravityMultiplier = 1;
-    
+
+    [Header("Base Animations")]
     public BaseAnimationCollection AnimationCollection;
+
+    [Header("Starting Movement Collection - Not Required")]
     public MovementDataCollection MovementCollection;
 
     public event Action OnChangedEvent;
