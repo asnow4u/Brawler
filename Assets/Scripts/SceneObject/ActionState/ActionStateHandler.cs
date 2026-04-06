@@ -149,14 +149,14 @@ public class ActionStateHandler : MonoBehaviour, IActionState
         if (curMovementState == movementState) 
             return;
 
-        if (TryChangeState(ActionState.Moving))
+        if (movementState == MovementState.Null || TryChangeState(ActionState.Moving))
         {
+            if (movementState == MovementState.Null && curActionState == ActionState.Moving)
+                ChangeState(ActionState.Idle);
+
             curMovementState = movementState;             
             sceneObject.Log("Movement State: " + curMovementState);
             MovementStateChangedEvent?.Invoke(curMovementState);
-
-            if (curMovementState == MovementState.Null)
-                ChangeState(ActionState.Idle);
         }
     }
 
@@ -167,7 +167,7 @@ public class ActionStateHandler : MonoBehaviour, IActionState
 
         if (attackState == AttackState.Null || TryChangeState(ActionState.Attacking))
         {
-            if (attackState == AttackState.Null)
+            if (attackState == AttackState.Null && curActionState == ActionState.Attacking)
                 ChangeState(ActionState.Idle);
 
             curAttackState = attackState;

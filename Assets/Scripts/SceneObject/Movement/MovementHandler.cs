@@ -56,21 +56,28 @@ internal class MovementHandler : MonoBehaviour, IMovement
 
     //Conditions
     private bool groundedMovementAllowed => curMovementData.GroundedMovementValid &&
-                                            horizontalInfluence != 0;
+                                            horizontalInfluence != 0 &&
+                                            actionState.CurActionState <= ActionState.Moving;
     private bool aerialMovementAllowed => curMovementData.AerialMovementValid &&
-                                          (horizontalInfluence != 0 || verticalInfluence != 0);
+                                          (horizontalInfluence != 0 || verticalInfluence != 0) &&
+                                          actionState.CurActionState <= ActionState.Moving;
     private bool climbMovementAllowed => curMovementData.ClimbMovementValid &&
-                                         (horizontalInfluence != 0 || verticalInfluence != 0);
+                                         (horizontalInfluence != 0 || verticalInfluence != 0) &&
+                                         actionState.CurActionState <= ActionState.Moving;
     private bool jumpMovementAllowed => curMovementData.GroundedJumpValid &&
                                         jumpInfluence > 0 &&
-                                        jumpInputAvailable;
+                                        jumpInputAvailable &&
+                                        actionState.CurActionState <= ActionState.Moving;
     private bool aerialJumpMovementAllowed => curMovementData.AerialJumpValid &&
                                               jumpInfluence > 0 &&
                                               jumpInputAvailable &&
-                                              airJumpsPerformed < curMovementData.AirJumpsAvailable;
+                                              airJumpsPerformed < curMovementData.AirJumpsAvailable &&
+                                              actionState.CurActionState <= ActionState.Moving;
     private bool wallLeanAllowed => curMovementData.WallLeanValid &&
-                                    IsRunningAgainstWall();
-    private bool vaultMovementAllowed => curMovementData.VaultValid;
+                                    IsRunningAgainstWall() &&
+                                    actionState.CurActionState <= ActionState.Moving;
+    private bool vaultMovementAllowed => curMovementData.VaultValid &&
+                                         actionState.CurActionState <= ActionState.Moving;
 
     #region Getters
 
@@ -359,7 +366,6 @@ internal class MovementHandler : MonoBehaviour, IMovement
         }
 
         CheckForClimbingStateChange();
-
         if (actionState.CurClimbState == ClimbState.Climbing)
             UpdateClimbMovement();
 
