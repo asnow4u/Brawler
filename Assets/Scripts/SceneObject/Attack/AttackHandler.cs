@@ -4,6 +4,7 @@ using UnityEngine;
 [RequireComponent(typeof(ISceneObject))]
 [RequireComponent(typeof(ActionStateHandler))]
 [RequireComponent(typeof(StatHandler))]
+[RequireComponent(typeof(AnimationHandler))]
 [RequireComponent(typeof(Rigidbody))]
 internal class AttackHandler : MonoBehaviour, IAttack
 {    
@@ -12,15 +13,13 @@ internal class AttackHandler : MonoBehaviour, IAttack
     private IAttackInput attackInput;
     private IActionState actionState;   
     private IStats statHandler;
+    private IAnimation animationHandler;
 
     //Components
     private Rigidbody rb;
             
-    private AttackState curAttackState => actionState.CurAttackState;
-    
+    private AttackState curAttackState => actionState.CurAttackState;    
     private AttackStatData curAttackData;
-
-    private Coroutine attackFrameCounterCoroutine;
 
     #region Initialize    
 
@@ -36,6 +35,7 @@ internal class AttackHandler : MonoBehaviour, IAttack
 
         actionState = GetComponent<IActionState>();
         statHandler = GetComponent<IStats>();
+        animationHandler = GetComponent<IAnimation>();
         rb = GetComponent<Rigidbody>();
 
         RegisterToEvents();
@@ -45,12 +45,13 @@ internal class AttackHandler : MonoBehaviour, IAttack
     {
         actionState.GroundedStateChangedEvent += OnGroundedStateChanged;
         statHandler.AttackStatsChangedEvent += OnAttackStatsChanged;
+        animationHandler.AnimationEndedEvent += OnAnimationEnded;
 
         attackInput.UpAttackPerformedEvent += PerformUpAttack;
         attackInput.RightAttackPerformedEvent += PerformRightAttack;
         attackInput.LeftAttackPerformedEvent += PerformLeftAttack;
         attackInput.DownAttackPerformedEvent += PerformDownAttack;
-    }
+    }    
 
     private void OnDestroy()
     {
@@ -61,6 +62,7 @@ internal class AttackHandler : MonoBehaviour, IAttack
     {
         actionState.GroundedStateChangedEvent -= OnGroundedStateChanged;
         statHandler.AttackStatsChangedEvent -= OnAttackStatsChanged;
+        animationHandler.AnimationEndedEvent += OnAnimationEnded;
 
         attackInput.UpAttackPerformedEvent -= PerformUpAttack;
         attackInput.RightAttackPerformedEvent -= PerformRightAttack;
@@ -83,15 +85,12 @@ internal class AttackHandler : MonoBehaviour, IAttack
         curAttackData = data;
     }
 
-
-    #region Attack State
-
-    private void SetCurrentAttackState(AttackState attackState)
-    {       
-        actionState.ChangeAttackState(attackState);
+    private void OnAnimationEnded(AnimationClip endedClip)
+    {
+        if (curAttackState == AttackState.Null)
+            return;
 
         AnimationClip clip = null;
-
         switch (actionState.CurAttackState)
         {
             case AttackState.UpTilt:
@@ -119,9 +118,16 @@ internal class AttackHandler : MonoBehaviour, IAttack
                 break;
         }
 
-        if (clip != null)
-            attackFrameCounterCoroutine = StartCoroutine(AttackFrameCounter(clip));
-        
+        if (clip != null && clip == endedClip)
+            SetCurrentAttackState(AttackState.Null);
+    }
+
+
+    #region Attack State
+
+    private void SetCurrentAttackState(AttackState attackState)
+    {       
+        actionState.ChangeAttackState(attackState);
     }
 
     #endregion
@@ -219,12 +225,5 @@ internal class AttackHandler : MonoBehaviour, IAttack
         }
     }
 
-    #endregion   
-
-
-    private IEnumerator AttackFrameCounter(AnimationClip animation)
-    {
-        yield return new WaitForSeconds(animation.length);
-        actionState.ChangeAttackState(AttackState.Null);
-    }
+    #endregion
 }

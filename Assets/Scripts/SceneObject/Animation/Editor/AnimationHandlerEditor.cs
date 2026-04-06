@@ -21,7 +21,7 @@ internal sealed class AnimationHandlerEditor : Editor
         bool inPlayMode = Application.isPlaying;
         if (!inPlayMode)
         {
-            EditorGUILayout.HelpBox("Enter Play Mode to use Animation Debugger", MessageType.Info);
+            EditorGUILayout.HelpBox("Enter Play Mode to use Animation Debugger", MessageType.Error);
             return;
         }
 

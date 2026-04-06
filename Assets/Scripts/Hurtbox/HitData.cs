@@ -16,4 +16,15 @@ public class HitData
         LauchAngle = lauchAngle;
         Damage = damage;
     }
+
+    public override string ToString()
+    {
+        string str = "HitData:" +
+            "\nSceneObjectID: " + SceneObjectID +
+            "\nInfluence: " + Influence +
+            "\nLaunch Angle: " + LauchAngle +
+            "\nDamage: " + Damage;
+
+        return str;
+    }
 }

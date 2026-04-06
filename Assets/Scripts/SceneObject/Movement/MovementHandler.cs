@@ -352,7 +352,12 @@ internal class MovementHandler : MonoBehaviour, IMovement
 
     private void FixedUpdate()
     {
-        CheckForHitStunBounce();
+        if (actionState.CurActionState == ActionState.HitStun)
+        {
+            CheckForHitStunBounce();
+            return;
+        }
+
         CheckForClimbingStateChange();
 
         if (actionState.CurClimbState == ClimbState.Climbing)

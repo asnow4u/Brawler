@@ -200,7 +200,12 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
 
         AttackStats curAttackStats = weaponAttackDatas[actionState.CurAttackState];
         int curAnimationFrame = animationHandler.GetFrameOfCurrentAnimation();
-        hurtBox.Hit(new HitData(sceneObject.UniqueID, curAttackStats.Influence, curAttackStats.LaunchAngle, curAttackStats.GetAttackDamage(curAnimationFrame)));
+
+        float launchAngle = curAttackStats.LaunchAngle;
+        if (!sceneObject.IsFacingRightDirection)
+            launchAngle = 180 - launchAngle;
+
+        hurtBox.Hit(new HitData(sceneObject.UniqueID, curAttackStats.Influence, launchAngle, curAttackStats.GetAttackDamage(curAnimationFrame)));
     }
 
     #endregion

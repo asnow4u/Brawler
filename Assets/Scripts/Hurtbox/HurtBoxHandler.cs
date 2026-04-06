@@ -7,7 +7,7 @@ using UnityEngine;
 [RequireComponent(typeof(ActionStateHandler))]
 [RequireComponent(typeof(StatHandler))]
 [RequireComponent(typeof(Rigidbody))]
-public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler
+public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxHandlerEditor
 {
     //Dependecies
     private ISceneObject sceneObject;
@@ -33,6 +33,12 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler
     private Coroutine hitStunTimerCoroutine;    
 
     public event Action<HitData> OnHitEvent;
+
+    [Header("Debug")]
+    [SerializeField, HideInInspector] private bool debugMode;
+    [SerializeField, HideInInspector] private float debugInfluence = 1f;
+    [SerializeField, HideInInspector] private float debugLaunchAngle = 45f;
+    [SerializeField, HideInInspector] private float debugDamage = 10f;
 
     private void Awake()
     {
@@ -62,7 +68,7 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler
 
     private void UnRegisterFromEvents()
     {
-        statHandler.MovementStatsChangedEvent += OnMovementStatsChanged;
+        statHandler.MovementStatsChangedEvent -= OnMovementStatsChanged;
 
         foreach (HurtBox hurtBox in hurtBoxes)
             hurtBox.OnHitEvent -= OnHit;
@@ -78,7 +84,7 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler
         if (hitData == null)
             return;
 
-        sceneObject.Log("HurtboxHandler: Hit for " + hitData.Damage + "damage");
+        sceneObject.Log("HurtboxHandler: Hit for " + hitData);
         damageTaken += hitData.Damage;
 
         //Launch knockback
@@ -126,11 +132,39 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler
 
     #endregion
 
-    [ContextMenu("Test Hit")]
-    public void TestHit()
+
+    #region Editor Debug
+
+    public bool DebugMode => debugMode;
+    public float DebugInfluence => debugInfluence;
+    public float DebugLaunchAngle => debugLaunchAngle;
+    public float DebugDamage => debugDamage;
+
+    public void SetDebugMode(bool value)
     {
-        //Test
-        HitData hitTestData = new HitData(Guid.NewGuid(), 1, 45, 20);
-        OnHit(hitTestData);
+        debugMode = value;
     }
+
+    public void SetDebugInfluence(float value)
+    {
+        debugInfluence = Mathf.Clamp01(value);
+    }
+
+    public void SetDebugLaunchAngle(float value)
+    {
+        debugLaunchAngle = Mathf.Clamp(value, 0f, 360f);
+    }
+
+    public void SetDebugDamage(float value)
+    {
+        debugDamage = value;
+    }
+
+    public void ApplyDebugDamage()
+    {
+        HitData hitData = new HitData(Guid.NewGuid(), debugInfluence, debugLaunchAngle, debugDamage);
+        OnHit(hitData);
+    }
+
+    #endregion
 }
