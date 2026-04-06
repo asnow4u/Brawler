@@ -3,5 +3,5 @@ using UnityEngine;
 
 public interface IHurtBoxHandler
 {
-    public void SetImmunityFrom(Guid sceneObjectID);
+    public event Action<HitData> OnHitEvent;
 }

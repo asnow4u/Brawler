@@ -30,12 +30,9 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler
     //Hit stun
     private float deccelerationRate;
     [SerializeField] private float hitStopTimer = 0.033f;
-    private Coroutine hitStunTimerCoroutine;
+    private Coroutine hitStunTimerCoroutine;    
 
-    //Immunity
-    private float immunityTime = 1.0f;
-    private Dictionary<Guid, float> immunityList = new Dictionary<Guid, float>();
-
+    public event Action<HitData> OnHitEvent;
 
     private void Awake()
     {
@@ -71,11 +68,6 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler
             hurtBox.OnHitEvent -= OnHit;
     }
 
-    private void Update()
-    {
-        UpdateImmunityList();
-    }
-
     private void OnMovementStatsChanged(MovementStatData statData)
     {
         deccelerationRate = statData.AerialUpYDecceleration;
@@ -86,9 +78,7 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler
         if (hitData == null)
             return;
 
-        if (immunityList.ContainsKey(hitData.SceneObjectID))
-            return;
-
+        sceneObject.Log("HurtboxHandler: Hit for " + hitData.Damage + "damage");
         damageTaken += hitData.Damage;
 
         //Launch knockback
@@ -97,6 +87,8 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler
         rb.linearVelocity = launchVelocity;
         float hitStunTime = Mathf.Abs(launchVelocity.y / deccelerationRate);        
         ApplyHitStun(hitStunTime);
+
+        OnHitEvent?.Invoke(hitData);
     }
 
     public Vector3 CalculateKnockbackVelocity(float influence, float totalDamage, float launchAngle, float mass)
@@ -133,30 +125,6 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler
     }
 
     #endregion
-
-    #region Immunity
-
-    public void SetImmunityFrom(Guid sceneObjectID)
-    {
-        if (immunityList.ContainsKey(sceneObjectID))
-            immunityList[sceneObjectID] = immunityTime;
-        else
-            immunityList.Add(sceneObjectID, immunityTime);
-    }
-
-    public void UpdateImmunityList()
-    {
-        foreach (var kvp in new Dictionary<Guid, float>(immunityList))
-        {
-            immunityList[kvp.Key] -= Time.deltaTime;
-
-            if (immunityList[kvp.Key] <= 0)
-                immunityList.Remove(kvp.Key);
-        }
-    }
-
-    #endregion
-
 
     [ContextMenu("Test Hit")]
     public void TestHit()

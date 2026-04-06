@@ -30,10 +30,7 @@ internal class HitBox : MonoBehaviour, IHitBox
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.TryGetComponent(out IHurtBox hurtBox))
-        {
-            Debug.LogError("Collision detected");
             OnCollisionEntered?.Invoke(hurtBox);
-        }
     }
 
     #region Gizmos

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +25,9 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
 
     //Weapon
     private List<HitBox> weaponHitboxs = new List<HitBox>();
-    private Dictionary<AttackState, AttackStats> weaponAttackDatas = null;        
+    private Dictionary<AttackState, AttackStats> weaponAttackDatas = null;
+
+    private HashSet<Guid> sceneObjectsHit = new HashSet<Guid>();
 
     #region Initialize
 
@@ -56,6 +59,7 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
         actionState.ActionStateChangedEvent += OnActionStateChanged;
         statHandler.AttackStatsChangedEvent += OnAttackStatsChanged;
         animationHandler.AnimationEventFiredEvent += OnAnimationEvent;
+        hurtBoxHandler.OnHitEvent += OnBeingHit;
     }
 
     private void OnDestroy()
@@ -68,14 +72,12 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
         actionState.ActionStateChangedEvent -= OnActionStateChanged;
         statHandler.AttackStatsChangedEvent -= OnAttackStatsChanged;
         animationHandler.AnimationEventFiredEvent -= OnAnimationEvent;
+        hurtBoxHandler.OnHitEvent -= OnBeingHit;
     }    
 
     private void OnActionStateChanged(ActionState state)
     {
         DisableAllHitBoxs();
-
-        if (state == ActionState.HitStun)
-            EnableSceneObjectHitBoxs();
     }
 
     private void OnAttackStatsChanged(AttackStatData data)
@@ -114,6 +116,12 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
         }
     }
 
+    private void OnBeingHit(HitData hitData)
+    {
+        sceneObjectsHit.Add(hitData.SceneObjectID);
+        EnableSceneObjectHitBoxs();
+    }
+
     #endregion
 
 
@@ -144,6 +152,8 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
             hitbox.DeactivateHitBox();
             hitbox.OnCollisionEntered -= OnSceneObjectHit;
         }
+
+        sceneObjectsHit.Clear();
     }
 
     private void DisableWeaponHitboxs()
@@ -153,6 +163,8 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
             hitBox.DeactivateHitBox();
             hitBox.OnCollisionEntered -= OnWeaponHit;
         }
+
+        sceneObjectsHit.Clear();
     }
 
     private void DisableAllHitBoxs()
@@ -168,20 +180,27 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
 
     private void OnSceneObjectHit(IHurtBox hurtBox)
     {
+        if (actionState.CurActionState == ActionState.HitStun ||
+            sceneObjectsHit.Contains(hurtBox.SceneObjectID))
+            return;
+
         //TODO: Damage calculated based on velocity and totalMass
+        hurtBox.Hit(new HitData(sceneObject.UniqueID, 1, 40, 5));
+
+        sceneObjectsHit.Add(hurtBox.SceneObjectID);
     }
 
     private void OnWeaponHit(IHurtBox hurtBox)
     {
-        if (actionState.CurAttackState == AttackState.Null)
+        if (actionState.CurAttackState == AttackState.Null || 
+            sceneObjectsHit.Contains(hurtBox.SceneObjectID))
             return;
+
+        sceneObjectsHit.Add(hurtBox.SceneObjectID);
 
         AttackStats curAttackStats = weaponAttackDatas[actionState.CurAttackState];
         int curAnimationFrame = animationHandler.GetFrameOfCurrentAnimation();
         hurtBox.Hit(new HitData(sceneObject.UniqueID, curAttackStats.Influence, curAttackStats.LaunchAngle, curAttackStats.GetAttackDamage(curAnimationFrame)));
-
-        //Prevent being hit by sceneObject after making contact
-        hurtBoxHandler.SetImmunityFrom(hurtBox.SceneObjectID);
     }
 
     #endregion
