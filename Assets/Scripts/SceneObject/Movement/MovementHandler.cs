@@ -7,6 +7,7 @@ using UnityEngine;
 [RequireComponent(typeof(ActionStateHandler))]
 [RequireComponent(typeof(StatHandler))]
 [RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(HurtBoxHandler))]
 internal class MovementHandler : MonoBehaviour, IMovement
 {
     //Dependencies
@@ -14,6 +15,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
     private IMovementInput movementInput;
     private IActionState actionState;
     private IStats statHandler;
+    private IHitStunHandler hitStunHandler;
 
     //Components
     private Rigidbody rb;
@@ -97,7 +99,8 @@ internal class MovementHandler : MonoBehaviour, IMovement
 
         actionState = GetComponent<IActionState>();
         statHandler = GetComponent<IStats>();
-        
+        hitStunHandler = GetComponent<IHitStunHandler>();
+
         rb = GetComponent<Rigidbody>();
         rb.linearDamping = 0;
 
@@ -113,7 +116,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
         actionState.ClimbStateChangedEvent += OnClimbStateChanged;
 
         statHandler.MovementStatsChangedEvent += OnMovementStatsChanged;
-
+        
         if (movementInput != null)
         {
             movementInput.MovementPerformedEvent += SetMovementInfluence;
@@ -144,21 +147,6 @@ internal class MovementHandler : MonoBehaviour, IMovement
         }
     }
 
-    #endregion
-
-
-    #region Collection
-
-    private void OnMovementStatsChanged(MovementStatData movementData)
-    {
-        curMovementData = movementData;
-    }
-
-    #endregion
-
-
-    #region State
-
     /// <summary>
     /// Handle Ground state changed event
     /// </summary>
@@ -173,7 +161,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
     /// </summary>
     private void OnClimbStateChanged(ClimbState climbState)
     {
-        isClimbSliding = false;        
+        isClimbSliding = false;
 
         //Reset jumps
         if (climbState == ClimbState.Climbing)
@@ -194,6 +182,32 @@ internal class MovementHandler : MonoBehaviour, IMovement
         else
             rb.useGravity = true;
     }
+
+    private void OnMovementStatsChanged(MovementStatData movementData)
+    {
+        curMovementData = movementData;
+    }
+
+    #endregion
+
+    private void FixedUpdate()
+    {
+        if (actionState.CurActionState == ActionState.HitStun)
+            UpdateHitStunMovement();
+
+        //CheckForClimbingStateChange();
+        //if (actionState.CurClimbState == ClimbState.Climbing)
+        //    UpdateClimbMovement();
+
+        else if (actionState.CurGroundedState == GroundedState.Grounded)
+            UpdateGroundedMovement();
+
+        else if (actionState.CurGroundedState == GroundedState.Airborn)
+            UpdateAerialMovement();
+    }
+
+
+    #region State    
 
     /// <summary>
     /// Set the current movement state to <paramref name="inputData"/> if possible
@@ -350,30 +364,6 @@ internal class MovementHandler : MonoBehaviour, IMovement
             jumpInputAvailable = true;
 
         jumpInfluence = 0;
-    }
-
-    #endregion
-
-
-    #region Update
-
-    private void FixedUpdate()
-    {
-        if (actionState.CurActionState == ActionState.HitStun)
-        {
-            CheckForHitStunBounce();
-            return;
-        }
-
-        CheckForClimbingStateChange();
-        if (actionState.CurClimbState == ClimbState.Climbing)
-            UpdateClimbMovement();
-
-        else if (actionState.CurGroundedState == GroundedState.Grounded)
-            UpdateGroundedMovement();
-
-        else if (actionState.CurGroundedState == GroundedState.Airborn)
-            UpdateAerialMovement();
     }
 
     #endregion
@@ -839,13 +829,16 @@ internal class MovementHandler : MonoBehaviour, IMovement
     #endregion
 
 
-    #region Bounce
+    #region HitStun Movement
+
+    private void UpdateHitStunMovement()
+    {
+        rb.linearVelocity = hitStunHandler.EvaluateHitStunVelocity();
+        CheckForHitStunBounce();
+    }
 
     private void CheckForHitStunBounce()
     {
-        if (actionState.CurActionState != ActionState.HitStun)
-            return;
-
         Bounds bounds = sceneObject.Bounds;
         Vector3 direction = rb.linearVelocity.normalized;
         float distance = rb.linearVelocity.magnitude * Time.fixedDeltaTime;

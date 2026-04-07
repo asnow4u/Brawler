@@ -25,9 +25,6 @@ public class ActionStateHandler : MonoBehaviour, IActionState
     [SerializeField] private AttackState curAttackState;
     public AttackState CurAttackState => curAttackState;
 
-    [SerializeField] private HitStunState curHitStunState;
-    public HitStunState CurHitStunState => curHitStunState;    
-
     public event Action<GroundedState> GroundedStateChangedEvent;
     public event Action<ClimbState> ClimbStateChangedEvent;
 
@@ -35,7 +32,7 @@ public class ActionStateHandler : MonoBehaviour, IActionState
     public event Action<IdleState> IdleStateChangedEvent;
     public event Action<MovementState> MovementStateChangedEvent;
     public event Action<AttackState> AttackStateChangedEvent;
-    public event Action<HitStunState> HitStunStateChangedEvent;
+    
 
     #region Initialize
 
@@ -89,7 +86,7 @@ public class ActionStateHandler : MonoBehaviour, IActionState
 
     #region States
 
-    private void ChangeState(ActionState newState)
+    public void ChangeState(ActionState newState)
     {
         if (newState != curActionState)
         {
@@ -105,7 +102,7 @@ public class ActionStateHandler : MonoBehaviour, IActionState
         }
     }
 
-    private bool TryChangeState(ActionState newState)
+    public bool TryChangeState(ActionState newState)
     {
         if (newState > curActionState)
         {
@@ -173,22 +170,6 @@ public class ActionStateHandler : MonoBehaviour, IActionState
             curAttackState = attackState;
             sceneObject.Log("Attack State: " + curAttackState);
             AttackStateChangedEvent?.Invoke(curAttackState);
-        }
-    }
-
-    public void ChangeHitStunState(HitStunState hitStunState)
-    {
-        if (curHitStunState == hitStunState)
-            return;
-
-        if (hitStunState == HitStunState.Null || TryChangeState(ActionState.HitStun))
-        {
-            if (hitStunState == HitStunState.Null)
-                ChangeState(ActionState.Idle);
-
-            curHitStunState = hitStunState;
-            sceneObject.Log("HitStun State: " + curHitStunState);
-            HitStunStateChangedEvent?.Invoke(curHitStunState);
         }
     }
 

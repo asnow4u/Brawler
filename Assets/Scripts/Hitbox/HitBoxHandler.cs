@@ -116,7 +116,7 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
         }
     }
 
-    private void OnBeingHit(HitData hitData)
+    private void OnBeingHit(HitStunData hitData)
     {
         sceneObjectsHit.Add(hitData.SceneObjectID);
         EnableSceneObjectHitBoxs();
@@ -185,7 +185,7 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
             return;
 
         //TODO: Damage calculated based on velocity and totalMass
-        hurtBox.Hit(new HitData(sceneObject.UniqueID, 1, 40, 5));
+        //hurtBox.Hit(new HitData(sceneObject.UniqueID, 1, 40, 5));
 
         sceneObjectsHit.Add(hurtBox.SceneObjectID);
     }

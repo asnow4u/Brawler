@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 4681787487583806483}
   - component: {fileID: 3847846807725630615}
   - component: {fileID: 536685529535431079}
+  - component: {fileID: 3965332627885298307}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -120,7 +121,6 @@ MonoBehaviour:
   curIdleState: 0
   curMovementState: 0
   curAttackState: 0
-  curHitStunState: 0
 --- !u!114 &4681787487583806483
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -159,7 +159,87 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: SceneObject.Hurtbox::HurtBoxHandler
   damageTaken: 0
-  hitStopTimer: 0.033
+  curHitStunState: 0
+  hitStunVelocityCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.25
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.75
+      value: 0.7
+      inSlope: -1.4671748
+      outSlope: -1.4671748
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.18518448
+    - serializedVersion: 3
+      time: 1
+      value: 0.5
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minHitStunDuration: 0.1
+  hitStunMultiplier: 0.03
+  stunDurationRatio: 0.1
+  launchDurationRatio: 0.15
+  travelDurationRatio: 0.5
+  recoveryDurationRatio: 0.25
+  debugMode: 0
+  debugInfluence: 1
+  debugLaunchAngle: 44
+  debugDamage: 0
+  debugDelaySeconds: 0
+--- !u!114 &3965332627885298307
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4863553973800210774}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33124b1ec40121640b92aa78dda47442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SceneObject.Movement::MovementHandler
+  horizontalInfluence: 0
+  verticalInfluence: 0
+  jumpInfluence: 0
+  isClimbSliding: 0
+  isVaulting: 0
+  bounceDegrade: 0.9
 --- !u!1001 &6890897162716250861
 PrefabInstance:
   m_ObjectHideFlags: 0

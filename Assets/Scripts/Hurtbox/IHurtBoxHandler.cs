@@ -1,9 +1,19 @@
 using System;
 using UnityEngine;
 
-public interface IHurtBoxHandler
+public enum HitStunState { Null, Stun, Launch, Travel, Recovery }
+
+public interface IHurtBoxHandler : IHitStunHandler
 {
-    public event Action<HitData> OnHitEvent;
+    
+    public event Action<HitStunData> OnHitEvent;
+}
+
+public interface IHitStunHandler
+{
+    public Vector3 EvaluateHitStunVelocity();
+
+    public event Action<HitStunState> HitStunStateChangedEvent;
 }
 
 public interface IHurtBoxHandlerEditor
@@ -12,11 +22,13 @@ public interface IHurtBoxHandlerEditor
     public float DebugInfluence { get; }
     public float DebugLaunchAngle { get; }
     public float DebugDamage { get; }
+    public float DebugDelaySeconds { get; }
 
     public void SetDebugMode(bool value);
     public void SetDebugInfluence(float value);
     public void SetDebugLaunchAngle(float value);
     public void SetDebugDamage(float value);
+    public void SetDebugDelaySeconds(float value);
 
     public void ApplyDebugDamage();
 }

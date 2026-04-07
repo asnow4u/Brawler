@@ -39,5 +39,3 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   LaunchAngle: 80
-  EnableColliderFrame: 9
-  DisableColliderFrame: 15

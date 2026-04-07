@@ -69,6 +69,15 @@ internal sealed class HurtBoxHandlerEditor : Editor
             handler.SetDebugDamage(newDamage);
             EditorUtility.SetDirty(unityObject);
         }
+
+        float newDelaySeconds = EditorGUILayout.FloatField("Delay (s)", handler.DebugDelaySeconds);
+        newDelaySeconds = Mathf.Max(0f, newDelaySeconds);
+        if (!Mathf.Approximately(newDelaySeconds, handler.DebugDelaySeconds))
+        {
+            Undo.RecordObject(unityObject, "Change Hurtbox Delay");
+            handler.SetDebugDelaySeconds(newDelaySeconds);
+            EditorUtility.SetDirty(unityObject);
+        }
     }
 
     private static void DrawApplyDamage(IHurtBoxHandlerEditor handler)
@@ -133,4 +142,3 @@ internal sealed class HurtBoxHandlerEditor : Editor
         return new Bounds(handler.transform.position, Vector3.one);
     }
 }
-

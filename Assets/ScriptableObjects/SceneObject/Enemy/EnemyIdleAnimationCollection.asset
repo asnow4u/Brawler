@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: EnemyIdleAnimationCollection
   m_EditorClassIdentifier: StatData::BaseAnimationCollection
   GroundIdleAnimation: {fileID: 7400000, guid: eefdab7a1f5b02b40a5406ec6bf487af, type: 2}
-  AirIdleAnimation: {fileID: 7400000, guid: eefdab7a1f5b02b40a5406ec6bf487af, type: 2}
-  HitStunAnimation: {fileID: 7400000, guid: eefdab7a1f5b02b40a5406ec6bf487af, type: 2}
+  AirIdleAnimation: {fileID: 7400000, guid: e4af2bdcb9165c24ebe4d4941634d994, type: 2}
+  HitStunAnimation: {fileID: 7400000, guid: e4af2bdcb9165c24ebe4d4941634d994, type: 2}
