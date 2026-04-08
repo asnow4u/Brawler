@@ -52,8 +52,9 @@ public class AnimationHandler : MonoBehaviour, IAnimation, IAnimationEditor
     {
         animator = GetComponentInChildren<Animator>();
         if (animator == null)
-            Debug.LogError("AnimationHandler Animator is null", gameObject);
-        
+            Debug.LogError("AnimationHandler Animator is null", gameObject);        
+        animator.runtimeAnimatorController = null; //Ensure animator controller is null to avoid conflicts with playable graph
+
         eventHandler = animator.GetComponentInChildren<AnimationEventHandler>();
         if (eventHandler == null)
             Debug.LogError("AnimationHandler AnimatorEventHandler is null", gameObject);
