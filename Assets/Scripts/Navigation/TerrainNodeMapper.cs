@@ -494,8 +494,7 @@ public class TerrainNodeMapper : MonoBehaviour
 #if UNITY_EDITOR
     private void OnDrawGizmos()
     {            
-        if (GizmosHandler.TerrainNodeGizmosEnabled)
-        {
+        
             if (TerrainNodes != null && TerrainNodes.Count > 0)
             {
                 List<TerrainNode> lableList = new List<TerrainNode>();
@@ -598,7 +597,6 @@ public class TerrainNodeMapper : MonoBehaviour
 
                 DisplayLables(lableList);
             }
-        }
     }
 
 
