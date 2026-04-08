@@ -1,0 +1,23 @@
+{
+    "version": 1,
+    "actions": [
+        {
+            "id": 1,
+            "action": 1,
+            "startTimeSeconds": 0.0,
+            "durationSeconds": 1.0
+        },
+        {
+            "id": 2,
+            "action": 2,
+            "startTimeSeconds": 0.5,
+            "durationSeconds": 0.0
+        },
+        {
+            "id": 3,
+            "action": 5,
+            "startTimeSeconds": 0.800000011920929,
+            "durationSeconds": 0.0
+        }
+    ]
+}

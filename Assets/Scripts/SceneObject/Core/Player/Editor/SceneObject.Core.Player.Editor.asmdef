@@ -1,0 +1,19 @@
+{
+    "name": "SceneObject.Core.Player.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:ab16a484669f87b4f9fd7610ae8b2d49"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
+

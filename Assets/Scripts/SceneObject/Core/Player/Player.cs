@@ -4,19 +4,21 @@ using UnityEngine.InputSystem;
 
 namespace Game.SceneObjects 
 {    
-    internal class Player : SceneObject, IMovementInput, IAttackInput, IInteractionInput, IEquipmentInput
+    internal class Player : SceneObject, IMovementInput, IAttackInput, IInteractionInput, IEquipmentInput, IMovementInputEditor, IAttackInputEditor
     {
         private PlayerInputHandler inputHandler;
 
+        //Movement
         public event Action<Vector2> MovementPerformedEvent;
         public event Action MovementStoppedEvent;
         public event Action<float> JumpPerformedEvent;
         public event Action JumpStoppedEvent;
 
-        public event Action UpAttackPerformedEvent;
-        public event Action DownAttackPerformedEvent;
-        public event Action LeftAttackPerformedEvent;
-        public event Action RightAttackPerformedEvent;
+        //Attack
+        private const float ATTACK_INPUT_THRESHOLD = 0.7f;
+        private const float ATTACK_INPUT_RESET_THRESHOLD = 0.2f;
+        private bool attackInputTriggered = false;
+        public event Action<Vector2> AttackPerformedEvent;        
 
         public event Action InteractionPerformedEvent;
 
@@ -39,10 +41,8 @@ namespace Game.SceneObjects
             inputHandler.input.PlayerActions.Jump.performed += JumpInput;
             inputHandler.input.PlayerActions.Jump.canceled += JumpCanceled;
 
-            inputHandler.input.PlayerActions.RightAttack.performed += AttackRightInput;
-            inputHandler.input.PlayerActions.LeftAttack.performed += AttackLeftInput;
-            inputHandler.input.PlayerActions.DownAttack.performed += AttackDownwardInput;
-            inputHandler.input.PlayerActions.UpAttack.performed += AttackUpwardInput;
+            inputHandler.input.PlayerActions.Attack.performed += AttackInput;
+            inputHandler.input.PlayerActions.Attack.canceled += AttackCanceled;
 
             inputHandler.input.PlayerActions.Interaction.performed += InteractInput;
 
@@ -81,47 +81,32 @@ namespace Game.SceneObjects
             JumpStoppedEvent?.Invoke();
         }
 
-        //Active Movement Inputs
-        /// <inheritdoc/>
-        public bool IsHorizontalMovementActive()
-        {
-            return inputHandler.input.PlayerActions.Movement.IsPressed();
-        }
-
-        /// <inheritdoc/>
-        public bool IsVerticalJumpActive()
-        {
-            return inputHandler.input.PlayerActions.Jump.IsPressed();
-        }
-
         #endregion
 
 
         #region Attack Input
 
-        //Upward Attack
-        private void AttackUpwardInput(InputAction.CallbackContext obj)
+        private void AttackInput(InputAction.CallbackContext obj)
         {
-            UpAttackPerformedEvent?.Invoke();
+            var direction = obj.ReadValue<Vector2>();
+
+            if (direction.magnitude < ATTACK_INPUT_RESET_THRESHOLD)
+            {
+                attackInputTriggered = false;
+                return;
+            }
+
+            if (!attackInputTriggered && direction.magnitude > ATTACK_INPUT_THRESHOLD)
+            {
+                attackInputTriggered = true;
+                AttackPerformedEvent?.Invoke(direction);
+            }
         }
 
-        //Downward Attack
-        private void AttackDownwardInput(InputAction.CallbackContext obj)
+        private void AttackCanceled(InputAction.CallbackContext obj)
         {
-            DownAttackPerformedEvent?.Invoke();
+            attackInputTriggered = false;
         }
-
-        //Left Attack
-        private void AttackLeftInput(InputAction.CallbackContext obj)
-        {
-            LeftAttackPerformedEvent?.Invoke();
-        }
-
-        //Right Attack
-        private void AttackRightInput(InputAction.CallbackContext obj)
-        {
-            RightAttackPerformedEvent?.Invoke();
-        }        
 
         #endregion
 
@@ -141,6 +126,35 @@ namespace Game.SceneObjects
         private void ToggleWeapon(InputAction.CallbackContext obj)
         {
             ToggleEquippedWeaponEvent?.Invoke();
+        }
+
+
+        #endregion
+
+
+        #region Debug
+
+        public void DebugMovementInput(Vector2 movementInput)
+        {
+            if (movementInput.magnitude > 0)
+                MovementPerformedEvent?.Invoke(movementInput);
+
+            else
+                MovementStoppedEvent?.Invoke();
+        }
+
+        public void DebugJumpInput(float jumpInput)
+        {
+            if (jumpInput > 0)
+                JumpPerformedEvent?.Invoke(jumpInput);
+            else
+                JumpStoppedEvent?.Invoke();
+        }
+
+        public void DebugAttackInput(Vector2 direction)
+        {            
+            if (direction.magnitude > ATTACK_INPUT_THRESHOLD)
+                AttackPerformedEvent?.Invoke(direction);
         }
 
         #endregion

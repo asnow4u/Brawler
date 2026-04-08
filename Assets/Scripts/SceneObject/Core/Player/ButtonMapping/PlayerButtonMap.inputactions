@@ -1,4 +1,5 @@
 {
+    "version": 1,
     "name": "PlayerButtonMap",
     "maps": [
         {
@@ -18,7 +19,7 @@
                     "name": "Jump",
                     "type": "Button",
                     "id": "f45c2726-fc09-4b97-a51b-5f42b3ff2f74",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -27,52 +28,25 @@
                     "name": "Couch",
                     "type": "Button",
                     "id": "caab91b4-6e31-4287-bd7e-0388f9f7a281",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
                 },
                 {
-                    "name": "UpAttack",
-                    "type": "Button",
-                    "id": "46a0ab6c-edc6-4302-b4ac-19fb8265044a",
-                    "expectedControlType": "Button",
+                    "name": "Attack",
+                    "type": "Value",
+                    "id": "915d3c65-2bef-4bc9-b04f-ed0d7bb28f06",
+                    "expectedControlType": "Vector2",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "RightAttack",
-                    "type": "Button",
-                    "id": "999dc728-b5b5-40dc-8b19-4452b589104e",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "DownAttack",
-                    "type": "Button",
-                    "id": "f16494be-e203-4ba8-a6d6-77c1da6473c0",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "LeftAttack",
-                    "type": "Button",
-                    "id": "b3fa1613-a49a-4417-abb8-23f5c10e563a",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
+                    "initialStateCheck": true
                 },
                 {
                     "name": "Interaction",
                     "type": "Button",
                     "id": "abdb24ea-0986-48b9-917f-365200c1fdb5",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -145,23 +119,89 @@
                 },
                 {
                     "name": "",
+                    "id": "b24c037f-d84b-47c8-b3fe-fdab4fb0766c",
+                    "path": "<XInputController>/leftStick",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Movement",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "AttackDirection",
+                    "id": "2e512539-5d87-496d-8eaa-43dd840e6777",
+                    "path": "2DVector",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Attack",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "up",
+                    "id": "e7f2395d-7f39-4d77-98f4-3aeeb183a3ba",
+                    "path": "<Keyboard>/upArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Attack",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "down",
+                    "id": "ddcbc18a-1034-4858-aaa9-7b8d8aedc4bb",
+                    "path": "<Keyboard>/downArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Attack",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "left",
+                    "id": "ee0f4921-9c05-4d8c-8db0-a883e01b1f98",
+                    "path": "<Keyboard>/leftArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Attack",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "right",
+                    "id": "dd9ccb82-ebfb-4f9d-b4e7-71564bc2a4f0",
+                    "path": "<Keyboard>/rightArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Attack",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "8f8e713a-1685-4d7c-9dd8-0b01ac02b954",
+                    "path": "<XInputController>/rightStick",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Attack",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "1fe126ef-54a0-433a-b878-c4283558a822",
                     "path": "<Keyboard>/s",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
                     "action": "Couch",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "0616a20c-e05c-4eee-9be6-a3177627b282",
-                    "path": "<Keyboard>/upArrow",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "UpAttack",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -178,34 +218,12 @@
                 },
                 {
                     "name": "",
-                    "id": "0d6805e3-a7db-476f-9d63-d8d49b036fb3",
-                    "path": "<Keyboard>/rightArrow",
+                    "id": "1e9ccae7-1d70-4b1b-8e4a-af5cddf4ef7b",
+                    "path": "<XInputController>/rightShoulder",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "RightAttack",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "3c1c2844-c5cb-43b7-9241-d515cc009b6c",
-                    "path": "<Keyboard>/downArrow",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "DownAttack",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "897b2838-88ec-427b-af86-aa17e17522de",
-                    "path": "<Keyboard>/leftArrow",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "LeftAttack",
+                    "action": "Jump",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

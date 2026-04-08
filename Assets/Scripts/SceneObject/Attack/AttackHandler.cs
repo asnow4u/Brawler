@@ -47,10 +47,7 @@ internal class AttackHandler : MonoBehaviour, IAttack
         statHandler.AttackStatsChangedEvent += OnAttackStatsChanged;
         animationHandler.AnimationEndedEvent += OnAnimationEnded;
 
-        attackInput.UpAttackPerformedEvent += PerformUpAttack;
-        attackInput.RightAttackPerformedEvent += PerformRightAttack;
-        attackInput.LeftAttackPerformedEvent += PerformLeftAttack;
-        attackInput.DownAttackPerformedEvent += PerformDownAttack;
+        attackInput.AttackPerformedEvent += PerformAttack;
     }    
 
     private void OnDestroy()
@@ -62,12 +59,9 @@ internal class AttackHandler : MonoBehaviour, IAttack
     {
         actionState.GroundedStateChangedEvent -= OnGroundedStateChanged;
         statHandler.AttackStatsChangedEvent -= OnAttackStatsChanged;
-        animationHandler.AnimationEndedEvent += OnAnimationEnded;
+        animationHandler.AnimationEndedEvent -= OnAnimationEnded;
 
-        attackInput.UpAttackPerformedEvent -= PerformUpAttack;
-        attackInput.RightAttackPerformedEvent -= PerformRightAttack;
-        attackInput.LeftAttackPerformedEvent -= PerformLeftAttack;
-        attackInput.DownAttackPerformedEvent -= PerformDownAttack;
+        attackInput.AttackPerformedEvent -= PerformAttack;
     }
 
     #endregion
@@ -135,11 +129,29 @@ internal class AttackHandler : MonoBehaviour, IAttack
 
     #region Perform Attack
 
-    public void PerformUpAttack()
+    private void PerformAttack(Vector2 direction)
     {
         if (curAttackState != AttackState.Null || curAttackData == null)
             return;
+        
+        if (Mathf.Abs(direction.x) > Mathf.Abs(direction.y))
+        {
+            if (direction.x > 0)
+                PerformRightAttack();
+            else
+                PerformLeftAttack();
+        }
+        else
+        {
+            if (direction.y > 0)
+                PerformUpAttack();
+            else
+                PerformDownAttack();
+        }
+    }
 
+    private void PerformUpAttack()
+    {
         if (actionState.CurGroundedState == GroundedState.Grounded)
         {
             if (curAttackData.UpTilt == null) return;
@@ -152,11 +164,8 @@ internal class AttackHandler : MonoBehaviour, IAttack
         }
     }
 
-    public void PerformDownAttack()
+    private void PerformDownAttack()
     {
-        if (curAttackState != AttackState.Null || curAttackData == null)
-            return;
-        
         if (actionState.CurGroundedState == GroundedState.Grounded)
         {
             if (curAttackData.DownTilt == null) return;
@@ -169,11 +178,8 @@ internal class AttackHandler : MonoBehaviour, IAttack
         }
     }
 
-    public void PerformRightAttack()
+    private void PerformRightAttack()
     {
-        if (curAttackState != AttackState.Null || curAttackData == null)
-            return;
-
         if (actionState.CurGroundedState == GroundedState.Grounded)
         {                
             if (curAttackData.ForwardTilt == null) return;
@@ -197,11 +203,8 @@ internal class AttackHandler : MonoBehaviour, IAttack
         }
     }
 
-    public void PerformLeftAttack()
+    private void PerformLeftAttack()
     {
-        if (curAttackState != AttackState.Null || curAttackData == null)
-            return;
-
         if (actionState.CurGroundedState == GroundedState.Grounded)
         {
             if (curAttackData.ForwardTilt == null) return;
