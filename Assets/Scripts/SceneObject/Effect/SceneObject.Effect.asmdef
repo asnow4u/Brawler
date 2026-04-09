@@ -1,0 +1,16 @@
+{
+    "name": "SceneObject.Effect",
+    "rootNamespace": "",
+    "references": [
+        "GUID:5c910f444a332b74abd79ac76a81251c"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
