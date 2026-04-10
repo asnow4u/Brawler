@@ -14,4 +14,5 @@ public interface IItem
 public interface IWeapon : IItem
 {
     public WeaponData WeaponData { get; }
+    public Transform GripPoint { get; }
 }

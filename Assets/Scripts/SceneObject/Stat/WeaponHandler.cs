@@ -64,9 +64,13 @@ internal class WeaponHandler : MonoBehaviour
         equippedWeapon = weapon;
         equippedWeapon.gameObject.SetActive(true);
 
-        equippedWeapon.transform.parent = grabPoint.transform;
-        equippedWeapon.transform.localPosition = Vector3.zero;
-        equippedWeapon.transform.localRotation = Quaternion.identity;
+        Quaternion rotationOffset = grabPoint.rotation * Quaternion.Inverse(weapon.GripPoint.rotation);
+        equippedWeapon.transform.rotation = rotationOffset * equippedWeapon.transform.rotation;
+
+        Vector3 positionOffset = grabPoint.position - weapon.GripPoint.position;
+        equippedWeapon.transform.position += positionOffset;
+
+        equippedWeapon.transform.SetParent(grabPoint.transform, true);
 
         OnWeaponEquippedEvent?.Invoke(equippedWeapon);
     }
