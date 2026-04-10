@@ -36,10 +36,10 @@ internal class MovementHandler : MonoBehaviour, IMovement
     [SerializeField] private float jumpInfluence;    
 
     //Jump Properties
-    private bool isJumping = false;
     private bool jumpInputAvailable = true; //Jump available is only true after the user has released the jump button
-    private const int JUMPFRAMECOUNT = 2; //How many frames does it take for a jump before user is actionable
-    private Coroutine jumpCoroutine;
+    private bool isJumpingSquating = false;
+    private const int JUMPSQUATFRAMECOUNT = 2; //How many frames does it take for a jump before user is actionable
+    private Coroutine jumpSquatCoroutine;
     private int airJumpsPerformed = 0;
 
     //Climb Properties
@@ -225,7 +225,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
     /// </summary>
     private void UpdateGroundedMovementState()
     {
-        if (isJumping || isVaulting) 
+        if (isJumpingSquating || isVaulting) 
             return;
 
         //Jump
@@ -255,7 +255,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
     private void UpdateAerialMovementState()
     {
         //NOTE: Movement not allowed while in jump animation
-        if (isJumping || isVaulting)
+        if (isJumpingSquating || isVaulting)
             return;
             
         //Jump
@@ -558,7 +558,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
         float maxYVelocity = curMovementData.MaxAerialYVelocity;
         float acceleration = curMovementData.AerialYAcceleration;
 
-        if (verticalInfluence < 0)
+        if (verticalInfluence < 0 && rb.linearVelocity.y < 0)
         {
             float acceleratedYValue = rb.linearVelocity.y - (acceleration * Time.fixedDeltaTime);
 
@@ -567,6 +567,9 @@ internal class MovementHandler : MonoBehaviour, IMovement
 
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, acceleratedYValue, 0);
         }
+
+        else
+            DeccelerateAerialYMovement();
     }
 
     /// <summary>
@@ -643,7 +646,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
     private void CheckForClimbingStateChange()
     {
         if (!curMovementData.ClimbMovementValid ||
-            isJumping ||
+            isJumpingSquating ||
             verticalInfluence == 0 ||
             actionState.CurClimbState == ClimbState.Unavailable)
         {
@@ -751,7 +754,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
         {
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpVelocity, 0);
             jumpInputAvailable = false;
-            jumpCoroutine = StartCoroutine(JumpFrameCounter());
+            jumpSquatCoroutine = StartCoroutine(JumpFrameCounter());
         }
     }
 
@@ -760,15 +763,15 @@ internal class MovementHandler : MonoBehaviour, IMovement
     {
         int frameCount = 0;
         
-        isJumping = true;
+        isJumpingSquating = true;
 
-        while (frameCount < JUMPFRAMECOUNT)
+        while (frameCount < JUMPSQUATFRAMECOUNT)
         {
             frameCount++;
             yield return null;
         }
 
-        isJumping = false;
+        isJumpingSquating = false;
     }
 
     /// <summary>
