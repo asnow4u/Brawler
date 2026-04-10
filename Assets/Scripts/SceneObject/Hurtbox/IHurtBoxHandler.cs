@@ -5,8 +5,7 @@ public enum HitStunState { Null, Stun, Launch, Travel, Recovery }
 
 public interface IHurtBoxHandler : IHitStunHandler
 {
-    
-    public event Action<HitStunData> OnHitEvent;
+    public Guid[] LastHitBy { get; }
 }
 
 public interface IHitStunHandler

@@ -6,8 +6,9 @@ using UnityEngine;
 internal abstract class SceneObject : MonoBehaviour, ISceneObject
 {
     [Header("SceneObject")]
-    [SerializeField] private Guid uniqueID;
-    public SceneObjectType ObjectType;
+    private Guid uniqueID;
+    [SerializeField] private string uniqueIDString; //NOTE: Guid does not show up in inspector
+    [SerializeField] private SceneObjectType ObjectType;
 
     private Collider col;
     private Rigidbody rb;    
@@ -25,6 +26,7 @@ internal abstract class SceneObject : MonoBehaviour, ISceneObject
     protected virtual void Awake()
     {        
         uniqueID = Guid.NewGuid();
+        uniqueIDString = uniqueID.ToString();
 
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();

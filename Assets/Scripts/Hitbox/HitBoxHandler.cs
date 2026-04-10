@@ -10,6 +10,7 @@ using static AttackStatData;
 [RequireComponent(typeof(StatHandler))]
 [RequireComponent(typeof(HurtBoxHandler))]
 [RequireComponent(typeof(AnimationHandler))]
+[RequireComponent(typeof(Rigidbody))]
 public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
 {
     private ISceneObject sceneObject;
@@ -18,12 +19,30 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
     private IAnimation animationHandler;
     private IHurtBoxHandler hurtBoxHandler;
 
-    //SceneObject
+    //Components
+    private Rigidbody rb;
+
+    //SceneObject Collision
+    [Header("SceneObject Collision")]
     [Tooltip("The root of the sceneObject that will be used to find all sceneObject based hitboxs")]
     [SerializeField] private GameObject sceneObjectRoot;
-    private HitBox[] sceneObjectHitboxs;
+    [Tooltip("The minimum launch angle that can be applied to a sceneObject hit by this sceneObject." +
+        "\nThis is used when this sceneObject is moving slowly, poping the collided sceneObject more up")]
+    [SerializeField] private float minSceneObjectHitLaunchAngle = 70f;
+    [Tooltip("The maximum launch angle that can be applied to a sceneObject hit by this sceneObject." +
+        "\nThis is used when this sceneObject is moving quickly, pushing the collided sceneObject more horizontally")]
+    [SerializeField] private float maxSceneObjectHitLaunchAngle = 30f;
+    [Tooltip("The minimum damage that can be applied to a sceneObject hit by this sceneObject." +
+        "\nThis is used when this sceneObject is moving slowly and/or has low mass, dealing less damage")]
+    [SerializeField] private float minSceneObjectHitDamage = 2f;
+    [Tooltip("The maximum damage that can be applied to a sceneObject hit by this sceneObject." +
+        "\nThis is used when this sceneObject is moving quickly and/or has high mass, dealing more damage")]
+    [SerializeField] private float maxSceneObjectHitDamage = 20f;
 
-    //Weapon
+    private HitBox[] sceneObjectHitboxs;
+    private MovementStatData movementStatData;
+
+    //Weapon Collision
     private List<HitBox> weaponHitboxs = new List<HitBox>();
     private Dictionary<AttackState, AttackStats> weaponAttackDatas = null;
 
@@ -42,6 +61,8 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
         animationHandler = GetComponent<IAnimation>();
         hurtBoxHandler = GetComponent<IHurtBoxHandler>();        
 
+        rb = GetComponent<Rigidbody>();
+
         if (sceneObjectRoot != null)
         {
             sceneObjectHitboxs = sceneObjectRoot.GetComponentsInChildren<HitBox>(true);
@@ -57,9 +78,10 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
     private void RegisterToEvents()
     {
         actionState.ActionStateChangedEvent += OnActionStateChanged;
+        statHandler.MovementStatsChangedEvent += OnMovementStatsChanged;
         statHandler.AttackStatsChangedEvent += OnAttackStatsChanged;
-        animationHandler.AnimationEventFiredEvent += OnAnimationEvent;
-        hurtBoxHandler.OnHitEvent += OnBeingHit;
+        animationHandler.AnimationEventFiredEvent += OnAnimationEventFired;
+        hurtBoxHandler.HitStunStateChangedEvent += OnHitStunStateChanged;
     }
 
     private void OnDestroy()
@@ -70,14 +92,20 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
     private void UnregisterToEvents()
     {
         actionState.ActionStateChangedEvent -= OnActionStateChanged;
+        statHandler.MovementStatsChangedEvent -= OnMovementStatsChanged;
         statHandler.AttackStatsChangedEvent -= OnAttackStatsChanged;
-        animationHandler.AnimationEventFiredEvent -= OnAnimationEvent;
-        hurtBoxHandler.OnHitEvent -= OnBeingHit;
+        animationHandler.AnimationEventFiredEvent -= OnAnimationEventFired;
+        hurtBoxHandler.HitStunStateChangedEvent -= OnHitStunStateChanged;
     }    
 
     private void OnActionStateChanged(ActionState state)
     {
         DisableAllHitBoxs();
+    }
+
+    private void OnMovementStatsChanged(MovementStatData data)
+    {
+        movementStatData = data;
     }
 
     private void OnAttackStatsChanged(AttackStatData data)
@@ -102,7 +130,7 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
             weaponAttackDatas.Add(AttackState.DownAir, data.DownAir);
     }
 
-    private void OnAnimationEvent(AnimationEventState eventState)
+    private void OnAnimationEventFired(AnimationEventState eventState)
     {
         switch (eventState)
         {
@@ -116,10 +144,12 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
         }
     }
 
-    private void OnBeingHit(HitStunData hitData)
+    private void OnHitStunStateChanged(HitStunState state)
     {
-        sceneObjectsHit.Add(hitData.SceneObjectID);
-        EnableSceneObjectHitBoxs();
+        if (state == HitStunState.Launch || state == HitStunState.Travel)
+            EnableSceneObjectHitBoxs();
+        else
+            DisableSceneObjectHitBoxs();
     }
 
     #endregion
@@ -180,14 +210,25 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
 
     private void OnSceneObjectHit(IHurtBox hurtBox)
     {
-        if (actionState.CurActionState == ActionState.HitStun ||
-            sceneObjectsHit.Contains(hurtBox.SceneObjectID))
+        if (actionState.CurActionState != ActionState.HitStun ||
+            sceneObjectsHit.Contains(hurtBox.SceneObjectID) ||
+            hurtBoxHandler.LastHitBy.Contains(hurtBox.SceneObjectID))
             return;
 
-        //TODO: Damage calculated based on velocity and totalMass
-        //hurtBox.Hit(new HitData(sceneObject.UniqueID, 1, 40, 5));
-
         sceneObjectsHit.Add(hurtBox.SceneObjectID);
+
+        float t = Mathf.Clamp01(rb.linearVelocity.x / movementStatData.MaxAerialXVelocity);
+        float launchAngle = Mathf.Lerp(minSceneObjectHitLaunchAngle, maxSceneObjectHitLaunchAngle, t);
+        if (rb.linearVelocity.x < 0)
+            launchAngle = 180 - launchAngle;
+
+        float speed = rb.linearVelocity.magnitude;
+        float damage = rb.mass * speed * speed;
+        damage = Mathf.Clamp(damage, minSceneObjectHitDamage, maxSceneObjectHitDamage);
+
+        Debug.Log(damage);
+
+        hurtBox.Hit(new HitData(sceneObject.UniqueID, 0f, launchAngle, damage));
     }
 
     private void OnWeaponHit(IHurtBox hurtBox)

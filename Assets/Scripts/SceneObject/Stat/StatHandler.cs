@@ -60,7 +60,7 @@ public class StatHandler : MonoBehaviour, IStats
     protected virtual void UnregisterFromEvents()
     {
         //Debug
-        baseSceneObjectData.MovementCollection.OnChangedEvent += soDataChanged;
+        baseSceneObjectData.OnChangedEvent -= soDataChanged;
     }
 
     private void soDataChanged()
