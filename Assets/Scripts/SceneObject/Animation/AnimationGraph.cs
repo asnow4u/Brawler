@@ -6,7 +6,7 @@ using UnityEngine.Playables;
 internal class AnimationGraph : IDisposable
 {
     //Playables
-    private PlayableGraph Graph;
+    private PlayableGraph graph;
 
     private AnimationMixerPlayable stateAnimationMixer;
     private AnimationMixerPlayable idleAnimationMixer;
@@ -17,33 +17,33 @@ internal class AnimationGraph : IDisposable
     public AnimationGraph(Animator animator)
     {
         //Graph
-        Graph = PlayableGraph.Create("AnimationGraph");
-        AnimationPlayableOutput output = AnimationPlayableOutput.Create(Graph, "Animation", animator);
+        graph = PlayableGraph.Create("AnimationGraph");        
+        AnimationPlayableOutput output = AnimationPlayableOutput.Create(graph, "Animation", animator);
 
         //State Mixer
-        stateAnimationMixer = AnimationMixerPlayable.Create(Graph, Enum.GetValues(typeof(ActionState)).Length - 1);
+        stateAnimationMixer = AnimationMixerPlayable.Create(graph, Enum.GetValues(typeof(ActionState)).Length - 1);
         output.SetSourcePlayable(stateAnimationMixer);
 
         //Idle Mixer
-        idleAnimationMixer = AnimationMixerPlayable.Create(Graph, Enum.GetValues(typeof(IdleState)).Length - 1); //Subtract 1 to account for null state
+        idleAnimationMixer = AnimationMixerPlayable.Create(graph, Enum.GetValues(typeof(IdleState)).Length - 1); //Subtract 1 to account for null state
         stateAnimationMixer.ConnectInput((int)ActionState.Idle - 1, idleAnimationMixer, 0);
 
         //Movement Mixer
-        movementAnimationMixer = AnimationMixerPlayable.Create(Graph, Enum.GetValues(typeof(MovementState)).Length - 1); //Subtract 1 to account for null state
+        movementAnimationMixer = AnimationMixerPlayable.Create(graph, Enum.GetValues(typeof(MovementState)).Length - 1); //Subtract 1 to account for null state
         stateAnimationMixer.ConnectInput((int)ActionState.Moving - 1, movementAnimationMixer, 0);
 
         //Attack Mixer
-        attackAnimationMixer = AnimationMixerPlayable.Create(Graph, Enum.GetValues(typeof(AttackState)).Length - 1); //Subtract 1 to account for null state 
+        attackAnimationMixer = AnimationMixerPlayable.Create(graph, Enum.GetValues(typeof(AttackState)).Length - 1); //Subtract 1 to account for null state 
         stateAnimationMixer.ConnectInput((int)ActionState.Attacking - 1, attackAnimationMixer, 0);
 
         //Hitstun Mixer
-        hitAnimationMixer = AnimationMixerPlayable.Create(Graph, 1);
+        hitAnimationMixer = AnimationMixerPlayable.Create(graph, 1);
         stateAnimationMixer.ConnectInput((int)ActionState.HitStun - 1, hitAnimationMixer, 0);
 
         animator.Rebind();
         animator.Update(0);
 
-        Graph.Play();
+        graph.Play();
     }
 
 
@@ -78,72 +78,68 @@ internal class AnimationGraph : IDisposable
 
     #region Mixer Animations
 
-    /// <summary>
-    /// Set idle animations to use
-    /// </summary>
     public void SetIdleAnimations(AnimationClip groundIdleAnimation, AnimationClip airIdleAnimation, AnimationClip climbIdleAnimation)
     {
+        if (groundIdleAnimation == null || airIdleAnimation == null) return;
+
+        int activeInput = ResetInputs(idleAnimationMixer);
+
         //Grounded
-        idleAnimationMixer.DisconnectInput(0);
-        AnimationClipPlayable groundIdle = AnimationClipPlayable.Create(Graph, groundIdleAnimation);
-        idleAnimationMixer.ConnectInput(0, groundIdle, 0);
+        if (groundIdleAnimation != null)
+        {
+            AnimationClipPlayable groundIdle = AnimationClipPlayable.Create(graph, groundIdleAnimation);
+            idleAnimationMixer.ConnectInput(0, groundIdle, 0);
+        }
 
         //Areial
-        idleAnimationMixer.DisconnectInput(1);
-        AnimationClipPlayable airIdle = AnimationClipPlayable.Create(Graph, airIdleAnimation);
-        idleAnimationMixer.ConnectInput(1, airIdle, 0);
+        if (airIdleAnimation != null)
+        {
+            AnimationClipPlayable airIdle = AnimationClipPlayable.Create(graph, airIdleAnimation);
+            idleAnimationMixer.ConnectInput(1, airIdle, 0);
+        }
 
         //Climb
-        idleAnimationMixer.DisconnectInput(2);
-        AnimationClipPlayable climbIdle = AnimationClipPlayable.Create(Graph, climbIdleAnimation);
-        idleAnimationMixer.ConnectInput(2, climbIdle, 0);
-    }
+        if (climbIdleAnimation != null)
+        {
+            AnimationClipPlayable climbIdle = AnimationClipPlayable.Create(graph, climbIdleAnimation);
+            idleAnimationMixer.ConnectInput(2, climbIdle, 0);
+        }
 
-    /// <summary>
-    /// Set hitstun animations to use
-    /// </summary>
+        ResetInputWeights(idleAnimationMixer);
+        
+        if (!idleAnimationMixer.GetInput(activeInput).IsNull())
+            idleAnimationMixer.SetInputWeight(activeInput, 1);
+    }
+    
     public void SetHitStunAnimations(AnimationClip hitStunAnimation)
     {
-        hitAnimationMixer.DisconnectInput(0);
-        AnimationClipPlayable hitstunPlayable = AnimationClipPlayable.Create(Graph, hitStunAnimation);
+        if (hitStunAnimation == null) return;
+
+        ResetInputs(hitAnimationMixer);
+
+        AnimationClipPlayable hitstunPlayable = AnimationClipPlayable.Create(graph, hitStunAnimation);
         hitAnimationMixer.ConnectInput(0, hitstunPlayable, 0);
 
         hitAnimationMixer.SetInputWeight(0, 1);
     }
 
-    /// <summary>
-    /// Set movement animations to use
-    /// </summary>
     public void SetMovementAnimations(AnimationClip[] movementAnimations)
     {
         if (movementAnimations == null) return;
-
+        
         //Account for switching animations mid movement by keeping the active input
-        int activeInputIndex = -1;
-        for (int i= 0; i < movementAnimationMixer.GetInputCount(); i++)
-        {
-            if (movementAnimationMixer.GetInputWeight(i) > 0)
-            {
-                activeInputIndex = i;
-                break;
-            }
-        }
+        int activeIndex = ResetInputs(movementAnimationMixer);
        
         for (int i = 0; i < movementAnimations.Length; i++)
         {
-            movementAnimationMixer.DisconnectInput(i);
-
             if (movementAnimations[i] == null) continue;
-            AnimationClipPlayable movePlayable = AnimationClipPlayable.Create(Graph, movementAnimations[i]);
+            AnimationClipPlayable movePlayable = AnimationClipPlayable.Create(graph, movementAnimations[i]);
             movementAnimationMixer.ConnectInput(i, movePlayable, 0);
         }       
 
         //Set active input
-        if (activeInputIndex > -1)
-        {
-            ResetInputWeights(movementAnimationMixer);
-            movementAnimationMixer.SetInputWeight(activeInputIndex, 1);
-        }
+        if (activeIndex > -1)
+            movementAnimationMixer.SetInputWeight(activeIndex, 1);
     }
 
     /// <summary>
@@ -153,12 +149,12 @@ internal class AnimationGraph : IDisposable
     {
         if (attackAnimations == null) return;
 
+        ResetInputs(attackAnimationMixer);
+
         for (int i = 0; i < attackAnimations.Length; i++)
         {
-            attackAnimationMixer.DisconnectInput(i);
-
             if (attackAnimations[i] == null) continue;
-            AnimationClipPlayable attackPlayable = AnimationClipPlayable.Create(Graph, attackAnimations[i]);
+            AnimationClipPlayable attackPlayable = AnimationClipPlayable.Create(graph, attackAnimations[i]);            
             attackAnimationMixer.ConnectInput(i, attackPlayable, 0);
         }
     }
@@ -169,8 +165,29 @@ internal class AnimationGraph : IDisposable
     #region Input Changes
 
     /// <summary>
-    /// Reset all inputs for given mixer
+    /// Disconnects and destroys inputs.
     /// </summary>
+    /// <returns> Which input was active. </returns>
+    private int ResetInputs(AnimationMixerPlayable mixer)
+    {
+        int activeIndex = -1;
+
+        for (int i = 0; i < mixer.GetInputCount(); i++)
+        {
+            if (mixer.GetInputWeight(i) > 0)
+                activeIndex = i;
+
+            Playable animationPlayable = mixer.GetInput(i);
+
+            if (!animationPlayable.IsNull())
+                animationPlayable.Destroy();
+            
+            mixer.DisconnectInput(i);
+        }
+
+        return activeIndex;
+    }
+
     private void ResetInputWeights(AnimationMixerPlayable mixer)
     {
         for (int i = 0; i < mixer.GetInputCount(); i++)
@@ -231,6 +248,6 @@ internal class AnimationGraph : IDisposable
 
     public void Dispose()
     {
-        Graph.Destroy();
+        graph.Destroy();
     }
 }

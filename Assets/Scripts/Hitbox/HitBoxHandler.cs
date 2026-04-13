@@ -226,8 +226,6 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
         float damage = rb.mass * speed * speed;
         damage = Mathf.Clamp(damage, minSceneObjectHitDamage, maxSceneObjectHitDamage);
 
-        Debug.Log(damage);
-
         hurtBox.Hit(new HitData(sceneObject.UniqueID, 0f, launchAngle, damage));
     }
 
