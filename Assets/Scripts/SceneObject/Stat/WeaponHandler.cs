@@ -87,7 +87,7 @@ internal class WeaponHandler : MonoBehaviour
         throw new NotImplementedException();
     }
     
-    public void ToggleEquippedWeapon()
+    public void SwapEquippedWeapon()
     {
         if (secondaryWeapon != null)
             EquipWeapon(secondaryWeapon);

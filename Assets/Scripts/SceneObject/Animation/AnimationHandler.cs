@@ -95,7 +95,7 @@ public class AnimationHandler : MonoBehaviour, IAnimation, IAnimationEditor
 
         statHandler.AnimationStatsChangedEvent -= OnAnimationStatsChanged;
 
-        eventHandler.OnEventFired += HandleAnimationEvent;
+        eventHandler.OnEventFired -= HandleAnimationEvent;
     }
 
     #endregion 

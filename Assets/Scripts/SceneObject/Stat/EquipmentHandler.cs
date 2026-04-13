@@ -5,6 +5,7 @@ internal class EquipmentHandler : StatHandler
 {    
     //Componenets
     IInteractionInput interactionInput = null;
+    IEquipmentInput equipmentInput = null;
     private WeaponHandler weaponHandler = null;
 
     [SerializeField] private float pickupRange = 1f;    
@@ -15,6 +16,7 @@ internal class EquipmentHandler : StatHandler
     protected override void Awake()
     {
         interactionInput = GetComponent<IInteractionInput>();
+        equipmentInput = GetComponent<IEquipmentInput>();
         weaponHandler = GetComponentInChildren<WeaponHandler>();
         
         base.Awake();
@@ -24,6 +26,9 @@ internal class EquipmentHandler : StatHandler
     {
         if (interactionInput != null)
             interactionInput.InteractionPerformedEvent += OnInteractionPerformed;
+
+        if (equipmentInput != null)
+            equipmentInput.ToggleEquippedWeaponEvent += OnToggleEquippedWeapon;
 
         if (weaponHandler != null)
             weaponHandler.OnWeaponEquippedEvent += OnWeaponChanged;
@@ -41,6 +46,9 @@ internal class EquipmentHandler : StatHandler
     {
         if (interactionInput != null)
             interactionInput.InteractionPerformedEvent -= OnInteractionPerformed;
+
+        if (equipmentInput != null)
+            equipmentInput.ToggleEquippedWeaponEvent -= OnToggleEquippedWeapon;
 
         if (weaponHandler != null)
             weaponHandler.OnWeaponEquippedEvent -= OnWeaponChanged;
@@ -67,6 +75,11 @@ internal class EquipmentHandler : StatHandler
                     weaponHandler.HandleWeaponPickup(weapon);
             }
         }
+    }
+
+    private void OnToggleEquippedWeapon()
+    {
+        weaponHandler.SwapEquippedWeapon();
     }
 
     private void OnWeaponChanged(IWeapon weapon)
