@@ -286,19 +286,6 @@ internal class AnimationGraph : IDisposable
 
     #endregion
 
-    #region Compatability Getters
-
-    /// <summary>
-    /// Compatibility method for existing architecture. 
-    /// Note: AnimatorControllerPlayable does not directly expose active clips as individual AnimationClipPlayables.
-    /// </summary>
-    public AnimationClipPlayable GetCurrentAnimationPlayable()
-    {
-        return default;
-    }
-
-    #endregion
-
     public void Dispose()
     {
         if (graph.IsValid())
