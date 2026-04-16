@@ -22,7 +22,7 @@ public class AttackStatData
             this.damageCurve = data.DamageCurve;
         }
 
-        public float GetAttackDamage(int frame)
+        public float GetAttackDamage(float frame)
         {
             return damageCurve.Evaluate(frame);
         }

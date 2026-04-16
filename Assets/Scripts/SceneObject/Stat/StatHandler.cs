@@ -112,86 +112,86 @@ public class StatHandler : MonoBehaviour, IStats
         {
             //NOTE: Order needs to match that of the ActionState.MovementState enum
 
-            List<AnimationClip> movementAnimations = new List<AnimationClip>();
+            Dictionary<int, AnimationClip> movementAnimations = new Dictionary<int, AnimationClip>();
 
             if (movementData.MoveData != null)
-                movementAnimations.Add(movementData.MoveData.Animation);
+                movementAnimations.Add(0, movementData.MoveData.Animation);
             else
-                movementAnimations.Add(null);
+                movementAnimations.Add(0, null);
 
             if (movementData.AirMoveData != null)
-                movementAnimations.Add(movementData.AirMoveData.Animation);
+                movementAnimations.Add(1, movementData.AirMoveData.Animation);
             else
-                movementAnimations.Add(null);
+                movementAnimations.Add(1, null);
 
             if (movementData.ClimbMoveData != null)
             {
-                movementAnimations.Add(movementData.ClimbMoveData.Animation);
+                movementAnimations.Add(2, movementData.ClimbMoveData.Animation);
                 statData.ClimbIdleAnimation = movementData.ClimbMoveData.IdleAnimation;
-            }                
+            }
             else
-                movementAnimations.Add(null);
+                movementAnimations.Add(2, null);
 
             if (movementData.WallLeanData != null)
-                movementAnimations.Add(movementData.WallLeanData.Animation);
+                movementAnimations.Add(3, movementData.WallLeanData.Animation);
             else
-                movementAnimations.Add(null);
+                movementAnimations.Add(3, null);
 
             if (movementData.VaultData != null)
-                movementAnimations.Add(movementData.VaultData.Animation);
+                movementAnimations.Add(4, movementData.VaultData.Animation);
             else
-                movementAnimations.Add(null);
+                movementAnimations.Add(4, null);
 
             if (movementData.JumpData != null)
-                movementAnimations.Add(movementData.JumpData.Animation);
+                movementAnimations.Add(5, movementData.JumpData.Animation);
             else
-                movementAnimations.Add(null);
+                movementAnimations.Add(5, null);
 
             if (movementData.AirJumpData != null)
-                movementAnimations.Add(movementData.AirJumpData.Animation);
+                movementAnimations.Add(6, movementData.AirJumpData.Animation);
             else
-                movementAnimations.Add(null);
+                movementAnimations.Add(6, null);
 
-            statData.MovementAnimations = movementAnimations.ToArray();
+            statData.MovementAnimations = movementAnimations;
         }
 
         if (attackData != null)
         {
             //NOTE: Order needs to match that of the ActionState.AttackState enum
 
-            List<AnimationClip> attackAnimations = new List<AnimationClip>();
+            Dictionary<int, AnimationClip> attackAnimations = new Dictionary<int, AnimationClip>();
 
             if (attackData.UpTiltData != null)
-                attackAnimations.Add(attackData.UpTiltData.Animation);
+                attackAnimations.Add(0, attackData.UpTiltData.Animation);
             else
-                attackAnimations.Add(null);
+                attackAnimations.Add(0, null);
 
             if (attackData.DownTiltData != null)
-                attackAnimations.Add(attackData.DownTiltData.Animation);
+                attackAnimations.Add(1, attackData.DownTiltData.Animation);
             else
-                attackAnimations.Add(null);
+                attackAnimations.Add(1, null);
 
             if (attackData.ForwardTiltData != null)
-                attackAnimations.Add(attackData.ForwardTiltData.Animation);
+                attackAnimations.Add(2, attackData.ForwardTiltData.Animation);
             else
-                attackAnimations.Add(null);
+                attackAnimations.Add(2, null);
 
             if (attackData.UpAirData != null)
-                attackAnimations.Add(attackData.UpAirData.Animation);
+                attackAnimations.Add(3, attackData.UpAirData.Animation);
             else
-                attackAnimations.Add(null);
+                attackAnimations.Add(3, null);
 
             if (attackData.DownAirData != null)
-                attackAnimations.Add(attackData.DownAirData.Animation);
+                attackAnimations.Add(4, attackData.DownAirData.Animation);
             else
-                attackAnimations.Add(null);
+                attackAnimations.Add(4, null);
 
             if (attackData.ForwardAirData != null)
-                attackAnimations.Add(attackData.ForwardAirData.Animation);
+                attackAnimations.Add(5, attackData.ForwardAirData.Animation);
             else
-                attackAnimations.Add(null);
+                attackAnimations.Add(5, null);
 
-            statData.AttackAnimations = attackAnimations.ToArray();
+            statData.AttackAnimations = attackAnimations;
         }
 
         return statData;

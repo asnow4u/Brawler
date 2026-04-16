@@ -2,10 +2,43 @@ using System;
 
 public enum GroundedState { Grounded, Airborn }
 public enum ClimbState { Unavailable, Available, Climbing }
-public enum ActionState { Null, Idle, Moving, Attacking, HitStun };
-public enum IdleState { Null, GroundIdle, AirIdle, ClimbIdle };
-public enum MovementState { Null, Move, AirMove, ClimbMove, WallLean, Vault, Jump, AirJump }
-public enum AttackState { Null, UpTilt, DownTilt, ForwardTilt, UpAir, DownAir, ForwardAir };
+public enum ActionState 
+{ 
+    Null = -1, 
+    Idle = 0, 
+    Moving = 1, 
+    Attacking = 2, 
+    HitStun = 3 
+};
+public enum IdleState 
+{ 
+    Null = -1, 
+    GroundIdle = 0, 
+    AirIdle = 1, 
+    ClimbIdle = 2 
+};
+public enum MovementState 
+{ 
+    Null = -1, 
+    GroundMove = 0, 
+    AirMove = 1, 
+    ClimbMove = 2, 
+    WallLean = 3, 
+    Vault = 4, 
+    GroundJump = 5, 
+    AirJump = 6,
+    ClimbJump = 7
+}
+public enum AttackState 
+{ 
+    Null = -1, 
+    UpTilt = 0, 
+    DownTilt = 1, 
+    ForwardTilt = 2, 
+    UpAir = 3, 
+    DownAir = 4, 
+    ForwardAir = 5 
+};
 
 public interface IActionState
 {

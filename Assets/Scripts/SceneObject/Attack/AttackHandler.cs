@@ -45,7 +45,7 @@ internal class AttackHandler : MonoBehaviour, IAttack
     {
         actionState.GroundedStateChangedEvent += OnGroundedStateChanged;
         statHandler.AttackStatsChangedEvent += OnAttackStatsChanged;
-        animationHandler.AnimationEndedEvent += OnAnimationEnded;
+        animationHandler.AnimationEventFiredEvent += OnAnimationEvent;
 
         attackInput.AttackPerformedEvent += PerformAttack;
     }    
@@ -59,7 +59,7 @@ internal class AttackHandler : MonoBehaviour, IAttack
     {
         actionState.GroundedStateChangedEvent -= OnGroundedStateChanged;
         statHandler.AttackStatsChangedEvent -= OnAttackStatsChanged;
-        animationHandler.AnimationEndedEvent -= OnAnimationEnded;
+        animationHandler.AnimationEventFiredEvent -= OnAnimationEvent;
 
         attackInput.AttackPerformedEvent -= PerformAttack;
     }
@@ -79,40 +79,12 @@ internal class AttackHandler : MonoBehaviour, IAttack
         curAttackData = data;
     }
 
-    private void OnAnimationEnded(AnimationClip endedClip)
+    private void OnAnimationEvent(AnimationEventState state)
     {
         if (curAttackState == AttackState.Null)
-            return;
+            return;        
 
-        AnimationClip clip = null;
-        switch (actionState.CurAttackState)
-        {
-            case AttackState.UpTilt:
-                clip = curAttackData.UpTilt.Animation;
-                break;
-
-            case AttackState.UpAir:
-                clip = curAttackData.UpAir.Animation;
-                break;
-
-            case AttackState.ForwardTilt:
-                clip = curAttackData.ForwardTilt.Animation;
-                break;
-
-            case AttackState.ForwardAir:
-                clip = curAttackData.ForwardAir.Animation;
-                break;
-
-            case AttackState.DownTilt:
-                clip = curAttackData.DownTilt.Animation;
-                break;
-
-            case AttackState.DownAir:
-                clip = curAttackData.DownAir.Animation;
-                break;
-        }
-
-        if (clip != null && clip == endedClip)
+        if (state == AnimationEventState.AttackEnded)
             SetCurrentAttackState(AttackState.Null);
     }
 

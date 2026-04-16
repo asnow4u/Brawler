@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class AnimationStatData
@@ -6,8 +7,8 @@ public class AnimationStatData
     public AnimationClip AirIdleAnimation;
     public AnimationClip ClimbIdleAnimation;
 
-    public AnimationClip[] MovementAnimations;
-    public AnimationClip[] AttackAnimations;
+    public Dictionary<int, AnimationClip> MovementAnimations;
+    public Dictionary<int, AnimationClip> AttackAnimations;
 
     public AnimationClip HitStunAnimation;
 }

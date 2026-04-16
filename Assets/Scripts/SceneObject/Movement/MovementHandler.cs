@@ -231,7 +231,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
         //Jump
         if (jumpMovementAllowed)
         {
-            SetCurrentMoveState(MovementState.Jump);
+            SetCurrentMoveState(MovementState.GroundJump);
             StartJump();
         }
 
@@ -241,7 +241,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
             if (wallLeanAllowed)
                 SetCurrentMoveState(MovementState.WallLean);
             else
-                SetCurrentMoveState(MovementState.Move);
+                SetCurrentMoveState(MovementState.GroundMove);
         }
 
         //Idle
@@ -284,7 +284,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
 
         //Jump
         if (jumpMovementAllowed)
-            SetCurrentMoveState(MovementState.Jump);
+            SetCurrentMoveState(MovementState.GroundJump);
 
         //Accelerate
         else if (climbMovementAllowed)
@@ -404,11 +404,11 @@ internal class MovementHandler : MonoBehaviour, IMovement
                 DeccelerateGroundedMovement();
                 break;
 
-            case MovementState.Move:
+            case MovementState.GroundMove:
                 UpdateGroundedAcceleration();
                 break;
 
-            case MovementState.Jump:
+            case MovementState.GroundJump:
                 UpdateGroundedAcceleration();
                 UpdateJumpVelocity();
                 break;
@@ -506,7 +506,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
                     DeccelerateAerialYMovement();
                 break;
 
-            case MovementState.Jump:
+            case MovementState.GroundJump:
 
                 //Horizontal Movement
                 if (horizontalInfluence != 0)
@@ -686,7 +686,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
                 UpdateClimbAcceleration();
                 break;
 
-            case MovementState.Jump:
+            case MovementState.GroundJump:
                 StartJump();
                 actionState.ChangeClimbState(ClimbState.Available);
                 break;
@@ -740,7 +740,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
     {
         float jumpVelocity = 0;
 
-        if (curMoveState == MovementState.Jump)
+        if (curMoveState == MovementState.GroundJump)
             jumpVelocity = curMovementData.InitialJumpVelocity;
 
         else if (curMoveState == MovementState.AirJump)
@@ -781,7 +781,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
     {
         float acceleration = 0;
 
-        if (curMoveState == MovementState.Jump)
+        if (curMoveState == MovementState.GroundJump)
             acceleration = curMovementData.JumpAcceleration * jumpInfluence;
 
         else if (curMoveState == MovementState.AirJump)

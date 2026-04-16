@@ -4989,10 +4989,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: SceneObject.ActionState::ActionStateHandler
   curGroundedState: 0
   curClimbState: 0
-  curActionState: 0
-  curIdleState: 0
-  curMovementState: 0
-  curAttackState: 0
+  curActionState: -1
+  curIdleState: -1
+  curMovementState: -1
+  curAttackState: -1
 --- !u!114 &4681787487583806483
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5018,6 +5018,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5c7f17dd716bd7489abdda9a04acf61, type: 3}
   m_Name: 
   m_EditorClassIdentifier: SceneObject.Animation::AnimationHandler
+  idleController: {fileID: 9100000, guid: 659c75eada4e061488073716691dedce, type: 2}
+  movementController: {fileID: 0}
+  attackController: {fileID: 0}
+  hitStunController: {fileID: 9100000, guid: 2d61c65002fdada44b08d4fe16eb871a, type: 2}
 --- !u!114 &536685529535431079
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5085,7 +5089,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   impactStunDuration: 0
   hitStunMultiplier: 0.03
-  launchDurationRatio: 0.15
+  launchDurationRatio: 0.25
   travelDurationRatio: 0.5
   recoveryDurationRatio: 0.25
   debugMode: 0

@@ -12,35 +12,32 @@ using UnityEngine.Playables;
 
 [RequireComponent(typeof(ActionStateHandler))]
 [RequireComponent(typeof(StatHandler))]
+[RequireComponent(typeof(HurtBoxHandler))]
 public class AnimationHandler : MonoBehaviour, IAnimation, IAnimationEditor
 {
     //Dependencies
     IActionState actionState;
     IStats statHandler;
+    IHurtBoxHandler hurtBoxHandler;
     
     private Animator animator;
     private AnimationEventHandler eventHandler;    
     private AnimationGraph animationGraph;
 
-    private AnimationClip curPlayingAnimation;
+    [SerializeField] RuntimeAnimatorController idleController;
+    [SerializeField] RuntimeAnimatorController movementController;
+    [SerializeField] RuntimeAnimatorController attackController;
+    [SerializeField] RuntimeAnimatorController hitStunController;
 
-    //Events
-    public event Action<AnimationClip> AnimationStartedEvent;
-    public event Action<AnimationClip> AnimationEndedEvent;
+    //Events    
     public event Action<AnimationEventState> AnimationEventFiredEvent;
 
     #region Getters
 
-    public int GetFrameOfCurrentAnimation()
+    public float GetCurrentAnimationDelta()
     {
-        AnimationClipPlayable clipPlayable = animationGraph.GetCurrentAnimationPlayable();
-
-        double wrappedTime = clipPlayable.GetTime() % clipPlayable.GetAnimationClip().length;
-
-        float frameRate = clipPlayable.GetAnimationClip().frameRate;
-        int currentFrame = Mathf.FloorToInt((float)wrappedTime * frameRate);
-
-        return currentFrame;
+        var stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+        return stateInfo.normalizedTime % 1f;
     }
 
     #endregion
@@ -59,22 +56,27 @@ public class AnimationHandler : MonoBehaviour, IAnimation, IAnimationEditor
         if (eventHandler == null)
             Debug.LogError("AnimationHandler AnimatorEventHandler is null", gameObject);
 
-        actionState = GetComponent<IActionState>();
-        statHandler = GetComponent<IStats>();        
+        if (idleController == null || hitStunController == null)
+            Debug.LogError("AnimationHandler IdleController and/or HitStunController are null", gameObject);
 
-        animationGraph = new AnimationGraph(animator);
+        actionState = GetComponent<IActionState>();
+        statHandler = GetComponent<IStats>();
+        hurtBoxHandler = GetComponent<IHurtBoxHandler>();
+
+        animationGraph = new AnimationGraph(animator, idleController, movementController, attackController, hitStunController);
         
         RegisterToEvents();
     }
 
     public void RegisterToEvents()
     {
+        statHandler.AnimationStatsChangedEvent += OnAnimationStatsChanged;
+
         actionState.ActionStateChangedEvent += OnActionStateChanged;
         actionState.IdleStateChangedEvent += OnIdleStateChanged;
         actionState.MovementStateChangedEvent += OnMovementStateChanged;
         actionState.AttackStateChangedEvent += OnAttackStateChanged;
-
-        statHandler.AnimationStatsChangedEvent += OnAnimationStatsChanged;
+        hurtBoxHandler.HitStunStateChangedEvent += OnHitStunStateChanged;
 
         eventHandler.OnEventFired += HandleAnimationEvent;
     }
@@ -88,23 +90,29 @@ public class AnimationHandler : MonoBehaviour, IAnimation, IAnimationEditor
 
     private void UnregisterToEvents()
     {
+        statHandler.AnimationStatsChangedEvent -= OnAnimationStatsChanged;
+        
         actionState.ActionStateChangedEvent -= OnActionStateChanged;
         actionState.IdleStateChangedEvent -= OnIdleStateChanged;
         actionState.MovementStateChangedEvent -= OnMovementStateChanged;
         actionState.AttackStateChangedEvent -= OnAttackStateChanged;
-
-        statHandler.AnimationStatsChangedEvent -= OnAnimationStatsChanged;
+        hurtBoxHandler.HitStunStateChangedEvent -= OnHitStunStateChanged;
 
         eventHandler.OnEventFired -= HandleAnimationEvent;
     }
 
-    #endregion 
+    private void OnAnimationStatsChanged(AnimationStatData data)
+    {
+        animationGraph.SetIdleAnimations(data.GroundedIdleAnimation, data.AirIdleAnimation);
+        animationGraph.SetMovementAnimations(data.MovementAnimations);
+        animationGraph.SetAttackAnimations(data.AttackAnimations);
+        animationGraph.SetHitStunAnimations(data.HitStunAnimation);
+    }
 
 
-    #region Events       
     private void OnActionStateChanged(ActionState actionState)
     {
-        animationGraph.ChangeActionStateInput(actionState);
+        animationGraph.OnActionStateChanged(actionState);
     }
 
     private void OnIdleStateChanged(IdleState idleState)
@@ -131,12 +139,12 @@ public class AnimationHandler : MonoBehaviour, IAnimation, IAnimationEditor
         animationGraph.ChangeAttackStateInput(attackState);
     }
 
-    private void OnAnimationStatsChanged(AnimationStatData data)
+    private void OnHitStunStateChanged(HitStunState hitStunState)
     {
-        animationGraph.SetIdleAnimations(data.GroundedIdleAnimation, data.AirIdleAnimation, data.ClimbIdleAnimation);
-        animationGraph.SetMovementAnimations(data.MovementAnimations);
-        animationGraph.SetAttackAnimations(data.AttackAnimations);
-        animationGraph.SetHitStunAnimations(data.HitStunAnimation);
+        if (hitStunState == HitStunState.Null)
+            return;
+
+        animationGraph.ChangeHitStunStateInput(hitStunState);
     }
 
     private void HandleAnimationEvent(AnimationEventState state)
@@ -147,11 +155,6 @@ public class AnimationHandler : MonoBehaviour, IAnimation, IAnimationEditor
     #endregion
 
 
-    /// <summary>
-    /// Check the current animation playing from graph </br>
-    /// Invoke events on changes to the currentPlayingAnimation </br>
-    /// Determine when an animation ends   
-    /// </summary>
     private void Update()
     {
         if (debugMode)
@@ -160,44 +163,8 @@ public class AnimationHandler : MonoBehaviour, IAnimation, IAnimationEditor
             return;
         }
 
-        //Get animationClip from graph
-        AnimationClipPlayable clipPlayable = animationGraph.GetCurrentAnimationPlayable();
-
-        if (!clipPlayable.IsNull() && clipPlayable.GetAnimationClip() != null)
-        {
-            //Check if animation changed
-            if (curPlayingAnimation != clipPlayable.GetAnimationClip())
-            {
-                if (curPlayingAnimation != null)
-                    EndAnimation(curPlayingAnimation);                                               
-
-                clipPlayable.Play();
-                curPlayingAnimation = clipPlayable.GetAnimationClip();
-                AnimationStartedEvent?.Invoke(curPlayingAnimation);
-            }
-
-
-            //Determine when the clip ends
-            if (!curPlayingAnimation.isLooping)
-            {
-                if (clipPlayable.GetTime() > curPlayingAnimation.length)
-                    EndAnimation(curPlayingAnimation);
-            }
-        }
+        animationGraph.Update();
     }
-
-    /// <summary>
-    /// End the animation if currently playing and go to Idle
-    /// </summary>
-    public void EndAnimation(AnimationClip clip)
-    {
-        if (curPlayingAnimation != null &&
-            curPlayingAnimation == clip)
-        {
-            AnimationEndedEvent?.Invoke(curPlayingAnimation);
-        }
-    }
-
 
     #region Debug / Editor
 

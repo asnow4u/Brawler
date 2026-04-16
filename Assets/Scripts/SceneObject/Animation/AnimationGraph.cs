@@ -1,253 +1,310 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
+using UnityEngine.UIElements;
 
 internal class AnimationGraph : IDisposable
 {
-    //Playables
+    // Playables
     private PlayableGraph graph;
+    private AnimationMixerPlayable stateMixer;
+    private AnimatorControllerPlayable[] controllers = new AnimatorControllerPlayable[4];
 
-    private AnimationMixerPlayable stateAnimationMixer;
-    private AnimationMixerPlayable idleAnimationMixer;
-    private AnimationMixerPlayable movementAnimationMixer;
-    private AnimationMixerPlayable attackAnimationMixer;
-    private AnimationMixerPlayable hitAnimationMixer;
-
-    public AnimationGraph(Animator animator)
+    private class ControllerBinding 
     {
-        //Graph
+        public AnimatorOverrideController OverrideController;
+        public Dictionary<Enum, AnimationClip> Clips;
+
+        public ControllerBinding(AnimatorOverrideController controller, Dictionary<Enum, AnimationClip> clips)
+        {
+            OverrideController = controller;
+            Clips = clips;
+        }
+    }
+
+    private ControllerBinding[] controllerBindings = new ControllerBinding[4];
+
+    // Blending state
+    private int currentIndex = -1;
+    private int targetIndex = -1;
+    private float blendTimer = 0f;
+    private const float BlendDuration = 0.1f;
+
+    public AnimationGraph(Animator animator, 
+        RuntimeAnimatorController idleControllerAsset, 
+        RuntimeAnimatorController moveControllerAsset, 
+        RuntimeAnimatorController attackControllerAsset, 
+        RuntimeAnimatorController hitstunControllerAsset)
+    {
+        // Initialize Graph
         graph = PlayableGraph.Create("AnimationGraph");        
         AnimationPlayableOutput output = AnimationPlayableOutput.Create(graph, "Animation", animator);
 
-        //State Mixer
-        stateAnimationMixer = AnimationMixerPlayable.Create(graph, Enum.GetValues(typeof(ActionState)).Length - 1);
-        output.SetSourcePlayable(stateAnimationMixer);
+        // State Mixer: 0 = Idle, 1 = Movement, 2 = Attack, 3 = Hitstun
+        stateMixer = AnimationMixerPlayable.Create(graph, 4);
+        output.SetSourcePlayable(stateMixer);
 
-        //Idle Mixer
-        idleAnimationMixer = AnimationMixerPlayable.Create(graph, Enum.GetValues(typeof(IdleState)).Length - 1); //Subtract 1 to account for null state
-        stateAnimationMixer.ConnectInput((int)ActionState.Idle - 1, idleAnimationMixer, 0);
-
-        //Movement Mixer
-        movementAnimationMixer = AnimationMixerPlayable.Create(graph, Enum.GetValues(typeof(MovementState)).Length - 1); //Subtract 1 to account for null state
-        stateAnimationMixer.ConnectInput((int)ActionState.Moving - 1, movementAnimationMixer, 0);
-
-        //Attack Mixer
-        attackAnimationMixer = AnimationMixerPlayable.Create(graph, Enum.GetValues(typeof(AttackState)).Length - 1); //Subtract 1 to account for null state 
-        stateAnimationMixer.ConnectInput((int)ActionState.Attacking - 1, attackAnimationMixer, 0);
-
-        //Hitstun Mixer
-        hitAnimationMixer = AnimationMixerPlayable.Create(graph, 1);
-        stateAnimationMixer.ConnectInput((int)ActionState.HitStun - 1, hitAnimationMixer, 0);
-
-        animator.Rebind();
-        animator.Update(0);
+        // Setup individual layers
+        SetupControllerLayer(0, idleControllerAsset);
+        SetupControllerLayer(1, moveControllerAsset);
+        SetupControllerLayer(2, attackControllerAsset);
+        SetupControllerLayer(3, hitstunControllerAsset);
 
         graph.Play();
     }
 
+    private void SetupControllerLayer(int index, RuntimeAnimatorController asset)
+    {
+        if (asset == null) return;
 
-    #region Getters
+        AnimatorOverrideController overrideController = new AnimatorOverrideController(asset);
+        Dictionary<Enum, AnimationClip> keyedAnimations = GetKeyedAnimations(index, overrideController);
+
+        ControllerBinding controllerBinding = new ControllerBinding(overrideController, keyedAnimations);
+        controllerBindings[index] = controllerBinding;
+
+        var controllerPlayable = AnimatorControllerPlayable.Create(graph, controllerBinding.OverrideController);
+        controllers[index] = controllerPlayable;
+
+        stateMixer.ConnectInput(index, controllerPlayable, 0);
+        stateMixer.SetInputWeight(index, 0f);
+    }
+
+    private Dictionary<Enum, AnimationClip> GetKeyedAnimations(int index, AnimatorOverrideController overrideController)
+    {
+        List<KeyValuePair<AnimationClip, AnimationClip>> animationOverrides = new List<KeyValuePair<AnimationClip, AnimationClip>>();
+        overrideController.GetOverrides(animationOverrides);
+
+        Dictionary<Enum, AnimationClip> keyedAnimations = new Dictionary<Enum, AnimationClip>();
+        foreach (var kvp in animationOverrides)
+        {
+            Enum state = GetAnimationEnumState(index, kvp.Key);
+            if (state == null)
+            {
+                Debug.LogError("Animation: Unable to find base animation for " +  kvp.Key.name);
+                continue;
+            }
+
+            keyedAnimations.Add(state, kvp.Key);
+        }
+
+        return keyedAnimations;
+    }
+
+    private Enum GetAnimationEnumState(int index, AnimationClip animationClip)
+    {
+        switch (index)
+        {
+            case 0:
+
+                foreach (IdleState state in Enum.GetValues(typeof(IdleState)))
+                {
+                    if (animationClip.name.Contains(state.ToString()))
+                        return state;
+                }
+
+                break;
+                
+            case 1:
+
+                foreach (MovementState state in Enum.GetValues(typeof(MovementState)))
+                {
+                    if (animationClip.name.Contains(state.ToString()))
+                        return state;
+                }
+
+                break;
+
+            case 2:
+
+                foreach (AttackState state in Enum.GetValues(typeof(AttackState)))
+                {
+                    if (animationClip.name.Contains(state.ToString()))
+                        return state;
+                }
+
+                break;
+
+            case 3:
+
+                foreach (HitStunState state in Enum.GetValues(typeof(HitStunState)))
+                {
+                    if (animationClip.name.Contains(state.ToString()))
+                        return state;
+                }
+
+                break;
+        }
+
+        return null;
+    }
 
     /// <summary>
-    /// Get the current animationClipPlayable that is currently playing
+    /// Updates the smooth blending between action states.
+    /// Should be called every frame from the owner.
     /// </summary>
-    public AnimationClipPlayable GetCurrentAnimationPlayable()
+    public void Update()
     {
-        AnimationClipPlayable playable = new AnimationClipPlayable();
+        if (targetIndex == -1) return;
 
-        for (int i = 0; i < stateAnimationMixer.GetInputCount(); i++)
+        // Handle blending transitions
+        if (currentIndex != targetIndex)
         {
-            if (stateAnimationMixer.GetInputWeight(i) > 0)
-            {
-                AnimationMixerPlayable mixer = (AnimationMixerPlayable)stateAnimationMixer.GetInput(i);                    
+            blendTimer += Time.deltaTime;
+            float t = Mathf.Clamp01(blendTimer / BlendDuration);
 
-                for (int j = 0; j < mixer.GetInputCount(); j++)
-                {
-                    if (mixer.GetInputWeight(j) > 0)
-                        playable = (AnimationClipPlayable)mixer.GetInput(j);
-                }
+            // Fade out current
+            if (currentIndex != -1)
+                stateMixer.SetInputWeight(currentIndex, 1f - t);
+            
+            // Fade in target
+            stateMixer.SetInputWeight(targetIndex, t);
+
+            // End transition
+            if (t >= 1f)
+            {
+                if (currentIndex != -1 && currentIndex != targetIndex)
+                    stateMixer.SetInputWeight(currentIndex, 0f);
+                
+                currentIndex = targetIndex;
+            }
+        }
+        else
+        {
+            // Ensure target has full weight if not blending
+            stateMixer.SetInputWeight(targetIndex, 1f);
+        }
+    }
+
+    public void OnActionStateChanged(ActionState newState)
+    {
+        if (newState == ActionState.Null) return;
+        
+        int newIndex = (int)newState;
+        
+        if (newIndex < 0 || newIndex >= 4 || controllers[newIndex].IsNull()) return;
+        if (newIndex == targetIndex) return;
+
+        if (currentIndex != -1 && targetIndex != -1 && currentIndex != targetIndex)
+            currentIndex = GetHighestWeightIndex();
+
+        targetIndex = newIndex;
+        blendTimer = 0f;
+
+        //Reset other weights
+        for (int i = 0; i < 4; i++)
+        {
+            if (i != currentIndex && i != targetIndex)
+                stateMixer.SetInputWeight(i, 0f);
+        }
+
+        // Immediate switch if this is the first state
+        if (currentIndex == -1)
+        {
+            currentIndex = targetIndex;
+            stateMixer.SetInputWeight(currentIndex, 1f);
+        }
+    }
+
+    private int GetHighestWeightIndex()
+    {
+        int best = 0;
+        float bestWeight = stateMixer.GetInputWeight(0);
+
+        for (int i = 1; i < 4; i++)
+        {
+            float w = stateMixer.GetInputWeight(i);
+            if (w > bestWeight)
+            {
+                bestWeight = w;
+                best = i;
             }
         }
 
-        return playable;
+        return best;
+    }
+
+    #region Substate Forwarding (Pass-Through)
+
+    public void ChangeIdleStateInput(IdleState state) => ForwardToController(0, state);
+    public void ChangeMovementStateInput(MovementState state) => ForwardToController(1, state);
+    public void ChangeAttackStateInput(AttackState state) => ForwardToController(2, state);
+    public void ChangeHitStunStateInput(HitStunState state) => ForwardToController(3, state); 
+
+    private void ForwardToController(int layerIndex, Enum stateValue)
+    {
+        if (layerIndex >= 0 && layerIndex < 4 && !controllers[layerIndex].IsNull())
+        {
+            controllers[layerIndex].SetInteger("State", Convert.ToInt32(stateValue));
+            controllers[layerIndex].Play(stateValue.ToString(), 0, 0);
+        }
     }
 
     #endregion
 
 
-    #region Mixer Animations
+    #region Dynamic Animation Updates
 
-    public void SetIdleAnimations(AnimationClip groundIdleAnimation, AnimationClip airIdleAnimation, AnimationClip climbIdleAnimation)
+    public void SetIdleAnimations(AnimationClip groundIdleAnimation, AnimationClip airIdleAnimation)
     {
-        if (groundIdleAnimation == null || airIdleAnimation == null) return;
+        ApplyOverride(0, IdleState.GroundIdle, groundIdleAnimation);
+        ApplyOverride(0, IdleState.AirIdle, airIdleAnimation);
+    }    
 
-        int activeInput = ResetInputs(idleAnimationMixer);
-
-        //Grounded
-        if (groundIdleAnimation != null)
-        {
-            AnimationClipPlayable groundIdle = AnimationClipPlayable.Create(graph, groundIdleAnimation);
-            idleAnimationMixer.ConnectInput(0, groundIdle, 0);
-        }
-
-        //Areial
-        if (airIdleAnimation != null)
-        {
-            AnimationClipPlayable airIdle = AnimationClipPlayable.Create(graph, airIdleAnimation);
-            idleAnimationMixer.ConnectInput(1, airIdle, 0);
-        }
-
-        //Climb
-        if (climbIdleAnimation != null)
-        {
-            AnimationClipPlayable climbIdle = AnimationClipPlayable.Create(graph, climbIdleAnimation);
-            idleAnimationMixer.ConnectInput(2, climbIdle, 0);
-        }
-
-        ResetInputWeights(idleAnimationMixer);
-        
-        if (!idleAnimationMixer.GetInput(activeInput).IsNull())
-            idleAnimationMixer.SetInputWeight(activeInput, 1);
-    }
-    
-    public void SetHitStunAnimations(AnimationClip hitStunAnimation)
-    {
-        if (hitStunAnimation == null) return;
-
-        ResetInputs(hitAnimationMixer);
-
-        AnimationClipPlayable hitstunPlayable = AnimationClipPlayable.Create(graph, hitStunAnimation);
-        hitAnimationMixer.ConnectInput(0, hitstunPlayable, 0);
-
-        hitAnimationMixer.SetInputWeight(0, 1);
-    }
-
-    public void SetMovementAnimations(AnimationClip[] movementAnimations)
+    public void SetMovementAnimations(Dictionary<int, AnimationClip> movementAnimations)
     {
         if (movementAnimations == null) return;
-        
-        //Account for switching animations mid movement by keeping the active input
-        int activeIndex = ResetInputs(movementAnimationMixer);
-       
-        for (int i = 0; i < movementAnimations.Length; i++)
-        {
-            if (movementAnimations[i] == null) continue;
-            AnimationClipPlayable movePlayable = AnimationClipPlayable.Create(graph, movementAnimations[i]);
-            movementAnimationMixer.ConnectInput(i, movePlayable, 0);
-        }       
-
-        //Set active input
-        if (activeIndex > -1)
-            movementAnimationMixer.SetInputWeight(activeIndex, 1);
+        foreach (var kvp in movementAnimations)
+            ApplyOverride(1, (MovementState)kvp.Key, kvp.Value);
     }
 
-    /// <summary>
-    /// Set attack animations to use
-    /// </summary>
-    public void SetAttackAnimations(AnimationClip[] attackAnimations)
+    public void SetAttackAnimations(Dictionary<int, AnimationClip> attackAnimations)
     {
         if (attackAnimations == null) return;
+        foreach (var kvp in attackAnimations)
+            ApplyOverride(2, (AttackState)kvp.Key, kvp.Value);
+    }
 
-        ResetInputs(attackAnimationMixer);
+    private void ApplyOverride(int layerIndex, Enum state, AnimationClip newClip)
+    {
+        if (newClip == null || controllerBindings[layerIndex] == null) return;
 
-        for (int i = 0; i < attackAnimations.Length; i++)
-        {
-            if (attackAnimations[i] == null) continue;
-            AnimationClipPlayable attackPlayable = AnimationClipPlayable.Create(graph, attackAnimations[i]);            
-            attackAnimationMixer.ConnectInput(i, attackPlayable, 0);
-        }
+        ControllerBinding binding = controllerBindings[layerIndex];        
+        if (!binding.Clips.TryGetValue(state, out AnimationClip originalClip))
+            return;
+
+        binding.OverrideController[originalClip] = newClip;
+        controllers[layerIndex].SetTime(0);
+    }
+
+    public void SetHitStunAnimations(AnimationClip hitStunAnimation)
+    {
+        ApplyOverride(3, HitStunState.Launch, hitStunAnimation);
     }
 
     #endregion
 
-
-    #region Input Changes
-
-    /// <summary>
-    /// Disconnects and destroys inputs.
-    /// </summary>
-    /// <returns> Which input was active. </returns>
-    private int ResetInputs(AnimationMixerPlayable mixer)
-    {
-        int activeIndex = -1;
-
-        for (int i = 0; i < mixer.GetInputCount(); i++)
-        {
-            if (mixer.GetInputWeight(i) > 0)
-                activeIndex = i;
-
-            Playable animationPlayable = mixer.GetInput(i);
-
-            if (!animationPlayable.IsNull())
-                animationPlayable.Destroy();
-            
-            mixer.DisconnectInput(i);
-        }
-
-        return activeIndex;
-    }
-
-    private void ResetInputWeights(AnimationMixerPlayable mixer)
-    {
-        for (int i = 0; i < mixer.GetInputCount(); i++)
-        {
-            mixer.SetInputWeight(i, 0);
-        }
-    }
+    #region Compatability Getters
 
     /// <summary>
-    /// Change stateMixer to prioritize current actionState
+    /// Compatibility method for existing architecture. 
+    /// Note: AnimatorControllerPlayable does not directly expose active clips as individual AnimationClipPlayables.
     /// </summary>
-    public void ChangeActionStateInput(ActionState actionState)
+    public AnimationClipPlayable GetCurrentAnimationPlayable()
     {
-        ResetInputWeights(stateAnimationMixer);
-        stateAnimationMixer.SetInputWeight((int)actionState - 1, 1); //Subtract 1 to account for null state
-    }
-
-    /// <summary>
-    /// Change any mixers affected by grounded state to prioritize current grounded state
-    /// </summary>
-    public void ChangeIdleStateInput(IdleState idleState)
-    {
-        ResetInputWeights(idleAnimationMixer);
-        idleAnimationMixer.SetInputWeight((int)idleState - 1, 1); //Subtract 1 to account for null state
-    }
-
-    /// <summary>
-    /// Change movement mixer to prioritize current move state
-    /// </summary>
-    public void ChangeMovementStateInput(MovementState moveState)
-    {
-        ResetInputWeights(movementAnimationMixer);
-
-        //Reset animation clip
-        AnimationClipPlayable clipPlayable = (AnimationClipPlayable)attackAnimationMixer.GetInput((int)moveState - 1); //Subtract 1 to account for null state
-        if (!clipPlayable.IsNull())
-            clipPlayable.SetTime(0);
-
-        movementAnimationMixer.SetInputWeight((int)moveState - 1, 1); //Subtract 1 to account for null state
-    }
-
-    /// <summary>
-    /// Change attack mixer to prioritize current attack state
-    /// </summary>
-    public void ChangeAttackStateInput(AttackState attackState)
-    {        
-        ResetInputWeights(attackAnimationMixer);
-
-        //Reset animation clip
-        AnimationClipPlayable clipPlayable = (AnimationClipPlayable)attackAnimationMixer.GetInput((int)attackState - 1); //Subtract 1 to account for null state
-        if (!clipPlayable.IsNull())
-            clipPlayable.SetTime(0);
-
-        attackAnimationMixer.SetInputWeight((int)attackState - 1, 1); //Subtract 1 to account for null state
+        return default;
     }
 
     #endregion
 
     public void Dispose()
     {
-        graph.Destroy();
+        if (graph.IsValid())
+        {
+            graph.Destroy();
+        }
     }
 }
+

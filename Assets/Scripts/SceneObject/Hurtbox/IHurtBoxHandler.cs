@@ -1,7 +1,14 @@
 using System;
 using UnityEngine;
 
-public enum HitStunState { Null, Stun, Launch, Travel, Recovery }
+public enum HitStunState 
+{ 
+    Null = -1, 
+    Stun = 0, 
+    Launch = 1, 
+    Travel = 2, 
+    Recovery = 3
+}
 
 public interface IHurtBoxHandler : IHitStunHandler
 {
