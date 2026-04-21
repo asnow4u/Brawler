@@ -30,6 +30,7 @@ internal class AnimationGraph : IDisposable
     private int currentIndex = -1;
     private int targetIndex = -1;
     private float blendTimer = 0f;
+    private float pauseTimer = 0f;
     private const float BlendDuration = 0.1f;
 
     public AnimationGraph(Animator animator, 
@@ -147,6 +148,19 @@ internal class AnimationGraph : IDisposable
     /// </summary>
     public void Update()
     {
+        if (pauseTimer > 0)
+        {
+            pauseTimer -= Time.deltaTime;
+            if (pauseTimer <= 0)
+            {
+                stateMixer.SetSpeed(1f);
+            }
+            else
+            {
+                return;
+            }
+        }
+
         if (targetIndex == -1) return;
 
         // Handle blending transitions
@@ -181,6 +195,8 @@ internal class AnimationGraph : IDisposable
     public void OnActionStateChanged(ActionState newState)
     {
         if (newState == ActionState.Null) return;
+
+        Resume();
         
         int newIndex = (int)newState;
         
@@ -237,9 +253,24 @@ internal class AnimationGraph : IDisposable
     {
         if (layerIndex >= 0 && layerIndex < 4 && !controllers[layerIndex].IsNull())
         {
+            Resume();
             controllers[layerIndex].SetInteger("State", Convert.ToInt32(stateValue));
             controllers[layerIndex].Play(stateValue.ToString(), 0, 0);
         }
+    }
+
+    public void Pause(float seconds)
+    {
+        if (seconds <= 0) return;
+        pauseTimer = seconds;
+        stateMixer.SetSpeed(0f);
+    }
+
+    private void Resume()
+    {
+        pauseTimer = 0f;
+        if (stateMixer.IsValid())
+            stateMixer.SetSpeed(1f);
     }
 
     #endregion

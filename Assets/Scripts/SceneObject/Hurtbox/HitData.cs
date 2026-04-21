@@ -8,13 +8,17 @@ public class HitData
     public float Influence;
     public float LauchAngle;
     public float Damage;
+    public float StunTime;
+    public Vector3 HitPoint;
 
-    public HitData(Guid sceneObjectID, float influence, float lauchAngle, float damage)
+    public HitData(Guid sceneObjectID, float influence, float lauchAngle, float damage, float stunTime, Vector3 hitPoint)
     {
         SceneObjectID = sceneObjectID;
         Influence = influence;
         LauchAngle = lauchAngle;
         Damage = damage;
+        StunTime = stunTime;
+        HitPoint = hitPoint;
     }
 
     public override string ToString()
@@ -23,7 +27,8 @@ public class HitData
             "\nSceneObjectID: " + SceneObjectID +
             "\nInfluence: " + Influence +
             "\nLaunch Angle: " + LauchAngle +
-            "\nDamage: " + Damage;
+            "\nDamage: " + Damage +
+            "\nStunTime: " + StunTime;
 
         return str;
     }

@@ -1,0 +1,59 @@
+{
+    "version": 1,
+    "actions": [
+        {
+            "id": 1,
+            "action": 0,
+            "startTimeSeconds": 0.0,
+            "durationSeconds": 0.4000000059604645
+        },
+        {
+            "id": 3,
+            "action": 2,
+            "startTimeSeconds": 0.4000000059604645,
+            "durationSeconds": 0.0
+        },
+        {
+            "id": 4,
+            "action": 5,
+            "startTimeSeconds": 0.8999999761581421,
+            "durationSeconds": 0.0
+        },
+        {
+            "id": 5,
+            "action": 0,
+            "startTimeSeconds": 1.100000023841858,
+            "durationSeconds": 3.0
+        },
+        {
+            "id": 6,
+            "action": 2,
+            "startTimeSeconds": 1.7000000476837159,
+            "durationSeconds": 0.0
+        },
+        {
+            "id": 7,
+            "action": 4,
+            "startTimeSeconds": 2.0,
+            "durationSeconds": 0.0
+        },
+        {
+            "id": 8,
+            "action": 6,
+            "startTimeSeconds": 3.799999952316284,
+            "durationSeconds": 0.0
+        },
+        {
+            "id": 9,
+            "action": 0,
+            "startTimeSeconds": 4.5,
+            "durationSeconds": 0.44999998807907107
+        },
+        {
+            "id": 10,
+            "action": 3,
+            "startTimeSeconds": 4.900000095367432,
+            "durationSeconds": 0.0
+        }
+    ]
+}

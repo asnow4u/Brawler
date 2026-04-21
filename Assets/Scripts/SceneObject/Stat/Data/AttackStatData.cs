@@ -10,6 +10,7 @@ public class AttackStatData
         public AnimationClip Animation;
         public float Influence;
         public float LaunchAngle;
+        public float HitStunTime;
 
         private AnimationCurve damageCurve;
         
@@ -19,6 +20,7 @@ public class AttackStatData
             Animation = data.Animation;
             Influence = data.Influence;
             LaunchAngle = data.LaunchAngle;
+            HitStunTime = data.HitStunTime;
             this.damageCurve = data.DamageCurve;
         }
 

@@ -26,6 +26,9 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxHandlerEdi
     [Header("Damage")]
     [SerializeField] protected float damageTaken = 0;
 
+    [Header("Hit Effect")]
+    [SerializeField] private ParticleSystem hitEffect;
+
     [Header("Knockback")]
     [Tooltip("Base amount of acceleration that will be applied anytime taking a hit")]
     const float minKnockBackVelocity = 10f;
@@ -37,8 +40,6 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxHandlerEdi
     [SerializeField] private HitStunState curHitStunState;
     [Tooltip("Normalized curve that defines velocity over hitstun time")]
     public AnimationCurve hitStunVelocityCurve;
-    [Tooltip("Duration of impact stun in seconds")]
-    [SerializeField] private float impactStunDuration = 0.1f;
     [Tooltip("How much should hit stun duration scale based on knockback velocity")]
     [SerializeField] private float hitStunMultiplier = 1f;
     [Tooltip("Duration of hitstun time dedicated to launch")]
@@ -59,14 +60,12 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxHandlerEdi
         actionState = GetComponent<IActionState>();
         rb = GetComponent<Rigidbody>();
         physicalCollider = GetComponent<Collider>();
-
-        if (launchDurationRatio + travelDurationRatio + recoveryDurationRatio != 1f)
-            Debug.LogError("HurtBoxHandler: Hitstun duration ratios must add up to 1. launchDurationRatio, travelDurationRatio, and recoveryDurationRatio fields.", gameObject);
-
         lastHitBy = new List<Guid>();
 
         //Get hurtboxs
         hurtBoxes = GetComponentsInChildren<HurtBox>(true);
+        if (hurtBoxes.Length == 0)
+            Debug.LogError("HurtBoxHandler: No Hurtboxs where found on", gameObject);        
 
         RegisterToEvents();
     }
@@ -93,18 +92,19 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxHandlerEdi
         if (hitData == null)
             return;
 
-        sceneObject.Log("HurtboxHandler: Hit for " + hitData);
-
         lastHitBy.Add(hitData.SceneObjectID);
 
+        if (hitEffect != null)
+            hitEffect.Play();
+
+        //Damage
         damageTaken += hitData.Damage;
 
         //Knockback
         knockBackVelocity = CalculateKnockbackVelocity(hitData.Influence, damageTaken, hitData.LauchAngle, rb.mass);
 
-        //Hitstun
-        float hitStunDuration = Mathf.Max(impactStunDuration, knockBackVelocity.magnitude * hitStunMultiplier);
-        ApplyHitStun(hitStunDuration);
+        //Hitstun        
+        ApplyHitStun(hitData.StunTime, knockBackVelocity.magnitude * hitStunMultiplier);
     }
 
     public Vector3 CalculateKnockbackVelocity(float influence, float totalDamage, float launchAngle, float mass)
@@ -146,34 +146,34 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxHandlerEdi
         HitStunStateChangedEvent?.Invoke(newState);
     }
 
-    private void ApplyHitStun(float hitStunDuration)
+    private void ApplyHitStun(float stunDuration, float hitDuration)
     {
         if (hitStunTimerCoroutine != null)
             StopCoroutine(hitStunTimerCoroutine);
 
-        hitStunTimerCoroutine = StartCoroutine(HitStunTimer(hitStunDuration));
+        hitStunTimerCoroutine = StartCoroutine(HitStunTimer(stunDuration, hitDuration));
     }
 
-    private IEnumerator HitStunTimer(float duration)
+    private IEnumerator HitStunTimer(float stunDuration, float hitDuration)
     {
         hitStunTime = 0;
-        hitStunDuration = duration;
+        hitStunDuration = stunDuration + hitDuration;
 
-        float launchDuration = duration * launchDurationRatio;
-        float travelDuration = duration * travelDurationRatio;
-        float recoveryDuration = duration * recoveryDurationRatio;
+        float launchDuration = hitDuration * launchDurationRatio;
+        float travelDuration = hitDuration * travelDurationRatio;
+        float recoveryDuration = hitDuration * recoveryDurationRatio;
 
         ChangeHitStunState(HitStunState.Stun);
 
-        while (hitStunTime < duration)
+        while (hitStunTime < hitStunDuration)
         {
             hitStunTime += Time.deltaTime;
 
-            if (hitStunTime > impactStunDuration && curHitStunState == HitStunState.Stun)
+            if (hitStunTime > stunDuration && curHitStunState == HitStunState.Stun)
                 ChangeHitStunState(HitStunState.Launch);
-            else if (hitStunTime > impactStunDuration + launchDuration && curHitStunState == HitStunState.Launch)
+            else if (hitStunTime > stunDuration + launchDuration && curHitStunState == HitStunState.Launch)
                 ChangeHitStunState(HitStunState.Travel);
-            else if (hitStunTime > impactStunDuration + launchDuration + travelDuration && curHitStunState == HitStunState.Travel)
+            else if (hitStunTime > stunDuration + launchDuration + travelDuration && curHitStunState == HitStunState.Travel)
                 ChangeHitStunState(HitStunState.Recovery);
 
             yield return null;
@@ -238,7 +238,7 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxHandlerEdi
     {
         if (debugDelaySeconds <= 0f)
         {
-            HitData immediateHitData = new HitData(Guid.NewGuid(), debugInfluence, debugLaunchAngle, debugDamage);
+            HitData immediateHitData = new HitData(Guid.NewGuid(), debugInfluence, debugLaunchAngle, debugDamage, 0f, transform.position);
             OnHit(immediateHitData);
             return;
         }
@@ -250,7 +250,7 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxHandlerEdi
     {
         yield return new WaitForSeconds(delaySeconds);
 
-        HitData hitData = new HitData(Guid.NewGuid(), debugInfluence, debugLaunchAngle, debugDamage);
+        HitData hitData = new HitData(Guid.NewGuid(), debugInfluence, debugLaunchAngle, debugDamage, 0f, transform.position);
         OnHit(hitData);
     }
 

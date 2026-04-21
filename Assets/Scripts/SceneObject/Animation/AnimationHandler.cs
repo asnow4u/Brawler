@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Animations;
-using UnityEngine.Playables;
 
 
 /*NOTE: 
@@ -158,5 +155,10 @@ public class AnimationHandler : MonoBehaviour, IAnimation
     private void Update()
     {
         animationGraph.Update();
+    }
+
+    public void PauseAnimation(float seconds)
+    {
+        animationGraph.Pause(seconds);
     }
 }

@@ -9,7 +9,7 @@ internal class HitBox : MonoBehaviour, IHitBox
 {
     private Collider collider;
 
-    public event Action<IHurtBox> OnCollisionEntered;
+    public event Action<IHurtBox, Vector3> OnCollisionEntered;
 
     private void Awake()
     {
@@ -30,7 +30,11 @@ internal class HitBox : MonoBehaviour, IHitBox
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.TryGetComponent(out IHurtBox hurtBox))
-            OnCollisionEntered?.Invoke(hurtBox);
+        {
+            Vector3 hitPoint = other.ClosestPoint(transform.position);
+
+            OnCollisionEntered?.Invoke(hurtBox, hitPoint);
+        }
     }
 
     #region Gizmos

@@ -38,6 +38,7 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
     [Tooltip("The maximum damage that can be applied to a sceneObject hit by this sceneObject." +
         "\nThis is used when this sceneObject is moving quickly and/or has high mass, dealing more damage")]
     [SerializeField] private float maxSceneObjectHitDamage = 20f;
+    [SerializeField] private float sceneObjectHitStunTime = 0.1f;
 
     private HitBox[] sceneObjectHitboxs;
     private MovementStatData movementStatData;
@@ -208,7 +209,7 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
 
     #region Hurtbox Handling
 
-    private void OnSceneObjectHit(IHurtBox hurtBox)
+    private void OnSceneObjectHit(IHurtBox hurtBox, Vector3 hitPoint)
     {
         if (actionState.CurActionState != ActionState.HitStun ||
             sceneObjectsHit.Contains(hurtBox.SceneObjectID) ||
@@ -216,6 +217,8 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
             return;
 
         sceneObjectsHit.Add(hurtBox.SceneObjectID);
+
+        animationHandler.PauseAnimation(sceneObjectHitStunTime);
 
         float t = Mathf.Clamp01(rb.linearVelocity.x / movementStatData.MaxAerialXVelocity);
         float launchAngle = Mathf.Lerp(minSceneObjectHitLaunchAngle, maxSceneObjectHitLaunchAngle, t);
@@ -226,10 +229,10 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
         float damage = rb.mass * speed * speed;
         damage = Mathf.Clamp(damage, minSceneObjectHitDamage, maxSceneObjectHitDamage);
 
-        hurtBox.Hit(new HitData(sceneObject.UniqueID, 0f, launchAngle, damage));
+        hurtBox.Hit(new HitData(sceneObject.UniqueID, 0f, launchAngle, damage, sceneObjectHitStunTime, hitPoint));
     }
 
-    private void OnWeaponHit(IHurtBox hurtBox)
+    private void OnWeaponHit(IHurtBox hurtBox, Vector3 hitPoint)
     {
         if (actionState.CurAttackState == AttackState.Null || 
             sceneObjectsHit.Contains(hurtBox.SceneObjectID))
@@ -238,13 +241,16 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
         sceneObjectsHit.Add(hurtBox.SceneObjectID);
 
         AttackStats curAttackStats = weaponAttackDatas[actionState.CurAttackState];
+
+        animationHandler.PauseAnimation(curAttackStats.HitStunTime);
+
         float animationDelta = animationHandler.GetCurrentAnimationDelta();
 
         float launchAngle = curAttackStats.LaunchAngle;
         if (!sceneObject.IsFacingRightDirection)
             launchAngle = 180 - launchAngle;
 
-        hurtBox.Hit(new HitData(sceneObject.UniqueID, curAttackStats.Influence, launchAngle, curAttackStats.GetAttackDamage(animationDelta)));
+        hurtBox.Hit(new HitData(sceneObject.UniqueID, curAttackStats.Influence, launchAngle, curAttackStats.GetAttackDamage(animationDelta), curAttackStats.HitStunTime, hitPoint));
     }
 
     #endregion

@@ -5,6 +5,7 @@ public enum AnimationEventState { Null, AttackStarted, EnableHitbox, DisableHitb
 public interface IAnimation
 {
     public float GetCurrentAnimationDelta();
+    public void PauseAnimation(float seconds);
 
     public event Action<AnimationEventState> AnimationEventFiredEvent;
 }
