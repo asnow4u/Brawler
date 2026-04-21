@@ -21,5 +21,4 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   LaunchAngle: 0
-  EnableColliderFrame: 0
-  DisableColliderFrame: 0
+  HitStunTime: 0.1

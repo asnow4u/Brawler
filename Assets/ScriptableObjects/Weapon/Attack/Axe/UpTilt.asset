@@ -39,3 +39,4 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   LaunchAngle: 70
+  HitStunTime: 0.1

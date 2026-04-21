@@ -3,6 +3,7 @@ using UnityEngine;
 public class AttackStatData
 {
     public GameObject WeaponRootGameObject;
+    public ParticleSystem SwingEffect;
 
     public class AttackStats
     {

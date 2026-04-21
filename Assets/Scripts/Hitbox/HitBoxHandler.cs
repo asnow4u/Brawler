@@ -43,8 +43,9 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
     private HitBox[] sceneObjectHitboxs;
     private MovementStatData movementStatData;
 
-    //Weapon Collision
+    //Weapon
     private List<HitBox> weaponHitboxs = new List<HitBox>();
+    private ParticleSystem weaponSwingEffect;
     private Dictionary<AttackState, AttackStats> weaponAttackDatas = null;
 
     private HashSet<Guid> sceneObjectsHit = new HashSet<Guid>();
@@ -102,6 +103,9 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
     private void OnActionStateChanged(ActionState state)
     {
         DisableAllHitBoxs();
+
+        if (weaponSwingEffect != null)
+            weaponSwingEffect.Stop();
     }
 
     private void OnMovementStatsChanged(MovementStatData data)
@@ -115,6 +119,7 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
             return;
         
         weaponHitboxs = data.WeaponRootGameObject.GetComponentsInChildren<HitBox>(true).ToList();
+        weaponSwingEffect = data.SwingEffect;
         weaponAttackDatas = new Dictionary<AttackState, AttackStats>();
 
         if (data.UpTilt != null)
@@ -135,12 +140,22 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
     {
         switch (eventState)
         {
+            case AnimationEventState.AttackStarted:
+                if (weaponSwingEffect != null)
+                    weaponSwingEffect.Play();
+                break;
+
             case AnimationEventState.EnableHitbox:
                 EnableWeaponHitboxs();
                 break;
 
             case AnimationEventState.DisableHitbox:
                 DisableWeaponHitboxs();
+                break;
+
+            case AnimationEventState.AttackEnded:
+                if (weaponSwingEffect != null)
+                    weaponSwingEffect.Stop();
                 break;
         }
     }
