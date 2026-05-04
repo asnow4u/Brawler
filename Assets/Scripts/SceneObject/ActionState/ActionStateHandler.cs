@@ -19,9 +19,6 @@ public class ActionStateHandler : MonoBehaviour, IActionState
     [SerializeField] private IdleState curIdleState;
     public IdleState CurIdleState => curIdleState;
 
-    [SerializeField] private MovementState curMovementState;
-    public MovementState CurMovementState => curMovementState;
-
     [SerializeField] private AttackState curAttackState;
     public AttackState CurAttackState => curAttackState;
 
@@ -30,7 +27,6 @@ public class ActionStateHandler : MonoBehaviour, IActionState
 
     public event Action<ActionState> ActionStateChangedEvent;
     public event Action<IdleState> IdleStateChangedEvent;
-    public event Action<MovementState> MovementStateChangedEvent;
     public event Action<AttackState> AttackStateChangedEvent;
     
 
@@ -138,22 +134,6 @@ public class ActionStateHandler : MonoBehaviour, IActionState
             ClimbStateChangedEvent?.Invoke(curClimbState);
 
             UpdateIdleState();
-        }
-    }
-
-    public void ChangeMovementState(MovementState movementState)
-    {
-        if (curMovementState == movementState) 
-            return;
-
-        if (movementState == MovementState.Null || TryChangeState(ActionState.Moving))
-        {
-            if (movementState == MovementState.Null && curActionState == ActionState.Moving)
-                ChangeState(ActionState.Idle);
-
-            curMovementState = movementState;             
-            sceneObject.Log("Movement State: " + curMovementState);
-            MovementStateChangedEvent?.Invoke(curMovementState);
         }
     }
 

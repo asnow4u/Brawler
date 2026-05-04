@@ -16,7 +16,9 @@ public class AnimationHandler : MonoBehaviour, IAnimation
     IActionState actionState;
     IStats statHandler;
     IHurtBoxHandler hurtBoxHandler;
-    
+
+    IMovement movementHandler;
+
     private Animator animator;
     private AnimationEventHandler eventHandler;    
     private AnimationGraph animationGraph;
@@ -59,6 +61,7 @@ public class AnimationHandler : MonoBehaviour, IAnimation
         actionState = GetComponent<IActionState>();
         statHandler = GetComponent<IStats>();
         hurtBoxHandler = GetComponent<IHurtBoxHandler>();
+        movementHandler = GetComponent<IMovement>();
 
         animationGraph = new AnimationGraph(animator, idleController, movementController, attackController, hitStunController);
         
@@ -71,10 +74,12 @@ public class AnimationHandler : MonoBehaviour, IAnimation
 
         actionState.ActionStateChangedEvent += OnActionStateChanged;
         actionState.IdleStateChangedEvent += OnIdleStateChanged;
-        actionState.MovementStateChangedEvent += OnMovementStateChanged;
         actionState.AttackStateChangedEvent += OnAttackStateChanged;
         hurtBoxHandler.HitStunStateChangedEvent += OnHitStunStateChanged;
 
+        if (movementHandler != null)
+            movementHandler.MovementStateChangedEvent += OnMovementStateChanged;
+        
         eventHandler.OnEventFired += HandleAnimationEvent;
     }
 
@@ -91,9 +96,13 @@ public class AnimationHandler : MonoBehaviour, IAnimation
         
         actionState.ActionStateChangedEvent -= OnActionStateChanged;
         actionState.IdleStateChangedEvent -= OnIdleStateChanged;
-        actionState.MovementStateChangedEvent -= OnMovementStateChanged;
         actionState.AttackStateChangedEvent -= OnAttackStateChanged;
+        
         hurtBoxHandler.HitStunStateChangedEvent -= OnHitStunStateChanged;
+
+        if (movementHandler != null)
+            movementHandler.MovementStateChangedEvent -= OnMovementStateChanged;
+
 
         eventHandler.OnEventFired -= HandleAnimationEvent;
     }

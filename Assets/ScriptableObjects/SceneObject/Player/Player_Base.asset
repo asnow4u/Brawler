@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MaxMass: 200
   MinMass: 100
-  GroundedMaxVelocityMax: 15
-  GroundedMaxVelocityMin: 5
+  GroundedMaxVelocityMax: 13
+  GroundedMaxVelocityMin: 10
   GroundedDecceleration: 5000
-  AerialMaxXVelocityMax: 15
+  AerialMaxXVelocityMax: 13
   AerialMaxXVelocityMin: 10
   AerialXDecceleration: 100
   AerialMaxYVelocityMax: 25

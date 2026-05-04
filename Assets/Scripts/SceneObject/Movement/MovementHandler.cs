@@ -21,7 +21,8 @@ internal class MovementHandler : MonoBehaviour, IMovement
     private Rigidbody rb;
 
     //Movement State Data
-    private MovementState curMoveState => actionState.CurMovementState;
+    private MovementState curMovementState;
+    public MovementState CurMovementState => curMovementState;
     
     private MovementStatData curMovementData = null;
 
@@ -37,7 +38,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
 
     //Jump Properties
     [Header("Coyote Time")]
-    [SerializeField] private float coyoteTimeDuration = 0.5f;
+    private const float coyoteTimeDuration = 0.1f;
     private float lastGroundedTime = -100f;
 
     private bool jumpInputAvailable = true; //Jump available is only true after the user has released the jump button
@@ -84,6 +85,8 @@ internal class MovementHandler : MonoBehaviour, IMovement
                                     actionState.CurActionState <= ActionState.Moving;
     private bool vaultMovementAllowed => curMovementData.VaultValid &&
                                          actionState.CurActionState <= ActionState.Moving;
+
+    public event Action<MovementState> MovementStateChangedEvent;
 
     #region Getters
 
@@ -160,12 +163,8 @@ internal class MovementHandler : MonoBehaviour, IMovement
             airJumpsPerformed = 0;
         else if (groundedState == GroundedState.Airborn)
         {
-            if (actionState.CurMovementState == MovementState.GroundMove)
-            {
-                Debug.Log(actionState.CurMovementState);
-                Debug.Log("Coyote Time Started");
+            if (curMovementState == MovementState.GroundMove)
                 lastGroundedTime = Time.time;
-            }
         }
 
     }
@@ -231,7 +230,18 @@ internal class MovementHandler : MonoBehaviour, IMovement
     /// </summary>
     private void SetCurrentMoveState(MovementState moveState)
     {        
-        actionState.ChangeMovementState(moveState);
+        if (moveState == curMovementState)
+            return;
+
+        if (moveState == MovementState.Null || actionState.TryChangeState(ActionState.Moving))
+        {
+            if (moveState == MovementState.Null && actionState.CurActionState == ActionState.Moving)
+                actionState.ChangeState(ActionState.Idle);
+
+            curMovementState = moveState;
+            sceneObject.Log("Movement State: " + moveState.ToString());
+            MovementStateChangedEvent?.Invoke(moveState);
+        }
     }        
 
     /// <summary>
@@ -271,9 +281,6 @@ internal class MovementHandler : MonoBehaviour, IMovement
         //NOTE: Movement not allowed while in jump animation
         if (isJumpingSquating || isVaulting)
             return;
-            
-        if (lastGroundedTime > 0 && Time.time > lastGroundedTime + coyoteTimeDuration)
-            Debug.Log("Coyote Time Ended");
 
         //Coyote Time Jump
         if (jumpMovementAllowed && Time.time <= lastGroundedTime + coyoteTimeDuration)
@@ -418,7 +425,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
     {            
         UpdateGroundedMovementState();
 
-        switch (curMoveState)
+        switch (curMovementState)
         {
             case MovementState.Null:
                 DeccelerateGroundedMovement();
@@ -508,7 +515,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
     {
         UpdateAerialMovementState();
 
-        switch (curMoveState)
+        switch (curMovementState)
         {
             case MovementState.Null:
                 DeccelerateAerialXMovement();
@@ -697,7 +704,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
     {
         UpdateClimbMovementState();
 
-        switch (curMoveState)
+        switch (curMovementState)
         {
             case MovementState.Null:
                 if (rb.linearVelocity.y > climbSlideVelocityThreshold)
@@ -764,13 +771,13 @@ internal class MovementHandler : MonoBehaviour, IMovement
     {
         float jumpVelocity = 0;
 
-        if (curMoveState == MovementState.GroundJump)
+        if (curMovementState == MovementState.GroundJump)
         {
             jumpVelocity = curMovementData.InitialJumpVelocity;
             lastGroundedTime = -100f; // Consume coyote time to prevent double jumps
         }
 
-        else if (curMoveState == MovementState.AirJump)
+        else if (curMovementState == MovementState.AirJump)
         {
             //CheckTurnAround();
             airJumpsPerformed++;
@@ -808,10 +815,10 @@ internal class MovementHandler : MonoBehaviour, IMovement
     {
         float acceleration = 0;
 
-        if (curMoveState == MovementState.GroundJump)
+        if (curMovementState == MovementState.GroundJump)
             acceleration = curMovementData.JumpAcceleration * jumpInfluence;
 
-        else if (curMoveState == MovementState.AirJump)
+        else if (curMovementState == MovementState.AirJump)
             acceleration = curMovementData.AirJumpAcceleration * jumpInfluence;
 
         if (acceleration > 0)
@@ -825,7 +832,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
 
     public void UpdateEdgeClimb(ClimbableEdge edge)
     {
-        if (curMoveState == MovementState.Vault || !vaultMovementAllowed) return;
+        if (curMovementState == MovementState.Vault || !vaultMovementAllowed) return;
 
         BoxCollider edgeCollider = edge.transform.GetComponent<BoxCollider>();
 
