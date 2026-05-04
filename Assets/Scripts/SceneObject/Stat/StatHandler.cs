@@ -14,7 +14,7 @@ public class StatHandler : MonoBehaviour, IStats
     [SerializeField] protected SceneObjectData baseSceneObjectData;
 
     protected Rigidbody rb;
-    private float MassRatio => Mathf.Clamp(rb.mass, baseSceneObjectData.MinMass, baseSceneObjectData.MaxMass) / baseSceneObjectData.MaxMass;
+    private float MassRatio => (Mathf.Clamp(rb.mass, baseSceneObjectData.MinMass, baseSceneObjectData.MaxMass) - baseSceneObjectData.MinMass) / (baseSceneObjectData.MaxMass - baseSceneObjectData.MinMass);
 
     //Events
     public event Action<AnimationStatData> AnimationStatsChangedEvent;
@@ -65,7 +65,12 @@ public class StatHandler : MonoBehaviour, IStats
 
     private void soDataChanged()
     {
-        UpdateSceneObjectStats();
+        Debug.Log("So Data Changed", gameObject);
+
+        if (baseSceneObjectData.IsValid())
+            UpdateSceneObjectStats();
+        else
+            Debug.Log("StatHandler: Change to SceneObject Base Data is not valid", gameObject);
     }
 
     #endregion

@@ -107,7 +107,8 @@ public class SceneObjectData : ScriptableObject
 
     private void DataChanged()
     {
-        OnChangedEvent?.Invoke();
+        if (Application.isPlaying)
+            OnChangedEvent?.Invoke();
     }
 
     private void OnValidate()

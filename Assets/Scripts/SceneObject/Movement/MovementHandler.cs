@@ -36,6 +36,10 @@ internal class MovementHandler : MonoBehaviour, IMovement
     [SerializeField] private float jumpInfluence;    
 
     //Jump Properties
+    [Header("Coyote Time")]
+    [SerializeField] private float coyoteTimeDuration = 0.5f;
+    private float lastGroundedTime = -100f;
+
     private bool jumpInputAvailable = true; //Jump available is only true after the user has released the jump button
     private bool isJumpingSquating = false;
     private const int JUMPSQUATFRAMECOUNT = 2; //How many frames does it take for a jump before user is actionable
@@ -154,6 +158,16 @@ internal class MovementHandler : MonoBehaviour, IMovement
     {
         if (groundedState == GroundedState.Grounded)
             airJumpsPerformed = 0;
+        else if (groundedState == GroundedState.Airborn)
+        {
+            if (actionState.CurMovementState == MovementState.GroundMove)
+            {
+                Debug.Log(actionState.CurMovementState);
+                Debug.Log("Coyote Time Started");
+                lastGroundedTime = Time.time;
+            }
+        }
+
     }
 
     /// <summary>
@@ -258,8 +272,18 @@ internal class MovementHandler : MonoBehaviour, IMovement
         if (isJumpingSquating || isVaulting)
             return;
             
-        //Jump
-        if (aerialJumpMovementAllowed)
+        if (lastGroundedTime > 0 && Time.time > lastGroundedTime + coyoteTimeDuration)
+            Debug.Log("Coyote Time Ended");
+
+        //Coyote Time Jump
+        if (jumpMovementAllowed && Time.time <= lastGroundedTime + coyoteTimeDuration)
+        {
+            SetCurrentMoveState(MovementState.GroundJump);
+            StartJump();
+        }
+
+        //Air Jump
+        else if (aerialJumpMovementAllowed)
         {
             SetCurrentMoveState(MovementState.AirJump);
             StartJump();
@@ -741,7 +765,10 @@ internal class MovementHandler : MonoBehaviour, IMovement
         float jumpVelocity = 0;
 
         if (curMoveState == MovementState.GroundJump)
+        {
             jumpVelocity = curMovementData.InitialJumpVelocity;
+            lastGroundedTime = -100f; // Consume coyote time to prevent double jumps
+        }
 
         else if (curMoveState == MovementState.AirJump)
         {

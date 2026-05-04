@@ -17,8 +17,8 @@ internal class EquipmentHandler : StatHandler
     {
         interactionInput = GetComponent<IInteractionInput>();
         equipmentInput = GetComponent<IEquipmentInput>();
-        weaponHandler = GetComponentInChildren<WeaponHandler>();
-        
+        weaponHandler = GetComponentInChildren<WeaponHandler>();        
+
         base.Awake();
     }
 
@@ -31,15 +31,17 @@ internal class EquipmentHandler : StatHandler
             equipmentInput.ToggleEquippedWeaponEvent += OnToggleEquippedWeapon;
 
         if (weaponHandler != null)
-            weaponHandler.OnWeaponEquippedEvent += OnWeaponChanged;
+            weaponHandler.OnWeaponEquippedEvent += OnWeaponChanged;        
+
+        base.RegisterToEvents();
     }
 
     protected override void Start()
     {
-        base.Start();
-
         if (weaponHandler != null)
             weaponHandler.Initialize();        
+
+        base.Start();
     }
 
     protected override void UnregisterFromEvents()
@@ -52,6 +54,8 @@ internal class EquipmentHandler : StatHandler
 
         if (weaponHandler != null)
             weaponHandler.OnWeaponEquippedEvent -= OnWeaponChanged;
+
+        base.UnregisterFromEvents();
     }
 
     #endregion

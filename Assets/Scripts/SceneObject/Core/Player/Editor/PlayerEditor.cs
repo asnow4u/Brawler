@@ -46,7 +46,7 @@ internal sealed class PlayerEditor : Editor
     private const double OneShotJumpSeconds = 0.06;
 
     private PlayerEditorState state;
-    private double timelineStartEditorTime;
+    private double timelineStartTime;
     private bool timelinePlaying;
     private readonly HashSet<int> firedInstantActionIds = new();
 
@@ -197,7 +197,7 @@ internal sealed class PlayerEditor : Editor
 
         if (timelinePlaying)
         {
-            double t = EditorApplication.timeSinceStartup - timelineStartEditorTime;
+            double t = Time.time - timelineStartTime;
             EditorGUILayout.LabelField("Time", t.ToString("0.000") + " sec");
         }
 
@@ -298,7 +298,7 @@ internal sealed class PlayerEditor : Editor
     {
         StopAndResetInputs();
         timelinePlaying = true;
-        timelineStartEditorTime = EditorApplication.timeSinceStartup;
+        timelineStartTime = Time.time;
         firedInstantActionIds.Clear();
         oneShotJumpReleaseTimelineTime = -1;
     }
@@ -376,7 +376,7 @@ internal sealed class PlayerEditor : Editor
 
     private void ApplyTimeline(IMovementInputEditor movement, IAttackInputEditor attack)
     {
-        double t = EditorApplication.timeSinceStartup - timelineStartEditorTime;
+        double t = Time.time - timelineStartTime;
 
         Vector2 moveHeldVector = GetTimelineMovementVector(t);
         bool jumpHeld = GetTimelineJumpHeld(t);
@@ -543,7 +543,7 @@ internal sealed class PlayerEditor : Editor
 
     private void TryFireAttack(IAttackInputEditor attack, TimelineActionType type, bool allowRateLimit = true)
     {
-        double now = EditorApplication.timeSinceStartup;
+        double now = Time.time;
 
         if (allowRateLimit && nextAttackAllowedTime.TryGetValue(type, out double nextAllowed) && now < nextAllowed)
             return;
