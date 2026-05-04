@@ -199,7 +199,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ded16f43c325f81438597d2e04ec81e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: SceneObject.Hurtbox::HurtBoxHandler
-  damageTaken: 50
+  damageTaken: 0
   hitEffect: {fileID: 8751859966341432457}
   curHitStunState: 0
   hitStunVelocityCurve:
@@ -253,7 +253,6 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  impactStunDuration: 0.1
   hitStunMultiplier: 0.03
   launchDurationRatio: 0.25
   travelDurationRatio: 0.5
@@ -317,6 +316,7 @@ MonoBehaviour:
   maxSceneObjectHitLaunchAngle: 30
   minSceneObjectHitDamage: 1
   maxSceneObjectHitDamage: 5
+  sceneObjectHitStunTime: 0.1
 --- !u!1001 &4626116012176736124
 PrefabInstance:
   m_ObjectHideFlags: 0
