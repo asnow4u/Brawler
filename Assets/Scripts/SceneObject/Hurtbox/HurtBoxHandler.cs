@@ -163,13 +163,13 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxHandlerEdi
         float travelDuration = hitDuration * travelDurationRatio;
         float recoveryDuration = hitDuration * recoveryDurationRatio;
 
-        ChangeHitStunState(HitStunState.Stun);
+        ChangeHitStunState(HitStunState.Pause);
 
         while (hitStunTime < hitStunDuration)
         {
             hitStunTime += Time.deltaTime;
 
-            if (hitStunTime > stunDuration && curHitStunState == HitStunState.Stun)
+            if (hitStunTime > stunDuration && curHitStunState == HitStunState.Pause)
                 ChangeHitStunState(HitStunState.Launch);
             else if (hitStunTime > stunDuration + launchDuration && curHitStunState == HitStunState.Launch)
                 ChangeHitStunState(HitStunState.Travel);
@@ -186,7 +186,7 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxHandlerEdi
 
     public Vector3 EvaluateHitStunVelocity()
     {
-        if (curHitStunState == HitStunState.Null || curHitStunState == HitStunState.Stun || hitStunDuration == 0)
+        if (curHitStunState == HitStunState.Null || curHitStunState == HitStunState.Pause || hitStunDuration == 0)
             return Vector3.zero;
 
         float normalizedVelocity = hitStunVelocityCurve.Evaluate(hitStunTime / hitStunDuration);

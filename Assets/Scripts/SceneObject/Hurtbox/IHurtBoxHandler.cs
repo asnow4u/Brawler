@@ -4,7 +4,7 @@ using UnityEngine;
 public enum HitStunState 
 { 
     Null = -1, 
-    Stun = 0, 
+    Pause = 0, 
     Launch = 1, 
     Travel = 2, 
     Recovery = 3
