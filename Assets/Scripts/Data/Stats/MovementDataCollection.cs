@@ -8,9 +8,11 @@ public class MovementDataCollection : ScriptableObject
     public AirMoveData AirMoveData;
     public JumpData JumpData;
     public AirJumpData AirJumpData;
+    public WallJumpData WallJumpData;
     public ClimbMoveData ClimbMoveData;
     public VaultData VaultData;
     public WallLeanData WallLeanData;
+    public WallSlideData WallSlideData;
 
     public event Action OnChangedEvent;
 
@@ -32,9 +34,11 @@ public class MovementDataCollection : ScriptableObject
         if (AirMoveData != null) RegisterToChangeEvents(AirMoveData);
         if (JumpData != null) RegisterToChangeEvents(JumpData);
         if (AirJumpData != null) RegisterToChangeEvents(AirJumpData);
+        if (WallJumpData != null) RegisterToChangeEvents(WallJumpData);
         if (ClimbMoveData != null) RegisterToChangeEvents(ClimbMoveData);
         if (VaultData != null) RegisterToChangeEvents(VaultData);
         if (WallLeanData != null) RegisterToChangeEvents(WallLeanData);
+        if (WallSlideData != null) RegisterToChangeEvents(WallSlideData);
     }
 
     private void RegisterToChangeEvents(BaseMovementData data)
@@ -48,9 +52,11 @@ public class MovementDataCollection : ScriptableObject
         if (AirMoveData != null) UnregisterFromChangeEvents(AirMoveData);
         if (JumpData != null) UnregisterFromChangeEvents(JumpData);
         if (AirJumpData != null) UnregisterFromChangeEvents(AirJumpData);
+        if (WallJumpData != null) UnregisterFromChangeEvents(WallJumpData);
         if (ClimbMoveData != null) UnregisterFromChangeEvents(ClimbMoveData);
         if (VaultData != null) UnregisterFromChangeEvents(VaultData);
         if (WallLeanData != null) UnregisterFromChangeEvents(WallLeanData);
+        if (WallSlideData != null) UnregisterFromChangeEvents(WallSlideData);
     }
 
     private void UnregisterFromChangeEvents(BaseMovementData data)

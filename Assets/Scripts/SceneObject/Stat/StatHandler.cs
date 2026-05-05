@@ -64,9 +64,7 @@ public class StatHandler : MonoBehaviour, IStats
     }
 
     private void soDataChanged()
-    {
-        Debug.Log("So Data Changed", gameObject);
-
+    {        
         if (baseSceneObjectData.IsValid())
             UpdateSceneObjectStats();
         else
@@ -142,20 +140,30 @@ public class StatHandler : MonoBehaviour, IStats
             else
                 movementAnimations.Add(3, null);
 
-            if (movementData.VaultData != null)
-                movementAnimations.Add(4, movementData.VaultData.Animation);
+            if (movementData.WallSlideData != null)
+                movementAnimations.Add(4, movementData.WallSlideData.Animation);
             else
                 movementAnimations.Add(4, null);
 
-            if (movementData.JumpData != null)
-                movementAnimations.Add(5, movementData.JumpData.Animation);
+            if (movementData.VaultData != null)
+                movementAnimations.Add(5, movementData.VaultData.Animation);
             else
                 movementAnimations.Add(5, null);
 
-            if (movementData.AirJumpData != null)
-                movementAnimations.Add(6, movementData.AirJumpData.Animation);
+            if (movementData.JumpData != null)
+                movementAnimations.Add(6, movementData.JumpData.Animation);
             else
                 movementAnimations.Add(6, null);
+
+            if (movementData.AirJumpData != null)
+                movementAnimations.Add(7, movementData.AirJumpData.Animation);
+            else
+                movementAnimations.Add(7, null);
+
+            if (movementData.WallJumpData != null)
+                movementAnimations.Add(8, movementData.WallJumpData.Animation);
+            else
+                movementAnimations.Add(8, null);
 
             statData.MovementAnimations = movementAnimations;
         }
@@ -256,6 +264,14 @@ public class StatHandler : MonoBehaviour, IStats
             statData.AerialJumpValid = data.AirJumpData.IsValid();
         }
 
+        if (data.WallJumpData != null)
+        {
+            statData.InitialWallJumpVelocity = Mathf.Lerp(data.WallJumpData.MaxInitialVelocity, data.WallJumpData.MinInitialVelocity, MassRatio);
+            statData.WallJumpAcceleration = Mathf.Lerp(data.WallJumpData.MaxJumpAcceleration, data.WallJumpData.MinJumpAcceleration, MassRatio);
+            statData.WallJumpAngle = data.WallJumpData.JumpAngle;
+            statData.WallJumpValid = data.WallJumpData.IsValid();
+        }
+
         if (data.VaultData != null)
         {
             statData.VaultValid = data.VaultData.IsValid();
@@ -264,6 +280,13 @@ public class StatHandler : MonoBehaviour, IStats
         if (data.WallLeanData != null)
         {
             statData.WallLeanValid = data.WallLeanData.IsValid();
+        }
+
+        if (data.WallSlideData != null)
+        {
+            statData.MaxWallSlideVelocity = Mathf.Lerp(data.WallSlideData.MaxSlideVelocity, data.WallSlideData.MinSlideVelocity, MassRatio);
+            statData.WallSlideDeceleration = Mathf.Lerp(data.WallSlideData.MaxSlideDecceleration, data.WallSlideData.MinSlideDecceleration, MassRatio);
+            statData.WallSlideValid = data.WallSlideData.IsValid();
         }
 
         return statData;

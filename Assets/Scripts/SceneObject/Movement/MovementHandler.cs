@@ -21,7 +21,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
     private Rigidbody rb;
 
     //Movement State Data
-    private MovementState curMovementState;
+    [SerializeField] private MovementState curMovementState;
     public MovementState CurMovementState => curMovementState;
     
     private MovementStatData curMovementData = null;
@@ -80,11 +80,19 @@ internal class MovementHandler : MonoBehaviour, IMovement
                                               jumpInputAvailable &&
                                               airJumpsPerformed < curMovementData.AirJumpsAvailable &&
                                               actionState.CurActionState <= ActionState.Moving;
+
+    private bool coyoteJumpMovementAllowed => jumpMovementAllowed &&
+                                              Time.time <= lastGroundedTime + coyoteTimeDuration;
     private bool wallLeanAllowed => curMovementData.WallLeanValid &&
-                                    IsRunningAgainstWall() &&
+                                    IsAgainstWall() &&
                                     actionState.CurActionState <= ActionState.Moving;
     private bool vaultMovementAllowed => curMovementData.VaultValid &&
                                          actionState.CurActionState <= ActionState.Moving;
+    private bool wallSlideAllowed => curMovementData.WallSlideValid &&
+                                     rb.linearVelocity.y < 0 &&
+                                     ((IsAgainstRightWall() && horizontalInfluence >= 0) || (IsAgainstLeftWall() && horizontalInfluence <= 0)) && //Prevent wall sliding when moving away from wall
+                                     verticalInfluence >= 0 && //Prevent wall sliding when fast falling
+                                     actionState.CurActionState <= ActionState.Moving;
 
     public event Action<MovementState> MovementStateChangedEvent;
 
@@ -110,6 +118,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
 
         rb = GetComponent<Rigidbody>();
         rb.linearDamping = 0;
+        rb.useGravity = false;
 
         //Not a requirement (Null means no inputs are ever recieved
         movementInput = GetComponent<IMovementInput>();        
@@ -206,14 +215,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
     private void FixedUpdate()
     {
         if (actionState.CurActionState == ActionState.HitStun)
-        {
             UpdateHitStunMovement();
-            return;
-        }
-
-        //CheckForClimbingStateChange();
-        //if (actionState.CurClimbState == ClimbState.Climbing)
-        //    UpdateClimbMovement();
 
         else if (actionState.CurGroundedState == GroundedState.Grounded)
             UpdateGroundedMovement();
@@ -283,7 +285,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
             return;
 
         //Coyote Time Jump
-        if (jumpMovementAllowed && Time.time <= lastGroundedTime + coyoteTimeDuration)
+        if (coyoteJumpMovementAllowed)
         {
             SetCurrentMoveState(MovementState.GroundJump);
             StartJump();
@@ -295,6 +297,10 @@ internal class MovementHandler : MonoBehaviour, IMovement
             SetCurrentMoveState(MovementState.AirJump);
             StartJump();
         }
+        
+        //Wall Slide
+        else if (wallSlideAllowed)
+            SetCurrentMoveState(MovementState.WallSlide);
                        
         //Accelerate
         else if (aerialMovementAllowed)
@@ -334,7 +340,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
     /// <summary>
     /// Determine if the sceneObject is against a wall
     /// </summary>
-    private bool IsRunningAgainstWall()
+    private bool IsAgainstWall()
     {
         return IsAgainstRightWall() || IsAgainstLeftWall();
     }
@@ -344,13 +350,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
     /// </summary>
     private bool IsAgainstRightWall()
     {
-        if (sceneObject.IsFacingRightDirection)
-        {
-            if (horizontalInfluence >= 0 && sceneObject.TryDetectCollision(Direction.Right, 0.5f, LayerMask.GetMask("Environment"), out _))
-                return true;
-        }
-
-        return false;
+        return sceneObject.TryDetectCollision(Direction.Right, 0.5f, LayerMask.GetMask("Environment"), out _);
     }
 
     /// <summary>
@@ -358,14 +358,8 @@ internal class MovementHandler : MonoBehaviour, IMovement
     /// </summary>
     private bool IsAgainstLeftWall()
     {
-        if (!sceneObject.IsFacingRightDirection)
-        {
-            if (horizontalInfluence <= 0 && sceneObject.TryDetectCollision(Direction.Left, 0.5f, LayerMask.GetMask("Environment"), out _))
-                return true;
-        }
-
-        return false;
-    }
+        return sceneObject.TryDetectCollision(Direction.Left, 0.5f, LayerMask.GetMask("Environment"), out _);
+    }    
 
     #endregion
 
@@ -513,6 +507,8 @@ internal class MovementHandler : MonoBehaviour, IMovement
     /// </summary>
     private void UpdateAerialMovement()
     {
+        ApplyGravity();
+
         UpdateAerialMovementState();
 
         switch (curMovementState)
@@ -526,13 +522,13 @@ internal class MovementHandler : MonoBehaviour, IMovement
 
                 //Horizontal Movement
                 if (horizontalInfluence != 0)
-                    AerialXAccelerate();
+                    AccelerateAerialXMovement();
                 else
                     DeccelerateAerialXMovement();
 
                 //Vertical Movement
-                if (verticalInfluence != 0)
-                    AerialYAccelerate();
+                if (verticalInfluence != 0 && rb.linearVelocity.y <= 0)
+                    AccelerateAerialYMovement();
                 else
                     DeccelerateAerialYMovement();
                 break;
@@ -541,11 +537,19 @@ internal class MovementHandler : MonoBehaviour, IMovement
 
                 //Horizontal Movement
                 if (horizontalInfluence != 0)
-                    AerialXAccelerate();
+                    AccelerateAerialXMovement();
                 else
                     DeccelerateAerialXMovement();
 
                 UpdateJumpVelocity();
+                break;
+
+            case MovementState.WallSlide:
+
+                if (IsAgainstRightWall() && !sceneObject.IsFacingRightDirection || IsAgainstLeftWall() && sceneObject.IsFacingRightDirection)
+                    sceneObject.TurnAround();
+
+                DeccelerateWallSlide();
                 break;
         }
     }
@@ -553,7 +557,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
     /// <summary>
     /// Accelerate in the air on the X axis
     /// </summary>
-    private void AerialXAccelerate()
+    private void AccelerateAerialXMovement()
     {
         float maxXVelocity = curMovementData.MaxAerialXVelocity;
         float acceleration = curMovementData.AerialXAcceleration;
@@ -584,23 +588,17 @@ internal class MovementHandler : MonoBehaviour, IMovement
     /// <summary>
     /// Accelerate in the air on the Y axis
     /// </summary>
-    private void AerialYAccelerate()
+    private void AccelerateAerialYMovement()
     {
         float maxYVelocity = curMovementData.MaxAerialYVelocity;
         float acceleration = curMovementData.AerialYAcceleration;
 
-        if (verticalInfluence < 0 && rb.linearVelocity.y < 0)
-        {
-            float acceleratedYValue = rb.linearVelocity.y - (acceleration * Time.fixedDeltaTime);
+        float acceleratedYValue = rb.linearVelocity.y - (acceleration * Time.fixedDeltaTime);
 
-            if (acceleratedYValue < -maxYVelocity)
-                acceleratedYValue = -maxYVelocity;
+        if (acceleratedYValue < -maxYVelocity)
+            acceleratedYValue = -maxYVelocity;
 
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, acceleratedYValue, 0);
-        }
-
-        else
-            DeccelerateAerialYMovement();
+        rb.linearVelocity = new Vector3(rb.linearVelocity.x, acceleratedYValue, 0);
     }
 
     /// <summary>
@@ -666,8 +664,32 @@ internal class MovementHandler : MonoBehaviour, IMovement
         }
 
         //Gravity
-        rb.linearVelocity = new Vector3(rb.linearVelocity.x, rb.linearVelocity.y + (Physics.gravity.y * curMovementData.GravityMultiplier * Time.fixedDeltaTime), 0);
+        rb.linearVelocity = new Vector3(rb.linearVelocity.x, rb.linearVelocity.y, 0);
     }    
+
+
+    private void ApplyGravity()
+    {
+        rb.linearVelocity += new Vector3(0, Physics.gravity.y * curMovementData.GravityMultiplier * Time.fixedDeltaTime, 0);
+    }
+
+    #endregion
+
+
+    #region Wall Slide    
+
+    private void DeccelerateWallSlide()
+    {
+        if (Mathf.Abs(rb.linearVelocity.y) > curMovementData.MaxWallSlideVelocity)
+        {
+            float decceleratedYValue = rb.linearVelocity.y + curMovementData.WallSlideDeceleration * Time.fixedDeltaTime;
+
+            if (decceleratedYValue > 0)
+                decceleratedYValue = 0;
+
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, decceleratedYValue, 0);
+        }
+    }
 
     #endregion
 

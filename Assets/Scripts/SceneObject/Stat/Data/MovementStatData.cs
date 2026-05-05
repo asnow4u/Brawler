@@ -7,8 +7,10 @@ public class MovementStatData
     public bool ClimbMovementValid = false;
     public bool GroundedJumpValid = false;
     public bool AerialJumpValid = false;
+    public bool WallJumpValid = false;
     public bool VaultValid = false;
     public bool WallLeanValid = false;
+    public bool WallSlideValid = false;
 
     //Grounded Movement
     public float MaxGroundedVelocity;
@@ -38,5 +40,14 @@ public class MovementStatData
     //Aerial Jump
     public float InitialAirJumpVelocity;
     public float AirJumpAcceleration;
-    public int AirJumpsAvailable;    
+    public int AirJumpsAvailable;
+
+    //Wall Jump
+    public float InitialWallJumpVelocity;
+    public float WallJumpAcceleration;
+    public float WallJumpAngle;
+
+    //Wall Slide
+    public float MaxWallSlideVelocity;
+    public float WallSlideDeceleration;
 }
