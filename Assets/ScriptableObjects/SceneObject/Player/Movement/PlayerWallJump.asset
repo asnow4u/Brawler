@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db010291182cc9b49a22a4eeed8ac65c, type: 3}
   m_Name: PlayerWallJump
   m_EditorClassIdentifier: StatData::WallJumpData
-  Animation: {fileID: 7400000, guid: 44cb3dedf453b4d4290b376bb5bb4d95, type: 2}
-  MaxInitialVelocity: 8
-  MinInitialVelocity: 8
+  Animation: {fileID: 7400000, guid: c311c0d264a546b40afdc726ab406938, type: 2}
+  MaxInitialVelocity: 10
+  MinInitialVelocity: 10
   MaxJumpAcceleration: 1
   MinJumpAcceleration: 1
-  JumpAngle: 40
+  JumpAngle: 65

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 549b858414866af45be95eabe5c5cd42, type: 3}
   m_Name: PlayerWallSlide
   m_EditorClassIdentifier: StatData::WallSlideData
-  Animation: {fileID: 7400000, guid: 3da112ab5eed1b849820182576116672, type: 2}
+  Animation: {fileID: 7400000, guid: bd2ef32ef2bddcb418f6630d15e8b0b2, type: 2}
   MaxSlideVelocity: 5
   MinSlideVelocity: 5
   MaxSlideDecceleration: 60

@@ -41,6 +41,10 @@ internal class MovementHandler : MonoBehaviour, IMovement
     private const float coyoteTimeDuration = 0.1f;
     private float lastGroundedTime = -100f;
 
+    [Header("Wall Jump")]
+    private const float wallJumpDetachDuration = 0.2f;
+    private float lastWallJumpTime = -100f;
+
     private bool jumpInputAvailable = true; //Jump available is only true after the user has released the jump button
     private bool isJumpingSquating = false;
     private const int JUMPSQUATFRAMECOUNT = 2; //How many frames does it take for a jump before user is actionable
@@ -86,12 +90,21 @@ internal class MovementHandler : MonoBehaviour, IMovement
     private bool wallLeanAllowed => curMovementData.WallLeanValid &&
                                     IsAgainstWall() &&
                                     actionState.CurActionState <= ActionState.Moving;
-    private bool vaultMovementAllowed => curMovementData.VaultValid &&
-                                         actionState.CurActionState <= ActionState.Moving;
+
+    private bool wallJumpAllowed => curMovementData.WallJumpValid &&
+                                    jumpInfluence > 0 &&
+                                    jumpInputAvailable &&
+                                    IsAgainstWall() &&
+                                    actionState.CurActionState <= ActionState.Moving &&
+                                    Time.time >= lastWallJumpTime + wallJumpDetachDuration;
+
     private bool wallSlideAllowed => curMovementData.WallSlideValid &&
                                      rb.linearVelocity.y < 0 &&
                                      ((IsAgainstRightWall() && horizontalInfluence >= 0) || (IsAgainstLeftWall() && horizontalInfluence <= 0)) && //Prevent wall sliding when moving away from wall
                                      verticalInfluence >= 0 && //Prevent wall sliding when fast falling
+                                     actionState.CurActionState <= ActionState.Moving;
+
+    private bool vaultMovementAllowed => curMovementData.VaultValid &&
                                      actionState.CurActionState <= ActionState.Moving;
 
     public event Action<MovementState> MovementStateChangedEvent;
@@ -288,6 +301,13 @@ internal class MovementHandler : MonoBehaviour, IMovement
         if (coyoteJumpMovementAllowed)
         {
             SetCurrentMoveState(MovementState.GroundJump);
+            StartJump();
+        }
+
+        //Wall Jump
+        else if (wallJumpAllowed)
+        {
+            SetCurrentMoveState(MovementState.WallJump);
             StartJump();
         }
 
@@ -534,6 +554,8 @@ internal class MovementHandler : MonoBehaviour, IMovement
                 break;
 
             case MovementState.GroundJump:
+            case MovementState.AirJump:
+            case MovementState.WallJump:
 
                 //Horizontal Movement
                 if (horizontalInfluence != 0)
@@ -806,6 +828,34 @@ internal class MovementHandler : MonoBehaviour, IMovement
             jumpVelocity = curMovementData.InitialAirJumpVelocity;
         }
 
+        else if (curMovementState == MovementState.WallJump)
+        {
+            lastWallJumpTime = Time.time;
+            
+            float angle = curMovementData.WallJumpAngle;
+            float angleRad = angle * Mathf.Deg2Rad;
+            
+            float dirX = Mathf.Cos(angleRad);
+            float dirY = Mathf.Sin(angleRad);
+            
+            if (IsAgainstRightWall())
+            {
+                dirX = -dirX; 
+            }
+            
+            float velocityMagnitude = curMovementData.InitialWallJumpVelocity;
+            rb.linearVelocity = new Vector3(dirX * velocityMagnitude, dirY * velocityMagnitude, 0);
+            
+            if (dirX > 0 && !sceneObject.IsFacingRightDirection || dirX < 0 && sceneObject.IsFacingRightDirection)
+            {
+                sceneObject.TurnAround();
+            }
+            
+            jumpInputAvailable = false;
+            jumpSquatCoroutine = StartCoroutine(JumpFrameCounter());
+            return;
+        }
+
         if (jumpVelocity > 0)
         {
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpVelocity, 0);
@@ -842,6 +892,9 @@ internal class MovementHandler : MonoBehaviour, IMovement
 
         else if (curMovementState == MovementState.AirJump)
             acceleration = curMovementData.AirJumpAcceleration * jumpInfluence;
+            
+        else if (curMovementState == MovementState.WallJump)
+            acceleration = curMovementData.WallJumpAcceleration * jumpInfluence;
 
         if (acceleration > 0)
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, rb.linearVelocity.y + (acceleration * Time.fixedDeltaTime), 0);
