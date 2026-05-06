@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: PlayerWallJump
   m_EditorClassIdentifier: StatData::WallJumpData
   Animation: {fileID: 7400000, guid: c311c0d264a546b40afdc726ab406938, type: 2}
-  MaxInitialVelocity: 10
-  MinInitialVelocity: 10
+  MaxInitialVelocity: 12
+  MinInitialVelocity: 12
   MaxJumpAcceleration: 1
   MinJumpAcceleration: 1
   JumpAngle: 65

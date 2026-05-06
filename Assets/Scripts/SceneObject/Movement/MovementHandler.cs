@@ -227,6 +227,8 @@ internal class MovementHandler : MonoBehaviour, IMovement
 
     private void FixedUpdate()
     {
+        ApplyGravity();
+
         if (actionState.CurActionState == ActionState.HitStun)
             UpdateHitStunMovement();
 
@@ -235,6 +237,11 @@ internal class MovementHandler : MonoBehaviour, IMovement
 
         else if (actionState.CurGroundedState == GroundedState.Airborn)
             UpdateAerialMovement();
+    }
+
+    private void ApplyGravity()
+    {
+        rb.linearVelocity += new Vector3(0, Physics.gravity.y * curMovementData.GravityMultiplier * Time.fixedDeltaTime, 0);
     }
 
 
@@ -526,16 +533,19 @@ internal class MovementHandler : MonoBehaviour, IMovement
     /// Update horizontal movement in the air
     /// </summary>
     private void UpdateAerialMovement()
-    {
-        ApplyGravity();
-
+    {        
         UpdateAerialMovementState();
 
         switch (curMovementState)
         {
             case MovementState.Null:
                 DeccelerateAerialXMovement();
-                DeccelerateAerialYMovement();
+
+                //Vertical Movement (allowed to fast fall while attacking)
+                if (verticalInfluence < 0 && rb.linearVelocity.y <= 0)
+                    AccelerateAerialYMovement();
+                else
+                    DeccelerateAerialYMovement();
                 break;
 
             case MovementState.AirMove:
@@ -547,7 +557,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
                     DeccelerateAerialXMovement();
 
                 //Vertical Movement
-                if (verticalInfluence != 0 && rb.linearVelocity.y <= 0)
+                if (verticalInfluence < 0 && rb.linearVelocity.y <= 0)
                     AccelerateAerialYMovement();
                 else
                     DeccelerateAerialYMovement();
@@ -688,13 +698,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
         //Gravity
         rb.linearVelocity = new Vector3(rb.linearVelocity.x, rb.linearVelocity.y, 0);
     }    
-
-
-    private void ApplyGravity()
-    {
-        rb.linearVelocity += new Vector3(0, Physics.gravity.y * curMovementData.GravityMultiplier * Time.fixedDeltaTime, 0);
-    }
-
+    
     #endregion
 
 
