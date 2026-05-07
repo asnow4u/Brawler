@@ -18,6 +18,6 @@ MonoBehaviour:
   AirJumpData: {fileID: 11400000, guid: c9f63594ad4c83048a3162f847ff9fd4, type: 2}
   WallJumpData: {fileID: 11400000, guid: 27ce8a013497b69499417c8f44d09bf2, type: 2}
   ClimbMoveData: {fileID: 0}
-  VaultData: {fileID: 0}
+  LedgeClimbData: {fileID: 11400000, guid: 930f1bdb62abb7448a6199e355f5f2c4, type: 2}
   WallLeanData: {fileID: 0}
   WallSlideData: {fileID: 11400000, guid: d8860e4379a87b84ba73e99c13b3e1bd, type: 2}

@@ -9,7 +9,7 @@ public enum MovementState
     ClimbMove = 2,
     WallLean = 3,
     WallSlide = 4,
-    Vault = 5,
+    LedgeClimb = 5,
     GroundJump = 6,
     AirJump = 7,
     WallJump = 8,

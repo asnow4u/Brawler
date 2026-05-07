@@ -55,10 +55,16 @@ internal class MovementHandler : MonoBehaviour, IMovement
     [SerializeField] private bool isClimbSliding = false;
     private const float climbSlideVelocityThreshold = -10f; //When switching to climbing, this determines whether a slide decceleration is applied
 
-    //Edge Vault Properties        
-    private const float requiredPercentageAboveVaultEdge = 0.3f;
-    [SerializeField] private bool isVaulting = false;
-    private float vaultStoredVelocity;
+    //Ledge Climb Properties
+    [Header("Ledge Climb")]
+    [SerializeField] private float ledgeClimbDuration = 0.2f;
+    private bool isLedgeClimbing = false;
+    private float ledgeClimbStartTime = -100f;
+    private Vector3 ledgeClimbStartPosition;
+    private Vector3 ledgeClimbPullUpPosition;
+    private Vector3 ledgeClimbStandPosition;
+    private Vector3 storedLedgeClimbVelocity;
+    private const float requiredLedgeClimbPercentage = 0.3f;
 
     //Bounce Properties
     [Header("Bounce")]
@@ -87,9 +93,6 @@ internal class MovementHandler : MonoBehaviour, IMovement
 
     private bool coyoteJumpMovementAllowed => jumpMovementAllowed &&
                                               Time.time <= lastGroundedTime + coyoteTimeDuration;
-    private bool wallLeanAllowed => curMovementData.WallLeanValid &&
-                                    IsAgainstWall() &&
-                                    actionState.CurActionState <= ActionState.Moving;
 
     private bool wallJumpAllowed => curMovementData.WallJumpValid &&
                                     jumpInfluence > 0 &&
@@ -98,14 +101,19 @@ internal class MovementHandler : MonoBehaviour, IMovement
                                     actionState.CurActionState <= ActionState.Moving &&
                                     Time.time >= lastWallJumpTime + wallJumpDetachDuration;
 
+    private bool wallLeanAllowed => curMovementData.WallLeanValid &&
+                                    IsAgainstWall() &&
+                                    actionState.CurActionState <= ActionState.Moving;
+
     private bool wallSlideAllowed => curMovementData.WallSlideValid &&
                                      rb.linearVelocity.y < 0 &&
                                      ((IsAgainstRightWall() && horizontalInfluence >= 0) || (IsAgainstLeftWall() && horizontalInfluence <= 0)) && //Prevent wall sliding when moving away from wall
                                      verticalInfluence >= 0 && //Prevent wall sliding when fast falling
                                      actionState.CurActionState <= ActionState.Moving;
 
-    private bool vaultMovementAllowed => curMovementData.VaultValid &&
-                                     actionState.CurActionState <= ActionState.Moving;
+    private bool ledgeClimbAllowed => curMovementData.LedgeClimbValid &&
+                                      ((horizontalInfluence > 0 && IsAgainstRightLedge()) || (horizontalInfluence < 0 && IsAgainstLeftLedge())) &&
+                                      actionState.CurActionState <= ActionState.Moving;
 
     public event Action<MovementState> MovementStateChangedEvent;
 
@@ -241,6 +249,9 @@ internal class MovementHandler : MonoBehaviour, IMovement
 
     private void ApplyGravity()
     {
+        if (isLedgeClimbing)
+            return;
+
         rb.linearVelocity += new Vector3(0, Physics.gravity.y * curMovementData.GravityMultiplier * Time.fixedDeltaTime, 0);
     }
 
@@ -271,7 +282,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
     /// </summary>
     private void UpdateGroundedMovementState()
     {
-        if (isJumpingSquating || isVaulting) 
+        if (isJumpingSquating || isLedgeClimbing) 
             return;
 
         //Jump
@@ -301,30 +312,41 @@ internal class MovementHandler : MonoBehaviour, IMovement
     private void UpdateAerialMovementState()
     {
         //NOTE: Movement not allowed while in jump animation
-        if (isJumpingSquating || isVaulting)
+        if (isJumpingSquating || isLedgeClimbing)
             return;
 
         //Coyote Time Jump
         if (coyoteJumpMovementAllowed)
         {
             SetCurrentMoveState(MovementState.GroundJump);
-            StartJump();
+            if (curMovementState == MovementState.GroundJump)
+                StartJump();
         }
 
         //Wall Jump
         else if (wallJumpAllowed)
         {
             SetCurrentMoveState(MovementState.WallJump);
-            StartJump();
+            if (curMovementState == MovementState.WallJump)
+                StartJump();
         }
 
         //Air Jump
         else if (aerialJumpMovementAllowed)
         {
             SetCurrentMoveState(MovementState.AirJump);
-            StartJump();
+            if (curMovementState == MovementState.AirJump)
+                StartJump();
         }
         
+        //Ledge Climb
+        else if (ledgeClimbAllowed)
+        {
+            SetCurrentMoveState(MovementState.LedgeClimb);
+            if (curMovementState == MovementState.LedgeClimb)
+                BeginLedgeClimb();
+        }
+
         //Wall Slide
         else if (wallSlideAllowed)
             SetCurrentMoveState(MovementState.WallSlide);
@@ -386,7 +408,58 @@ internal class MovementHandler : MonoBehaviour, IMovement
     private bool IsAgainstLeftWall()
     {
         return sceneObject.TryDetectCollision(Direction.Left, 0.5f, LayerMask.GetMask("Environment"), out _);
-    }    
+    }
+
+    private bool IsAgainstRightLedge()
+    {
+        if (sceneObject.TryDetectCollision(Direction.Right, 0.5f, LayerMask.GetMask("Ledge"), out Collider collider))
+        {
+            return CheckLedge(collider, 1);
+        }
+        return false;    
+    } 
+
+    private bool IsAgainstLeftLedge()
+    {
+        if (sceneObject.TryDetectCollision(Direction.Left, 0.5f, LayerMask.GetMask("Ledge"), out Collider collider))
+        {
+            return CheckLedge(collider, -1);
+        }
+        return false;
+    }
+
+    private bool CheckLedge(Collider collider, int dirX)
+    {
+        //Scene Object must be above the edge to vault
+        if (sceneObject.Bounds.max.y <= collider.bounds.max.y) return false;
+
+        //Calculate how much of the other collider is above this edge
+        float heightDifference = sceneObject.Bounds.max.y - collider.bounds.max.y;
+        float percentageAboveLedge = heightDifference / sceneObject.Bounds.size.y;  
+
+        bool canClimb = percentageAboveLedge >= requiredLedgeClimbPercentage;
+
+        if (canClimb)
+        {
+            ledgeClimbStartPosition = transform.position;
+
+            float ledgeTopY = collider.bounds.max.y;
+
+            // Center of the sceneObject lines up with the top of the collider
+            float centerToPositionOffset = transform.position.y - sceneObject.Bounds.center.y;
+            ledgeClimbStartPosition.y = ledgeTopY + centerToPositionOffset;
+
+            float footOffset = transform.position.y - sceneObject.Bounds.min.y;
+            ledgeClimbPullUpPosition = ledgeClimbStartPosition;
+            ledgeClimbPullUpPosition.y = ledgeTopY + footOffset + 0.05f;
+
+            ledgeClimbStandPosition = ledgeClimbPullUpPosition;
+            ledgeClimbStandPosition.x += dirX * (sceneObject.Bounds.extents.x + 0.5f);
+        }
+
+        return canClimb;
+    }
+
 
     #endregion
 
@@ -424,19 +497,6 @@ internal class MovementHandler : MonoBehaviour, IMovement
     #endregion
 
 
-    #region Collision
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.TryGetComponent(out ClimbableEdge edge))
-        {
-            UpdateEdgeClimb(edge);
-        }
-    }
-
-    #endregion
-
-
     #region Grounded Movement
 
     /// <summary>
@@ -450,6 +510,10 @@ internal class MovementHandler : MonoBehaviour, IMovement
         {
             case MovementState.Null:
                 DeccelerateGroundedMovement();
+                break;
+
+            case MovementState.LedgeClimb:
+                UpdateLedgeClimbMovement();
                 break;
 
             case MovementState.WallLean:
@@ -538,6 +602,10 @@ internal class MovementHandler : MonoBehaviour, IMovement
 
         switch (curMovementState)
         {
+            case MovementState.LedgeClimb:
+                UpdateLedgeClimbMovement();
+                break;
+
             case MovementState.Null:
                 DeccelerateAerialXMovement();
 
@@ -907,42 +975,52 @@ internal class MovementHandler : MonoBehaviour, IMovement
     #endregion
 
 
-    #region Edge Climb
+    #region Ledge Climb
 
-    public void UpdateEdgeClimb(ClimbableEdge edge)
+    private void BeginLedgeClimb()
     {
-        if (curMovementState == MovementState.Vault || !vaultMovementAllowed) return;
+        isLedgeClimbing = true;
+        ledgeClimbStartTime = Time.time;
+        storedLedgeClimbVelocity = rb.linearVelocity;
+        rb.linearVelocity = Vector3.zero;
+        rb.useGravity = false;
+        
+        transform.position = ledgeClimbStartPosition;
 
-        BoxCollider edgeCollider = edge.transform.GetComponent<BoxCollider>();
+        // Ensure player is facing the ledge
+        if (horizontalInfluence > 0 && !sceneObject.IsFacingRightDirection)
+            sceneObject.TurnAround();
+        else if (horizontalInfluence < 0 && sceneObject.IsFacingRightDirection)
+            sceneObject.TurnAround();
+    }
 
-        //Scene Object must be above the edge to vault
-        if (sceneObject.Bounds.max.y <= edgeCollider.bounds.max.y) return;
+    private void UpdateLedgeClimbMovement()
+    {
+        float elapsed = Time.time - ledgeClimbStartTime;
 
-        //Calculate how much of the other collider is above this edge
-        float edgeHeightDifference = sceneObject.Bounds.max.y - edgeCollider.bounds.max.y;
-        float percentageAboveEdge = edgeHeightDifference / sceneObject.Bounds.size.y;            
-
-        //Determine if scene object is heading towards the edge
-        bool correctInfluence = (edge.IsRight && HorizontalInfluence < 0 && edge.transform.position.x < transform.position.x) ||
-                                (!edge.IsRight && HorizontalInfluence > 0 && edge.transform.position.x > transform.position.x);            
-
-        if (percentageAboveEdge >= requiredPercentageAboveVaultEdge && correctInfluence)
+        if (elapsed >= ledgeClimbDuration)
         {
-            //Turn to face edge if not already facing
-            if ((edge.IsRight && sceneObject.IsFacingRightDirection) ||
-                (!edge.IsRight && !sceneObject.IsFacingRightDirection))
+            transform.position = ledgeClimbStandPosition;
+            rb.useGravity = true;
+            rb.linearVelocity = storedLedgeClimbVelocity;
+            isLedgeClimbing = false;
+            SetCurrentMoveState(MovementState.Null);
+            return;
+        }
+
+            float t = Mathf.Clamp01(elapsed / ledgeClimbDuration);
+            float easedT = Mathf.SmoothStep(0f, 1f, t);
+
+            if (easedT < 0.5f)
             {
-                sceneObject.TurnAround();
+                float phaseT = easedT * 2f;
+            transform.position = Vector3.Lerp(ledgeClimbStartPosition, ledgeClimbPullUpPosition, phaseT);
             }
-
-            vaultStoredVelocity = rb.linearVelocity.x;
-            rb.linearVelocity = Vector3.zero;
-
-            transform.position = edge.transform.position;
-                
-            SetCurrentMoveState(MovementState.Vault);
-            isVaulting = true;
-        }                
+            else
+            {
+                float phaseT = (easedT - 0.5f) * 2f;
+            transform.position = Vector3.Lerp(ledgeClimbPullUpPosition, ledgeClimbStandPosition, phaseT);
+            }
     }
 
     #endregion

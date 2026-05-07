@@ -8,7 +8,7 @@ public class MovementStatData
     public bool GroundedJumpValid = false;
     public bool AerialJumpValid = false;
     public bool WallJumpValid = false;
-    public bool VaultValid = false;
+    public bool LedgeClimbValid = false;
     public bool WallLeanValid = false;
     public bool WallSlideValid = false;
 

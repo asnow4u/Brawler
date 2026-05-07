@@ -10,7 +10,7 @@ public class MovementDataCollection : ScriptableObject
     public AirJumpData AirJumpData;
     public WallJumpData WallJumpData;
     public ClimbMoveData ClimbMoveData;
-    public VaultData VaultData;
+    public LedgeClimbData LedgeClimbData;
     public WallLeanData WallLeanData;
     public WallSlideData WallSlideData;
 
@@ -36,7 +36,7 @@ public class MovementDataCollection : ScriptableObject
         if (AirJumpData != null) RegisterToChangeEvents(AirJumpData);
         if (WallJumpData != null) RegisterToChangeEvents(WallJumpData);
         if (ClimbMoveData != null) RegisterToChangeEvents(ClimbMoveData);
-        if (VaultData != null) RegisterToChangeEvents(VaultData);
+        if (LedgeClimbData != null) RegisterToChangeEvents(LedgeClimbData);
         if (WallLeanData != null) RegisterToChangeEvents(WallLeanData);
         if (WallSlideData != null) RegisterToChangeEvents(WallSlideData);
     }
@@ -54,7 +54,7 @@ public class MovementDataCollection : ScriptableObject
         if (AirJumpData != null) UnregisterFromChangeEvents(AirJumpData);
         if (WallJumpData != null) UnregisterFromChangeEvents(WallJumpData);
         if (ClimbMoveData != null) UnregisterFromChangeEvents(ClimbMoveData);
-        if (VaultData != null) UnregisterFromChangeEvents(VaultData);
+        if (LedgeClimbData != null) UnregisterFromChangeEvents(LedgeClimbData);
         if (WallLeanData != null) UnregisterFromChangeEvents(WallLeanData);
         if (WallSlideData != null) UnregisterFromChangeEvents(WallSlideData);
     }

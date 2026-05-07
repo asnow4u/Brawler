@@ -125,8 +125,8 @@ GameObject:
   - component: {fileID: 4412278969167891710}
   - component: {fileID: 5297100526835849652}
   - component: {fileID: 5209879229972761157}
-  m_Layer: 0
-  m_Name: LeftEdge
+  m_Layer: 10
+  m_Name: LeftLedge
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -178,8 +178,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.1707536, y: 0.1010312, z: 0.99999976}
-  m_Center: {x: 0.08593538, y: 0, z: 0}
+  m_Size: {x: 0.2716824, y: 0.030446706, z: 0.99999976}
+  m_Center: {x: 0.1363597, y: 0.015354441, z: 0}
 --- !u!1 &5421357043326476797
 GameObject:
   m_ObjectHideFlags: 0
@@ -191,8 +191,8 @@ GameObject:
   - component: {fileID: 6554072842995660342}
   - component: {fileID: 4171999981735539625}
   - component: {fileID: 7870040248578297790}
-  m_Layer: 0
-  m_Name: RightEdge
+  m_Layer: 10
+  m_Name: RightLedge
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -244,5 +244,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.1707536, y: 0.1010312, z: 0.99999976}
-  m_Center: {x: 0.08593538, y: 0, z: 0}
+  m_Size: {x: 0.27168235, y: 0.032005057, z: 0.99999976}
+  m_Center: {x: 0.13635968, y: -0.015935078, z: 0}

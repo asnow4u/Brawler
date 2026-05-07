@@ -145,8 +145,8 @@ public class StatHandler : MonoBehaviour, IStats
             else
                 movementAnimations.Add(4, null);
 
-            if (movementData.VaultData != null)
-                movementAnimations.Add(5, movementData.VaultData.Animation);
+            if (movementData.LedgeClimbData != null)
+                movementAnimations.Add(5, movementData.LedgeClimbData.Animation);
             else
                 movementAnimations.Add(5, null);
 
@@ -272,9 +272,9 @@ public class StatHandler : MonoBehaviour, IStats
             statData.WallJumpValid = data.WallJumpData.IsValid();
         }
 
-        if (data.VaultData != null)
+        if (data.LedgeClimbData != null)
         {
-            statData.VaultValid = data.VaultData.IsValid();
+            statData.LedgeClimbValid = data.LedgeClimbData.IsValid();
         }
 
         if (data.WallLeanData != null)

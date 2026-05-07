@@ -1,4 +1,3 @@
-using Game.SceneObjects;
 using UnityEngine;
 
 //NOTE: Solid is not yet implemented. Would want to make a seperate class for it having killzone be an abstract class
