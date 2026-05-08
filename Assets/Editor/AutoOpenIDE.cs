@@ -23,19 +23,26 @@ public class AutoOpenIDE
 
         SessionState.SetBool(SESSIONKEY, true);
 
-        string solutionPath = $"{Application.dataPath}/../{PlayerSettings.productName}.sln";
+        // If Visual Studio Code is already open, do nothing
+        if (Process.GetProcessesByName("Code").Length > 0)
+            return;
 
-        // Fallback: If the standard name isn't found, just search for .sln files
-        if (!System.IO.File.Exists(solutionPath))
+        string projectPath = System.IO.Path.GetDirectoryName(Application.dataPath);
+
+        try
         {
-            var dir = System.IO.Path.GetDirectoryName(Application.dataPath);
-            var files = System.IO.Directory.GetFiles(dir, "*.sln");
-            if (files.Length > 0)
-                solutionPath = files[0];
-            else
-                return; // No .sln? Nothing to open.
+            ProcessStartInfo startInfo = new ProcessStartInfo
+            {
+                FileName = "code",
+                Arguments = $"\"{projectPath}\"",
+                UseShellExecute = true,
+                WindowStyle = ProcessWindowStyle.Hidden
+            };
+            Process.Start(startInfo);
         }
-
-        Process.Start(solutionPath);
+        catch (System.Exception e)
+        {
+            UnityEngine.Debug.LogError("Failed to open VS Code. Make sure it's in your PATH. Error: " + e.Message);
+        }
     }
 }
