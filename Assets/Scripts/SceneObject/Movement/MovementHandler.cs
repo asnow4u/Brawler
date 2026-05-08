@@ -27,12 +27,18 @@ internal class MovementHandler : MonoBehaviour, IMovement
     private MovementStatData curMovementData = null;
 
     [Header("Influence")]
+    [Range(0, 1)]
+    [SerializeField] private float horizontalDeadzone;
     [Range(-1, 1)]
     [SerializeField] private float horizontalInfluence;
 
+    [Range(0, 1)]
+    [SerializeField] private float verticalDeadzone;
     [Range(-1, 1)]
     [SerializeField] private float verticalInfluence;
 
+    [Range(0, 1)]
+    [SerializeField] private float jumpDeadzone;
     [Range(0, 1)]
     [SerializeField] private float jumpInfluence;    
 
@@ -63,7 +69,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
     private Vector3 ledgeClimbStartPosition;
     private Vector3 ledgeClimbPullUpPosition;
     private Vector3 ledgeClimbStandPosition;
-    private Vector3 storedLedgeClimbVelocity;
+    private float storedLedgeClimbXVelocity;
     private const float requiredLedgeClimbPercentage = 0.3f;
 
     //Bounce Properties
@@ -468,8 +474,11 @@ internal class MovementHandler : MonoBehaviour, IMovement
     
     private void SetMovementInfluence(Vector2 inputInfluence)
     {
-        horizontalInfluence = Mathf.Clamp(inputInfluence.x, -1, 1);
-        verticalInfluence = Mathf.Clamp(inputInfluence.y, -1, 1);
+        if (inputInfluence.x > horizontalDeadzone || inputInfluence.x < -horizontalDeadzone)
+            horizontalInfluence = Mathf.Clamp(inputInfluence.x, -1, 1);
+
+        if (inputInfluence.y > verticalDeadzone || inputInfluence.y < -verticalDeadzone)
+            verticalInfluence = Mathf.Clamp(inputInfluence.y, -1, 1);
     }
 
     private void ResetMovementInfluence()
@@ -480,6 +489,9 @@ internal class MovementHandler : MonoBehaviour, IMovement
 
     public void SetJumpInfluence(float inputInfluence)
     {
+        if (inputInfluence < jumpDeadzone)
+            return;
+
         if (!jumpInputAvailable && inputInfluence == 0)
             jumpInputAvailable = true;
 
@@ -981,7 +993,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
     {
         isLedgeClimbing = true;
         ledgeClimbStartTime = Time.time;
-        storedLedgeClimbVelocity = rb.linearVelocity;
+        storedLedgeClimbXVelocity = rb.linearVelocity.x;
         rb.linearVelocity = Vector3.zero;
         rb.useGravity = false;
         
@@ -1002,7 +1014,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
         {
             transform.position = ledgeClimbStandPosition;
             rb.useGravity = true;
-            rb.linearVelocity = storedLedgeClimbVelocity;
+            rb.linearVelocity = new Vector3(storedLedgeClimbXVelocity, 0, 0);
             isLedgeClimbing = false;
             SetCurrentMoveState(MovementState.Null);
             return;

@@ -431,8 +431,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: SceneObject.Movement::MovementHandler
   curMovementState: 0
+  horizontalDeadzone: 0.1
   horizontalInfluence: 0
+  verticalDeadzone: 0.1
   verticalInfluence: 0
+  jumpDeadzone: 0.1
   jumpInfluence: 0
   isClimbSliding: 0
   ledgeClimbDuration: 0.2
