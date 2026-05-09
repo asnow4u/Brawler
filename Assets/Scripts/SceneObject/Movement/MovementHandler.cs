@@ -8,7 +8,7 @@ using UnityEngine;
 [RequireComponent(typeof(StatHandler))]
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(HurtBoxHandler))]
-internal class MovementHandler : MonoBehaviour, IMovement
+internal partial class MovementHandler : MonoBehaviour, IMovement
 {
     //Dependencies
     private ISceneObject sceneObject;
@@ -41,22 +41,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
     [SerializeField] private float jumpDeadzone;
     [Range(0, 1)]
     [SerializeField] private float jumpInfluence;    
-
-    //Jump Properties
-    [Header("Coyote Time")]
-    private const float coyoteTimeDuration = 0.1f;
-    private float lastGroundedTime = -100f;
-
-    [Header("Wall Jump")]
-    private const float wallJumpDetachDuration = 0.2f;
-    private float lastWallJumpTime = -100f;
-
-    private bool jumpInputAvailable = true; //Jump available is only true after the user has released the jump button
-    private bool isJumpingSquating = false;
-    private const int JUMPSQUATFRAMECOUNT = 2; //How many frames does it take for a jump before user is actionable
-    private Coroutine jumpSquatCoroutine;
-    private int airJumpsPerformed = 0;
-
+    
     //Climb Properties
     [SerializeField] private bool isClimbSliding = false;
     private const float climbSlideVelocityThreshold = -10f; //When switching to climbing, this determines whether a slide decceleration is applied
@@ -71,11 +56,6 @@ internal class MovementHandler : MonoBehaviour, IMovement
     private Vector3 ledgeClimbStandPosition;
     private float storedLedgeClimbXVelocity;
     private const float requiredLedgeClimbPercentage = 0.3f;
-
-    //Bounce Properties
-    [Header("Bounce")]
-    [SerializeField] private float bounceDegrade = 0.9f;
-    private const float minGroundBounceVelocity = 20f;
 
     //Conditions
     private bool groundedMovementAllowed => curMovementData.GroundedMovementValid &&
@@ -122,14 +102,6 @@ internal class MovementHandler : MonoBehaviour, IMovement
                                       actionState.CurActionState <= ActionState.Moving;
 
     public event Action<MovementState> MovementStateChangedEvent;
-
-    #region Getters
-
-    public float HorizontalInfluence => horizontalInfluence;
-    public float VerticalInfluence => verticalInfluence;
-
-    #endregion
-
 
     #region Initialize / Destroy
 
@@ -239,27 +211,123 @@ internal class MovementHandler : MonoBehaviour, IMovement
 
     #endregion
 
-    private void FixedUpdate()
+
+    #region Wall Check
+
+    /// <summary>
+    /// Determine if the sceneObject is against a wall
+    /// </summary>
+    private bool IsAgainstWall()
     {
-        ApplyGravity();
-
-        if (actionState.CurActionState == ActionState.HitStun)
-            UpdateHitStunMovement();
-
-        else if (actionState.CurGroundedState == GroundedState.Grounded)
-            UpdateGroundedMovement();
-
-        else if (actionState.CurGroundedState == GroundedState.Airborn)
-            UpdateAerialMovement();
+        return IsAgainstRightWall() || IsAgainstLeftWall();
     }
 
-    private void ApplyGravity()
+    /// <summary>
+    /// Determine if the sceneObject is against a wall on the right side
+    /// </summary>
+    private bool IsAgainstRightWall()
     {
-        if (isLedgeClimbing)
+        return sceneObject.TryDetectCollision(Direction.Right, 0.5f, LayerMask.GetMask("Environment"), out _);
+    }
+
+    /// <summary>
+    /// Determine if the sceneObject is against a wall on the left side
+    /// </summary>
+    private bool IsAgainstLeftWall()
+    {
+        return sceneObject.TryDetectCollision(Direction.Left, 0.5f, LayerMask.GetMask("Environment"), out _);
+    }
+
+    private bool IsAgainstRightLedge()
+    {
+        if (sceneObject.TryDetectCollision(Direction.Right, 0.5f, LayerMask.GetMask("Ledge"), out Collider collider))
+        {
+            return CheckLedge(collider, 1);
+        }
+        return false;    
+    } 
+
+    private bool IsAgainstLeftLedge()
+    {
+        if (sceneObject.TryDetectCollision(Direction.Left, 0.5f, LayerMask.GetMask("Ledge"), out Collider collider))
+        {
+            return CheckLedge(collider, -1);
+        }
+        return false;
+    }
+
+    private bool CheckLedge(Collider collider, int dirX)
+    {
+        //Scene Object must be above the edge to vault
+        if (sceneObject.Bounds.max.y <= collider.bounds.max.y) return false;
+
+        //Calculate how much of the other collider is above this edge
+        float heightDifference = sceneObject.Bounds.max.y - collider.bounds.max.y;
+        float percentageAboveLedge = heightDifference / sceneObject.Bounds.size.y;  
+
+        bool canClimb = percentageAboveLedge >= requiredLedgeClimbPercentage;
+
+        if (canClimb)
+        {
+            ledgeClimbStartPosition = transform.position;
+
+            float ledgeTopY = collider.bounds.max.y;
+
+            // Center of the sceneObject lines up with the top of the collider
+            float centerToPositionOffset = transform.position.y - sceneObject.Bounds.center.y;
+            ledgeClimbStartPosition.y = ledgeTopY + centerToPositionOffset;
+
+            float footOffset = transform.position.y - sceneObject.Bounds.min.y;
+            ledgeClimbPullUpPosition = ledgeClimbStartPosition;
+            ledgeClimbPullUpPosition.y = ledgeTopY + footOffset + 0.05f;
+
+            ledgeClimbStandPosition = ledgeClimbPullUpPosition;
+            ledgeClimbStandPosition.x += dirX * (sceneObject.Bounds.extents.x + 0.5f);
+        }
+
+        return canClimb;
+    }
+
+    #endregion
+
+
+    #region Influence
+    
+    private void SetMovementInfluence(Vector2 inputInfluence)
+    {
+        if (inputInfluence.x > horizontalDeadzone || inputInfluence.x < -horizontalDeadzone)
+            horizontalInfluence = Mathf.Clamp(inputInfluence.x, -1, 1);
+
+        if (inputInfluence.y > verticalDeadzone || inputInfluence.y < -verticalDeadzone)
+            verticalInfluence = Mathf.Clamp(inputInfluence.y, -1, 1);
+    }
+
+    private void ResetMovementInfluence()
+    {
+        horizontalInfluence = 0;
+        verticalInfluence = 0;
+    }
+
+    public void SetJumpInfluence(float inputInfluence)
+    {
+        if (inputInfluence < jumpDeadzone)
             return;
 
-        rb.linearVelocity += new Vector3(0, Physics.gravity.y * curMovementData.GravityMultiplier * Time.fixedDeltaTime, 0);
+        if (!jumpInputAvailable && inputInfluence == 0)
+            jumpInputAvailable = true;
+
+        jumpInfluence = Mathf.Clamp(inputInfluence, 0, 1);
     }
+
+    private void ResetJumpInfluence()
+    {
+        if (!jumpInputAvailable)
+            jumpInputAvailable = true;
+
+        jumpInfluence = 0;
+    }
+
+    #endregion
 
 
     #region State    
@@ -390,126 +458,29 @@ internal class MovementHandler : MonoBehaviour, IMovement
     #endregion
 
 
-    #region Wall Check
+    #region Movement Update
 
-    /// <summary>
-    /// Determine if the sceneObject is against a wall
-    /// </summary>
-    private bool IsAgainstWall()
+    private void FixedUpdate()
     {
-        return IsAgainstRightWall() || IsAgainstLeftWall();
+        ApplyGravity();
+
+        if (actionState.CurActionState == ActionState.HitStun)
+            UpdateHitStunMovement();
+
+        else if (actionState.CurGroundedState == GroundedState.Grounded)
+            UpdateGroundedMovement();
+
+        else if (actionState.CurGroundedState == GroundedState.Airborn)
+            UpdateAerialMovement();
     }
 
-    /// <summary>
-    /// Determine if the sceneObject is against a wall on the right side
-    /// </summary>
-    private bool IsAgainstRightWall()
+    private void ApplyGravity()
     {
-        return sceneObject.TryDetectCollision(Direction.Right, 0.5f, LayerMask.GetMask("Environment"), out _);
-    }
-
-    /// <summary>
-    /// Determine if the sceneObject is against a wall on the left side
-    /// </summary>
-    private bool IsAgainstLeftWall()
-    {
-        return sceneObject.TryDetectCollision(Direction.Left, 0.5f, LayerMask.GetMask("Environment"), out _);
-    }
-
-    private bool IsAgainstRightLedge()
-    {
-        if (sceneObject.TryDetectCollision(Direction.Right, 0.5f, LayerMask.GetMask("Ledge"), out Collider collider))
-        {
-            return CheckLedge(collider, 1);
-        }
-        return false;    
-    } 
-
-    private bool IsAgainstLeftLedge()
-    {
-        if (sceneObject.TryDetectCollision(Direction.Left, 0.5f, LayerMask.GetMask("Ledge"), out Collider collider))
-        {
-            return CheckLedge(collider, -1);
-        }
-        return false;
-    }
-
-    private bool CheckLedge(Collider collider, int dirX)
-    {
-        //Scene Object must be above the edge to vault
-        if (sceneObject.Bounds.max.y <= collider.bounds.max.y) return false;
-
-        //Calculate how much of the other collider is above this edge
-        float heightDifference = sceneObject.Bounds.max.y - collider.bounds.max.y;
-        float percentageAboveLedge = heightDifference / sceneObject.Bounds.size.y;  
-
-        bool canClimb = percentageAboveLedge >= requiredLedgeClimbPercentage;
-
-        if (canClimb)
-        {
-            ledgeClimbStartPosition = transform.position;
-
-            float ledgeTopY = collider.bounds.max.y;
-
-            // Center of the sceneObject lines up with the top of the collider
-            float centerToPositionOffset = transform.position.y - sceneObject.Bounds.center.y;
-            ledgeClimbStartPosition.y = ledgeTopY + centerToPositionOffset;
-
-            float footOffset = transform.position.y - sceneObject.Bounds.min.y;
-            ledgeClimbPullUpPosition = ledgeClimbStartPosition;
-            ledgeClimbPullUpPosition.y = ledgeTopY + footOffset + 0.05f;
-
-            ledgeClimbStandPosition = ledgeClimbPullUpPosition;
-            ledgeClimbStandPosition.x += dirX * (sceneObject.Bounds.extents.x + 0.5f);
-        }
-
-        return canClimb;
-    }
-
-
-    #endregion
-
-
-    #region Movement Influence
-    
-    private void SetMovementInfluence(Vector2 inputInfluence)
-    {
-        if (inputInfluence.x > horizontalDeadzone || inputInfluence.x < -horizontalDeadzone)
-            horizontalInfluence = Mathf.Clamp(inputInfluence.x, -1, 1);
-
-        if (inputInfluence.y > verticalDeadzone || inputInfluence.y < -verticalDeadzone)
-            verticalInfluence = Mathf.Clamp(inputInfluence.y, -1, 1);
-    }
-
-    private void ResetMovementInfluence()
-    {
-        horizontalInfluence = 0;
-        verticalInfluence = 0;
-    }
-
-    public void SetJumpInfluence(float inputInfluence)
-    {
-        if (inputInfluence < jumpDeadzone)
+        if (isLedgeClimbing)
             return;
 
-        if (!jumpInputAvailable && inputInfluence == 0)
-            jumpInputAvailable = true;
-
-        jumpInfluence = Mathf.Clamp(inputInfluence, 0, 1);
+        rb.linearVelocity += new Vector3(0, Physics.gravity.y * curMovementData.GravityMultiplier * Time.fixedDeltaTime, 0);
     }
-
-    private void ResetJumpInfluence()
-    {
-        if (!jumpInputAvailable)
-            jumpInputAvailable = true;
-
-        jumpInfluence = 0;
-    }
-
-    #endregion
-
-
-    #region Grounded Movement
 
     /// <summary>
     /// Update movement on the ground based on current movement state
@@ -541,69 +512,7 @@ internal class MovementHandler : MonoBehaviour, IMovement
                 UpdateJumpVelocity();
                 break;
         }
-    }
-
-    /// <summary>
-    /// Accelerate on the ground by an acceleration value to a max velocity from <see cref="currentMovementCollection"/>
-    /// </summary>
-    private void UpdateGroundedAcceleration()
-    {
-        float currentX = rb.linearVelocity.x;
-
-        // 1. Kill momentum if reversing
-        if (horizontalInfluence != 0 && Mathf.Sign(horizontalInfluence) != Mathf.Sign(currentX))
-        {
-            currentX = 0;
-        }
-
-        // 2. Apply acceleration
-        currentX += horizontalInfluence * curMovementData.GroundedAcceleration * Time.fixedDeltaTime;
-
-        // 3. Clamp
-        float maxSpeed = curMovementData.MaxGroundedVelocity;
-        currentX = Mathf.Clamp(currentX, -maxSpeed, maxSpeed);
-
-        rb.linearVelocity = new Vector3(currentX, rb.linearVelocity.y, 0);
-
-        if (sceneObject.IsFacingRightDirection && rb.linearVelocity.x < 0 ||
-            !sceneObject.IsFacingRightDirection && rb.linearVelocity.x > 0)
-        {
-            sceneObject.TurnAround();
-        }
-    }
-
-    /// <summary>
-    /// Deccelerate grounded movement based on base deccelration value and the sceneObject's mass.
-    /// </summary>
-    private void DeccelerateGroundedMovement()
-    {
-        //Positive Decceleration
-        if (rb.linearVelocity.x > 0)
-        {
-            float decceleratedXValue = rb.linearVelocity.x - curMovementData.GroundedDecceleration * Time.fixedDeltaTime;
-
-            if (decceleratedXValue < 0)
-                decceleratedXValue = 0;
-
-            rb.linearVelocity = new Vector3(decceleratedXValue, rb.linearVelocity.y, 0);
-        }
-
-        //Negative Decceleration
-        else if (rb.linearVelocity.x < 0)
-        {
-            float decceleratedXValue = rb.linearVelocity.x + curMovementData.GroundedDecceleration * Time.fixedDeltaTime;
-
-            if (decceleratedXValue > 0)
-                decceleratedXValue = 0;
-
-            rb.linearVelocity = new Vector3(decceleratedXValue, rb.linearVelocity.y, 0);
-        }
-    }
-
-    #endregion
-
-
-    #region Aerial Movement
+    }    
 
     /// <summary>
     /// Update horizontal movement in the air
@@ -665,120 +574,13 @@ internal class MovementHandler : MonoBehaviour, IMovement
                 break;
         }
     }
-
-    /// <summary>
-    /// Accelerate in the air on the X axis
-    /// </summary>
-    private void AccelerateAerialXMovement()
-    {
-        float maxXVelocity = curMovementData.MaxAerialXVelocity;
-        float acceleration = curMovementData.AerialXAcceleration;
-
-        //Positive Acceleration
-        if (horizontalInfluence > 0)
-        {
-            float acceleratedXValue = rb.linearVelocity.x + (acceleration * Time.fixedDeltaTime);
-
-            if (acceleratedXValue > maxXVelocity)
-                acceleratedXValue = maxXVelocity;
-
-            rb.linearVelocity = new Vector3(acceleratedXValue, rb.linearVelocity.y, 0);
-        }
-
-        //Negative Acceleration
-        else if (horizontalInfluence < 0)
-        {
-            float acceleratedXValue = rb.linearVelocity.x - (acceleration * Time.fixedDeltaTime);
-
-            if (acceleratedXValue < -maxXVelocity)
-                acceleratedXValue = -maxXVelocity;
-
-            rb.linearVelocity = new Vector3(acceleratedXValue, rb.linearVelocity.y, 0);
-        }
-    }
-
-    /// <summary>
-    /// Accelerate in the air on the Y axis
-    /// </summary>
-    private void AccelerateAerialYMovement()
-    {
-        float maxYVelocity = curMovementData.MaxAerialYVelocity;
-        float acceleration = curMovementData.AerialYAcceleration;
-
-        float acceleratedYValue = rb.linearVelocity.y - (acceleration * Time.fixedDeltaTime);
-
-        if (acceleratedYValue < -maxYVelocity)
-            acceleratedYValue = -maxYVelocity;
-
-        rb.linearVelocity = new Vector3(rb.linearVelocity.x, acceleratedYValue, 0);
-    }
-
-    /// <summary>
-    /// Deccelerate in the air on the X axis 
-    /// </summary>
-    private void DeccelerateAerialXMovement()
-    {
-        //Only deccelerate if velocity is greater than max velocity
-        if (Mathf.Abs(rb.linearVelocity.x) > curMovementData.MaxAerialXVelocity)
-        {
-            //Positive Decceleration
-            if (rb.linearVelocity.x > 0)
-            {
-                float decceleratedXValue = rb.linearVelocity.x - curMovementData.AerialXDecceleration * Time.fixedDeltaTime;
-
-                if (decceleratedXValue < 0)
-                    decceleratedXValue = 0;
-
-                rb.linearVelocity = new Vector3(decceleratedXValue, rb.linearVelocity.y, 0);
-            }
-
-            //Negative Decceleration
-            else if (rb.linearVelocity.x < 0)
-            {
-                float decceleratedXValue = rb.linearVelocity.x + curMovementData.AerialXDecceleration * Time.fixedDeltaTime;
-
-                if (decceleratedXValue > 0)
-                    decceleratedXValue = 0;
-
-                rb.linearVelocity = new Vector3(decceleratedXValue, rb.linearVelocity.y, 0);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Deccelerate in the air on the Y axis 
-    /// </summary>
-    private void DeccelerateAerialYMovement()
-    {
-        if (Mathf.Abs(rb.linearVelocity.y) > curMovementData.MaxAerialYVelocity)
-        {
-            //Positive Decceleration
-            if (rb.linearVelocity.y > 0)
-            {
-                float decceleratedYValue = rb.linearVelocity.y - curMovementData.AerialUpYDecceleration * Time.fixedDeltaTime;
-
-                if (decceleratedYValue < 0)
-                    decceleratedYValue = 0;
-
-                rb.linearVelocity = new Vector3(rb.linearVelocity.x, decceleratedYValue, 0);
-            }
-
-            //Negative Decceleration
-            else if (rb.linearVelocity.y < 0)
-            {
-                float decceleratedYValue = rb.linearVelocity.y + curMovementData.AerialDownYDecceleration * Time.fixedDeltaTime;
-
-                if (decceleratedYValue > 0)
-                    decceleratedYValue = 0;
-
-                rb.linearVelocity = new Vector3(rb.linearVelocity.x, decceleratedYValue, 0);
-            }
-        }
-
-        //Gravity
-        rb.linearVelocity = new Vector3(rb.linearVelocity.x, rb.linearVelocity.y, 0);
-    }    
     
+    private void UpdateHitStunMovement()
+    {
+        rb.linearVelocity = hitStunHandler.EvaluateHitStunVelocity();
+        CheckForHitStunBounce();
+    }
+
     #endregion
 
 
@@ -893,100 +695,6 @@ internal class MovementHandler : MonoBehaviour, IMovement
     #endregion
 
 
-    #region Jump
-
-    private void StartJump()
-    {
-        float jumpVelocity = 0;
-
-        if (curMovementState == MovementState.GroundJump)
-        {
-            jumpVelocity = curMovementData.InitialJumpVelocity;
-            lastGroundedTime = -100f; // Consume coyote time to prevent double jumps
-        }
-
-        else if (curMovementState == MovementState.AirJump)
-        {
-            //CheckTurnAround();
-            airJumpsPerformed++;
-            jumpVelocity = curMovementData.InitialAirJumpVelocity;
-        }
-
-        else if (curMovementState == MovementState.WallJump)
-        {
-            lastWallJumpTime = Time.time;
-            
-            float angle = curMovementData.WallJumpAngle;
-            float angleRad = angle * Mathf.Deg2Rad;
-            
-            float dirX = Mathf.Cos(angleRad);
-            float dirY = Mathf.Sin(angleRad);
-            
-            if (IsAgainstRightWall())
-            {
-                dirX = -dirX; 
-            }
-            
-            float velocityMagnitude = curMovementData.InitialWallJumpVelocity;
-            rb.linearVelocity = new Vector3(dirX * velocityMagnitude, dirY * velocityMagnitude, 0);
-            
-            if (dirX > 0 && !sceneObject.IsFacingRightDirection || dirX < 0 && sceneObject.IsFacingRightDirection)
-            {
-                sceneObject.TurnAround();
-            }
-            
-            jumpInputAvailable = false;
-            jumpSquatCoroutine = StartCoroutine(JumpFrameCounter());
-            return;
-        }
-
-        if (jumpVelocity > 0)
-        {
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpVelocity, 0);
-            jumpInputAvailable = false;
-            jumpSquatCoroutine = StartCoroutine(JumpFrameCounter());
-        }
-    }
-
-
-    private IEnumerator JumpFrameCounter()
-    {
-        int frameCount = 0;
-        
-        isJumpingSquating = true;
-
-        while (frameCount < JUMPSQUATFRAMECOUNT)
-        {
-            frameCount++;
-            yield return null;
-        }
-
-        isJumpingSquating = false;
-    }
-
-    /// <summary>
-    /// Velocity applied to rb based on how long the jump button has been held
-    /// </summary>
-    private void UpdateJumpVelocity()
-    {
-        float acceleration = 0;
-
-        if (curMovementState == MovementState.GroundJump)
-            acceleration = curMovementData.JumpAcceleration * jumpInfluence;
-
-        else if (curMovementState == MovementState.AirJump)
-            acceleration = curMovementData.AirJumpAcceleration * jumpInfluence;
-            
-        else if (curMovementState == MovementState.WallJump)
-            acceleration = curMovementData.WallJumpAcceleration * jumpInfluence;
-
-        if (acceleration > 0)
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, rb.linearVelocity.y + (acceleration * Time.fixedDeltaTime), 0);
-    }
-
-    #endregion
-
-
     #region Ledge Climb
 
     private void BeginLedgeClimb()
@@ -1037,94 +745,4 @@ internal class MovementHandler : MonoBehaviour, IMovement
 
     #endregion
 
-
-    #region HitStun Movement
-
-    private void UpdateHitStunMovement()
-    {
-        rb.linearVelocity = hitStunHandler.EvaluateHitStunVelocity();
-        CheckForHitStunBounce();
-    }
-
-    private void CheckForHitStunBounce()
-    {
-        Bounds bounds = sceneObject.Bounds;
-        Vector3 direction = rb.linearVelocity.normalized;
-        float distance = rb.linearVelocity.magnitude * Time.fixedDeltaTime;
-
-        //Get bound points for bounce check
-        List<Vector3> boundPoints = new List<Vector3>();
-        float centralZ = (bounds.max.z + bounds.min.z) / 2;
-
-        //X Direction
-        if (direction.x > 0)
-        {
-            boundPoints.Add(new Vector3(bounds.max.x, bounds.max.y, centralZ)); // Top-right
-            boundPoints.Add(new Vector3(bounds.max.x, bounds.center.y, centralZ));  // Right-center
-            boundPoints.Add(new Vector3(bounds.max.x, bounds.min.y, centralZ)); // Bottom-right
-        }
-        else if (direction.x < 0)
-        {
-            boundPoints.Add(new Vector3(bounds.min.x, bounds.max.y, centralZ)); // Top-left
-            boundPoints.Add(new Vector3(bounds.min.x, bounds.center.y, centralZ));  // Left-center
-            boundPoints.Add(new Vector3(bounds.min.x, bounds.min.y, centralZ)); // Bottom-left
-        }
-
-        //Y Direction
-        if (direction.y > 0)
-        {
-            boundPoints.Add(new Vector3(bounds.min.x, bounds.max.y, centralZ)); // Top-left
-            boundPoints.Add(new Vector3(bounds.center.x, bounds.max.y, centralZ)); // Top-center
-            boundPoints.Add(new Vector3(bounds.max.x, bounds.max.y, centralZ)); // Top-right
-        }
-        else if (direction.y < 0)
-        {
-            boundPoints.Add(new Vector3(bounds.min.x, bounds.min.y, centralZ)); // Bottom-left
-            boundPoints.Add(new Vector3(bounds.center.x, bounds.min.y, centralZ)); // Bottom-center
-            boundPoints.Add(new Vector3(bounds.max.x, bounds.min.y, centralZ)); // Bottom-right
-        }
-
-        if (boundPoints.Count == 0)
-            return;
-
-        //Environment check
-        List<Vector3> hitNormals = new List<Vector3>();
-        foreach (var point in boundPoints)
-        { 
-            if (Physics.Raycast(point, direction, out RaycastHit hit, distance, LayerMask.GetMask("Environment")))
-                hitNormals.Add(hit.normal);
-        }
-
-        if (hitNormals.Count == 0)
-            return;
-
-        Vector3 bounceVelocity = CalculateBounceVelocity(hitNormals);
-        rb.linearVelocity = bounceVelocity;
-    }
-
-    private Vector3 CalculateBounceVelocity(List<Vector3> hitNormals)
-    {
-        if (hitNormals == null || hitNormals.Count == 0)
-            return Vector3.zero;
-
-        //Calculate bounce velocity
-        Vector3 averageNormal = Vector3.zero;
-
-        foreach (var normal in hitNormals)
-            averageNormal += normal;
-        averageNormal /= hitNormals.Count;
-
-        Vector3 bounceVelocity = Vector3.Reflect(rb.linearVelocity, averageNormal) * bounceDegrade;
-
-        //Prevent small bounces on ground
-        if (bounceVelocity.magnitude < minGroundBounceVelocity &&
-            rb.linearVelocity.y < 0 && bounceVelocity.y > 0)
-        {
-            return Vector3.zero;
-        }
-
-        return bounceVelocity;
-    }
-
-    #endregion
 }
