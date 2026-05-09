@@ -18,34 +18,19 @@ public enum IdleState
     ClimbIdle = 2 
 };
 
-public enum AttackState 
-{ 
-    Null = -1, 
-    UpTilt = 0, 
-    DownTilt = 1, 
-    ForwardTilt = 2, 
-    UpAir = 3, 
-    DownAir = 4, 
-    ForwardAir = 5 
-};
-
 public interface IActionState
 {
     public GroundedState CurGroundedState { get; }
     public ClimbState CurClimbState { get; }
-    public ActionState CurActionState { get; }    
-    public AttackState CurAttackState { get; }
+    public ActionState CurActionState { get; }
 
     public void ChangeState(ActionState actionState);
     public bool TryChangeState(ActionState actionState);
 
-    public void ChangeClimbState(ClimbState climbState);    
-    public void ChangeAttackState(AttackState attackState);
+    public void ChangeClimbState(ClimbState climbState);
 
     public event Action<GroundedState> GroundedStateChangedEvent;
     public event Action<ClimbState> ClimbStateChangedEvent;
     public event Action<ActionState> ActionStateChangedEvent;
-    public event Action<IdleState> IdleStateChangedEvent;
-    
-    public event Action<AttackState> AttackStateChangedEvent;
+    public event Action<IdleState> IdleStateChangedEvent;    
 }

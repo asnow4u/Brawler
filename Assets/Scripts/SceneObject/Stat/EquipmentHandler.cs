@@ -118,22 +118,22 @@ internal class EquipmentHandler : StatHandler
         AttackDataCollection attackData = weapon.WeaponData.AttackCollection;
 
         if (attackData.UpTiltData != null)
-            data.UpTilt = new AttackStatData.AttackStats(AttackState.UpTilt, attackData.UpTiltData);
-
-        if (attackData.ForwardTiltData != null)
-            data.ForwardTilt = new AttackStatData.AttackStats(AttackState.ForwardTilt, attackData.ForwardTiltData);
+            data.UpTilt = new AttackStatData.AttackStats(0, attackData.UpTiltData);
 
         if (attackData.DownTiltData != null)
-            data.DownTilt = new AttackStatData.AttackStats(AttackState.DownTilt, attackData.DownTiltData);
+            data.DownTilt = new AttackStatData.AttackStats(1, attackData.DownTiltData);
+
+        if (attackData.ForwardTiltData != null)
+            data.ForwardTilt = new AttackStatData.AttackStats(2, attackData.ForwardTiltData);
 
         if (attackData.UpAirData != null)
-            data.UpAir = new AttackStatData.AttackStats(AttackState.UpAir, attackData.UpAirData);
-
-        if (attackData.ForwardAirData != null)
-            data.ForwardAir = new AttackStatData.AttackStats(AttackState.ForwardAir, attackData.ForwardAirData);
+            data.UpAir = new AttackStatData.AttackStats(3, attackData.UpAirData);
 
         if (attackData.DownAirData != null)
-            data.DownAir = new AttackStatData.AttackStats(AttackState.DownAir, attackData.DownAirData);
+            data.DownAir = new AttackStatData.AttackStats(4, attackData.DownAirData);
+
+        if (attackData.ForwardAirData != null)
+            data.ForwardAir = new AttackStatData.AttackStats(5, attackData.ForwardAirData);
 
         return data;
     }

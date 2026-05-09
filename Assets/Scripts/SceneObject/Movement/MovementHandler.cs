@@ -6,8 +6,8 @@ using UnityEngine;
 [RequireComponent(typeof(ISceneObject))]
 [RequireComponent(typeof(ActionStateHandler))]
 [RequireComponent(typeof(StatHandler))]
-[RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(HurtBoxHandler))]
+[RequireComponent(typeof(Rigidbody))]
 internal partial class MovementHandler : MonoBehaviour, IMovement
 {
     //Dependencies

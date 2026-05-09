@@ -18,18 +18,15 @@ public class AnimationHandler : MonoBehaviour, IAnimation
     IHurtBoxHandler hurtBoxHandler;
 
     IMovement movementHandler;
+    IAttack attackHandler;
 
     private Animator animator;
-    private AnimationEventHandler eventHandler;    
     private AnimationGraph animationGraph;
 
     [SerializeField] RuntimeAnimatorController idleController;
     [SerializeField] RuntimeAnimatorController movementController;
     [SerializeField] RuntimeAnimatorController attackController;
     [SerializeField] RuntimeAnimatorController hitStunController;
-
-    //Events    
-    public event Action<AnimationEventState> AnimationEventFiredEvent;
 
     #region Getters
 
@@ -51,9 +48,9 @@ public class AnimationHandler : MonoBehaviour, IAnimation
             Debug.LogError("AnimationHandler Animator is null", gameObject);        
         animator.runtimeAnimatorController = null; //Ensure animator controller is null to avoid conflicts with playable graph
 
-        eventHandler = animator.GetComponentInChildren<AnimationEventHandler>();
-        if (eventHandler == null)
-            Debug.LogError("AnimationHandler AnimatorEventHandler is null", gameObject);
+        // eventHandler = animator.GetComponentInChildren<AnimationEventHandler>();
+        // if (eventHandler == null)
+        //     Debug.LogError("AnimationHandler AnimatorEventHandler is null", gameObject);
 
         if (idleController == null || hitStunController == null)
             Debug.LogError("AnimationHandler IdleController and/or HitStunController are null", gameObject);
@@ -62,6 +59,7 @@ public class AnimationHandler : MonoBehaviour, IAnimation
         statHandler = GetComponent<IStats>();
         hurtBoxHandler = GetComponent<IHurtBoxHandler>();
         movementHandler = GetComponent<IMovement>();
+        attackHandler = GetComponent<IAttack>();
 
         animationGraph = new AnimationGraph(animator, idleController, movementController, attackController, hitStunController);
         
@@ -74,13 +72,13 @@ public class AnimationHandler : MonoBehaviour, IAnimation
 
         actionState.ActionStateChangedEvent += OnActionStateChanged;
         actionState.IdleStateChangedEvent += OnIdleStateChanged;
-        actionState.AttackStateChangedEvent += OnAttackStateChanged;
         hurtBoxHandler.HitStunStateChangedEvent += OnHitStunStateChanged;
 
         if (movementHandler != null)
             movementHandler.MovementStateChangedEvent += OnMovementStateChanged;
         
-        eventHandler.OnEventFired += HandleAnimationEvent;
+        if (attackHandler != null)
+            attackHandler.AttackStateChangedEvent += OnAttackStateChanged;
     }
 
     private void OnDestroy()
@@ -96,15 +94,15 @@ public class AnimationHandler : MonoBehaviour, IAnimation
         
         actionState.ActionStateChangedEvent -= OnActionStateChanged;
         actionState.IdleStateChangedEvent -= OnIdleStateChanged;
-        actionState.AttackStateChangedEvent -= OnAttackStateChanged;
+        
         
         hurtBoxHandler.HitStunStateChangedEvent -= OnHitStunStateChanged;
 
         if (movementHandler != null)
             movementHandler.MovementStateChangedEvent -= OnMovementStateChanged;
 
-
-        eventHandler.OnEventFired -= HandleAnimationEvent;
+        if (attackHandler != null)
+            attackHandler.AttackStateChangedEvent -= OnAttackStateChanged;
     }
 
     private void OnAnimationStatsChanged(AnimationStatData data)
@@ -151,12 +149,7 @@ public class AnimationHandler : MonoBehaviour, IAnimation
             return;
 
         animationGraph.ChangeHitStunStateInput(hitStunState);
-    }
-
-    private void HandleAnimationEvent(AnimationEventState state)
-    {
-        AnimationEventFiredEvent?.Invoke(state);
-    }
+    }    
 
     #endregion
 

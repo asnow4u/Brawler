@@ -7,7 +7,7 @@ public class AttackStatData
 
     public class AttackStats
     {
-        public AttackState State;
+        public int State;
         public AnimationClip Animation;
         public float Influence;
         public float LaunchAngle;
@@ -15,7 +15,7 @@ public class AttackStatData
 
         private AnimationCurve damageCurve;
         
-        public AttackStats(AttackState state, AttackData data)
+        public AttackStats(int state, AttackData data)
         {
             State = state;
             Animation = data.Animation;

@@ -1,25 +1,29 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(ISceneObject))]
 [RequireComponent(typeof(ActionStateHandler))]
 [RequireComponent(typeof(StatHandler))]
-[RequireComponent(typeof(AnimationHandler))]
 [RequireComponent(typeof(Rigidbody))]
-internal class AttackHandler : MonoBehaviour, IAttack
+public class AttackHandler : MonoBehaviour, IAttack
 {    
     //Dependencies
     private ISceneObject sceneObject;
     private IAttackInput attackInput;
     private IActionState actionState;   
     private IStats statHandler;
-    private IAnimation animationHandler;
+    private IAnimationEvent animationEventHandler;
 
     //Components
     private Rigidbody rb;
             
-    private AttackState curAttackState => actionState.CurAttackState;    
+    [SerializeField] private AttackState curAttackState;
+    public AttackState CurAttackState => curAttackState;
+    
     private AttackStatData curAttackData;
+
+    public event Action<AttackState> AttackStateChangedEvent;
 
     #region Initialize    
 
@@ -33,9 +37,12 @@ internal class AttackHandler : MonoBehaviour, IAttack
         if (attackInput == null)
             Debug.LogError($"No IAttackInput found on {gameObject.name}.", gameObject);
 
+        animationEventHandler = GetComponentInChildren<IAnimationEvent>();
+        if (animationEventHandler == null)
+            Debug.LogError($"No IAnimationEvent found on {gameObject.name}.", gameObject);
+
         actionState = GetComponent<IActionState>();
         statHandler = GetComponent<IStats>();
-        animationHandler = GetComponent<IAnimation>();
         rb = GetComponent<Rigidbody>();
 
         RegisterToEvents();
@@ -45,7 +52,7 @@ internal class AttackHandler : MonoBehaviour, IAttack
     {
         actionState.GroundedStateChangedEvent += OnGroundedStateChanged;
         statHandler.AttackStatsChangedEvent += OnAttackStatsChanged;
-        animationHandler.AnimationEventFiredEvent += OnAnimationEvent;
+        animationEventHandler.OnAnimationEventFiredEvent += OnAnimationEvent;
 
         attackInput.AttackPerformedEvent += PerformAttack;
     }    
@@ -59,7 +66,7 @@ internal class AttackHandler : MonoBehaviour, IAttack
     {
         actionState.GroundedStateChangedEvent -= OnGroundedStateChanged;
         statHandler.AttackStatsChangedEvent -= OnAttackStatsChanged;
-        animationHandler.AnimationEventFiredEvent -= OnAnimationEvent;
+        animationEventHandler.OnAnimationEventFiredEvent -= OnAnimationEvent;
 
         attackInput.AttackPerformedEvent -= PerformAttack;
     }
@@ -93,7 +100,18 @@ internal class AttackHandler : MonoBehaviour, IAttack
 
     private void SetCurrentAttackState(AttackState attackState)
     {       
-        actionState.ChangeAttackState(attackState);
+        if (curAttackState == attackState)
+            return;
+
+        if (attackState == AttackState.Null || actionState.TryChangeState(ActionState.Attacking))
+        {
+            if (attackState == AttackState.Null && actionState.CurActionState == ActionState.Attacking)
+                actionState.ChangeState(ActionState.Idle);
+
+            curAttackState = attackState;
+            sceneObject.Log("Attack State: " + curAttackState);
+            AttackStateChangedEvent?.Invoke(curAttackState);
+        }
     }
 
     #endregion

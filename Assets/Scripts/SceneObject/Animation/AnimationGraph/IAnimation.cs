@@ -1,13 +1,10 @@
 using System;
 using UnityEngine;
 
-public enum AnimationEventState { Null, AttackStarted, EnableHitbox, DisableHitbox, AttackEnded }
 public interface IAnimation
 {
     public float GetCurrentAnimationDelta();
     public void PauseAnimation(float seconds);
-
-    public event Action<AnimationEventState> AnimationEventFiredEvent;
 }
 
 

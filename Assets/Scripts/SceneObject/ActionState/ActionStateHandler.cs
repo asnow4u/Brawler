@@ -19,15 +19,11 @@ public class ActionStateHandler : MonoBehaviour, IActionState
     [SerializeField] private IdleState curIdleState;
     public IdleState CurIdleState => curIdleState;
 
-    [SerializeField] private AttackState curAttackState;
-    public AttackState CurAttackState => curAttackState;
-
     public event Action<GroundedState> GroundedStateChangedEvent;
     public event Action<ClimbState> ClimbStateChangedEvent;
 
     public event Action<ActionState> ActionStateChangedEvent;
     public event Action<IdleState> IdleStateChangedEvent;
-    public event Action<AttackState> AttackStateChangedEvent;
     
 
     #region Initialize
@@ -134,22 +130,6 @@ public class ActionStateHandler : MonoBehaviour, IActionState
             ClimbStateChangedEvent?.Invoke(curClimbState);
 
             UpdateIdleState();
-        }
-    }
-
-    public void ChangeAttackState(AttackState attackState)
-    {
-        if (curAttackState == attackState)
-            return;
-
-        if (attackState == AttackState.Null || TryChangeState(ActionState.Attacking))
-        {
-            if (attackState == AttackState.Null && curActionState == ActionState.Attacking)
-                ChangeState(ActionState.Idle);
-
-            curAttackState = attackState;
-            sceneObject.Log("Attack State: " + curAttackState);
-            AttackStateChangedEvent?.Invoke(curAttackState);
         }
     }
 

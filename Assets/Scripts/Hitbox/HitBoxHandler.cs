@@ -17,7 +17,9 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
     private IActionState actionState;
     private IStats statHandler;
     private IAnimation animationHandler;
+    private IAnimationEvent animationEventHandler;
     private IHurtBoxHandler hurtBoxHandler;
+    private IAttack attackHandler;
 
     //Components
     private Rigidbody rb;
@@ -58,10 +60,15 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
         if (sceneObject == null)
             Debug.LogError("HitBoxHandler No ISceneObject found", gameObject);
 
+        animationEventHandler = GetComponentInChildren<IAnimationEvent>();
+        if (animationEventHandler == null)
+            Debug.LogError("HitBoxHandler No IAnimationEvent found", gameObject);
+
         actionState = GetComponent<IActionState>();
-        statHandler = GetComponent<IStats>();        
+        statHandler = GetComponent<IStats>();
         animationHandler = GetComponent<IAnimation>();
         hurtBoxHandler = GetComponent<IHurtBoxHandler>();        
+        attackHandler = GetComponent<IAttack>();
 
         rb = GetComponent<Rigidbody>();
 
@@ -82,7 +89,7 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
         actionState.ActionStateChangedEvent += OnActionStateChanged;
         statHandler.MovementStatsChangedEvent += OnMovementStatsChanged;
         statHandler.AttackStatsChangedEvent += OnAttackStatsChanged;
-        animationHandler.AnimationEventFiredEvent += OnAnimationEventFired;
+        animationEventHandler.OnAnimationEventFiredEvent += OnAnimationEventFired;
         hurtBoxHandler.HitStunStateChangedEvent += OnHitStunStateChanged;
     }
 
@@ -96,7 +103,7 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
         actionState.ActionStateChangedEvent -= OnActionStateChanged;
         statHandler.MovementStatsChangedEvent -= OnMovementStatsChanged;
         statHandler.AttackStatsChangedEvent -= OnAttackStatsChanged;
-        animationHandler.AnimationEventFiredEvent -= OnAnimationEventFired;
+        animationEventHandler.OnAnimationEventFiredEvent -= OnAnimationEventFired;
         hurtBoxHandler.HitStunStateChangedEvent -= OnHitStunStateChanged;
     }    
 
@@ -249,13 +256,14 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
 
     private void OnWeaponHit(IHurtBox hurtBox, Vector3 hitPoint)
     {
-        if (actionState.CurAttackState == AttackState.Null || 
+        if (attackHandler == null ||
+            attackHandler.CurAttackState == AttackState.Null || 
             sceneObjectsHit.Contains(hurtBox.SceneObjectID))
             return;
 
         sceneObjectsHit.Add(hurtBox.SceneObjectID);
 
-        AttackStats curAttackStats = weaponAttackDatas[actionState.CurAttackState];
+        AttackStats curAttackStats = weaponAttackDatas[attackHandler.CurAttackState];
 
         animationHandler.PauseAnimation(curAttackStats.HitStunTime);
 
