@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4756336397e50f742a3840b35cf07802, type: 3}
   m_Name: PlayerAirJump
   m_EditorClassIdentifier: StatData::AirJumpData
-  Animation: {fileID: 7400000, guid: e4af2bdcb9165c24ebe4d4941634d994, type: 2}
+  Animation: {fileID: 7400000, guid: 0db1bd331afd7b749ba98944e824c545, type: 2}
   MaxInitialVelocity: 10
   MinInitialVelocity: 10
   MaxJumpAcceleration: 1
