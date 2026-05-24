@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MaxMass: 200
   MinMass: 100
-  GroundedMaxVelocityMax: 13
-  GroundedMaxVelocityMin: 10
+  GroundedMaxVelocityMax: 18
+  GroundedMaxVelocityMin: 12
   GroundedDecceleration: 5000
   AerialMaxXVelocityMax: 13
   AerialMaxXVelocityMin: 10
@@ -23,6 +23,6 @@ MonoBehaviour:
   AerialMaxYVelocityMax: 25
   AerialMaxYVelocityMin: 25
   AerialYDecceleration: 100
-  GravityMultiplier: 2
+  GravityMultiplier: 3
   AnimationCollection: {fileID: 11400000, guid: b10aa38545bee094c864b83b9fe14b93, type: 2}
   MovementCollection: {fileID: 11400000, guid: 245cbd7ac52e237409f25943ff190ab6, type: 2}
