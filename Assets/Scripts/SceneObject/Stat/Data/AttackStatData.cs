@@ -18,7 +18,7 @@ public class AttackStatData
         public AttackStats(int state, AttackData data)
         {
             State = state;
-            Animation = data.Animation;
+            Animation = data.AnimationData.Animation;
             Influence = data.Influence;
             LaunchAngle = data.LaunchAngle;
             HitStunTime = data.HitStunTime;

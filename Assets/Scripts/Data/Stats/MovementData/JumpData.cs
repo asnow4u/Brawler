@@ -10,7 +10,7 @@ public class JumpData : BaseMovementData
 
     public override bool IsValid()
     {
-        return Animation != null &&
+        return AnimationData.Animation != null &&
                MaxInitialVelocity > 0 &&
                MinInitialVelocity > 0 &&
                MaxInitialVelocity >= MinInitialVelocity &&

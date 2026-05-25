@@ -9,7 +9,7 @@ public class MoveData : BaseMovementData
 
     public override bool IsValid()
     {
-        return Animation != null &&
+        return AnimationData.Animation != null &&
                GroundedXMaxAcceleration > 0 &&
                GroundedXMinAcceleration > 0 &&
                GroundedXMaxAcceleration >= GroundedXMinAcceleration;

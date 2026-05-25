@@ -14,7 +14,7 @@ public class ClimbMoveData : BaseMovementData
 
     public override bool IsValid()
     {
-        return Animation != null && 
+        return AnimationData.Animation != null && 
                IdleAnimation != null &&
                ClimbXVelocity > 0 &&
                ClimbUpYVelocity > 0 &&

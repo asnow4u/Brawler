@@ -12,7 +12,7 @@ public class AirMoveData : BaseMovementData
 
     public override bool IsValid()
     {
-        return Animation != null &&
+        return AnimationData.Animation != null &&
                AerialXMaxAcceleration > 0 &&
                AerialXMinAcceleration > 0 &&
                AerialXMaxAcceleration >= AerialXMinAcceleration &&

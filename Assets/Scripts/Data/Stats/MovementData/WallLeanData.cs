@@ -5,6 +5,6 @@ public class WallLeanData : BaseMovementData
 {
     public override bool IsValid()
     {
-        return Animation != null;
+        return AnimationData.Animation != null;
     }
 }

@@ -50,8 +50,6 @@ public class SceneObjectData : ScriptableObject
     [Header("Starting Movement Collection - Not Required")]
     public MovementDataCollection MovementCollection;
 
-    public event Action OnChangedEvent;
-
     public bool IsValid()
     {
         // SceneObject must have mass
@@ -80,44 +78,19 @@ public class SceneObjectData : ScriptableObject
         return true;
     }
 
+    #region Editor Updating
 
-#if UNITY_EDITOR
+    public event Action OnChangedEvent;
 
-    private void OnEnable()
-    {
-        RegisterToChangeEvents();
-    }
+    #if UNITY_EDITOR
 
-    private void OnDisable()
-    {
-        UnregisterToChangeEvents();
-    }
+        private void OnValidate()
+        {
+            if (Application.isPlaying)
+                OnChangedEvent?.Invoke();
+        }
 
-    private void RegisterToChangeEvents()
-    {
-        if (MovementCollection != null)
-            MovementCollection.OnChangedEvent += DataChanged;
-    }
+    #endif
 
-    private void UnregisterToChangeEvents()
-    {
-        if (MovementCollection != null)
-            MovementCollection.OnChangedEvent -= DataChanged;
-    }
-
-    private void DataChanged()
-    {
-        if (Application.isPlaying)
-            OnChangedEvent?.Invoke();
-    }
-
-    private void OnValidate()
-    {
-        DataChanged();
-
-        UnregisterToChangeEvents();
-        RegisterToChangeEvents();
-    }
-
-#endif
+    #endregion
 }

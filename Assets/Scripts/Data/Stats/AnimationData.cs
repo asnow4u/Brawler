@@ -2,13 +2,10 @@ using System;
 using UnityEngine;
 
 [Serializable]
-public class WeaponData
+public class AnimationData
 {
-    //Movement Data
-    public MovementDataCollection MovementCollection;
-
-    //Attack Data
-    public AttackDataCollection AttackCollection;
+    public AnimationClip Animation;
+    public float AnimationSpeed = 1f;
 
 
     #region Editor Updating

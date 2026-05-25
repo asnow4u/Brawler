@@ -12,7 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fde0668fa3339814daec55e0f3227a35, type: 3}
   m_Name: ForwardAir_01
   m_EditorClassIdentifier: StatData::AttackData
-  Animation: {fileID: 7400000, guid: 1157a6d0a481a164b840f1fcca5512cf, type: 2}
+  AnimationData:
+    Animation: {fileID: 7400000, guid: 1157a6d0a481a164b840f1fcca5512cf, type: 2}
+    AnimationSpeed: 1
   Influence: 0
   DamageCurve:
     serializedVersion: 2

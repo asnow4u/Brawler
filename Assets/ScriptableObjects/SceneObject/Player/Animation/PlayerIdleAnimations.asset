@@ -12,6 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bfcfce54a962b649a2a440418725d35, type: 3}
   m_Name: PlayerIdleAnimations
   m_EditorClassIdentifier: StatData::BaseAnimationCollection
-  GroundIdleAnimation: {fileID: 7400000, guid: 4052ecfd9f126f14f9a983912c33af03, type: 2}
-  AirIdleAnimation: {fileID: 7400000, guid: e96d183b2cd76fe4db9028a0e6209e8b, type: 2}
-  HitStunAnimation: {fileID: 7400000, guid: e96d183b2cd76fe4db9028a0e6209e8b, type: 2}
+  GroundIdleAnimation:
+    Animation: {fileID: 7400000, guid: 4052ecfd9f126f14f9a983912c33af03, type: 2}
+    AnimationSpeed: 1
+  AirIdleAnimation:
+    Animation: {fileID: 7400000, guid: e96d183b2cd76fe4db9028a0e6209e8b, type: 2}
+    AnimationSpeed: 1
+  HitStunAnimation:
+    Animation: {fileID: 7400000, guid: e96d183b2cd76fe4db9028a0e6209e8b, type: 2}
+    AnimationSpeed: 1

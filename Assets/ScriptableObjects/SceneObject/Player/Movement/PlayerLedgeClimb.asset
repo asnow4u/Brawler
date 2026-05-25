@@ -12,4 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 32c7c00879f5c1d4c89e223a378cff89, type: 3}
   m_Name: PlayerLedgeClimb
   m_EditorClassIdentifier: StatData::LedgeClimbData
-  Animation: {fileID: 7400000, guid: 0a3a6b07c7553a34cb9f9ded98b3469f, type: 2}
+  AnimationData:
+    Animation: {fileID: 7400000, guid: 0a3a6b07c7553a34cb9f9ded98b3469f, type: 2}
+    AnimationSpeed: 1

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -5,7 +6,7 @@ using UnityEngine;
 public class AttackData : ScriptableObject
 {
     [Header("Animation")]
-    public AnimationClip Animation;
+    public AnimationData AnimationData;
 
     [Header("Attack Details")]    
     [Tooltip("Influence defines the amount of knockback velocity that will be applied when the attack makes contact." +
@@ -27,4 +28,21 @@ public class AttackData : ScriptableObject
     [Tooltip("Amount of time(Sec) that attacker and target are stunned when hit." +
         "\nThis helps add enphisis and weight to the attack.")]
     public float HitStunTime = 0.1f;
+
+
+    #region Editor Updating
+
+    public event Action OnChangedEvent;
+
+    #if UNITY_EDITOR
+
+        private void OnValidate()
+        {
+            if (Application.isPlaying)
+                OnChangedEvent?.Invoke();
+        }
+
+    #endif
+
+    #endregion
 }

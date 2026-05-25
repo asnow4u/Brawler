@@ -3,16 +3,24 @@ using UnityEngine;
 
 public abstract class BaseMovementData : ScriptableObject
 {   
-    public AnimationClip Animation;
+    public AnimationData AnimationData;    
 
     public abstract bool IsValid();
 
-    internal event Action OnChangedEvent;
 
-#if UNITY_EDITOR
-    private void OnValidate()
-    {
-        OnChangedEvent?.Invoke();
-    }
-#endif
+    #region Editor Updating
+
+    public event Action OnChangedEvent;
+
+    #if UNITY_EDITOR
+
+        private void OnValidate()
+        {
+            if (Application.isPlaying)
+                OnChangedEvent?.Invoke();
+        }
+
+    #endif
+
+    #endregion
 }

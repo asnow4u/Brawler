@@ -16,11 +16,13 @@ internal class AnimationGraph : IDisposable
     {
         public AnimatorOverrideController OverrideController;
         public Dictionary<Enum, AnimationClip> Clips;
+        public Dictionary<Enum, float> Speeds;
 
         public ControllerBinding(AnimatorOverrideController controller, Dictionary<Enum, AnimationClip> clips)
         {
             OverrideController = controller;
             Clips = clips;
+            Speeds = new Dictionary<Enum, float>();
         }
     }
 
@@ -254,6 +256,13 @@ internal class AnimationGraph : IDisposable
         if (layerIndex >= 0 && layerIndex < 4 && !controllers[layerIndex].IsNull())
         {
             Resume();
+
+            float speed = 1f;
+            ControllerBinding binding = controllerBindings[layerIndex];
+            if (binding != null && binding.Speeds.TryGetValue(stateValue, out float storedSpeed))
+                speed = storedSpeed;
+            
+            controllers[layerIndex].SetFloat("SpeedMultiplier", speed);
             controllers[layerIndex].SetInteger("State", Convert.ToInt32(stateValue));
             controllers[layerIndex].Play(stateValue.ToString(), 0, 0);
         }
@@ -278,39 +287,40 @@ internal class AnimationGraph : IDisposable
 
     #region Dynamic Animation Updates
 
-    public void SetIdleAnimations(AnimationClip groundIdleAnimation, AnimationClip airIdleAnimation)
+    public void SetIdleAnimations(AnimationStatData.AnimationData groundIdleAnimation, AnimationStatData.AnimationData airIdleAnimation)
     {
         ApplyOverride(0, IdleState.GroundIdle, groundIdleAnimation);
         ApplyOverride(0, IdleState.AirIdle, airIdleAnimation);
     }    
 
-    public void SetMovementAnimations(Dictionary<int, AnimationClip> movementAnimations)
+    public void SetMovementAnimations(Dictionary<int, AnimationStatData.AnimationData> movementAnimations)
     {
         if (movementAnimations == null) return;
         foreach (var kvp in movementAnimations)
             ApplyOverride(1, (MovementState)kvp.Key, kvp.Value);
     }
 
-    public void SetAttackAnimations(Dictionary<int, AnimationClip> attackAnimations)
+    public void SetAttackAnimations(Dictionary<int, AnimationStatData.AnimationData> attackAnimations)
     {
         if (attackAnimations == null) return;
         foreach (var kvp in attackAnimations)
             ApplyOverride(2, (AttackState)kvp.Key, kvp.Value);
     }
 
-    private void ApplyOverride(int layerIndex, Enum state, AnimationClip newClip)
+    private void ApplyOverride(int layerIndex, Enum state, AnimationStatData.AnimationData animationData)
     {
-        if (newClip == null || controllerBindings[layerIndex] == null) return;
+        if (animationData == null || animationData.Animation == null || controllerBindings[layerIndex] == null) return;
 
-        ControllerBinding binding = controllerBindings[layerIndex];        
+        ControllerBinding binding = controllerBindings[layerIndex];
         if (!binding.Clips.TryGetValue(state, out AnimationClip originalClip))
             return;
 
-        binding.OverrideController[originalClip] = newClip;
+        binding.OverrideController[originalClip] = animationData.Animation;
+        binding.Speeds[state] = animationData.AnimationSpeed;
         controllers[layerIndex].SetTime(0);
     }
 
-    public void SetHitStunAnimations(AnimationClip hitStunAnimation)
+    public void SetHitStunAnimations(AnimationStatData.AnimationData hitStunAnimation)
     {
         ApplyOverride(3, HitStunState.Launch, hitStunAnimation);
     }

@@ -12,4 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7cdcbee89c40a004da54ccdd77f82514, type: 3}
   m_Name: PlayerWallLean
   m_EditorClassIdentifier: StatData::WallLeanData
-  Animation: {fileID: 7400000, guid: 824ed37bbf716394194853ed735c7a28, type: 2}
+  AnimationData:
+    Animation: {fileID: 7400000, guid: 824ed37bbf716394194853ed735c7a28, type: 2}
+    AnimationSpeed: 1

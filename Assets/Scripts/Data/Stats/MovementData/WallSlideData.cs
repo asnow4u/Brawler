@@ -10,7 +10,7 @@ public class WallSlideData : BaseMovementData
 
     public override bool IsValid()
     {
-        return Animation != null &&
+        return AnimationData.Animation != null &&
                MaxSlideVelocity > 0 &&
                MinSlideVelocity > 0 &&
                MaxSlideVelocity >= MinSlideVelocity &&

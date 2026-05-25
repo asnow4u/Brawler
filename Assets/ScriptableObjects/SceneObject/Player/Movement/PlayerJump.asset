@@ -12,7 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8a7c379f520d2b45bafdf5c205fb771, type: 3}
   m_Name: PlayerJump
   m_EditorClassIdentifier: StatData::JumpData
-  Animation: {fileID: 7400000, guid: 6695503546c4a9843b8a8e18a1a99716, type: 2}
+  AnimationData:
+    Animation: {fileID: 7400000, guid: 6695503546c4a9843b8a8e18a1a99716, type: 2}
+    AnimationSpeed: 1
   MaxInitialVelocity: 8
   MinInitialVelocity: 8
   MaxJumpAcceleration: 1

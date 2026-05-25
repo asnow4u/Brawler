@@ -5,7 +5,7 @@ public class LedgeClimbData : BaseMovementData
 {
     public override bool IsValid()
     {
-        return Animation != null;
+        return AnimationData.Animation != null;
     }
 }
 

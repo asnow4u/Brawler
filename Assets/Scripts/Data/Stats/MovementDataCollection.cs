@@ -14,68 +14,19 @@ public class MovementDataCollection : ScriptableObject
     public WallLeanData WallLeanData;
     public WallSlideData WallSlideData;
 
+    #region Editor Updating
+
     public event Action OnChangedEvent;
 
-#if UNITY_EDITOR
-    //NOTE: This is nessisary to allow for editor updating of data during playmode
-    private void OnEnable()
-    {
-        Subscribe();
-    }
+    #if UNITY_EDITOR
 
-    private void OnDisable()
-    {
-        Unsubscribe();
-    }
+        private void OnValidate()
+        {
+            if (Application.isPlaying)
+                OnChangedEvent?.Invoke();
+        }
 
-    private void Subscribe()
-    {
-        if (MoveData != null) RegisterToChangeEvents(MoveData);
-        if (AirMoveData != null) RegisterToChangeEvents(AirMoveData);
-        if (JumpData != null) RegisterToChangeEvents(JumpData);
-        if (AirJumpData != null) RegisterToChangeEvents(AirJumpData);
-        if (WallJumpData != null) RegisterToChangeEvents(WallJumpData);
-        if (ClimbMoveData != null) RegisterToChangeEvents(ClimbMoveData);
-        if (LedgeClimbData != null) RegisterToChangeEvents(LedgeClimbData);
-        if (WallLeanData != null) RegisterToChangeEvents(WallLeanData);
-        if (WallSlideData != null) RegisterToChangeEvents(WallSlideData);
-    }
+    #endif
 
-    private void RegisterToChangeEvents(BaseMovementData data)
-    {
-        data.OnChangedEvent += MovementDataChanged;
-    }
-
-    private void Unsubscribe()
-    {
-        if (MoveData != null) UnregisterFromChangeEvents(MoveData);
-        if (AirMoveData != null) UnregisterFromChangeEvents(AirMoveData);
-        if (JumpData != null) UnregisterFromChangeEvents(JumpData);
-        if (AirJumpData != null) UnregisterFromChangeEvents(AirJumpData);
-        if (WallJumpData != null) UnregisterFromChangeEvents(WallJumpData);
-        if (ClimbMoveData != null) UnregisterFromChangeEvents(ClimbMoveData);
-        if (LedgeClimbData != null) UnregisterFromChangeEvents(LedgeClimbData);
-        if (WallLeanData != null) UnregisterFromChangeEvents(WallLeanData);
-        if (WallSlideData != null) UnregisterFromChangeEvents(WallSlideData);
-    }
-
-    private void UnregisterFromChangeEvents(BaseMovementData data)
-    {
-        data.OnChangedEvent -= MovementDataChanged;
-    }
-
-    private void MovementDataChanged()
-    {
-        OnChangedEvent?.Invoke();
-    }
-
-    private void OnValidate()
-    {
-        MovementDataChanged();
-
-        Unsubscribe();
-        Subscribe();
-    }
-
-#endif
+    #endregion
 }
