@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: StatData::AttackData
   AnimationData:
     Animation: {fileID: 7400000, guid: 1157a6d0a481a164b840f1fcca5512cf, type: 2}
-    AnimationSpeed: 1
+    AnimationSpeed: 3
   Influence: 0
   DamageCurve:
     serializedVersion: 2
