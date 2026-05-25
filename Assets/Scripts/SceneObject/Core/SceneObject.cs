@@ -29,6 +29,8 @@ internal abstract class SceneObject : MonoBehaviour, ISceneObject
         uniqueIDString = uniqueID.ToString();
 
         rb = GetComponent<Rigidbody>();
+        rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+
         col = GetComponent<Collider>();
     }    
 

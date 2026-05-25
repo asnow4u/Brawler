@@ -15,7 +15,7 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
     private IMovementInput movementInput;
     private IActionState actionState;
     private IStats statHandler;
-    private IHitStunHandler hitStunHandler;
+    private IHurtBoxHandler hurtBoxHandler;
 
     //Components
     private Rigidbody rb;
@@ -113,7 +113,7 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
 
         actionState = GetComponent<IActionState>();
         statHandler = GetComponent<IStats>();
-        hitStunHandler = GetComponent<IHitStunHandler>();
+        hurtBoxHandler = GetComponent<IHurtBoxHandler>();
 
         rb = GetComponent<Rigidbody>();
         rb.linearDamping = 0;
@@ -131,6 +131,9 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
         actionState.ClimbStateChangedEvent += OnClimbStateChanged;
 
         statHandler.MovementStatsChangedEvent += OnMovementStatsChanged;
+
+        hurtBoxHandler.OnHitEvent += ApplyHitStunKnockback;
+        hurtBoxHandler.HitStunStateChangedEvent += OnHitStunStateChanged;
         
         if (movementInput != null)
         {
@@ -152,6 +155,9 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
         actionState.ClimbStateChangedEvent -= OnClimbStateChanged;
 
         statHandler.MovementStatsChangedEvent -= OnMovementStatsChanged;
+
+        hurtBoxHandler.OnHitEvent -= ApplyHitStunKnockback;
+        hurtBoxHandler.HitStunStateChangedEvent -= OnHitStunStateChanged;
 
         if (movementInput != null)
         {
@@ -462,16 +468,19 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
 
     private void FixedUpdate()
     {
-        ApplyGravity();
-
         if (actionState.CurActionState == ActionState.HitStun)
             UpdateHitStunMovement();
 
-        else if (actionState.CurGroundedState == GroundedState.Grounded)
-            UpdateGroundedMovement();
+        else
+        {
+            ApplyGravity();
+            
+            if (actionState.CurGroundedState == GroundedState.Grounded)
+                UpdateGroundedMovement();
 
-        else if (actionState.CurGroundedState == GroundedState.Airborn)
-            UpdateAerialMovement();
+            else if (actionState.CurGroundedState == GroundedState.Airborn)
+                UpdateAerialMovement();
+        }
     }
 
     private void ApplyGravity()
@@ -575,10 +584,55 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
         }
     }
     
+    /// <summary>
+    /// Drive movement during hit stun. Pause and Launch are handled by the state-change event;
+    /// Travel and Recovery apply drag each FixedUpdate.
+    /// </summary>
+    /// <summary>
+    /// Drive movement during hit stun. Pause and Launch are handled by the state-change event;
+    /// Travel and Recovery apply drag (and gravity during Recovery), then check for a bounce.
+    /// </summary>
+    /// <summary>
+    /// Drive movement during hit stun. Pause and Launch are handled by the state-change event;
+    /// Travel and Recovery apply drag (and gravity during Recovery), then check for a bounce.
+    /// </summary>
+    /// <summary>
+    /// Drive movement during hit stun. Pause is handled by the state-change event;
+    /// Launch, Travel, and Recovery apply drag and check for a bounce each FixedUpdate.
+    /// Recovery additionally applies gravity so the character begins falling toward the end of hit stun.
+    /// </summary>
+    /// <summary>
+    /// Drive movement during hit stun. Pause is handled by the state-change event;
+    /// Launch, Travel, and Recovery apply drag and check for a bounce each FixedUpdate.
+    /// Recovery additionally applies gravity so the character begins falling toward the end of hit stun.
+    /// A splat hold suspends all drag/gravity/bounce work until the hold expires.
+    /// </summary>
     private void UpdateHitStunMovement()
     {
-        rb.linearVelocity = hitStunHandler.EvaluateHitStunVelocity();
-        CheckForHitStunBounce();
+        if (isSplatHolding)
+        {
+            UpdateBounceSplat();
+            return;
+        }
+
+        switch (hurtBoxHandler.CurHitStunState)
+        {
+            case HitStunState.Launch:
+                UpdateHitStunDeceleration();
+                CheckForHitStunBounce();
+                break;
+
+            case HitStunState.Travel:
+                UpdateHitStunDeceleration();
+                CheckForHitStunBounce();
+                break;
+
+            case HitStunState.Recovery:
+                UpdateHitStunDeceleration();
+                ApplyGravity();
+                CheckForHitStunBounce();
+                break;
+        }
     }
 
     #endregion

@@ -38,8 +38,8 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxHandlerEdi
 
     [Header("Hit Stun")]
     [SerializeField] private HitStunState curHitStunState;
-    [Tooltip("Normalized curve that defines velocity over hitstun time")]
-    public AnimationCurve hitStunVelocityCurve;
+    public HitStunState CurHitStunState => curHitStunState;
+    
     [Tooltip("How much should hit stun duration scale based on knockback velocity")]
     [SerializeField] private float hitStunMultiplier = 1f;
     [Tooltip("Duration of hitstun time dedicated to launch")]
@@ -52,6 +52,7 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxHandlerEdi
     private float hitStunDuration = 0;
     private Coroutine hitStunTimerCoroutine;
 
+    public event Action<KnockBackHitData> OnHitEvent;
     public event Action<HitStunState> HitStunStateChangedEvent;
 
     private void Awake()
@@ -97,11 +98,11 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxHandlerEdi
         if (hitEffect != null)
             hitEffect.Play();
 
-        //Damage
+        //Damage and Knockback
         damageTaken += hitData.Damage;
-
-        //Knockback
         knockBackVelocity = CalculateKnockbackVelocity(hitData.Influence, damageTaken, hitData.LauchAngle, rb.mass);
+
+        OnHitEvent?.Invoke(new KnockBackHitData(hitData, knockBackVelocity));
 
         //Hitstun        
         ApplyHitStun(hitData.StunTime, knockBackVelocity.magnitude * hitStunMultiplier);
@@ -183,16 +184,6 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxHandlerEdi
         hitStunDuration = 0;
         ChangeHitStunState(HitStunState.Null);
     }
-
-    public Vector3 EvaluateHitStunVelocity()
-    {
-        if (curHitStunState == HitStunState.Null || curHitStunState == HitStunState.Pause || hitStunDuration == 0)
-            return Vector3.zero;
-
-        float normalizedVelocity = hitStunVelocityCurve.Evaluate(hitStunTime / hitStunDuration);
-        return knockBackVelocity * normalizedVelocity;
-    }
-
 
     #region Editor Debug
 

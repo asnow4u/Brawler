@@ -147,7 +147,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 78813f4c6a905db4a89f79a7a10eb5d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mass: 25
+  mass: 100
   weaponData:
     MovementCollection: {fileID: 11400000, guid: 245cbd7ac52e237409f25943ff190ab6, type: 2}
     AttackCollection: {fileID: 11400000, guid: 18aca0f290d80f84ba0ca04553e3cd7e, type: 2}
@@ -357,13 +357,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9113116974709042090}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.70548654, y: -0, z: -0, w: 0.70872337}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: -0.74894345, y: 0.6554187, z: 0.07524308, w: 0.06203688}
+  m_LocalPosition: {x: 0.003755868, y: -0.054906316, z: -0.0052881846}
+  m_LocalScale: {x: 0.62500006, y: 0.62499994, z: 0.62499994}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2858887666252780177}
-  m_LocalEulerAnglesHint: {x: -89.738, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &8524792938697702091
 PrefabInstance:
   m_ObjectHideFlags: 0

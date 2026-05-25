@@ -15,12 +15,12 @@ MonoBehaviour:
   AnimationData:
     Animation: {fileID: 7400000, guid: 885789fd26545c845b20eb5adfc69779, type: 2}
     AnimationSpeed: 1.5
-  Influence: 0
+  Influence: 1
   DamageCurve:
     serializedVersion: 2
     m_Curve: []
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  LaunchAngle: 0
-  HitStunTime: 0.1
+  LaunchAngle: 80
+  HitPauseTime: 0.1

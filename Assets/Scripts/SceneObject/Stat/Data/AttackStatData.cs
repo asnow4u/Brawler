@@ -21,7 +21,7 @@ public class AttackStatData
             Animation = data.AnimationData.Animation;
             Influence = data.Influence;
             LaunchAngle = data.LaunchAngle;
-            HitStunTime = data.HitStunTime;
+            HitStunTime = data.HitPauseTime;
             this.damageCurve = data.DamageCurve;
         }
 

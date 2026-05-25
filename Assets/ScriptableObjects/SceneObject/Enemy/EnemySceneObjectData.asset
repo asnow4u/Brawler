@@ -14,15 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MaxMass: 100
   MinMass: 100
-  GroundedMaxVelocityMax: 10
-  GroundedMaxVelocityMin: 10
-  GroundedDecceleration: 3500
-  AerialMaxXVelocityMax: 10
+  GroundedMaxVelocityMax: 18
+  GroundedMaxVelocityMin: 12
+  GroundedDecceleration: 5000
+  AerialMaxXVelocityMax: 13
   AerialMaxXVelocityMin: 10
   AerialXDecceleration: 100
   AerialMaxYVelocityMax: 25
   AerialMaxYVelocityMin: 25
   AerialYDecceleration: 100
-  GravityMultiplier: 1
+  GravityMultiplier: 3
   AnimationCollection: {fileID: 11400000, guid: b97227ff6321bb24a835f88b0b1f3e58, type: 2}
   MovementCollection: {fileID: 0}

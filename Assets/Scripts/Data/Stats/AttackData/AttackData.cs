@@ -27,7 +27,7 @@ public class AttackData : ScriptableObject
 
     [Tooltip("Amount of time(Sec) that attacker and target are stunned when hit." +
         "\nThis helps add enphisis and weight to the attack.")]
-    public float HitStunTime = 0.1f;
+    public float HitPauseTime = 0.1f;
 
 
     #region Editor Updating

@@ -22,5 +22,5 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  LaunchAngle: 0
-  HitStunTime: 0.1
+  LaunchAngle: 60
+  HitPauseTime: 0.1

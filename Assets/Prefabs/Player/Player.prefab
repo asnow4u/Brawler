@@ -434,10 +434,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Mace
       objectReference: {fileID: 0}
-    - target: {fileID: 8016950576436577843, guid: 772a550c750e29649a7295ea8605b147, type: 3}
-      propertyPath: mass
-      value: 100
-      objectReference: {fileID: 0}
     - target: {fileID: 8173030867042763981, guid: 772a550c750e29649a7295ea8605b147, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -582,7 +578,7 @@ Animator:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5049990062480282123}
   m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: bc5893418ddb8754eb419411a0a3f474, type: 3}
+  m_Avatar: {fileID: 9000000, guid: a0e625891d2b55c43824a0540813b08a, type: 3}
   m_Controller: {fileID: 9100000, guid: 255bb645d9fd71e4090ee255baf14fb1, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0

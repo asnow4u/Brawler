@@ -10,15 +10,12 @@ public enum HitStunState
     Recovery = 3
 }
 
-public interface IHurtBoxHandler : IHitStunHandler
+public interface IHurtBoxHandler
 {
     public Guid[] LastHitBy { get; }
-}
+    public HitStunState CurHitStunState { get; }
 
-public interface IHitStunHandler
-{
-    public Vector3 EvaluateHitStunVelocity();
-
+    public event Action<KnockBackHitData> OnHitEvent;
     public event Action<HitStunState> HitStunStateChangedEvent;
 }
 

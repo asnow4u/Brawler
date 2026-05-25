@@ -33,3 +33,22 @@ public class HitData
         return str;
     }
 }
+
+
+public class KnockBackHitData : HitData
+{
+    public Vector3 KnockBackVelocity;
+
+    public KnockBackHitData(HitData hitData, Vector3 knockBackVelocity) : base(hitData.SceneObjectID, hitData.Influence, hitData.LauchAngle, hitData.Damage, hitData.StunTime, hitData.HitPoint)
+    {
+        KnockBackVelocity = knockBackVelocity;
+    }
+
+    public override string ToString()
+    {
+        string str = base.ToString() +
+            "\nKnockBack Velocity: " + KnockBackVelocity;
+
+        return str;
+    }
+}

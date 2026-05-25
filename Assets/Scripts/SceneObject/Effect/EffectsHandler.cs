@@ -56,24 +56,24 @@ public class EffectsHandler : MonoBehaviour, IEffects
 
     private void UpdateLaunchTrail()
     {
-        Vector3 velocity = hurtBoxHandler.EvaluateHitStunVelocity();
-        Vector3 direction = velocity.normalized;
-        float normalizedSpeed = velocity.magnitude / maxLaunchSpeed;
+        // Vector3 velocity = hurtBoxHandler.EvaluateHitStunVelocity();
+        // Vector3 direction = velocity.normalized;
+        // float normalizedSpeed = velocity.magnitude / maxLaunchSpeed;
 
-        var velocityOverTime = launchTrail.velocityOverLifetime;        
-        velocityOverTime.x = -velocity.x * velocityScale;
-        velocityOverTime.y = -velocity.y * velocityScale;
+        // var velocityOverTime = launchTrail.velocityOverLifetime;        
+        // velocityOverTime.x = -velocity.x * velocityScale;
+        // velocityOverTime.y = -velocity.y * velocityScale;
 
-        var emission = launchTrail.emission;
-        emission.rateOverTime = Mathf.Lerp(minRate, maxRate, normalizedSpeed);
+        // var emission = launchTrail.emission;
+        // emission.rateOverTime = Mathf.Lerp(minRate, maxRate, normalizedSpeed);
 
-        var main = launchTrail.main;
-        main.startLifetime = Mathf.Lerp(minLifeTimeStart, maxLifeTimeStart, normalizedSpeed);
+        // var main = launchTrail.main;
+        // main.startLifetime = Mathf.Lerp(minLifeTimeStart, maxLifeTimeStart, normalizedSpeed);
 
 
-        if (velocity.sqrMagnitude > 0.01f)
-        {
-            launchTrail.transform.rotation = Quaternion.LookRotation(Vector3.forward, velocity);
-        }
+        // if (velocity.sqrMagnitude > 0.01f)
+        // {
+        //     launchTrail.transform.rotation = Quaternion.LookRotation(Vector3.forward, velocity);
+        // }
     }
 }

@@ -18,6 +18,7 @@ internal class HurtBox : MonoBehaviour, IHurtBox
     {
         sceneObject = GetComponentInParent<ISceneObject>();
         hurtboxCollider = GetComponent<Collider>();
+        hurtboxCollider.isTrigger = true;
         if (sceneObject == null)
             Debug.LogError("SceneObject not found as a parent to " + gameObject.name, gameObject);
     }

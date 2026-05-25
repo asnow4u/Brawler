@@ -14,6 +14,7 @@ internal class HitBox : MonoBehaviour, IHitBox
     private void Awake()
     {
         collider = GetComponent<Collider>();
+        collider.isTrigger = true;
         DeactivateHitBox();
     }
 
