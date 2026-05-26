@@ -1,9 +1,11 @@
 using UnityEngine;
 
 [RequireComponent(typeof(HurtBoxHandler))]
+[RequireComponent(typeof(Rigidbody))]
 public class EffectsHandler : MonoBehaviour, IEffects
 {
-    IHurtBoxHandler hurtBoxHandler;
+        IHurtBoxHandler hurtBoxHandler;
+    private new Rigidbody rigidbody;
 
     [Header("Launch Effects")]
     [SerializeField] private ParticleSystem launchTrail;
@@ -15,11 +17,13 @@ public class EffectsHandler : MonoBehaviour, IEffects
     [SerializeField] private float minLifeTimeStart = 0.15f;
     [SerializeField] private float maxLifeTimeStart = 0.5f;
     [SerializeField] private float maxLaunchSpeed = 20;
-
+    [Tooltip("Minimum rigidbody speed required for the launch trail to emit.")]
+    [SerializeField] private float minTrailVelocity = 15f;
 
     private void Awake()
     {
         hurtBoxHandler = GetComponent<IHurtBoxHandler>();
+        rigidbody = GetComponent<Rigidbody>();
 
         RegisterToEvents();
     }
@@ -41,7 +45,7 @@ public class EffectsHandler : MonoBehaviour, IEffects
 
     private void OnHitStunStateChanged(HitStunState state)
     {
-        if (state >= HitStunState.Launch)
+        if (state == HitStunState.Launch)
             launchTrail.Play();
         else
             launchTrail.Stop();
@@ -56,24 +60,28 @@ public class EffectsHandler : MonoBehaviour, IEffects
 
     private void UpdateLaunchTrail()
     {
-        // Vector3 velocity = hurtBoxHandler.EvaluateHitStunVelocity();
-        // Vector3 direction = velocity.normalized;
-        // float normalizedSpeed = velocity.magnitude / maxLaunchSpeed;
+        Vector3 velocity = rigidbody.linearVelocity;
+        float speed = velocity.magnitude;
 
-        // var velocityOverTime = launchTrail.velocityOverLifetime;        
-        // velocityOverTime.x = -velocity.x * velocityScale;
-        // velocityOverTime.y = -velocity.y * velocityScale;
+        var emission = launchTrail.emission;
 
-        // var emission = launchTrail.emission;
-        // emission.rateOverTime = Mathf.Lerp(minRate, maxRate, normalizedSpeed);
+        if (speed < minTrailVelocity)
+        {
+            emission.rateOverTime = 0;
+            return;
+        }
 
-        // var main = launchTrail.main;
-        // main.startLifetime = Mathf.Lerp(minLifeTimeStart, maxLifeTimeStart, normalizedSpeed);
+        float normalizedSpeed = Mathf.Clamp01(speed / maxLaunchSpeed);
 
+        var velocityOverTime = launchTrail.velocityOverLifetime;
+        velocityOverTime.x = -velocity.x * velocityScale;
+        velocityOverTime.y = -velocity.y * velocityScale;
 
-        // if (velocity.sqrMagnitude > 0.01f)
-        // {
-        //     launchTrail.transform.rotation = Quaternion.LookRotation(Vector3.forward, velocity);
-        // }
+        emission.rateOverTime = Mathf.Lerp(minRate, maxRate, normalizedSpeed);
+
+        var main = launchTrail.main;
+        main.startLifetime = Mathf.Lerp(minLifeTimeStart, maxLifeTimeStart, normalizedSpeed);
+
+        launchTrail.transform.rotation = Quaternion.LookRotation(Vector3.forward, velocity);
     }
 }
