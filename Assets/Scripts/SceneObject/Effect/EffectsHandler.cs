@@ -4,7 +4,7 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class EffectsHandler : MonoBehaviour, IEffects
 {
-        IHurtBoxHandler hurtBoxHandler;
+    IHurtBoxHandler hurtBoxHandler;
     private new Rigidbody rigidbody;
 
     [Header("Launch Effects")]

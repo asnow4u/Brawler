@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -7,42 +8,227 @@ using UnityEditor;
 [RequireComponent(typeof(Collider))]
 internal class HitBox : MonoBehaviour, IHitBox
 {
-    private Collider collider;
+    private Collider col;
+    private Guid ownerID;
+
+    private LayerMask collisionMask;
+
+    private const int OverlapBufferSize = 16;
+    private readonly Collider[] overlapBuffer = new Collider[OverlapBufferSize];
+    private readonly RaycastHit[] castBuffer = new RaycastHit[OverlapBufferSize];
+
+    private Vector3 prevPosition;
+    private bool hasPrevPosition;
+
+    // Track all hit sceneObjects while active
+    private readonly HashSet<Guid> hurtBoxesHit = new HashSet<Guid>();
 
     public event Action<IHurtBox, Vector3> OnCollisionEntered;
 
+
     private void Awake()
     {
-        collider = GetComponent<Collider>();
-        collider.isTrigger = true;
+        gameObject.layer = LayerMask.NameToLayer("HitBox");
+        collisionMask = LayerMask.GetMask("HurtBox");
+
+        col = GetComponent<Collider>();
+        col.isTrigger = true;
+
         DeactivateHitBox();
+    }
+
+    public void SetOwner(Guid ownerID)
+    {
+        this.ownerID = ownerID;
     }
 
     public void ActivateHitBox()
     {
-        collider.enabled = true;
+        col.enabled = true;
+        hurtBoxesHit.Clear();
+        hasPrevPosition = false;
     }
 
     public void DeactivateHitBox()
     {
-        collider.enabled = false;
+        col.enabled = false;
+        hurtBoxesHit.Clear();
+        hasPrevPosition = false;
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void FixedUpdate()
     {
-        if (other.gameObject.TryGetComponent(out IHurtBox hurtBox))
-        {
-            Vector3 hitPoint = other.ClosestPoint(transform.position);
+        if (!col.enabled || ownerID == default)
+            return;
 
-            OnCollisionEntered?.Invoke(hurtBox, hitPoint);
+        CheckCurrentOverlap();
+
+        Vector3 currentCenter = col.bounds.center;        
+        if (hasPrevPosition)
+            CheckSweep(prevPosition, currentCenter);
+
+        prevPosition = currentCenter;
+        hasPrevPosition = true;
+    }
+    
+
+    #region Detection
+
+    // Runs OverlapBox/Sphere/Capsule based on the actual collider type. Any IHurtBox
+    // found that hasn't been reported this active window fires OnCollisionEntered.
+    private void CheckCurrentOverlap()
+    {
+        int count = 0;
+
+        switch (col)
+        {
+            case BoxCollider box:
+            {
+                Vector3 worldCenter = box.transform.TransformPoint(box.center);
+                Vector3 halfExtents = Vector3.Scale(box.size * 0.5f, AbsScale(box.transform.lossyScale));
+                count = Physics.OverlapBoxNonAlloc(worldCenter, halfExtents, overlapBuffer, box.transform.rotation, collisionMask, QueryTriggerInteraction.Collide);
+                break;
+            }
+            case SphereCollider sphere:
+            {
+                Vector3 worldCenter = sphere.transform.TransformPoint(sphere.center);
+                float radius = sphere.radius * MaxAbsScale(sphere.transform.lossyScale);
+                count = Physics.OverlapSphereNonAlloc(worldCenter, radius, overlapBuffer, collisionMask, QueryTriggerInteraction.Collide);
+                break;
+            }
+            case CapsuleCollider capsule:
+            {
+                GetCapsuleEndpoints(capsule, out Vector3 p0, out Vector3 p1, out float radius);
+                count = Physics.OverlapCapsuleNonAlloc(p0, p1, radius, overlapBuffer, collisionMask, QueryTriggerInteraction.Collide);
+                break;
+            }
+            default:
+                Debug.LogWarning($"HitBox: unsupported collider type {col.GetType().Name}. Only Box, Sphere, and Capsule are supported.", this);
+                return;
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            Collider other = overlapBuffer[i];            
+
+            if (other.TryGetComponent(out IHurtBox hurtBox) && !hurtBoxesHit.Contains(hurtBox.OwnerID) && hurtBox.OwnerID != ownerID)
+            {
+                hurtBoxesHit.Add(hurtBox.OwnerID);
+                Vector3 hitPoint = other.ClosestPoint(col.bounds.center);
+
+                OnCollisionEntered?.Invoke(hurtBox, hitPoint);
+            }
         }
     }
+
+    // Runs BoxCast/SphereCast/CapsuleCast from prev center to current center.
+    // Direction/distance derived from the delta; if there's no movement, skip the sweep.
+    private void CheckSweep(Vector3 fromCenter, Vector3 toCenter)
+    {
+        Vector3 delta = toCenter - fromCenter;
+        float distance = delta.magnitude;
+        if (distance < 1e-5f)
+            return;
+
+        Vector3 direction = delta / distance;
+        int count = 0;
+
+        switch (col)
+        {
+            case BoxCollider box:
+            {
+                // Cast originates at the previous center, not the current one.
+                Vector3 prevWorldCenter = fromCenter + (box.transform.TransformPoint(box.center) - col.bounds.center);
+                Vector3 halfExtents = Vector3.Scale(box.size * 0.5f, AbsScale(box.transform.lossyScale));
+                count = Physics.BoxCastNonAlloc(prevWorldCenter, halfExtents, direction, castBuffer, box.transform.rotation, distance, collisionMask, QueryTriggerInteraction.Collide);
+                break;
+            }
+            case SphereCollider sphere:
+            {
+                float radius = sphere.radius * MaxAbsScale(sphere.transform.lossyScale);
+                count = Physics.SphereCastNonAlloc(fromCenter, radius, direction, castBuffer, distance, collisionMask, QueryTriggerInteraction.Collide);
+                break;
+            }
+            case CapsuleCollider capsule:
+            {
+                GetCapsuleEndpoints(capsule, out Vector3 p0, out Vector3 p1, out float radius);
+                // Endpoints are at the current position; offset them back to the previous position.
+                Vector3 offset = fromCenter - toCenter;
+                count = Physics.CapsuleCastNonAlloc(p0 + offset, p1 + offset, radius, direction, castBuffer, distance, collisionMask, QueryTriggerInteraction.Collide);
+                break;
+            }
+            default:
+                // Already warned in CheckCurrentOverlap; stay silent here.
+                return;
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            RaycastHit hit = castBuffer[i];
+            Collider other = hit.collider;
+            if (other == null) continue;
+
+            if (other.TryGetComponent(out IHurtBox hurtBox) && !hurtBoxesHit.Contains(hurtBox.OwnerID) && hurtBox.OwnerID != ownerID)
+            {
+                hurtBoxesHit.Add(hurtBox.OwnerID);
+                // hit.point is zero when the cast starts already overlapping; fall back to ClosestPoint in that case.
+                Vector3 hitPoint = hit.point.sqrMagnitude > 1e-8f
+                    ? hit.point
+                    : other.ClosestPoint(col.bounds.center);
+
+                OnCollisionEntered?.Invoke(hurtBox, hitPoint);
+            }
+        }
+    }
+
+    private static void GetCapsuleEndpoints(CapsuleCollider capsule, out Vector3 p0, out Vector3 p1, out float radius)
+    {
+        Transform t = capsule.transform;
+        Vector3 worldCenter = t.TransformPoint(capsule.center);
+        Vector3 lossyScale = AbsScale(t.lossyScale);
+
+        Vector3 axis;
+        float radiusScale;
+        float heightScale;
+        switch (capsule.direction)
+        {
+            case 0: // X
+                axis = t.right;
+                radiusScale = Mathf.Max(lossyScale.y, lossyScale.z);
+                heightScale = lossyScale.x;
+                break;
+            case 2: // Z
+                axis = t.forward;
+                radiusScale = Mathf.Max(lossyScale.x, lossyScale.y);
+                heightScale = lossyScale.z;
+                break;
+            default: // Y
+                axis = t.up;
+                radiusScale = Mathf.Max(lossyScale.x, lossyScale.z);
+                heightScale = lossyScale.y;
+                break;
+        }
+
+        radius = capsule.radius * radiusScale;
+        float height = Mathf.Max(capsule.height * heightScale, radius * 2f);
+            float halfCylinder = Mathf.Max(0f, (height - radius * 2f) * 0.5f);
+
+        p0 = worldCenter + axis * halfCylinder;
+        p1 = worldCenter - axis * halfCylinder;
+    }
+
+    private static Vector3 AbsScale(Vector3 s) => new Vector3(Mathf.Abs(s.x), Mathf.Abs(s.y), Mathf.Abs(s.z));
+
+    private static float MaxAbsScale(Vector3 s) => Mathf.Max(Mathf.Abs(s.x), Mathf.Abs(s.y), Mathf.Abs(s.z));
+
+    #endregion
+
 
     #region Gizmos
 
     private void OnDrawGizmos()
     {
-        var hitboxCollider = collider ? collider : GetComponent<Collider>();
+        var hitboxCollider = col ? col : GetComponent<Collider>();
         if (!hitboxCollider)
         {
             return;

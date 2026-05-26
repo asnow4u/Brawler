@@ -7,20 +7,25 @@ using UnityEditor;
 [RequireComponent(typeof(Collider))]
 internal class HurtBox : MonoBehaviour, IHurtBox
 {
-    private ISceneObject sceneObject;
     private Collider hurtboxCollider;
-    private int lastHitFrame = -1;
+    private int lastHitFrame = -1; // NOTE: Used with the Gizmos
 
-    public Guid SceneObjectID => sceneObject.UniqueID;
+    private Guid ownerID;
+    public Guid OwnerID => ownerID;
     public event Action<HitData> OnHitEvent;
 
     private void Awake()
     {
-        sceneObject = GetComponentInParent<ISceneObject>();
+        gameObject.layer = LayerMask.NameToLayer("HurtBox");
+
         hurtboxCollider = GetComponent<Collider>();
         hurtboxCollider.isTrigger = true;
+
+        ISceneObject sceneObject = GetComponentInParent<ISceneObject>();
         if (sceneObject == null)
             Debug.LogError("SceneObject not found as a parent to " + gameObject.name, gameObject);
+        else
+            ownerID = sceneObject.UniqueID;
     }
 
     public void Hit(HitData hitData)

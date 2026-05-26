@@ -77,6 +77,11 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
             sceneObjectHitboxs = sceneObjectRoot.GetComponentsInChildren<HitBox>(true);
             if (sceneObjectHitboxs == null || sceneObjectHitboxs.Length == 0)
                 Debug.LogError("HitBoxHandler No SceneObject Hitboxs found", gameObject);
+            else
+            {
+                foreach (HitBox hitbox in sceneObjectHitboxs)
+                    hitbox.SetOwner(sceneObject.UniqueID);
+            }
         }
         else
             Debug.LogError("HitBoxHandler SceneObjectRoot not set", gameObject);
@@ -126,6 +131,9 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
             return;
         
         weaponHitboxs = data.WeaponRootGameObject.GetComponentsInChildren<HitBox>(true).ToList();
+        foreach (HitBox hitbox in weaponHitboxs)
+            hitbox.SetOwner(sceneObject.UniqueID);
+
         weaponSwingEffect = data.SwingEffect;
         weaponAttackDatas = new Dictionary<AttackState, AttackStats>();
 
@@ -234,11 +242,11 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
     private void OnSceneObjectHit(IHurtBox hurtBox, Vector3 hitPoint)
     {
         if (actionState.CurActionState != ActionState.HitStun ||
-            sceneObjectsHit.Contains(hurtBox.SceneObjectID) ||
-            hurtBoxHandler.LastHitBy.Contains(hurtBox.SceneObjectID))
+            sceneObjectsHit.Contains(hurtBox.OwnerID) ||
+            hurtBoxHandler.LastHitBy.Contains(hurtBox.OwnerID))
             return;
 
-        sceneObjectsHit.Add(hurtBox.SceneObjectID);
+        sceneObjectsHit.Add(hurtBox.OwnerID);
 
         animationHandler.PauseAnimation(sceneObjectHitStunTime);
 
@@ -251,6 +259,7 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
         float damage = rb.mass * speed * speed;
         damage = Mathf.Clamp(damage, minSceneObjectHitDamage, maxSceneObjectHitDamage);
 
+        Debug.Log("SceneObject HitData", gameObject);
         hurtBox.Hit(new HitData(sceneObject.UniqueID, 0f, launchAngle, damage, sceneObjectHitStunTime, hitPoint));
     }
 
@@ -258,10 +267,10 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
     {
         if (attackHandler == null ||
             attackHandler.CurAttackState == AttackState.Null || 
-            sceneObjectsHit.Contains(hurtBox.SceneObjectID))
+            sceneObjectsHit.Contains(hurtBox.OwnerID))
             return;
 
-        sceneObjectsHit.Add(hurtBox.SceneObjectID);
+        sceneObjectsHit.Add(hurtBox.OwnerID);
 
         AttackStats curAttackStats = weaponAttackDatas[attackHandler.CurAttackState];
 
@@ -273,6 +282,7 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
         if (!sceneObject.IsFacingRightDirection)
             launchAngle = 180 - launchAngle;
 
+        Debug.Log(new HitData(sceneObject.UniqueID, curAttackStats.Influence, launchAngle, curAttackStats.GetAttackDamage(animationDelta), curAttackStats.HitStunTime, hitPoint));
         hurtBox.Hit(new HitData(sceneObject.UniqueID, curAttackStats.Influence, launchAngle, curAttackStats.GetAttackDamage(animationDelta), curAttackStats.HitStunTime, hitPoint));
     }
 

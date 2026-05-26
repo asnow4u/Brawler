@@ -3,6 +3,6 @@ using UnityEngine;
 
 public interface IHurtBox
 {
-    public Guid SceneObjectID { get; }
+    public Guid OwnerID { get; }
     public void Hit(HitData hitData);    
 }
