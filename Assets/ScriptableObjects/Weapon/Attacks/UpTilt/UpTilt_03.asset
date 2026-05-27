@@ -12,15 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fde0668fa3339814daec55e0f3227a35, type: 3}
   m_Name: UpTilt_03
   m_EditorClassIdentifier: StatData::AttackData
+  AttackType: 3
   AnimationData:
     Animation: {fileID: 7400000, guid: d40ca6bac2d888e45ba57e457a574e43, type: 2}
-    AnimationSpeed: 1.5
+    AnimationSpeed: 1
   Influence: 1
-  DamageCurve:
-    serializedVersion: 2
-    m_Curve: []
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
+  Damage: 0
   LaunchAngle: 80
   HitPauseTime: 0.1

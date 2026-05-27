@@ -25,13 +25,11 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxHandlerEdi
 
     [Header("Damage")]
     [SerializeField] protected float damageTaken = 0;
-
-    [Header("Hit Effect")]
-    [SerializeField] private ParticleSystem hitEffect;
+    
 
     [Header("Knockback")]
     [Tooltip("Base amount of acceleration that will be applied anytime taking a hit")]
-    const float minKnockBackVelocity = 10f;
+    [SerializeField] float minKnockBackVelocity = 10f;
     [Tooltip("The exponential growth of knockback based on damage")]
     const float exGrowth = 2.8f;
     private Vector3 knockBackVelocity;
@@ -94,9 +92,6 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxHandlerEdi
             return;
 
         lastHitBy.Add(hitData.SceneObjectID);
-
-        if (hitEffect != null)
-            hitEffect.Play();
 
         //Damage and Knockback
         damageTaken += hitData.Damage;
@@ -229,7 +224,7 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxHandlerEdi
     {
         if (debugDelaySeconds <= 0f)
         {
-            HitData immediateHitData = new HitData(Guid.NewGuid(), debugInfluence, debugLaunchAngle, debugDamage, 0f, transform.position);
+            HitData immediateHitData = new HitData(Guid.NewGuid(), 0, debugInfluence, debugLaunchAngle, debugDamage, 0f, transform.position);
             OnHit(immediateHitData);
             return;
         }
@@ -241,7 +236,7 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxHandlerEdi
     {
         yield return new WaitForSeconds(delaySeconds);
 
-        HitData hitData = new HitData(Guid.NewGuid(), debugInfluence, debugLaunchAngle, debugDamage, 0f, transform.position);
+        HitData hitData = new HitData(Guid.NewGuid(), 0, debugInfluence, debugLaunchAngle, debugDamage, 0f, transform.position);
         OnHit(hitData);
     }
 

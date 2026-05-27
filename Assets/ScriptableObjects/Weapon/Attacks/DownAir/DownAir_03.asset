@@ -12,15 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fde0668fa3339814daec55e0f3227a35, type: 3}
   m_Name: DownAir_03
   m_EditorClassIdentifier: StatData::AttackData
+  AttackType: 3
   AnimationData:
     Animation: {fileID: 7400000, guid: 964e95d556820814f8dbfc4ca549169c, type: 2}
     AnimationSpeed: 1
   Influence: 0
-  DamageCurve:
-    serializedVersion: 2
-    m_Curve: []
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
+  Damage: 0
   LaunchAngle: 0
-  HitStunTime: 0.1
+  HitPauseTime: 0.1

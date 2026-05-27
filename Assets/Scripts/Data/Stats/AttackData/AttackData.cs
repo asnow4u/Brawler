@@ -2,9 +2,20 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
+* Poke: Fast and extended, Low commitment.
+* Swing: Commited arc that hits a point in front of you (Horizontal swing)
+* Sweep: Wide arc that covers area (Z axis swing)
+* Heavy: Slow and hard hitting, high commitment.
+*/
+public enum AttackType {Poke, Swing, Sweep, Heavy}
+
 [CreateAssetMenu(fileName = "AttackData", menuName = "ScriptableObjects/SceneObject/Attack/Attack")]
 public class AttackData : ScriptableObject
 {
+    [Header("Type")]
+    public AttackType AttackType;
+
     [Header("Animation")]
     public AnimationData AnimationData;
 
@@ -15,8 +26,7 @@ public class AttackData : ScriptableObject
     [Range(0, 1)]
     public float Influence;
     
-    [Tooltip("Normalized scale of damage based on animation length.")]
-    public AnimationCurve DamageCurve;
+    public float Damage; //TODO: Change to be a animation curve for diversity
 
     [Tooltip("Launch angle that the target will be launched at when hit." +
         "\n 0 is the forward," +

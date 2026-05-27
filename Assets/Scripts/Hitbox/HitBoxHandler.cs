@@ -259,7 +259,7 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
         float damage = rb.mass * speed * speed;
         damage = Mathf.Clamp(damage, minSceneObjectHitDamage, maxSceneObjectHitDamage);
 
-        hurtBox.Hit(new HitData(sceneObject.UniqueID, 0f, launchAngle, damage, sceneObjectHitStunTime, hitPoint));
+        hurtBox.Hit(new HitData(sceneObject.UniqueID, 0, 0f, launchAngle, damage, sceneObjectHitStunTime, hitPoint));
     }
 
     private void OnWeaponHit(IHurtBox hurtBox, Vector3 hitPoint)
@@ -281,7 +281,7 @@ public class HitBoxHandler : MonoBehaviour, IHitBoxHandler
         if (!sceneObject.IsFacingRightDirection)
             launchAngle = 180 - launchAngle;
 
-        hurtBox.Hit(new HitData(sceneObject.UniqueID, curAttackStats.Influence, launchAngle, curAttackStats.GetAttackDamage(animationDelta), curAttackStats.HitStunTime, hitPoint));
+        hurtBox.Hit(new HitData(sceneObject.UniqueID, curAttackStats.Type, curAttackStats.Influence, launchAngle, curAttackStats.Damage, curAttackStats.HitStunTime, hitPoint));
     }
 
     #endregion

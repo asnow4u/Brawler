@@ -12,15 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fde0668fa3339814daec55e0f3227a35, type: 3}
   m_Name: ForwardTilt_03
   m_EditorClassIdentifier: StatData::AttackData
+  AttackType: 1
   AnimationData:
     Animation: {fileID: 7400000, guid: a536285d92b5ef549bd2a1597495562f, type: 2}
     AnimationSpeed: 1
   Influence: 0
-  DamageCurve:
-    serializedVersion: 2
-    m_Curve: []
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
+  Damage: 0
   LaunchAngle: 0
-  HitStunTime: 0.1
+  HitPauseTime: 0.1

@@ -12,15 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fde0668fa3339814daec55e0f3227a35, type: 3}
   m_Name: ForwardAir_03
   m_EditorClassIdentifier: StatData::AttackData
+  AttackType: 1
   AnimationData:
     Animation: {fileID: 7400000, guid: d8a2755777237de4aacdf8cfd2b6c4fb, type: 2}
     AnimationSpeed: 1.3
   Influence: 0
-  DamageCurve:
-    serializedVersion: 2
-    m_Curve: []
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
+  Damage: 0
   LaunchAngle: 0
   HitPauseTime: 0.1

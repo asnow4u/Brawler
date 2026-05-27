@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(HurtBoxHandler))]
@@ -7,8 +8,11 @@ public class EffectsHandler : MonoBehaviour, IEffects
     IHurtBoxHandler hurtBoxHandler;
     private new Rigidbody rigidbody;
 
-    [Header("Launch Effects")]
-    [SerializeField] private ParticleSystem launchTrail;
+    [Header("Effects")]
+    [SerializeField] private SceneObjectEffects effects;
+
+    private ParticleSystem launchTrail;
+    private List<ParticleSystem> hitEffects;
 
     [Range(0, 1f)]
     [SerializeField] private float velocityScale = 1f;
@@ -25,26 +29,87 @@ public class EffectsHandler : MonoBehaviour, IEffects
         hurtBoxHandler = GetComponent<IHurtBoxHandler>();
         rigidbody = GetComponent<Rigidbody>();
 
+        if (effects == null)
+            Debug.LogError("Effects not setup for sceneObject", gameObject);
+        else
+            SetupParticleEffects();
+
         RegisterToEvents();
     }
 
     private void RegisterToEvents()
     {
+        hurtBoxHandler.OnHitEvent += OnHit;
         hurtBoxHandler.HitStunStateChangedEvent += OnHitStunStateChanged;
     }
 
     private void OnDestroy()
     {
         UnregisterFromEvents();
+        CleanUpParticles();
     }
 
     private void UnregisterFromEvents()
     {
+        hurtBoxHandler.OnHitEvent -= OnHit;
         hurtBoxHandler.HitStunStateChangedEvent -= OnHitStunStateChanged;
+    }
+
+
+    #region  Particles
+
+    private void SetupParticleEffects()
+    {
+        if (effects == null) return;
+
+        GameObject effectsGO = new GameObject();
+        effectsGO.name = "Effects";
+        effectsGO.transform.SetParent(transform);
+        effectsGO.transform.localPosition = Vector3.zero;
+        effectsGO.transform.localRotation = Quaternion.identity;
+        effectsGO.transform.localScale = Vector3.one;
+
+        if (effects.LaunchEffect != null)
+            launchTrail = Instantiate(effects.LaunchEffect, effectsGO.transform);
+
+        if (effects.HitEffects != null && effects.HitEffects.Count > 0)
+        {
+            hitEffects = new List<ParticleSystem>();
+            foreach (ParticleSystem particle in effects.HitEffects)
+                hitEffects.Add(Instantiate(particle, effectsGO.transform));
+        }
+    }
+
+    private void CleanUpParticles()
+    {
+        if (launchTrail != null)
+            Destroy(launchTrail);
+
+        if (hitEffects != null)
+        {
+            foreach (ParticleSystem particle in hitEffects)
+                Destroy(particle);
+
+            hitEffects.Clear();
+        }
+    }
+
+    #endregion
+
+
+    private void OnHit(KnockBackHitData hitData)
+    {
+        if (hitEffects == null || hitEffects.Count <= hitData.AttackType) return;
+        
+        ParticleSystem particle = hitEffects[hitData.AttackType];
+        particle.transform.position = hitData.HitPoint;
+        particle.Play();
     }
 
     private void OnHitStunStateChanged(HitStunState state)
     {
+        if (launchTrail == null) return;
+
         if (state == HitStunState.Launch)
             launchTrail.Play();
         else
@@ -54,7 +119,7 @@ public class EffectsHandler : MonoBehaviour, IEffects
 
     private void Update()
     {
-        if (launchTrail.isPlaying)
+        if (launchTrail != null && launchTrail.isPlaying)
             UpdateLaunchTrail();
     }
 

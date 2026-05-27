@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a941ef70fd666745bcd613f88b669d8, type: 3}
+  m_Name: Effects
+  m_EditorClassIdentifier: SceneObject.Effect::HurtEffectSO
+  HitEffects:
+  - {fileID: 3771155000303958427, guid: 070c45dc450f8284e96f10b4cbc416cb, type: 3}
+  - {fileID: 3771155000303958427, guid: ddfaea3cfff9b3f41829bc0b6a557a91, type: 3}
+  - {fileID: 3771155000303958427, guid: 7272deab4e6c41a48a63006e8e4a48d6, type: 3}
+  - {fileID: 3771155000303958427, guid: b3c461b8fb745e34fba12dd5be102c00, type: 3}
+  LaunchEffect: {fileID: 2245441720413828719, guid: 902ef544b7b5cf94c83491003d623a91, type: 3}
