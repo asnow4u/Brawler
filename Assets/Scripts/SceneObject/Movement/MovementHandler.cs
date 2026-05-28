@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 [RequireComponent(typeof(ISceneObject))]
 [RequireComponent(typeof(ActionStateHandler))]
@@ -483,12 +484,52 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
         }
     }
 
+    /// <summary>
+    /// Apply gravity based on current state. Selects from movement gravity values when not in hit stun,
+    /// and from hit stun gravity values when in Travel or Recovery. Launch and Pause skip gravity entirely.
+    /// After gravity is applied, downward velocity is clamped to the appropriate max fall speed.
+    /// </summary>
     private void ApplyGravity()
     {
         if (isLedgeClimbing)
             return;
 
-        rb.linearVelocity += new Vector3(0, Physics.gravity.y * curMovementData.GravityMultiplier * Time.fixedDeltaTime, 0);
+        float gravityForce;
+
+        if (actionState.CurActionState == ActionState.HitStun)
+        {
+            HitStunState hitStunState = hurtBoxHandler.CurHitStunState;
+
+            //Launch and Pause: no gravity (committed trajectory / frozen)
+            if (hitStunState == HitStunState.Launch || hitStunState == HitStunState.Pause)
+                return;
+
+            if (hitStunState == HitStunState.Travel)
+                gravityForce = curMovementData.GravityHitStunTravel;
+            else if (hitStunState == HitStunState.Recovery)
+                gravityForce = curMovementData.GravityHitStunRecovery;
+            else
+                return;
+        }
+        else
+        {
+            if (rb.linearVelocity.y > 0)
+                gravityForce = curMovementData.GravityRaising;
+            else if (verticalInfluence < 0 && rb.linearVelocity.y <= 0)
+                gravityForce = curMovementData.GravityFastFalling;
+            else
+                gravityForce = curMovementData.GravityFalling;
+        }
+
+        rb.linearVelocity += new Vector3(0, -gravityForce * Time.fixedDeltaTime, 0);
+
+        //Clamp downward velocity to the appropriate max fall speed
+        if (rb.linearVelocity.y < 0)
+        {
+            float maxFall = curMovementData.MaxFallVelocity;
+            if (rb.linearVelocity.y < -maxFall)
+                rb.linearVelocity = new Vector3(rb.linearVelocity.x, -maxFall, 0);
+        }
     }
 
     /// <summary>
@@ -538,12 +579,7 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
 
             case MovementState.Null:
                 DeccelerateAerialXMovement();
-
-                //Vertical Movement (allowed to fast fall while attacking)
-                if (verticalInfluence < 0 && rb.linearVelocity.y <= 0)
-                    AccelerateAerialYMovement();
-                else
-                    DeccelerateAerialYMovement();
+                DeccelerateAerialYRisingMovement();
                 break;
 
             case MovementState.AirMove:
@@ -554,11 +590,8 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
                 else
                     DeccelerateAerialXMovement();
 
-                //Vertical Movement
-                if (verticalInfluence < 0 && rb.linearVelocity.y <= 0)
-                    AccelerateAerialYMovement();
-                else
-                    DeccelerateAerialYMovement();
+                //Vertical pullback only when above rising max; fast-fall handled by gravity
+                DeccelerateAerialYRisingMovement();
                 break;
 
             case MovementState.GroundJump:
@@ -607,6 +640,13 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
     /// Recovery additionally applies gravity so the character begins falling toward the end of hit stun.
     /// A splat hold suspends all drag/gravity/bounce work until the hold expires.
     /// </summary>
+    /// <summary>
+    /// Drive movement during hit stun. Pause is handled by the state-change event.
+    /// Launch is gravity-free and drag-free (committed trajectory).
+    /// Travel and Recovery apply X-only drag and gravity (via ApplyGravity).
+    /// Y is owned by gravity; drag is horizontal only.
+    /// A splat hold suspends all drag/gravity/bounce work until the hold expires.
+    /// </summary>
     private void UpdateHitStunMovement()
     {
         if (isSplatHolding)
@@ -618,12 +658,12 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
         switch (hurtBoxHandler.CurHitStunState)
         {
             case HitStunState.Launch:
-                UpdateHitStunDeceleration();
                 CheckForHitStunBounce();
                 break;
 
             case HitStunState.Travel:
                 UpdateHitStunDeceleration();
+                ApplyGravity();
                 CheckForHitStunBounce();
                 break;
 

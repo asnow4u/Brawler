@@ -214,10 +214,15 @@ public class StatHandler : MonoBehaviour, IStats
 
         statData.MaxAerialXVelocity = Mathf.Lerp(baseSceneObjectData.AerialMaxXVelocityMax, baseSceneObjectData.AerialMaxXVelocityMin, MassRatio);
         statData.AerialXDecceleration = baseSceneObjectData.AerialXDecceleration;
-        statData.MaxAerialYVelocity = Mathf.Lerp(baseSceneObjectData.AerialMaxYVelocityMax, baseSceneObjectData.AerialMaxYVelocityMin, MassRatio);
-        statData.AerialUpYDecceleration = baseSceneObjectData.AerialYDecceleration + Mathf.Abs(Physics.gravity.y) * baseSceneObjectData.GravityMultiplier;
-        statData.AerialDownYDecceleration = baseSceneObjectData.AerialYDecceleration - Mathf.Abs(Physics.gravity.y) * baseSceneObjectData.GravityMultiplier;
-        statData.GravityMultiplier = baseSceneObjectData.GravityMultiplier;
+        statData.MaxAerialRisingVelocity = Mathf.Lerp(baseSceneObjectData.AerialMaxRisingVelocityMax, baseSceneObjectData.AerialMaxRisingVelocityMin, MassRatio);
+        statData.AerialRisingDecceleration = baseSceneObjectData.AerialRisingDecceleration;
+        statData.MaxFallVelocity = Mathf.Lerp(baseSceneObjectData.AerialMaxFallVelocityMax, baseSceneObjectData.AerialMaxFallVelocityMin, MassRatio);
+    
+        statData.GravityRaising = baseSceneObjectData.GravityRaising;
+        statData.GravityFalling = baseSceneObjectData.GravityFalling;
+        statData.GravityFastFalling = baseSceneObjectData.GravityFastFalling;
+        statData.GravityHitStunTravel = baseSceneObjectData.GravityHitStunTravel;
+        statData.GravityHitStunRecovery = baseSceneObjectData.GravityHitStunRecovery;
 
         if (data == null)
             return statData;
@@ -231,7 +236,6 @@ public class StatHandler : MonoBehaviour, IStats
         if (data.AirMoveData != null)
         {
             statData.AerialXAcceleration = Mathf.Lerp(data.AirMoveData.AerialXMaxAcceleration, data.AirMoveData.AerialXMinAcceleration, MassRatio);
-            statData.AerialYAcceleration = Mathf.Lerp(data.AirMoveData.AerialYMaxAcceleration, data.AirMoveData.AerialYMinAcceleration, MassRatio);
             statData.AerialMovementValid = data.AirMoveData.IsValid();
         }
 

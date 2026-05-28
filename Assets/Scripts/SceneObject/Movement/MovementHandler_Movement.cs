@@ -98,22 +98,6 @@ internal partial class MovementHandler
     }
 
     /// <summary>
-    /// Accelerate in the air on the Y axis
-    /// </summary>
-    private void AccelerateAerialYMovement()
-    {
-        float maxYVelocity = curMovementData.MaxAerialYVelocity;
-        float acceleration = curMovementData.AerialYAcceleration;
-
-        float acceleratedYValue = rb.linearVelocity.y - (acceleration * Time.fixedDeltaTime);
-
-        if (acceleratedYValue < -maxYVelocity)
-            acceleratedYValue = -maxYVelocity;
-
-        rb.linearVelocity = new Vector3(rb.linearVelocity.x, acceleratedYValue, 0);
-    }
-
-    /// <summary>
     /// Deccelerate in the air on the X axis 
     /// </summary>
     private void DeccelerateAerialXMovement()
@@ -148,35 +132,18 @@ internal partial class MovementHandler
     /// <summary>
     /// Deccelerate in the air on the Y axis 
     /// </summary>
-    private void DeccelerateAerialYMovement()
+    private void DeccelerateAerialYRisingMovement()
     {
-        if (Mathf.Abs(rb.linearVelocity.y) > curMovementData.MaxAerialYVelocity)
+        //Only pull back when rising above the max
+        if (rb.linearVelocity.y > curMovementData.MaxAerialRisingVelocity)
         {
-            //Positive Decceleration
-            if (rb.linearVelocity.y > 0)
-            {
-                float decceleratedYValue = rb.linearVelocity.y - curMovementData.AerialUpYDecceleration * Time.fixedDeltaTime;
+            float decceleratedYValue = rb.linearVelocity.y - curMovementData.AerialRisingDecceleration * Time.fixedDeltaTime;
 
-                if (decceleratedYValue < 0)
-                    decceleratedYValue = 0;
+            if (decceleratedYValue < curMovementData.MaxAerialRisingVelocity)
+                decceleratedYValue = curMovementData.MaxAerialRisingVelocity;
 
-                rb.linearVelocity = new Vector3(rb.linearVelocity.x, decceleratedYValue, 0);
-            }
-
-            //Negative Decceleration
-            else if (rb.linearVelocity.y < 0)
-            {
-                float decceleratedYValue = rb.linearVelocity.y + curMovementData.AerialDownYDecceleration * Time.fixedDeltaTime;
-
-                if (decceleratedYValue > 0)
-                    decceleratedYValue = 0;
-
-                rb.linearVelocity = new Vector3(rb.linearVelocity.x, decceleratedYValue, 0);
-            }
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, decceleratedYValue, 0);
         }
-
-        //Gravity
-        rb.linearVelocity = new Vector3(rb.linearVelocity.x, rb.linearVelocity.y, 0);
     }    
 
     #endregion

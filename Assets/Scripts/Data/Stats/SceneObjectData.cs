@@ -32,17 +32,33 @@ public class SceneObjectData : ScriptableObject
     public float AerialMaxXVelocityMin;
     [Tooltip("Rate at which the sceneObject will slow down horizontally in the air")]
     public float AerialXDecceleration;
-    [Tooltip("This is the highest value a sceneObjects vertical air speed can be set to.\n" +
+    [Tooltip("This is the highest value a sceneObjects vertical air speed can be set to while rising.\n" +
         "NOTE: The vertical air speed used is based on the sceneObejcts MassRatio")]
-    public float AerialMaxYVelocityMax;
-    [Tooltip("This is the lowest value a sceneObjects vertical air speed can be set to.\n" +
+    public float AerialMaxRisingVelocityMax;
+    [Tooltip("This is the lowest value a sceneObjects vertical air speed can be set to while rising.\n" +
         "NOTE: The vertical air speed used is based on the sceneObejcts MassRatio")]
-    public float AerialMaxYVelocityMin;
-    [Tooltip("Rate at which the sceneObject will slow down vertically in the air")]
-    public float AerialYDecceleration;
-    [Tooltip("Multiplier for the gravity applied to the sceneObject.\n" +
-        "NOTE: This is multiplied by the global gravity value, so a value of 1 means normal gravity, 0.5 means half gravity, and 2 means double gravity.")]
-    public float GravityMultiplier = 1;
+    public float AerialMaxRisingVelocityMin;
+    [Tooltip("Rate at which the sceneObject will slow down vertically in the air while rising")]
+    public float AerialRisingDecceleration;
+    [Tooltip("This is the highest value a sceneObjects vertical air speed can be set to while falling.\n" +
+        "NOTE: The vertical air speed used is based on the sceneObejcts MassRatio")]
+    public float AerialMaxFallVelocityMax;
+    [Tooltip("This is the lowest value a sceneObjects vertical air speed can be set to while falling.\n" +
+        "NOTE: The vertical air speed used is based on the sceneObejcts MassRatio")]
+    public float AerialMaxFallVelocityMin;
+
+    [Header("Gravity")]
+    [Tooltip("The gravity force applied while moving up")]
+    public float GravityRaising;
+    [Tooltip("The gravity force applied while moving down")]
+    public float GravityFalling;
+    [Tooltip("The gravity force applied while fast falling")]
+    public float GravityFastFalling;
+    [Tooltip("The gravity force used while in hitstun during the travel state")]
+    public float GravityHitStunTravel;
+    [Tooltip("The gravity force used while in hitstun during the recovery state" +
+    "\nNote: this is the gravity force at the apex of the trajectory. Should be slow")]
+    public float GravityHitStunRecovery;
 
     [Header("Base Animations")]
     public BaseAnimationCollection AnimationCollection;
@@ -62,14 +78,14 @@ public class SceneObjectData : ScriptableObject
 
         // SceneObject must be able to move in the air (NOTE: This can be when getting hit)
         if (AerialMaxXVelocityMin <= 0 || AerialMaxXVelocityMax <= 0 || AerialMaxXVelocityMin > AerialMaxXVelocityMax ||
-            AerialMaxYVelocityMin <= 0 || AerialMaxYVelocityMax <= 0 || AerialMaxYVelocityMin > AerialMaxYVelocityMax)
+            AerialMaxRisingVelocityMin <= 0 || AerialMaxRisingVelocityMax <= 0 || AerialMaxRisingVelocityMin > AerialMaxRisingVelocityMax)
             return false;
 
         // SceneObject must be able to stop moving
         if (GroundedDecceleration <= 0 || AerialXDecceleration <=0)
             return false;
 
-        if (GravityMultiplier == 0) //NOTE: This would mean there is no gravity
+        if (GravityRaising == 0 || GravityFalling == 0 || GravityFastFalling == 0 || GravityHitStunTravel == 0 || GravityHitStunRecovery == 0) //NOTE: This would mean there is no gravity
             return false;
 
         if (AnimationCollection == null) 

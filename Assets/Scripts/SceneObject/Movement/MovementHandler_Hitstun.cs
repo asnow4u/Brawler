@@ -68,17 +68,17 @@ internal partial class MovementHandler
     /// <summary>
     /// Apply drag to the hit stun velocity. Called during Travel and Recovery substates.
     /// </summary>
+    /// <summary>
+    /// Apply X-only drag to the hit stun velocity. Y is owned entirely by gravity and clamps.
+    /// Called during Travel and Recovery substates.
+    /// </summary>
     private void UpdateHitStunDeceleration()
     {
-        rb.linearVelocity *= hitStunDrag;
+        Vector3 v = rb.linearVelocity;
+        v.x *= hitStunDrag;
+        rb.linearVelocity = v;
     }
 
-
-
-    /// <summary>
-    /// Detect a bounce condition and, if found, reflect velocity off the impacted surface(s).
-    /// Runs every FixedUpdate during Travel and Recovery substates.
-    /// </summary>
     /// <summary>
     /// Detect a bounce condition and, if found, reflect velocity off the impacted surface(s).
     /// If the reflected magnitude meets the splat threshold during Launch or Travel, hold velocity briefly
