@@ -12,21 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e482dae485748046b5d0bafe4990f98, type: 3}
   m_Name: Player_Base
   m_EditorClassIdentifier: 
-  MaxMass: 101
-  MinMass: 100
-  GroundedMaxVelocityMax: 18
-  GroundedMaxVelocityMin: 18
+  Mass: 100
+  GroundedMaxVelocity: 18
   GroundedDecceleration: 5000
-  AerialMaxXVelocityMax: 13
-  AerialMaxXVelocityMin: 13
+  AerialMaxXVelocity: 13
   AerialXDecceleration: 100
-  AerialMaxRisingVelocityMax: 25
-  AerialMaxRisingVelocityMin: 25
+  AerialMaxRisingVelocity: 25
   AerialRisingDecceleration: 100
-  AerialMaxFallVelocityMax: 25
-  AerialMaxFallVelocityMin: 25
-  AerialMaxFastFallVelocityMax: 25
-  AerialMaxFastFallVelocityMin: 25
+  AerialMaxFallVelocity: 25
   GravityRaising: 30
   GravityFalling: 30
   GravityFastFalling: 90

@@ -4,14 +4,11 @@ using UnityEngine;
 public class AirMoveData : BaseMovementData
 {
     [Header("Arial Acceleration")]
-    public float AerialXMaxAcceleration;
-    public float AerialXMinAcceleration;
+    public float AerialXAcceleration;
 
     public override bool IsValid()
     {
         return AnimationData.Animation != null &&
-               AerialXMaxAcceleration > 0 &&
-               AerialXMinAcceleration > 0 &&
-               AerialXMaxAcceleration >= AerialXMinAcceleration;             
+               AerialXAcceleration > 0;
     }
 }

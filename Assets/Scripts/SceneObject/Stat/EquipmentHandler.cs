@@ -104,7 +104,7 @@ internal class EquipmentHandler : StatHandler
         if (weaponHandler.EquippedWeapon != null)
             accumulatedMass += weaponHandler.EquippedWeapon.Mass;
 
-        rb.mass = Mathf.Clamp(baseSceneObjectData.MinMass + accumulatedMass, baseSceneObjectData.MinMass, baseSceneObjectData.MaxMass);
+        rb.mass = baseSceneObjectData.Mass + accumulatedMass;
     }
 
     protected virtual AttackStatData ParseWeaponAttackData(IWeapon weapon)

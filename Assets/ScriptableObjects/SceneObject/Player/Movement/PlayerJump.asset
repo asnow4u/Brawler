@@ -15,7 +15,5 @@ MonoBehaviour:
   AnimationData:
     Animation: {fileID: 7400000, guid: 6695503546c4a9843b8a8e18a1a99716, type: 2}
     AnimationSpeed: 1
-  MaxInitialVelocity: 12
-  MinInitialVelocity: 12
-  MaxJumpAcceleration: 1
-  MinJumpAcceleration: 1
+  InitialVelocity: 12
+  JumpAcceleration: 1

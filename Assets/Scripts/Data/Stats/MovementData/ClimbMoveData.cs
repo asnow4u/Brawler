@@ -9,7 +9,7 @@ public class ClimbMoveData : BaseMovementData
     public float ClimbUpYVelocity;
     public float ClimbDownYVelocity;
 
-    public float MaxClimbSlideDecceleration;
+    public float ClimbSlideDecceleration;
     public float MinClimbSlideDecceleration;
 
     public override bool IsValid()
@@ -19,8 +19,8 @@ public class ClimbMoveData : BaseMovementData
                ClimbXVelocity > 0 &&
                ClimbUpYVelocity > 0 &&
                ClimbDownYVelocity > 0 &&
-               MaxClimbSlideDecceleration > 0 &&
+               ClimbSlideDecceleration > 0 &&
                MinClimbSlideDecceleration > 0 &&
-               MaxClimbSlideDecceleration >= MinClimbSlideDecceleration;
+               ClimbSlideDecceleration >= MinClimbSlideDecceleration;
     }
 }

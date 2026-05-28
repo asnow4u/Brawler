@@ -4,14 +4,11 @@ using UnityEngine;
 public class MoveData : BaseMovementData
 {
     [Header("Grounded Movement")]
-    public float GroundedXMaxAcceleration;
-    public float GroundedXMinAcceleration;
+    public float GroundedXAcceleration;
 
     public override bool IsValid()
     {
         return AnimationData.Animation != null &&
-               GroundedXMaxAcceleration > 0 &&
-               GroundedXMinAcceleration > 0 &&
-               GroundedXMaxAcceleration >= GroundedXMinAcceleration;
+               GroundedXAcceleration > 0;
     }
 }

@@ -14,7 +14,6 @@ public class StatHandler : MonoBehaviour, IStats
     [SerializeField] protected SceneObjectData baseSceneObjectData;
 
     protected Rigidbody rb;
-    private float MassRatio => (Mathf.Clamp(rb.mass, baseSceneObjectData.MinMass, baseSceneObjectData.MaxMass) - baseSceneObjectData.MinMass) / (baseSceneObjectData.MaxMass - baseSceneObjectData.MinMass);
 
     //Events
     public event Action<AnimationStatData> AnimationStatsChangedEvent;
@@ -36,7 +35,7 @@ public class StatHandler : MonoBehaviour, IStats
 
         actionState = GetComponent<IActionState>();
         rb = GetComponent<Rigidbody>();
-        rb.mass = baseSceneObjectData.MinMass;
+        rb.mass = baseSceneObjectData.Mass;
 
         RegisterToEvents();
     }
@@ -209,14 +208,14 @@ public class StatHandler : MonoBehaviour, IStats
     {        
         MovementStatData statData = new MovementStatData();
 
-        statData.MaxGroundedVelocity = Mathf.Lerp(baseSceneObjectData.GroundedMaxVelocityMax, baseSceneObjectData.GroundedMaxVelocityMin, MassRatio);
+        statData.MaxGroundedVelocity = baseSceneObjectData.GroundedMaxVelocity;
         statData.GroundedDecceleration = baseSceneObjectData.GroundedDecceleration;
 
-        statData.MaxAerialXVelocity = Mathf.Lerp(baseSceneObjectData.AerialMaxXVelocityMax, baseSceneObjectData.AerialMaxXVelocityMin, MassRatio);
+        statData.MaxAerialXVelocity = baseSceneObjectData.AerialMaxXVelocity;
         statData.AerialXDecceleration = baseSceneObjectData.AerialXDecceleration;
-        statData.MaxAerialRisingVelocity = Mathf.Lerp(baseSceneObjectData.AerialMaxRisingVelocityMax, baseSceneObjectData.AerialMaxRisingVelocityMin, MassRatio);
+        statData.MaxAerialRisingVelocity = baseSceneObjectData.AerialMaxRisingVelocity;
         statData.AerialRisingDecceleration = baseSceneObjectData.AerialRisingDecceleration;
-        statData.MaxFallVelocity = Mathf.Lerp(baseSceneObjectData.AerialMaxFallVelocityMax, baseSceneObjectData.AerialMaxFallVelocityMin, MassRatio);
+        statData.MaxFallVelocity = baseSceneObjectData.AerialMaxFallVelocity;
     
         statData.GravityRaising = baseSceneObjectData.GravityRaising;
         statData.GravityFalling = baseSceneObjectData.GravityFalling;
@@ -229,13 +228,13 @@ public class StatHandler : MonoBehaviour, IStats
 
         if (data.MoveData != null)
         {
-            statData.GroundedAcceleration = Mathf.Lerp(data.MoveData.GroundedXMaxAcceleration, data.MoveData.GroundedXMinAcceleration, MassRatio);
+            statData.GroundedAcceleration = data.MoveData.GroundedXAcceleration;
             statData.GroundedMovementValid = data.MoveData.IsValid();
         }
 
         if (data.AirMoveData != null)
         {
-            statData.AerialXAcceleration = Mathf.Lerp(data.AirMoveData.AerialXMaxAcceleration, data.AirMoveData.AerialXMinAcceleration, MassRatio);
+            statData.AerialXAcceleration = data.AirMoveData.AerialXAcceleration;
             statData.AerialMovementValid = data.AirMoveData.IsValid();
         }
 
@@ -244,29 +243,29 @@ public class StatHandler : MonoBehaviour, IStats
             statData.MaxClimbXVelocity = data.ClimbMoveData.ClimbXVelocity;
             statData.MaxClimbUpYVelocity = data.ClimbMoveData.ClimbUpYVelocity;
             statData.MaxClimbDownYVelocity = data.ClimbMoveData.ClimbDownYVelocity;
-            statData.ClimbSlideDecceleration = Mathf.Lerp(data.ClimbMoveData.MaxClimbSlideDecceleration, data.ClimbMoveData.MinClimbSlideDecceleration, MassRatio);
+            statData.ClimbSlideDecceleration = data.ClimbMoveData.ClimbSlideDecceleration;
             statData.ClimbMovementValid = data.ClimbMoveData.IsValid();
         }
 
         if (data.JumpData != null)
         {
-            statData.InitialJumpVelocity = Mathf.Lerp(data.JumpData.MaxInitialVelocity, data.JumpData.MinInitialVelocity, MassRatio);
-            statData.JumpAcceleration = Mathf.Lerp(data.JumpData.MaxJumpAcceleration, data.JumpData.MinJumpAcceleration, MassRatio);
+            statData.InitialJumpVelocity = data.JumpData.InitialVelocity;
+            statData.JumpAcceleration = data.JumpData.JumpAcceleration;
             statData.GroundedJumpValid = data.JumpData.IsValid();
         }
 
         if (data.AirJumpData != null)
         {
-            statData.InitialAirJumpVelocity = Mathf.Lerp(data.AirJumpData.MaxInitialVelocity, data.AirJumpData.MinInitialVelocity, MassRatio);
-            statData.AirJumpAcceleration = Mathf.Lerp(data.AirJumpData.MaxJumpAcceleration, data.AirJumpData.MinJumpAcceleration, MassRatio);
+            statData.InitialAirJumpVelocity = data.AirJumpData.InitialVelocity;
+            statData.AirJumpAcceleration = data.AirJumpData.JumpAcceleration;
             statData.AirJumpsAvailable = data.AirJumpData.AdditionalJumpsAvailable;
             statData.AerialJumpValid = data.AirJumpData.IsValid();
         }
 
         if (data.WallJumpData != null)
         {
-            statData.InitialWallJumpVelocity = Mathf.Lerp(data.WallJumpData.MaxInitialVelocity, data.WallJumpData.MinInitialVelocity, MassRatio);
-            statData.WallJumpAcceleration = Mathf.Lerp(data.WallJumpData.MaxJumpAcceleration, data.WallJumpData.MinJumpAcceleration, MassRatio);
+            statData.InitialWallJumpVelocity = data.WallJumpData.InitialVelocity;
+            statData.WallJumpAcceleration = data.WallJumpData.JumpAcceleration;
             statData.WallJumpAngle = data.WallJumpData.JumpAngle;
             statData.WallJumpValid = data.WallJumpData.IsValid();
         }
@@ -283,8 +282,8 @@ public class StatHandler : MonoBehaviour, IStats
 
         if (data.WallSlideData != null)
         {
-            statData.MaxWallSlideVelocity = Mathf.Lerp(data.WallSlideData.MaxSlideVelocity, data.WallSlideData.MinSlideVelocity, MassRatio);
-            statData.WallSlideDeceleration = Mathf.Lerp(data.WallSlideData.MaxSlideDecceleration, data.WallSlideData.MinSlideDecceleration, MassRatio);
+            statData.MaxWallSlideVelocity = data.WallSlideData.SlideVelocity;
+            statData.WallSlideDeceleration = data.WallSlideData.SlideDecceleration;
             statData.WallSlideValid = data.WallSlideData.IsValid();
         }
 

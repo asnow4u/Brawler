@@ -15,7 +15,5 @@ MonoBehaviour:
   AnimationData:
     Animation: {fileID: 7400000, guid: 15de474a6e7bfa04585467c2657651cd, type: 2}
     AnimationSpeed: 1
-  MaxSlideVelocity: 5
-  MinSlideVelocity: 5
-  MaxSlideDecceleration: 60
-  MinSlideDecceleration: 60
+  SlideVelocity: 5
+  SlideDecceleration: 60
