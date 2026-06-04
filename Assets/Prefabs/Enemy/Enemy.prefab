@@ -164,12 +164,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: SceneObject.Hurtbox::HurtBoxHandler
   damageTaken: 0
-  minKnockBackVelocity: 5
+  baseForce: 1200
+  exGrowth: 2
+  damageForceScale: 0.2
   curHitStunState: 0
-  hitStunMultiplier: 0.03
-  launchDurationRatio: 0.25
-  travelDurationRatio: 0.5
-  recoveryDurationRatio: 0.25
+  baseLaunchDuration: 0.05
+  launchKnockbackScale: 0.005
+  maxLaunchDuration: 0.2
+  apexApproach: 0.9
+  minTravelDuration: 0.05
+  recoveryDuration: 0.25
   debugMode: 0
   debugInfluence: 1
   debugLaunchAngle: 44
@@ -196,7 +200,9 @@ MonoBehaviour:
   jumpInfluence: 0
   isClimbSliding: 0
   ledgeClimbDuration: 0.2
-  hitStunDrag: 0.95
+  travelDragSetup: 0.95
+  travelDragFinisher: 0.995
+  recoveryDrag: 0.98
   bounceDegrade: 0.9
   minBounceVelocity: 0.9
   splatVelocityThreshold: 15

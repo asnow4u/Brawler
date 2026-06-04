@@ -3,11 +3,19 @@ using UnityEngine;
 
 internal partial class MovementHandler
 {
-    [Header("Hit Stun")]
-    [Tooltip("Per-FixedUpdate velocity multiplier applied during Travel and Recovery. Lower = more drag.")]
+    [Header("Hit Stun Drag")]
+    [Tooltip("Per-FixedUpdate X velocity multiplier during Travel for an influence=0 hit (snappy stop, the setup feel).")]
     [Range(0.5f, 1f)]
-    [SerializeField] private float hitStunDrag = 0.95f;
+    [SerializeField] private float travelDragSetup = 0.95f;
+    [Tooltip("Per-FixedUpdate X velocity multiplier during Travel for an influence=1 hit (carries through, the finisher feel).")]
+    [Range(0.5f, 1f)]
+    [SerializeField] private float travelDragFinisher = 0.995f;
+    [Tooltip("Per-FixedUpdate X velocity multiplier during Recovery, regardless of attack. Light drag, this is the DI/follow-up window.")]
+    [Range(0.5f, 1f)]
+    [SerializeField] private float recoveryDrag = 0.98f;
     private Vector3 pendingKnockbackVelocity = Vector3.zero;
+    private float pendingInfluence = 0f;
+    private float currentHitInfluence = 0f;
 
     [Header("Bounce")]
     [SerializeField] private float bounceDegrade = 0.9f;
@@ -24,9 +32,14 @@ internal partial class MovementHandler
     /// <summary>
     /// Cache knockback velocity from the hit. Application waits for the Launch state transition.
     /// </summary>
+    /// <summary>
+    /// Cache knockback velocity and influence from the hit. Application waits for the Launch state transition.
+    /// Influence determines drag during Travel: low influence = snappy stop, high influence = carries through.
+    /// </summary>
     private void ApplyHitStunKnockback(KnockBackHitData hitData)
     {
         pendingKnockbackVelocity = hitData.KnockBackVelocity;
+        pendingInfluence = hitData.Influence;
     }
 
 
@@ -36,6 +49,11 @@ internal partial class MovementHandler
     /// <summary>
     /// React to hit stun state transitions. Pause freezes velocity. Launch applies the cached knockback once
     /// and immediately checks for a bounce so an at-rest hit reflects off the surface it's resting against.
+    /// </summary>
+    /// <summary>
+    /// React to hit stun state transitions. Pause freezes velocity. Launch applies the cached knockback once
+    /// and immediately checks for a bounce so an at-rest hit reflects off the surface it's resting against.
+    /// Any transition during an active splat hold ends the hold, restoring held velocity first.
     /// </summary>
     /// <summary>
     /// React to hit stun state transitions. Pause freezes velocity. Launch applies the cached knockback once
@@ -56,11 +74,15 @@ internal partial class MovementHandler
             case HitStunState.Launch:
                 rb.linearVelocity = pendingKnockbackVelocity;
                 pendingKnockbackVelocity = Vector3.zero;
+                currentHitInfluence = pendingInfluence;
+                pendingInfluence = 0f;
                 CheckForHitStunBounce();
                 break;
 
             case HitStunState.Null:
                 pendingKnockbackVelocity = Vector3.zero;
+                pendingInfluence = 0f;
+                currentHitInfluence = 0f;
                 break;
         }
     }
@@ -72,10 +94,22 @@ internal partial class MovementHandler
     /// Apply X-only drag to the hit stun velocity. Y is owned entirely by gravity and clamps.
     /// Called during Travel and Recovery substates.
     /// </summary>
+    /// <summary>
+    /// Apply X-only drag to the hit stun velocity. Y is owned entirely by gravity and clamps.
+    /// Travel drag is derived from the attack's influence (low influence = high drag, snappy stop;
+    /// high influence = low drag, carries through). Recovery uses a fixed light drag.
+    /// </summary>
     private void UpdateHitStunDeceleration()
     {
+        float drag;
+
+        if (hurtBoxHandler.CurHitStunState == HitStunState.Recovery)
+            drag = recoveryDrag;
+        else
+            drag = Mathf.Lerp(travelDragSetup, travelDragFinisher, currentHitInfluence);
+
         Vector3 v = rb.linearVelocity;
-        v.x *= hitStunDrag;
+        v.x *= drag;
         rb.linearVelocity = v;
     }
 

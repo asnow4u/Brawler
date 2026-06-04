@@ -33,10 +33,12 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxHandlerEdi
     
 
     [Header("Knockback")]
-    [Tooltip("Base amount of acceleration that will be applied anytime taking a hit")]
-    [SerializeField] float minKnockBackVelocity = 10f;
-    [Tooltip("The exponential growth of knockback based on damage")]
-    const float exGrowth = 2.8f;
+    [Tooltip("Base knockback force applied to any hit (before mass division). Sets the minimum-feel velocity at 0% damage.")]
+    [SerializeField] private float baseForce = 1200f;
+    [Tooltip("Exponential growth of damage-scaled knockback. Lower = smoother curve, higher = sharper ramp at high damage.")]
+    [SerializeField] private float exGrowth = 2.0f;
+    [Tooltip("Multiplier on the damage-scaled portion. Controls how much added force comes from damage scaling.")]
+    [SerializeField] private float damageForceScale = 0.2f;
     private Vector3 knockBackVelocity;
 
     [Header("Hit Stun")]
@@ -132,16 +134,27 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxHandlerEdi
         ApplyHitStun(hitData.StunTime, launchDuration, travelDuration, recoveryDuration);
     }
 
+    /// <summary>
+    /// Calculate knockback velocity from influence, damage, launch angle, and mass.
+    /// Force = minKnockBackForce + influence * damage^exGrowth. Velocity = Force / mass.
+    /// Mass divides once (F = ma), so heavier characters take less knockback from all hits.
+    /// </summary>
+    /// <summary>
+    /// Calculate knockback velocity from influence, damage, launch angle, and mass.
+    /// Force = baseForce + influence * damage^exGrowth * damageForceScale. Velocity = Force / mass.
+    /// Mass divides once (F = ma), so heavier characters take less knockback from all hits.
+    /// baseForce sets the minimum-feel velocity (every hit registers). damageForceScale + exGrowth shape the ramp.
+    /// </summary>
     public Vector3 CalculateKnockbackVelocity(float influence, float totalDamage, float launchAngle, float mass)
     {
-        float minForce = mass * minKnockBackVelocity;
-        float damageForce = minForce + influence * (Mathf.Pow(totalDamage, exGrowth) / mass);
+        float force = baseForce + influence * Mathf.Pow(totalDamage, exGrowth) * damageForceScale;
+        float velocity = force / mass;
 
         float xLaunch = Mathf.Cos(launchAngle * Mathf.Deg2Rad);
         float yLaunch = Mathf.Sin(launchAngle * Mathf.Deg2Rad);
         Vector3 launchDirection = new Vector2(xLaunch, yLaunch);
 
-        return launchDirection * damageForce / mass;
+        return launchDirection * velocity;
     }
 
     private float CalculateLaunchDuration(float knockbackMagnitude)
