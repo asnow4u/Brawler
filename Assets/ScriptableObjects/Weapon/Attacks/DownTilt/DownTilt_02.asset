@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fde0668fa3339814daec55e0f3227a35, type: 3}
   m_Name: DownTilt_02
   m_EditorClassIdentifier: StatData::AttackData
-  AttackType: 1
+  AttackType: 0
   AnimationData:
     Animation: {fileID: 7400000, guid: 898aa992f03ce4146b1a03dae3624d39, type: 2}
     AnimationSpeed: 1.5
-  Influence: 0.4
-  Damage: 0
-  LaunchAngle: 60
+  Influence: 0
+  Damage: 4
+  LaunchAngle: 80
   HitPauseTime: 0.1
