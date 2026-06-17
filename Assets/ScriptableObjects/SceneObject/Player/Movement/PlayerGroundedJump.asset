@@ -9,11 +9,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f8a7c379f520d2b45bafdf5c205fb771, type: 3}
-  m_Name: PlayerJump
-  m_EditorClassIdentifier: StatData::JumpData
+  m_Script: {fileID: 11500000, guid: ae6c87858b20a5248b8908c753158fb9, type: 3}
+  m_Name: PlayerGroundedJump
+  m_EditorClassIdentifier: StatData::GroundedJumpData
   AnimationData:
     Animation: {fileID: 7400000, guid: 6695503546c4a9843b8a8e18a1a99716, type: 2}
     AnimationSpeed: 1
-  InitialVelocity: 12
-  JumpAcceleration: 1
+  JumpVelocity: 12
+  ShortHopVelocity: 8
+  JumpSquatDuration: 0.066

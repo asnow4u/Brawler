@@ -6,7 +6,7 @@ public class MovementDataCollection : ScriptableObject
 {
     public MoveData MoveData;
     public AirMoveData AirMoveData;
-    public JumpData JumpData;
+    public GroundedJumpData GroundedJumpData;
     public AirJumpData AirJumpData;
     public WallJumpData WallJumpData;
     public ClimbMoveData ClimbMoveData;

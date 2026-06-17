@@ -39,17 +39,16 @@ public class MovementStatData
     public float ClimbSlideDecceleration;
 
     //Jump
-    public float InitialJumpVelocity;
-    public float JumpAcceleration;
+    public float JumpVelocity;
+    public float ShortHopVelocity;
+    public float JumpSquatDuration;
 
     //Aerial Jump
-    public float InitialAirJumpVelocity;
-    public float AirJumpAcceleration;
+    public float AirJumpVelocity;
     public int AirJumpsAvailable;
 
     //Wall Jump
-    public float InitialWallJumpVelocity;
-    public float WallJumpAcceleration;
+    public float WallJumpVelocity;
     public float WallJumpAngle;
 
     //Wall Slide

@@ -144,8 +144,8 @@ public class StatHandler : MonoBehaviour, IStats
             else
                 movementAnimations.Add(5, null);
 
-            if (movementData.JumpData != null)
-                movementAnimations.Add(6, new AnimationStatData.AnimationData(movementData.JumpData.AnimationData.Animation, movementData.JumpData.AnimationData.AnimationSpeed));
+            if (movementData.GroundedJumpData != null)
+                movementAnimations.Add(6, new AnimationStatData.AnimationData(movementData.GroundedJumpData.AnimationData.Animation, movementData.GroundedJumpData.AnimationData.AnimationSpeed));
             else
                 movementAnimations.Add(6, null);
 
@@ -247,25 +247,24 @@ public class StatHandler : MonoBehaviour, IStats
             statData.ClimbMovementValid = data.ClimbMoveData.IsValid();
         }
 
-        if (data.JumpData != null)
+        if (data.GroundedJumpData != null)
         {
-            statData.InitialJumpVelocity = data.JumpData.InitialVelocity;
-            statData.JumpAcceleration = data.JumpData.JumpAcceleration;
-            statData.GroundedJumpValid = data.JumpData.IsValid();
+            statData.JumpVelocity = data.GroundedJumpData.JumpVelocity;
+            statData.ShortHopVelocity = data.GroundedJumpData.ShortHopVelocity;
+            statData.JumpSquatDuration = data.GroundedJumpData.JumpSquatDuration;
+            statData.GroundedJumpValid = data.GroundedJumpData.IsValid();
         }
 
         if (data.AirJumpData != null)
         {
-            statData.InitialAirJumpVelocity = data.AirJumpData.InitialVelocity;
-            statData.AirJumpAcceleration = data.AirJumpData.JumpAcceleration;
+            statData.AirJumpVelocity = data.AirJumpData.JumpVelocity;
             statData.AirJumpsAvailable = data.AirJumpData.AdditionalJumpsAvailable;
             statData.AerialJumpValid = data.AirJumpData.IsValid();
         }
 
         if (data.WallJumpData != null)
         {
-            statData.InitialWallJumpVelocity = data.WallJumpData.InitialVelocity;
-            statData.WallJumpAcceleration = data.WallJumpData.JumpAcceleration;
+            statData.WallJumpVelocity = data.WallJumpData.JumpVelocity;
             statData.WallJumpAngle = data.WallJumpData.JumpAngle;
             statData.WallJumpValid = data.WallJumpData.IsValid();
         }
@@ -382,7 +381,7 @@ public class StatHandler : MonoBehaviour, IStats
 
         if (movementData.MoveData != null)       movementData.MoveData.OnChangedEvent       += OnDataChanged;
         if (movementData.AirMoveData != null)    movementData.AirMoveData.OnChangedEvent    += OnDataChanged;
-        if (movementData.JumpData != null)       movementData.JumpData.OnChangedEvent       += OnDataChanged;
+        if (movementData.GroundedJumpData != null)       movementData.GroundedJumpData.OnChangedEvent       += OnDataChanged;
         if (movementData.AirJumpData != null)    movementData.AirJumpData.OnChangedEvent    += OnDataChanged;
         if (movementData.WallJumpData != null)   movementData.WallJumpData.OnChangedEvent   += OnDataChanged;
         if (movementData.ClimbMoveData != null)  movementData.ClimbMoveData.OnChangedEvent  += OnDataChanged;
@@ -399,7 +398,7 @@ public class StatHandler : MonoBehaviour, IStats
 
         if (movementData.MoveData != null)       movementData.MoveData.OnChangedEvent       -= OnDataChanged;
         if (movementData.AirMoveData != null)    movementData.AirMoveData.OnChangedEvent    -= OnDataChanged;
-        if (movementData.JumpData != null)       movementData.JumpData.OnChangedEvent       -= OnDataChanged;
+        if (movementData.GroundedJumpData != null)       movementData.GroundedJumpData.OnChangedEvent       -= OnDataChanged;
         if (movementData.AirJumpData != null)    movementData.AirJumpData.OnChangedEvent    -= OnDataChanged;
         if (movementData.WallJumpData != null)   movementData.WallJumpData.OnChangedEvent   -= OnDataChanged;
         if (movementData.ClimbMoveData != null)  movementData.ClimbMoveData.OnChangedEvent  -= OnDataChanged;

@@ -470,17 +470,22 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
     private void FixedUpdate()
     {
         if (actionState.CurActionState == ActionState.HitStun)
+        {
+            isJumpSquatPending = false; // Cancel a pending squat launch if hit mid-squat
             UpdateHitStunMovement();
+        }
 
         else
         {
             ApplyGravity();
-            
+
             if (actionState.CurGroundedState == GroundedState.Grounded)
                 UpdateGroundedMovement();
 
             else if (actionState.CurGroundedState == GroundedState.Airborn)
                 UpdateAerialMovement();
+
+            UpdateJumpSquat();
         }
     }
 
@@ -559,7 +564,6 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
 
             case MovementState.GroundJump:
                 UpdateGroundedAcceleration();
-                UpdateJumpVelocity();
                 break;
         }
     }    
@@ -603,8 +607,6 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
                     AccelerateAerialXMovement();
                 else
                     DeccelerateAerialXMovement();
-
-                UpdateJumpVelocity();
                 break;
 
             case MovementState.WallSlide:
