@@ -226,65 +226,83 @@ public class StatHandler : MonoBehaviour, IStats
         if (data == null)
             return statData;
 
-        if (data.MoveData != null)
+        if (data.MoveData != null && data.MoveData.IsValid())
         {
             statData.GroundedAcceleration = data.MoveData.GroundedXAcceleration;
-            statData.GroundedMovementValid = data.MoveData.IsValid();
+            statData.GroundedMovementValid = true;
         }
+        else
+            Debug.LogWarning(gameObject.name + "'s MovementData.MoveData is null or invalid", gameObject);
 
-        if (data.AirMoveData != null)
+        if (data.AirMoveData != null && data.AirMoveData.IsValid())
         {
             statData.AerialXAcceleration = data.AirMoveData.AerialXAcceleration;
-            statData.AerialMovementValid = data.AirMoveData.IsValid();
+            statData.AerialMovementValid = true;
         }
+        else
+            Debug.LogWarning(gameObject.name + "'s MovementData.AirMoveData is null or invalid", gameObject);
 
-        if (data.ClimbMoveData != null)
+        if (data.ClimbMoveData != null && data.ClimbMoveData.IsValid())
         {
             statData.MaxClimbXVelocity = data.ClimbMoveData.ClimbXVelocity;
             statData.MaxClimbUpYVelocity = data.ClimbMoveData.ClimbUpYVelocity;
             statData.MaxClimbDownYVelocity = data.ClimbMoveData.ClimbDownYVelocity;
             statData.ClimbSlideDecceleration = data.ClimbMoveData.ClimbSlideDecceleration;
-            statData.ClimbMovementValid = data.ClimbMoveData.IsValid();
+            statData.ClimbMovementValid = true;
         }
+        else
+            Debug.LogWarning(gameObject.name + "'s MovementData.ClimbMoveData is null or invalid", gameObject);
 
-        if (data.GroundedJumpData != null)
+        if (data.GroundedJumpData != null && data.GroundedJumpData.IsValid())
         {
             statData.JumpVelocity = data.GroundedJumpData.JumpVelocity;
             statData.ShortHopVelocity = data.GroundedJumpData.ShortHopVelocity;
             statData.JumpSquatDuration = data.GroundedJumpData.JumpSquatDuration;
-            statData.GroundedJumpValid = data.GroundedJumpData.IsValid();
+            statData.GroundedJumpValid = true;
         }
+        else
+            Debug.LogWarning(gameObject.name + "'s MovementData.GroundedJumpData is null or invalid", gameObject);
 
-        if (data.AirJumpData != null)
+        if (data.AirJumpData != null && data.AirJumpData.IsValid())
         {
             statData.AirJumpVelocity = data.AirJumpData.JumpVelocity;
             statData.AirJumpsAvailable = data.AirJumpData.AdditionalJumpsAvailable;
-            statData.AerialJumpValid = data.AirJumpData.IsValid();
+            statData.AerialJumpValid = true;
         }
+        else
+            Debug.LogWarning(gameObject.name + "'s MovementData.AirJumpData is null or invalid", gameObject);
 
-        if (data.WallJumpData != null)
+        if (data.WallJumpData != null && data.WallJumpData.IsValid())
         {
             statData.WallJumpVelocity = data.WallJumpData.JumpVelocity;
             statData.WallJumpAngle = data.WallJumpData.JumpAngle;
-            statData.WallJumpValid = data.WallJumpData.IsValid();
+            statData.WallJumpValid = true;
         }
+        else
+            Debug.LogWarning(gameObject.name + "'s MovementData.WallJumpData is null or invalid", gameObject);
 
-        if (data.LedgeClimbData != null)
+        if (data.LedgeClimbData != null && data.LedgeClimbData.IsValid())
         {
-            statData.LedgeClimbValid = data.LedgeClimbData.IsValid();
+            statData.LedgeClimbValid = true;
         }
+        else
+            Debug.LogWarning(gameObject.name + "'s MovementData.LedgeClimbData is null or invalid", gameObject);
 
-        if (data.WallLeanData != null)
+        if (data.WallLeanData != null && data.WallLeanData.IsValid())
         {
-            statData.WallLeanValid = data.WallLeanData.IsValid();
+            statData.WallLeanValid = true;
         }
+        else
+            Debug.LogWarning(gameObject.name + "'s MovementData.WallLeanData is null or invalid", gameObject);
 
-        if (data.WallSlideData != null)
+        if (data.WallSlideData != null && data.WallSlideData.IsValid())
         {
             statData.MaxWallSlideVelocity = data.WallSlideData.SlideVelocity;
             statData.WallSlideDeceleration = data.WallSlideData.SlideDecceleration;
-            statData.WallSlideValid = data.WallSlideData.IsValid();
+            statData.WallSlideValid = true;
         }
+        else
+            Debug.LogWarning(gameObject.name + "'s MovementData.WallSlideData is null or invalid", gameObject);
 
         return statData;
     }
