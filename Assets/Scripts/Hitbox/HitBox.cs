@@ -11,7 +11,7 @@ internal class HitBox : MonoBehaviour, IHitBox
     private Collider col;
 
     // Used to prevent colliding against your own hurtboxs, ignored if null
-    private Guid ownerID = default;
+    private Guid? ownerID = null;
 
     private LayerMask collisionMask;
 
@@ -21,9 +21,6 @@ internal class HitBox : MonoBehaviour, IHitBox
 
     private Vector3 prevPosition;
     private bool hasPrevPosition;
-
-    // Track all hit sceneObjects while active
-    private readonly HashSet<Guid> hurtBoxesHit = new HashSet<Guid>();
 
     public event Action<IHitBox, IHurtBox, Vector3> OnCollisionEntered;
 
@@ -42,14 +39,12 @@ internal class HitBox : MonoBehaviour, IHitBox
     public void ActivateHitBox()
     {
         col.enabled = true;
-        hurtBoxesHit.Clear();
         hasPrevPosition = false;
     }
 
     public void DeactivateHitBox()
     {
         col.enabled = false;
-        hurtBoxesHit.Clear();
         hasPrevPosition = false;
     }
 
@@ -60,9 +55,10 @@ internal class HitBox : MonoBehaviour, IHitBox
 
     private bool MatchOwnership(Guid id)
     {
-        if (ownerID == null)
+        if (!ownerID.HasValue)
             return false;
-        return id == ownerID;
+
+        return id == ownerID.Value;
     }
 
     private void FixedUpdate()
@@ -118,13 +114,11 @@ internal class HitBox : MonoBehaviour, IHitBox
 
         for (int i = 0; i < count; i++)
         {
-            Collider other = overlapBuffer[i];            
+            Collider other = overlapBuffer[i];                        
 
-            if (other.TryGetComponent(out IHurtBox hurtBox) && !hurtBoxesHit.Contains(hurtBox.OwnerID) && !MatchOwnership(hurtBox.OwnerID))
+            if (other.TryGetComponent(out IHurtBox hurtBox) && !MatchOwnership(hurtBox.OwnerID))
             {
-                hurtBoxesHit.Add(hurtBox.OwnerID);
                 Vector3 hitPoint = other.ClosestPoint(col.bounds.center);
-
                 OnCollisionEntered?.Invoke(this, hurtBox, hitPoint);
             }
         }
@@ -177,9 +171,8 @@ internal class HitBox : MonoBehaviour, IHitBox
             Collider other = hit.collider;
             if (other == null) continue;
 
-            if (other.TryGetComponent(out IHurtBox hurtBox) && !hurtBoxesHit.Contains(hurtBox.OwnerID) && !MatchOwnership(hurtBox.OwnerID))
+            if (other.TryGetComponent(out IHurtBox hurtBox) && !MatchOwnership(hurtBox.OwnerID))
             {
-                hurtBoxesHit.Add(hurtBox.OwnerID);
                 // hit.point is zero when the cast starts already overlapping; fall back to ClosestPoint in that case.
                 Vector3 hitPoint = hit.point.sqrMagnitude > 1e-8f
                     ? hit.point

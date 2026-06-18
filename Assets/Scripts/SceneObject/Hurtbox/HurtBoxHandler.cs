@@ -117,14 +117,15 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxHandlerEdi
     {
         if (hitData == null)
             return;
-
-        lastHitBy.Add(hitData.SceneObjectID);
+        
+        if (hitData is SceneObjectHitData sceneObjectHitData)
+            lastHitBy.Add(sceneObjectHitData.SceneObjectAttackerID);
 
         //Damage and Knockback
         damageTaken += hitData.Damage;
         knockBackVelocity = CalculateKnockbackVelocity(hitData.Influence, damageTaken, hitData.LauchAngle, rb.mass);
 
-        OnHitEvent?.Invoke(new KnockBackHitData(hitData, knockBackVelocity));
+        OnHitEvent?.Invoke(new KnockBackHitData(knockBackVelocity, hitData));
 
         //Compute per-phase durations from the knockback and current gravity
         float launchDuration = CalculateLaunchDuration(knockBackVelocity.magnitude);
@@ -294,7 +295,7 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxHandlerEdi
     {
         if (debugDelaySeconds <= 0f)
         {
-            HitData immediateHitData = new HitData(Guid.NewGuid(), 0, debugInfluence, debugLaunchAngle, debugDamage, 0f, transform.position);
+            HitData immediateHitData = new HitData(debugInfluence, debugLaunchAngle, debugDamage, 0f, transform.position, 0);
             OnHit(immediateHitData);
             return;
         }
@@ -306,7 +307,7 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxHandlerEdi
     {
         yield return new WaitForSeconds(delaySeconds);
 
-        HitData hitData = new HitData(Guid.NewGuid(), 0, debugInfluence, debugLaunchAngle, debugDamage, 0f, transform.position);
+        HitData hitData = new HitData(debugInfluence, debugLaunchAngle, debugDamage, 0f, transform.position, 0);
         OnHit(hitData);
     }
 

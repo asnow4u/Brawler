@@ -1,0 +1,17 @@
+{
+    "name": "Environment.Hazards",
+    "rootNamespace": "",
+    "references": [
+        "GUID:ffa81e0146ffbaa42a610bf81413d589",
+        "GUID:5c910f444a332b74abd79ac76a81251c"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

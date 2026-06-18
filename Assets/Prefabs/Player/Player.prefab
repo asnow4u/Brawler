@@ -20,6 +20,7 @@ GameObject:
   - component: {fileID: 4635038576418550210}
   - component: {fileID: 4056948102680156576}
   - component: {fileID: 1627288914778769611}
+  - component: {fileID: 3037421926973292070}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -256,6 +257,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c462c562e2277824d8a2ca6a038752b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: SceneObject.HitBox::AttackHitBoxHandler
+--- !u!114 &3037421926973292070
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 296744456200019224}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a22141f69fc7ddc4a8dd9b9ef3771688, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SceneObject.Effect::EffectsHandler
+  effects: {fileID: 11400000, guid: 16e261847e3eb0f419973f2a9ca50c33, type: 2}
+  velocityScale: 1
+  minRate: 50
+  maxRate: 200
+  minLifeTimeStart: 0.15
+  maxLifeTimeStart: 0.5
+  maxLaunchSpeed: 20
+  minTrailVelocity: 15
 --- !u!1 &3847254924860446045
 GameObject:
   m_ObjectHideFlags: 0
@@ -399,6 +420,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 8
       objectReference: {fileID: 0}
+    - target: {fileID: 4278122813662157333, guid: de08fdf6615276b46a83872c5724f04b, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4322240059012582254, guid: de08fdf6615276b46a83872c5724f04b, type: 3}
       propertyPath: m_Layer
       value: 8
@@ -448,6 +473,10 @@ PrefabInstance:
     - target: {fileID: 2843190941664797701, guid: 772a550c750e29649a7295ea8605b147, type: 3}
       propertyPath: m_Layer
       value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2843190941664797701, guid: 772a550c750e29649a7295ea8605b147, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3040903085143115655, guid: 772a550c750e29649a7295ea8605b147, type: 3}
       propertyPath: m_Layer
@@ -901,12 +930,174 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a0e625891d2b55c43824a0540813b08a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1330749932161453215}
+    - targetCorrespondingSourceObject: {fileID: 827075974287967996, guid: a0e625891d2b55c43824a0540813b08a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 900793978710072396}
+    - targetCorrespondingSourceObject: {fileID: 827075974287967996, guid: a0e625891d2b55c43824a0540813b08a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8078992640158558306}
+    - targetCorrespondingSourceObject: {fileID: 7692590562391683244, guid: a0e625891d2b55c43824a0540813b08a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8480690160483444034}
+    - targetCorrespondingSourceObject: {fileID: 7692590562391683244, guid: a0e625891d2b55c43824a0540813b08a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3715676552753980491}
+    - targetCorrespondingSourceObject: {fileID: -7654027249165181535, guid: a0e625891d2b55c43824a0540813b08a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2116544204910993761}
+    - targetCorrespondingSourceObject: {fileID: -7654027249165181535, guid: a0e625891d2b55c43824a0540813b08a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4316248628796594697}
+    - targetCorrespondingSourceObject: {fileID: -1833477441420788241, guid: a0e625891d2b55c43824a0540813b08a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1136055078100043299}
+    - targetCorrespondingSourceObject: {fileID: -1833477441420788241, guid: a0e625891d2b55c43824a0540813b08a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 552323147469360215}
+    - targetCorrespondingSourceObject: {fileID: -7214707927727860815, guid: a0e625891d2b55c43824a0540813b08a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4749319637983572108}
+    - targetCorrespondingSourceObject: {fileID: -7214707927727860815, guid: a0e625891d2b55c43824a0540813b08a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7838406139169498273}
+    - targetCorrespondingSourceObject: {fileID: 4503276350184684508, guid: a0e625891d2b55c43824a0540813b08a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2042046507783669036}
+    - targetCorrespondingSourceObject: {fileID: 4503276350184684508, guid: a0e625891d2b55c43824a0540813b08a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1672155230285372281}
+    - targetCorrespondingSourceObject: {fileID: -4848258318796564171, guid: a0e625891d2b55c43824a0540813b08a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2627764424402955477}
+    - targetCorrespondingSourceObject: {fileID: -4848258318796564171, guid: a0e625891d2b55c43824a0540813b08a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 9184795779668053213}
   m_SourcePrefab: {fileID: 100100000, guid: a0e625891d2b55c43824a0540813b08a, type: 3}
+--- !u!1 &2311983478130745334 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7692590562391683244, guid: a0e625891d2b55c43824a0540813b08a, type: 3}
+  m_PrefabInstance: {fileID: 5392008206617603930}
+  m_PrefabAsset: {fileID: 0}
+--- !u!136 &8480690160483444034
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2311983478130745334}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.12352382
+  m_Height: 0.45678338
+  m_Direction: 1
+  m_Center: {x: -0.0042944853, y: 0.27262786, z: 0.000000033810032}
+--- !u!114 &3715676552753980491
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2311983478130745334}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec817ca84846fac478ba499d63a406bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SceneObject.Hurtbox::HurtBox
 --- !u!4 &3058892680714093310 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6964566456888421796, guid: a0e625891d2b55c43824a0540813b08a, type: 3}
   m_PrefabInstance: {fileID: 5392008206617603930}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &3195989061907321525 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -1833477441420788241, guid: a0e625891d2b55c43824a0540813b08a, type: 3}
+  m_PrefabInstance: {fileID: 5392008206617603930}
+  m_PrefabAsset: {fileID: 0}
+--- !u!136 &1136055078100043299
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3195989061907321525}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.120660864
+  m_Height: 0.46496972
+  m_Direction: 1
+  m_Center: {x: -0.007157396, y: 0.2667644, z: 0.000000027884171}
+--- !u!114 &552323147469360215
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3195989061907321525}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec817ca84846fac478ba499d63a406bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SceneObject.Hurtbox::HurtBox
+--- !u!1 &4732755245835168166 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 827075974287967996, guid: a0e625891d2b55c43824a0540813b08a, type: 3}
+  m_PrefabInstance: {fileID: 5392008206617603930}
+  m_PrefabAsset: {fileID: 0}
+--- !u!136 &900793978710072396
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4732755245835168166}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.18005078
+  m_Height: 0.5182387
+  m_Direction: 1
+  m_Center: {x: -0.0023834705, y: 0.02728158, z: 0.002861081}
+--- !u!114 &8078992640158558306
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4732755245835168166}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec817ca84846fac478ba499d63a406bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SceneObject.Hurtbox::HurtBox
 --- !u!1 &5049990062480282123 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: a0e625891d2b55c43824a0540813b08a, type: 3}
@@ -951,3 +1142,163 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: a0e625891d2b55c43824a0540813b08a, type: 3}
   m_PrefabInstance: {fileID: 5392008206617603930}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &5851433449041755371 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -7214707927727860815, guid: a0e625891d2b55c43824a0540813b08a, type: 3}
+  m_PrefabInstance: {fileID: 5392008206617603930}
+  m_PrefabAsset: {fileID: 0}
+--- !u!136 &4749319637983572108
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5851433449041755371}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.067546956
+  m_Height: 0.6768454
+  m_Direction: 1
+  m_Center: {x: -0.0067225387, y: 0.32363665, z: -0.015545288}
+--- !u!114 &7838406139169498273
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5851433449041755371}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec817ca84846fac478ba499d63a406bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SceneObject.Hurtbox::HurtBox
+--- !u!1 &6850867975675163387 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -7654027249165181535, guid: a0e625891d2b55c43824a0540813b08a, type: 3}
+  m_PrefabInstance: {fileID: 5392008206617603930}
+  m_PrefabAsset: {fileID: 0}
+--- !u!136 &2116544204910993761
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6850867975675163387}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.074249946
+  m_Height: 0.6758663
+  m_Direction: 1
+  m_Center: {x: 0.002937118, y: 0.32047498, z: -0.012721612}
+--- !u!114 &4316248628796594697
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6850867975675163387}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec817ca84846fac478ba499d63a406bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SceneObject.Hurtbox::HurtBox
+--- !u!1 &8406702209726813318 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4503276350184684508, guid: a0e625891d2b55c43824a0540813b08a, type: 3}
+  m_PrefabInstance: {fileID: 5392008206617603930}
+  m_PrefabAsset: {fileID: 0}
+--- !u!136 &2042046507783669036
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8406702209726813318}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.17529865
+  m_Height: 0.6126494
+  m_Direction: 1
+  m_Center: {x: 0.002388105, y: -0.09854328, z: 0.005725698}
+--- !u!114 &1672155230285372281
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8406702209726813318}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec817ca84846fac478ba499d63a406bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SceneObject.Hurtbox::HurtBox
+--- !u!1 &8530878011566896751 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -4848258318796564171, guid: a0e625891d2b55c43824a0540813b08a, type: 3}
+  m_PrefabInstance: {fileID: 5392008206617603930}
+  m_PrefabAsset: {fileID: 0}
+--- !u!136 &2627764424402955477
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8530878011566896751}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.13557325
+  m_Height: 0.34277588
+  m_Direction: 1
+  m_Center: {x: -0.0031416898, y: 0.06346071, z: 0.039583765}
+--- !u!114 &9184795779668053213
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8530878011566896751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec817ca84846fac478ba499d63a406bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SceneObject.Hurtbox::HurtBox

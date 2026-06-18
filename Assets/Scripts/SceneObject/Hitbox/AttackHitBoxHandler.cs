@@ -138,6 +138,7 @@ public class AttackHitBoxHandler : HitBoxHandler
         if (!sceneObject.IsFacingRightDirection)
             launchAngle = 180 - launchAngle;
 
-        hurtBox.Hit(new HitData(sceneObject.UniqueID, curAttackStats.Type, curAttackStats.Influence, launchAngle, curAttackStats.Damage, curAttackStats.HitStunTime, hitPoint));
+        HitData hitData = new HitData(curAttackStats.Influence, launchAngle, curAttackStats.Damage, curAttackStats.HitStunTime, hitPoint, curAttackStats.Type);
+        hurtBox.Hit(new SceneObjectHitData(sceneObject.UniqueID, hitData));
     }
 }

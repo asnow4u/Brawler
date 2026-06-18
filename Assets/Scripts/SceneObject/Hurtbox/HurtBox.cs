@@ -10,6 +10,7 @@ internal class HurtBox : MonoBehaviour, IHurtBox
     private Collider hurtboxCollider;
     private int lastHitFrame = -1; // NOTE: Used with the Gizmos
 
+    private ISceneObject sceneObject;
     private Guid ownerID;
     public Guid OwnerID => ownerID;
     public event Action<HitData> OnHitEvent;
@@ -21,10 +22,14 @@ internal class HurtBox : MonoBehaviour, IHurtBox
         hurtboxCollider = GetComponent<Collider>();
         hurtboxCollider.isTrigger = true;
 
-        ISceneObject sceneObject = GetComponentInParent<ISceneObject>();
+        sceneObject = GetComponentInParent<ISceneObject>();
         if (sceneObject == null)
             Debug.LogError("SceneObject not found as a parent to " + gameObject.name, gameObject);
-        else
+    }
+
+    private void Start()
+    {
+        if (sceneObject != null)
             ownerID = sceneObject.UniqueID;
     }
 

@@ -99,9 +99,9 @@ public class EffectsHandler : MonoBehaviour, IEffects
 
     private void OnHit(KnockBackHitData hitData)
     {
-        if (hitEffects == null || hitEffects.Count <= hitData.AttackType) return;
+        if (hitEffects == null || hitEffects.Count <= hitData.EffectIndex) return;
         
-        ParticleSystem particle = hitEffects[hitData.AttackType];
+        ParticleSystem particle = hitEffects[hitData.EffectIndex];
         particle.transform.position = hitData.HitPoint;
         particle.Play();
     }

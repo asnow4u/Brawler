@@ -55,18 +55,18 @@ public class SceneObjectHitBoxHandler : HitBoxHandler
 
     protected override IHitBox[] CollectHitboxs()
     {
-        IHitBox[] startingHitBoxes = null;
-
         if (sceneObjectRoot != null)
-        {
-            startingHitBoxes = sceneObjectRoot.GetComponentsInChildren<IHitBox>(true);
-            foreach (IHitBox hitbox in startingHitBoxes)
-                hitbox.SetOwner(sceneObject.UniqueID);
-        }
+            return sceneObjectRoot.GetComponentsInChildren<IHitBox>(true);
         else
             Debug.LogError("HitBoxHandler SceneObjectRoot not set", gameObject);
 
-        return startingHitBoxes;
+        return null;
+    }
+
+    private void Start()
+    {
+        foreach (IHitBox hitbox in hitboxs)
+            hitbox.SetOwner(sceneObject.UniqueID);
     }
 
     protected override void RegisterToEvents()
@@ -108,8 +108,6 @@ public class SceneObjectHitBoxHandler : HitBoxHandler
             hurtBoxHandler.LastHitBy.Contains(hurtBox.OwnerID))
             return;
 
-        Debug.Log("Hit From SceneObject:");
-
         sceneObjectsHit.Add(hurtBox.OwnerID);
 
         animationHandler.PauseAnimation(sceneObjectHitStunTime);
@@ -123,6 +121,7 @@ public class SceneObjectHitBoxHandler : HitBoxHandler
         float damage = rb.mass * speed * speed;
         damage = Mathf.Clamp(damage, minSceneObjectHitDamage, maxSceneObjectHitDamage);
 
-        hurtBox.Hit(new HitData(sceneObject.UniqueID, 0, 0f, launchAngle, damage, sceneObjectHitStunTime, hitPoint));
+        HitData hitData = new HitData(0f, launchAngle, damage, sceneObjectHitStunTime, hitPoint, 0);
+        hurtBox.Hit(new SceneObjectHitData(sceneObject.UniqueID, hitData));
     }
 }
