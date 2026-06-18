@@ -82,7 +82,7 @@ public class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxHandlerEdi
         //Get hurtboxs
         hurtBoxes = GetComponentsInChildren<HurtBox>(true);
         if (hurtBoxes.Length == 0)
-            Debug.LogError("HurtBoxHandler: No Hurtboxs where found on", gameObject);        
+            Debug.LogWarning("HurtBoxHandler: No Hurtboxs where found on", gameObject);
 
         RegisterToEvents();
     }

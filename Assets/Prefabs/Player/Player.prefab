@@ -19,6 +19,7 @@ GameObject:
   - component: {fileID: 6716222281940265772}
   - component: {fileID: 4635038576418550210}
   - component: {fileID: 4056948102680156576}
+  - component: {fileID: 1627288914778769611}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -174,7 +175,12 @@ MonoBehaviour:
   jumpInfluence: 0
   isClimbSliding: 0
   ledgeClimbDuration: 0.2
-  hitStunDrag: 0.95
+  travelDragSetup: 0.95
+  travelDragFinisher: 0.995
+  recoveryDrag: 0.98
+  maxDIAngle: 15
+  maxDriftSpeed: 2.5
+  driftAccel: 8
   bounceDegrade: 0.9
   minBounceVelocity: 0.9
   splatVelocityThreshold: 15
@@ -205,12 +211,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: SceneObject.Hurtbox::HurtBoxHandler
   damageTaken: 0
-  hitEffect: {fileID: 0}
+  baseForce: 1200
+  exGrowth: 2
+  damageForceScale: 0.2
   curHitStunState: 0
-  hitStunMultiplier: 0.03
-  launchDurationRatio: 0.25
-  travelDurationRatio: 0.5
-  recoveryDurationRatio: 0.25
+  baseLaunchDuration: 0.05
+  launchKnockbackScale: 0.005
+  maxLaunchDuration: 0.2
+  apexApproach: 0.9
+  minTravelDuration: 0.05
+  recoveryDuration: 0.25
   debugMode: 0
   debugInfluence: 1
   debugLaunchAngle: 44
@@ -234,6 +244,18 @@ MonoBehaviour:
   minSceneObjectHitDamage: 2
   maxSceneObjectHitDamage: 20
   sceneObjectHitStunTime: 0.1
+--- !u!114 &1627288914778769611
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 296744456200019224}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c462c562e2277824d8a2ca6a038752b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SceneObject.HitBox::AttackHitBoxHandler
 --- !u!1 &3847254924860446045
 GameObject:
   m_ObjectHideFlags: 0

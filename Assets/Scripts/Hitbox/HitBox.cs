@@ -9,7 +9,9 @@ using UnityEditor;
 internal class HitBox : MonoBehaviour, IHitBox
 {
     private Collider col;
-    private Guid ownerID;
+
+    // Used to prevent colliding against your own hurtboxs, ignored if null
+    private Guid ownerID = default;
 
     private LayerMask collisionMask;
 
@@ -23,7 +25,7 @@ internal class HitBox : MonoBehaviour, IHitBox
     // Track all hit sceneObjects while active
     private readonly HashSet<Guid> hurtBoxesHit = new HashSet<Guid>();
 
-    public event Action<IHurtBox, Vector3> OnCollisionEntered;
+    public event Action<IHitBox, IHurtBox, Vector3> OnCollisionEntered;
 
 
     private void Awake()
@@ -35,11 +37,6 @@ internal class HitBox : MonoBehaviour, IHitBox
         col.isTrigger = true;
 
         DeactivateHitBox();
-    }
-
-    public void SetOwner(Guid ownerID)
-    {
-        this.ownerID = ownerID;
     }
 
     public void ActivateHitBox()
@@ -56,9 +53,21 @@ internal class HitBox : MonoBehaviour, IHitBox
         hasPrevPosition = false;
     }
 
+    public void SetOwner(Guid ownerID)
+    {
+        this.ownerID = ownerID;
+    }
+
+    private bool MatchOwnership(Guid id)
+    {
+        if (ownerID == null)
+            return false;
+        return id == ownerID;
+    }
+
     private void FixedUpdate()
     {
-        if (!col.enabled || ownerID == default)
+        if (!col.enabled)
             return;
 
         CheckCurrentOverlap();
@@ -111,12 +120,12 @@ internal class HitBox : MonoBehaviour, IHitBox
         {
             Collider other = overlapBuffer[i];            
 
-            if (other.TryGetComponent(out IHurtBox hurtBox) && !hurtBoxesHit.Contains(hurtBox.OwnerID) && hurtBox.OwnerID != ownerID)
+            if (other.TryGetComponent(out IHurtBox hurtBox) && !hurtBoxesHit.Contains(hurtBox.OwnerID) && !MatchOwnership(hurtBox.OwnerID))
             {
                 hurtBoxesHit.Add(hurtBox.OwnerID);
                 Vector3 hitPoint = other.ClosestPoint(col.bounds.center);
 
-                OnCollisionEntered?.Invoke(hurtBox, hitPoint);
+                OnCollisionEntered?.Invoke(this, hurtBox, hitPoint);
             }
         }
     }
@@ -168,7 +177,7 @@ internal class HitBox : MonoBehaviour, IHitBox
             Collider other = hit.collider;
             if (other == null) continue;
 
-            if (other.TryGetComponent(out IHurtBox hurtBox) && !hurtBoxesHit.Contains(hurtBox.OwnerID) && hurtBox.OwnerID != ownerID)
+            if (other.TryGetComponent(out IHurtBox hurtBox) && !hurtBoxesHit.Contains(hurtBox.OwnerID) && !MatchOwnership(hurtBox.OwnerID))
             {
                 hurtBoxesHit.Add(hurtBox.OwnerID);
                 // hit.point is zero when the cast starts already overlapping; fall back to ClosestPoint in that case.
@@ -176,7 +185,7 @@ internal class HitBox : MonoBehaviour, IHitBox
                     ? hit.point
                     : other.ClosestPoint(col.bounds.center);
 
-                OnCollisionEntered?.Invoke(hurtBox, hitPoint);
+                OnCollisionEntered?.Invoke(this, hurtBox, hitPoint);
             }
         }
     }
