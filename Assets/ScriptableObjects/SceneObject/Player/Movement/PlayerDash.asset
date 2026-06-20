@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3101ead7f8f9ef49bfa53badec96828, type: 3}
+  m_Name: PlayerDash
+  m_EditorClassIdentifier: StatData::DashData
+  AnimationData:
+    Animation: {fileID: 7400000, guid: 9cc183c22403ee54595c802963aa26e0, type: 2}
+    AnimationSpeed: 1
+  WaveLandVelocityScaler: 1.1
+  WaveLandDuration: 0.1
+  InitialDashVelocityScaler: 1.1
+  InitalDashDuration: 0.1
+  HorizontalDashVelocity: 1.1
+  HorizontalDashDuration: 0.1

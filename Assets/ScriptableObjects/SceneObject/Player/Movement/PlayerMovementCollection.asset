@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: PlayerMovementCollection
   m_EditorClassIdentifier: StatData::MovementDataCollection
   MoveData: {fileID: 11400000, guid: f851337051793cf4d9c5062dd684a084, type: 2}
+  DashData: {fileID: 11400000, guid: 37e77bc8b7f66ac4bab9183e66ffec87, type: 2}
   AirMoveData: {fileID: 11400000, guid: 69ad812bb38469341a2f5b88d8908c5c, type: 2}
   GroundedJumpData: {fileID: 11400000, guid: 46c424fe2d3624e4bbc1d1593c3d13ad, type: 2}
   AirJumpData: {fileID: 11400000, guid: c9f63594ad4c83048a3162f847ff9fd4, type: 2}

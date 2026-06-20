@@ -158,6 +158,7 @@ internal class WeaponHandler : MonoBehaviour
         if (movementData == null) return;
 
         if (movementData.MoveData != null)       movementData.MoveData.OnChangedEvent       += OnWeaponDataChanged;
+        if (movementData.DashData != null)       movementData.MoveData.OnChangedEvent       += OnWeaponDataChanged;
         if (movementData.AirMoveData != null)    movementData.AirMoveData.OnChangedEvent    += OnWeaponDataChanged;
         if (movementData.GroundedJumpData != null)       movementData.GroundedJumpData.OnChangedEvent       += OnWeaponDataChanged;
         if (movementData.AirJumpData != null)    movementData.AirJumpData.OnChangedEvent    += OnWeaponDataChanged;
@@ -175,6 +176,7 @@ internal class WeaponHandler : MonoBehaviour
         if (movementData == null) return;
 
         if (movementData.MoveData != null)       movementData.MoveData.OnChangedEvent       -= OnWeaponDataChanged;
+        if (movementData.DashData != null)       movementData.MoveData.OnChangedEvent       -= OnWeaponDataChanged;
         if (movementData.AirMoveData != null)    movementData.AirMoveData.OnChangedEvent    -= OnWeaponDataChanged;
         if (movementData.GroundedJumpData != null)       movementData.GroundedJumpData.OnChangedEvent       -= OnWeaponDataChanged;
         if (movementData.AirJumpData != null)    movementData.AirJumpData.OnChangedEvent    -= OnWeaponDataChanged;

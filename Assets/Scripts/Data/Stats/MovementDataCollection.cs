@@ -5,6 +5,7 @@ using System;
 public class MovementDataCollection : ScriptableObject
 {
     public MoveData MoveData;
+    public DashData DashData;
     public AirMoveData AirMoveData;
     public GroundedJumpData GroundedJumpData;
     public AirJumpData AirJumpData;

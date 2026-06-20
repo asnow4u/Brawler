@@ -13,7 +13,8 @@ public enum MovementState
     GroundJump = 6,
     AirJump = 7,
     WallJump = 8,
-    ClimbJump = 9
+    ClimbJump = 9,
+    Dash = 10
 }
 
 public interface IMovement

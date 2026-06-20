@@ -68,6 +68,9 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
     private bool climbMovementAllowed => curMovementData.ClimbMovementValid &&
                                          (horizontalInfluence != 0 || verticalInfluence != 0) &&
                                          actionState.CurActionState <= ActionState.Moving;
+    private bool dashMovementAllowed => curMovementData.DashValid &&
+                                        horizontalInfluence != 0 &&
+                                        actionState.CurActionState <= ActionState.Moving;
     private bool jumpMovementAllowed => curMovementData.GroundedJumpValid &&
                                         jumpInfluence > 0 &&
                                         jumpInputAvailable &&
@@ -89,7 +92,7 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
                                     Time.time >= lastWallJumpTime + wallJumpDetachDuration;
 
     private bool wallLeanAllowed => curMovementData.WallLeanValid &&
-                                    IsAgainstWall() &&
+                                    ((IsAgainstLeftWall() && horizontalInfluence < 0) || (IsAgainstRightWall() && horizontalInfluence > 0)) &&
                                     actionState.CurActionState <= ActionState.Moving;
 
     private bool wallSlideAllowed => curMovementData.WallSlideValid &&
@@ -175,13 +178,18 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
     private void OnGroundedStateChanged(GroundedState groundedState)
     {
         if (groundedState == GroundedState.Grounded)
+        {
             airJumpsPerformed = 0;
+            StartWaveLanding();
+        }
         else if (groundedState == GroundedState.Airborn)
         {
+            if (isDashing)
+                EndDash();
+
             if (curMovementState == MovementState.GroundMove)
                 lastGroundedTime = Time.time;
         }
-
     }
 
     /// <summary>
@@ -366,8 +374,19 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
         if (isJumpingSquating || isLedgeClimbing) 
             return;
 
+        //Dash - locked until it ends; only a jump may cancel it (reversing direction will not)
+        if (isDashing)
+        {
+            if (jumpMovementAllowed)
+            {
+                EndDash();
+                SetCurrentMoveState(MovementState.GroundJump);
+                StartJump();
+            }
+        }
+
         //Jump
-        if (jumpMovementAllowed)
+        else if (jumpMovementAllowed)
         {
             SetCurrentMoveState(MovementState.GroundJump);
             StartJump();
@@ -376,8 +395,14 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
         //Horizontal Movement
         else if (groundedMovementAllowed)
         {
+            // Against Wall
             if (wallLeanAllowed)
                 SetCurrentMoveState(MovementState.WallLean);
+
+            // Dash initiation (standstill, walk -> dash, or pivot)
+            else if (dashInitiationAllowed)
+                StartInitialRunDash();
+
             else
                 SetCurrentMoveState(MovementState.GroundMove);
         }
@@ -558,6 +583,10 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
                 DeccelerateGroundedMovement();
                 break;
 
+            case MovementState.Dash:
+                UpdateDash();
+                break;
+
             case MovementState.GroundMove:
                 UpdateGroundedAcceleration();
                 break;
@@ -619,36 +648,6 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
         }
     }
     
-    /// <summary>
-    /// Drive movement during hit stun. Pause and Launch are handled by the state-change event;
-    /// Travel and Recovery apply drag each FixedUpdate.
-    /// </summary>
-    /// <summary>
-    /// Drive movement during hit stun. Pause and Launch are handled by the state-change event;
-    /// Travel and Recovery apply drag (and gravity during Recovery), then check for a bounce.
-    /// </summary>
-    /// <summary>
-    /// Drive movement during hit stun. Pause and Launch are handled by the state-change event;
-    /// Travel and Recovery apply drag (and gravity during Recovery), then check for a bounce.
-    /// </summary>
-    /// <summary>
-    /// Drive movement during hit stun. Pause is handled by the state-change event;
-    /// Launch, Travel, and Recovery apply drag and check for a bounce each FixedUpdate.
-    /// Recovery additionally applies gravity so the character begins falling toward the end of hit stun.
-    /// </summary>
-    /// <summary>
-    /// Drive movement during hit stun. Pause is handled by the state-change event;
-    /// Launch, Travel, and Recovery apply drag and check for a bounce each FixedUpdate.
-    /// Recovery additionally applies gravity so the character begins falling toward the end of hit stun.
-    /// A splat hold suspends all drag/gravity/bounce work until the hold expires.
-    /// </summary>
-    /// <summary>
-    /// Drive movement during hit stun. Pause is handled by the state-change event.
-    /// Launch is gravity-free and drag-free (committed trajectory).
-    /// Travel and Recovery apply X-only drag and gravity (via ApplyGravity).
-    /// Y is owned by gravity; drag is horizontal only.
-    /// A splat hold suspends all drag/gravity/bounce work until the hold expires.
-    /// </summary>
     private void UpdateHitStunMovement()
     {
         if (isSplatHolding)

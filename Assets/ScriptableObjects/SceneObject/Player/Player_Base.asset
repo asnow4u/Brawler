@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Player_Base
   m_EditorClassIdentifier: 
   Mass: 100
-  GroundedMaxVelocity: 18
+  GroundedMaxVelocity: 15
   GroundedDecceleration: 5000
   AerialMaxXVelocity: 13
   AerialXDecceleration: 100
@@ -22,7 +22,7 @@ MonoBehaviour:
   AerialMaxFallVelocity: 25
   GravityRaising: 30
   GravityFalling: 30
-  GravityFastFalling: 90
+  GravityFastFalling: 45
   GravityHitStunTravel: 24.5
   GravityHitStunRecovery: 11
   AnimationCollection: {fileID: 11400000, guid: b10aa38545bee094c864b83b9fe14b93, type: 2}

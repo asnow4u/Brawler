@@ -114,7 +114,7 @@ public class StatHandler : MonoBehaviour, IStats
             if (movementData.MoveData != null)
                 movementAnimations.Add(0, new AnimationStatData.AnimationData(movementData.MoveData.AnimationData.Animation, movementData.MoveData.AnimationData.AnimationSpeed));
             else
-                movementAnimations.Add(0, null);
+                movementAnimations.Add(0, null);            
 
             if (movementData.AirMoveData != null)
                 movementAnimations.Add(1, new AnimationStatData.AnimationData(movementData.AirMoveData.AnimationData.Animation, movementData.AirMoveData.AnimationData.AnimationSpeed));
@@ -158,6 +158,11 @@ public class StatHandler : MonoBehaviour, IStats
                 movementAnimations.Add(8, new AnimationStatData.AnimationData(movementData.WallJumpData.AnimationData.Animation, movementData.WallJumpData.AnimationData.AnimationSpeed));
             else
                 movementAnimations.Add(8, null);
+
+            if (movementData.DashData != null)
+                movementAnimations.Add(10, new AnimationStatData.AnimationData(movementData.DashData.AnimationData.Animation, movementData.DashData.AnimationData.AnimationSpeed));
+            else
+                movementAnimations.Add(10, null);
 
             statData.MovementAnimations = movementAnimations;
         }
@@ -233,6 +238,19 @@ public class StatHandler : MonoBehaviour, IStats
         }
         else
             Debug.LogWarning(gameObject.name + "'s MovementData.MoveData is null or invalid", gameObject);
+
+        if (data.DashData != null && data.DashData.IsValid())
+        {
+            statData.WaveLandDashVelocityScaler = data.DashData.WaveLandVelocityScaler;
+            statData.WaveLandDashDuration = data.DashData.WaveLandDuration;
+            statData.InitialDashVelocityScaler = data.DashData.InitialDashVelocityScaler;
+            statData.InitialDashDuration = data.DashData.InitalDashDuration;
+            statData.HorizontalDashVelocity = data.DashData.HorizontalDashVelocity;
+            statData.HorizontalDashDuration = data.DashData.HorizontalDashDuration;
+            statData.DashValid = true;
+        }
+        else
+            Debug.LogWarning(gameObject.name + "'s MovementData.DashData is null or invalid", gameObject);
 
         if (data.AirMoveData != null && data.AirMoveData.IsValid())
         {
@@ -398,6 +416,7 @@ public class StatHandler : MonoBehaviour, IStats
         if (movementData == null) return;
 
         if (movementData.MoveData != null)       movementData.MoveData.OnChangedEvent       += OnDataChanged;
+        if (movementData.DashData != null)       movementData.DashData.OnChangedEvent       += OnDataChanged;
         if (movementData.AirMoveData != null)    movementData.AirMoveData.OnChangedEvent    += OnDataChanged;
         if (movementData.GroundedJumpData != null)       movementData.GroundedJumpData.OnChangedEvent       += OnDataChanged;
         if (movementData.AirJumpData != null)    movementData.AirJumpData.OnChangedEvent    += OnDataChanged;
@@ -415,6 +434,7 @@ public class StatHandler : MonoBehaviour, IStats
         if (movementData == null) return;
 
         if (movementData.MoveData != null)       movementData.MoveData.OnChangedEvent       -= OnDataChanged;
+        if (movementData.DashData != null)       movementData.DashData.OnChangedEvent       -= OnDataChanged;
         if (movementData.AirMoveData != null)    movementData.AirMoveData.OnChangedEvent    -= OnDataChanged;
         if (movementData.GroundedJumpData != null)       movementData.GroundedJumpData.OnChangedEvent       -= OnDataChanged;
         if (movementData.AirJumpData != null)    movementData.AirJumpData.OnChangedEvent    -= OnDataChanged;

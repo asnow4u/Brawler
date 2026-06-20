@@ -3,6 +3,7 @@ using UnityEngine;
 public class MovementStatData
 {
     public bool GroundedMovementValid = false;
+    public bool DashValid = false;
     public bool AerialMovementValid = false;
     public bool ClimbMovementValid = false;
     public bool GroundedJumpValid = false;
@@ -16,6 +17,14 @@ public class MovementStatData
     public float MaxGroundedVelocity;
     public float GroundedAcceleration;
     public float GroundedDecceleration;
+
+    //Dash Movement
+    public float WaveLandDashVelocityScaler;
+    public float WaveLandDashDuration;
+    public float InitialDashVelocityScaler;
+    public float InitialDashDuration;
+    public float HorizontalDashVelocity;
+    public float HorizontalDashDuration;
 
     //Aerial Movement
     public float MaxAerialXVelocity;
