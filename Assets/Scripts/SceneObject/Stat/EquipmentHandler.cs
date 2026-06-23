@@ -113,7 +113,7 @@ internal class EquipmentHandler : StatHandler
 
         AttackStatData data = new AttackStatData();
         data.WeaponRootGameObject = weapon.gameObject;
-        data.SwingEffect = weapon.SwingEffect;
+        data.SwingEffect = weapon.AttackEffect;
 
         AttackDataCollection attackData = weapon.WeaponData.AttackCollection;
 

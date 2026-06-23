@@ -15,7 +15,7 @@ public class AnimationHandler : MonoBehaviour, IAnimation
     //Dependencies
     IActionState actionState;
     IStats statHandler;
-    IHurtBoxHandler hurtBoxHandler;
+    ISOHurtBoxHandler hurtBoxHandler;
 
     IMovement movementHandler;
     IAttack attackHandler;
@@ -57,7 +57,7 @@ public class AnimationHandler : MonoBehaviour, IAnimation
 
         actionState = GetComponent<IActionState>();
         statHandler = GetComponent<IStats>();
-        hurtBoxHandler = GetComponent<IHurtBoxHandler>();
+        hurtBoxHandler = GetComponent<ISOHurtBoxHandler>();
         movementHandler = GetComponent<IMovement>();
         attackHandler = GetComponent<IAttack>();
 

@@ -17,9 +17,9 @@ GameObject:
   - component: {fileID: 1038983007141306246}
   - component: {fileID: 402219987774653436}
   - component: {fileID: 6716222281940265772}
-  - component: {fileID: 4635038576418550210}
   - component: {fileID: 4056948102680156576}
   - component: {fileID: 1627288914778769611}
+  - component: {fileID: 2313680389307727192}
   - component: {fileID: 3037421926973292070}
   m_Layer: 7
   m_Name: Player
@@ -176,6 +176,8 @@ MonoBehaviour:
   jumpInfluence: 0
   isClimbSliding: 0
   ledgeClimbDuration: 0.2
+  dashInfluenceThreshold: 0.5
+  dashInitiationSpeedScaler: 0.5
   travelDragSetup: 0.95
   travelDragFinisher: 0.995
   recoveryDrag: 0.98
@@ -199,34 +201,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: SceneObject.Attack::AttackHandler
   curAttackState: 0
---- !u!114 &4635038576418550210
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 296744456200019224}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ded16f43c325f81438597d2e04ec81e2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: SceneObject.Hurtbox::HurtBoxHandler
-  damageTaken: 0
-  baseForce: 1200
-  exGrowth: 2
-  damageForceScale: 0.2
-  curHitStunState: 0
-  baseLaunchDuration: 0.05
-  launchKnockbackScale: 0.005
-  maxLaunchDuration: 0.2
-  apexApproach: 0.9
-  minTravelDuration: 0.05
-  recoveryDuration: 0.25
-  debugMode: 0
-  debugInfluence: 1
-  debugLaunchAngle: 44
-  debugDamage: 0
-  debugDelaySeconds: 0
 --- !u!114 &4056948102680156576
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -257,6 +231,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c462c562e2277824d8a2ca6a038752b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: SceneObject.HitBox::AttackHitBoxHandler
+--- !u!114 &2313680389307727192
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 296744456200019224}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35e6cd304f2b88943ba073f00f5015da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SceneObject.Hurtbox::SceneObjectHurtBoxHandler
+  damageTaken: 0
+  baseForce: 1200
+  exGrowth: 2
+  damageForceScale: 0.2
+  debugMode: 0
+  debugInfluence: 1
+  debugLaunchAngle: 45
+  debugDamage: 10
+  debugDelaySeconds: 0
+  curHitStunState: 0
+  baseLaunchDuration: 0.05
+  launchKnockbackScale: 0.005
+  maxLaunchDuration: 0.2
+  apexApproach: 0.9
+  minTravelDuration: 0.05
+  recoveryDuration: 0.25
 --- !u!114 &3037421926973292070
 MonoBehaviour:
   m_ObjectHideFlags: 0

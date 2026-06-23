@@ -10,13 +10,13 @@ using static AttackStatData;
 [RequireComponent(typeof(StatHandler))]
 [RequireComponent(typeof(HurtBoxHandler))]
 [RequireComponent(typeof(AnimationHandler))]
-public class SceneObjectHitBoxHandler : HitBoxHandler
+public class SOHitBoxHandler : HitBoxHandler
 {
     private ISceneObject sceneObject;
     private IActionState actionState;
     private IStats statHandler;
     private IAnimation animationHandler;
-    private IHurtBoxHandler hurtBoxHandler;
+    private ISOHurtBoxHandler hurtBoxHandler;
     
 
     //SceneObject Collision
@@ -42,13 +42,10 @@ public class SceneObjectHitBoxHandler : HitBoxHandler
     protected override void Awake()
     {
         sceneObject = GetComponent<ISceneObject>();
-        if (sceneObject == null)
-            Debug.LogError("HitBoxHandler No ISceneObject found", gameObject);
-
         actionState = GetComponent<IActionState>();
         statHandler = GetComponent<IStats>();
         animationHandler = GetComponent<IAnimation>();
-        hurtBoxHandler = GetComponent<IHurtBoxHandler>();
+        hurtBoxHandler = GetComponent<ISOHurtBoxHandler>();
 
         base.Awake();
     }

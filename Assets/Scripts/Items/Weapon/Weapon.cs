@@ -10,8 +10,8 @@ internal class Weapon : Item, IWeapon
     [SerializeField] private Transform gripPoint;
     public Transform GripPoint => gripPoint;
 
-    [SerializeField] private ParticleSystem swingEffect;
-    public ParticleSystem SwingEffect => swingEffect;
+    [SerializeField] private ParticleSystem attackEffect;
+    public ParticleSystem AttackEffect => attackEffect;
 
     protected override void Awake()
     {

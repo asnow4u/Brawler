@@ -40,7 +40,9 @@ public class EffectsHandler : MonoBehaviour, IEffects
     private void RegisterToEvents()
     {
         hurtBoxHandler.OnHitEvent += OnHit;
-        hurtBoxHandler.HitStunStateChangedEvent += OnHitStunStateChanged;
+
+        if (hurtBoxHandler is ISOHurtBoxHandler soHurtBoxHandler)
+            soHurtBoxHandler.HitStunStateChangedEvent += OnHitStunStateChanged;
     }
 
     private void OnDestroy()
@@ -52,7 +54,9 @@ public class EffectsHandler : MonoBehaviour, IEffects
     private void UnregisterFromEvents()
     {
         hurtBoxHandler.OnHitEvent -= OnHit;
-        hurtBoxHandler.HitStunStateChangedEvent -= OnHitStunStateChanged;
+
+        if (hurtBoxHandler is ISOHurtBoxHandler soHurtBoxHandler)
+            soHurtBoxHandler.HitStunStateChangedEvent -= OnHitStunStateChanged;
     }
 
 

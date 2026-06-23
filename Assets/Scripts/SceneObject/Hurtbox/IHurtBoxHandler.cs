@@ -13,9 +13,12 @@ public enum HitStunState
 public interface IHurtBoxHandler
 {
     public Guid[] LastHitBy { get; }
-    public HitStunState CurHitStunState { get; }
-
     public event Action<KnockBackHitData> OnHitEvent;
+}
+
+public interface ISOHurtBoxHandler : IHurtBoxHandler
+{    
+    public HitStunState CurHitStunState { get; }   
     public event Action<HitStunState> HitStunStateChangedEvent;
 }
 

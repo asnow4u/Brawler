@@ -15,5 +15,5 @@ public interface IWeapon : IItem
 {
     public WeaponData WeaponData { get; }
     public Transform GripPoint { get; }
-    public ParticleSystem SwingEffect { get; }
+    public ParticleSystem AttackEffect { get; }
 }

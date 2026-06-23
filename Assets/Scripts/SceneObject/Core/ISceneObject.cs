@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public enum SceneObjectType { Player, Enemy, Object }
+public enum SceneObjectType { Player, Enemy, Projectile, Object }
 public enum Direction { Right, Left, Up, Down }
 
 public interface ISceneObject

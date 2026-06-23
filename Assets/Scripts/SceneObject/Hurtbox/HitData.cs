@@ -23,12 +23,11 @@ public class HitData
     public override string ToString()
     {
         string str = "HitData:" +
-            //"\nSceneObjectID: " + SceneObjectID +
             "\nInfluence: " + Influence +
             "\nLaunch Angle: " + LauchAngle +
             "\nDamage: " + Damage +
             "\nStunTime: " + StunTime +
-            "\nAttackType: " + EffectIndex;
+            "\nEffectIndex: " + EffectIndex;
 
         return str;
     }

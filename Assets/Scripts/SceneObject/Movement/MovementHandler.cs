@@ -16,7 +16,7 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
     private IMovementInput movementInput;
     private IActionState actionState;
     private IStats statHandler;
-    private IHurtBoxHandler hurtBoxHandler;
+    private ISOHurtBoxHandler hurtBoxHandler;
 
     //Components
     private Rigidbody rb;
@@ -117,7 +117,7 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
 
         actionState = GetComponent<IActionState>();
         statHandler = GetComponent<IStats>();
-        hurtBoxHandler = GetComponent<IHurtBoxHandler>();
+        hurtBoxHandler = GetComponent<ISOHurtBoxHandler>();
 
         rb = GetComponent<Rigidbody>();
         rb.linearDamping = 0;
