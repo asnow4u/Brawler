@@ -30,12 +30,17 @@ internal partial class MovementHandler
             return;
         }
 
-        float jumpVelocity = 0;
+        float jumpXVelocity = rb.linearVelocity.x;
+        float jumpYVelocity = 0;
 
         if (curMovementState == MovementState.AirJump)
         {
             airJumpsPerformed++;
-            jumpVelocity = curMovementData.AirJumpVelocity;
+            jumpXVelocity = horizontalInfluence * curMovementData.MaxAerialXVelocity;
+            jumpYVelocity = curMovementData.AirJumpVelocity;
+
+            if (horizontalInfluence > 0 && !sceneObject.IsFacingRightDirection || horizontalInfluence < 0 && sceneObject.IsFacingRightDirection)
+                sceneObject.TurnAround();
         }
 
         else if (curMovementState == MovementState.WallJump)
@@ -49,26 +54,22 @@ internal partial class MovementHandler
             float dirY = Mathf.Sin(angleRad);
 
             if (IsAgainstRightWall())
-            {
                 dirX = -dirX;
-            }
 
             float velocityMagnitude = curMovementData.WallJumpVelocity;
             rb.linearVelocity = new Vector3(dirX * velocityMagnitude, dirY * velocityMagnitude, 0);
 
             if (dirX > 0 && !sceneObject.IsFacingRightDirection || dirX < 0 && sceneObject.IsFacingRightDirection)
-            {
                 sceneObject.TurnAround();
-            }
 
             jumpInputAvailable = false;
             lastJumpSquatTime = Time.time;
             return;
         }
 
-        if (jumpVelocity > 0)
+        if (jumpYVelocity > 0)
         {
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpVelocity, 0);
+            rb.linearVelocity = new Vector3(jumpXVelocity, jumpYVelocity, 0);
             jumpInputAvailable = false;
             lastJumpSquatTime = Time.time;
         }

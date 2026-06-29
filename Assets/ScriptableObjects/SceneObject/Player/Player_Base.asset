@@ -15,7 +15,7 @@ MonoBehaviour:
   Mass: 100
   GroundedMaxVelocity: 15
   GroundedDecceleration: 5000
-  AerialMaxXVelocity: 13
+  AerialMaxXVelocity: 10
   AerialXDecceleration: 100
   AerialMaxRisingVelocity: 25
   AerialRisingDecceleration: 100
