@@ -5,21 +5,26 @@ using UnityEngine;
 [RequireComponent(typeof(ISceneObject))]
 [RequireComponent(typeof(ActionStateHandler))]
 [RequireComponent(typeof(StatHandler))]
+[RequireComponent(typeof(HurtBoxHandler))]
 [RequireComponent(typeof(Rigidbody))]
 public class AttackHandler : MonoBehaviour, IAttack
-{    
-    //Dependencies
+{
     private ISceneObject sceneObject;
     private IAttackInput attackInput;
     private IActionState actionState;   
     private IStats statHandler;
+    private ISOHurtBoxHandler hurtBoxHandler;
     private IAnimationEvent animationEventHandler;
 
-    //Components
     private Rigidbody rb;
-            
+
+    [Header("State")]
     [SerializeField] private AttackState curAttackState;
     public AttackState CurAttackState => curAttackState;
+
+    private ActionBuffer<Vector2> actionBuffer;
+    [Header("Buffer")]
+    [SerializeField] private float attackBufferWindow = 0.1f;            
     
     private AttackStatData curAttackData;
 
@@ -43,7 +48,10 @@ public class AttackHandler : MonoBehaviour, IAttack
 
         actionState = GetComponent<IActionState>();
         statHandler = GetComponent<IStats>();
+        hurtBoxHandler = GetComponent<ISOHurtBoxHandler>();
         rb = GetComponent<Rigidbody>();
+
+        actionBuffer = new ActionBuffer<Vector2>(attackBufferWindow);
 
         RegisterToEvents();
     }
@@ -51,8 +59,11 @@ public class AttackHandler : MonoBehaviour, IAttack
     private void RegisterToEvents()
     {
         actionState.GroundedStateChangedEvent += OnGroundedStateChanged;
+        actionState.ActionStateChangedEvent += OnActionStateChanged;
         statHandler.AttackStatsChangedEvent += OnAttackStatsChanged;
         animationEventHandler.OnAnimationEventFiredEvent += OnAnimationEvent;
+
+        hurtBoxHandler.OnHitEvent += OnHitByAttack;
 
         attackInput.AttackPerformedEvent += PerformAttack;
     }    
@@ -65,8 +76,11 @@ public class AttackHandler : MonoBehaviour, IAttack
     private void UnregisterFromEvents()
     {
         actionState.GroundedStateChangedEvent -= OnGroundedStateChanged;
+        actionState.ActionStateChangedEvent -= OnActionStateChanged;
         statHandler.AttackStatsChangedEvent -= OnAttackStatsChanged;
         animationEventHandler.OnAnimationEventFiredEvent -= OnAnimationEvent;
+
+        hurtBoxHandler.OnHitEvent -= OnHitByAttack;
 
         attackInput.AttackPerformedEvent -= PerformAttack;
     }
@@ -77,8 +91,10 @@ public class AttackHandler : MonoBehaviour, IAttack
     {
         if (groundedState == GroundedState.Grounded && curAttackState != AttackState.Null)
         {
-            SetCurrentAttackState(AttackState.Null);            
+            SetCurrentAttackState(AttackState.Null);
         }
+        
+        TryBufferedAttack();
     }
 
     private void OnAttackStatsChanged(AttackStatData data)
@@ -86,14 +102,28 @@ public class AttackHandler : MonoBehaviour, IAttack
         curAttackData = data;
     }
 
+    private void OnActionStateChanged(ActionState state)
+    {        
+        if (state <= ActionState.Moving)
+            TryBufferedAttack();
+    }
+
     private void OnAnimationEvent(AnimationEventState state)
     {
         if (curAttackState == AttackState.Null)
-            return;        
+            return;
 
         if (state == AnimationEventState.AttackEnded)
+        {
             SetCurrentAttackState(AttackState.Null);
+            TryBufferedAttack();
+        }
     }
+
+    private void OnHitByAttack(KnockBackHitData hitData)
+    {
+        actionBuffer.Clear();
+    }    
 
 
     #region Attack State
@@ -121,9 +151,23 @@ public class AttackHandler : MonoBehaviour, IAttack
 
     private void PerformAttack(Vector2 direction)
     {
-        if (curAttackState != AttackState.Null || curAttackData == null)
+        actionBuffer.Buffer(direction);
+        TryBufferedAttack();        
+    }
+
+    private void TryBufferedAttack()
+    {
+        if (curAttackData == null ||
+            curAttackState != AttackState.Null ||
+            actionState.CurActionState > ActionState.Moving)
             return;
-        
+
+        if (actionBuffer.TryConsume(out Vector2 direction))
+            ExecuteAttack(direction);
+    }
+
+    private void ExecuteAttack(Vector2 direction)
+    {
         if (Mathf.Abs(direction.x) > Mathf.Abs(direction.y))
         {
             if (direction.x > 0)

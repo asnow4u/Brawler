@@ -12,7 +12,9 @@ internal partial class MovementHandler
     private const float wallJumpDetachDuration = 0.2f;
     private float lastWallJumpTime = -100f;
 
-    private bool jumpInputAvailable = true; //Jump available is only true after the user has released the jump button
+    //Jump available is only true after the user has released the jump button
+    private bool jumpInputAvailable = true;
+    private bool jumpRequested => jumpInfluence > 0 || actionBuffer.HasBuffered;
     
     [Header("Jump Squat")]
     private bool isJumpSquatPending = false;
@@ -24,6 +26,8 @@ internal partial class MovementHandler
 
     private void StartJump()
     {
+        actionBuffer.Clear();
+
         if (curMovementState == MovementState.GroundJump)
         {
             BeginJumpSquat();

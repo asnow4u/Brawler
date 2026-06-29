@@ -11,15 +11,14 @@ using UnityEngine.AI;
 [RequireComponent(typeof(Rigidbody))]
 internal partial class MovementHandler : MonoBehaviour, IMovement
 {
-    //Dependencies
     private ISceneObject sceneObject;
     private IMovementInput movementInput;
     private IActionState actionState;
     private IStats statHandler;
     private ISOHurtBoxHandler hurtBoxHandler;
 
-    //Components
     private Rigidbody rb;
+    private ActionBuffer<float> actionBuffer;
 
     //Movement State Data
     [SerializeField] private MovementState curMovementState;
@@ -58,6 +57,9 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
     private float storedLedgeClimbXVelocity;
     private const float requiredLedgeClimbPercentage = 0.3f;
 
+    [Header("Buffer")]
+    [SerializeField] private float movementBufferWindow = 0.1f;
+
     //Conditions
     private bool groundedMovementAllowed => curMovementData.GroundedMovementValid &&
                                             horizontalInfluence != 0 &&
@@ -72,11 +74,11 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
                                         horizontalInfluence != 0 &&
                                         actionState.CurActionState <= ActionState.Moving;
     private bool jumpMovementAllowed => curMovementData.GroundedJumpValid &&
-                                        jumpInfluence > 0 &&
+                                        jumpRequested &&
                                         jumpInputAvailable &&
                                         actionState.CurActionState <= ActionState.Moving;
     private bool aerialJumpMovementAllowed => curMovementData.AerialJumpValid &&
-                                              jumpInfluence > 0 &&
+                                              jumpRequested &&
                                               jumpInputAvailable &&
                                               airJumpsPerformed < curMovementData.AirJumpsAvailable &&
                                               actionState.CurActionState <= ActionState.Moving;
@@ -85,7 +87,7 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
                                               Time.time <= lastGroundedTime + coyoteTimeDuration;
 
     private bool wallJumpAllowed => curMovementData.WallJumpValid &&
-                                    jumpInfluence > 0 &&
+                                    jumpRequested &&
                                     jumpInputAvailable &&
                                     IsAgainstWall() &&
                                     actionState.CurActionState <= ActionState.Moving &&
@@ -125,6 +127,7 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
 
         //Not a requirement (Null means no inputs are ever recieved
         movementInput = GetComponent<IMovementInput>();        
+        actionBuffer = new ActionBuffer<float>(movementBufferWindow);
 
         RegisterToEvents();
     }
@@ -332,6 +335,7 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
             jumpInputAvailable = true;
 
         jumpInfluence = Mathf.Clamp(inputInfluence, 0, 1);
+        actionBuffer.Buffer(jumpInfluence);
     }
 
     private void ResetJumpInfluence()

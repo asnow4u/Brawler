@@ -28,7 +28,7 @@ internal partial class MovementHandler
     [Range(0f, 30f)]
     [SerializeField] private float driftAccel = 8f;
     private float driftVelocityApplied = 0f;
-private float currentHitInfluence = 0f;
+    private float currentHitInfluence = 0f;
 
     [Header("Bounce")]
     [SerializeField] private float bounceDegrade = 0.9f;
@@ -42,37 +42,14 @@ private float currentHitInfluence = 0f;
     private float splatHoldEndTime = 0f;
     private Vector3 splatHeldVelocity = Vector3.zero;
 
-    /// <summary>
-    /// Cache knockback velocity from the hit. Application waits for the Launch state transition.
-    /// </summary>
-    /// <summary>
-    /// Cache knockback velocity and influence from the hit. Application waits for the Launch state transition.
-    /// Influence determines drag during Travel: low influence = snappy stop, high influence = carries through.
-    /// </summary>
     private void ApplyHitStunKnockback(KnockBackHitData hitData)
     {
+        actionBuffer.Clear();
+
         pendingKnockbackVelocity = hitData.KnockBackVelocity;
         pendingInfluence = hitData.Influence;
     }
 
-
-    /// <summary>
-    /// React to hit stun state transitions. Pause freezes velocity. Launch applies the cached knockback once.
-    /// </summary>
-    /// <summary>
-    /// React to hit stun state transitions. Pause freezes velocity. Launch applies the cached knockback once
-    /// and immediately checks for a bounce so an at-rest hit reflects off the surface it's resting against.
-    /// </summary>
-    /// <summary>
-    /// React to hit stun state transitions. Pause freezes velocity. Launch applies the cached knockback once
-    /// and immediately checks for a bounce so an at-rest hit reflects off the surface it's resting against.
-    /// Any transition during an active splat hold ends the hold, restoring held velocity first.
-    /// </summary>
-    /// <summary>
-    /// React to hit stun state transitions. Pause freezes velocity. Launch applies the cached knockback once
-    /// and immediately checks for a bounce so an at-rest hit reflects off the surface it's resting against.
-    /// Any transition during an active splat hold ends the hold, restoring held velocity first.
-    /// </summary>
     private void OnHitStunStateChanged(HitStunState state)
     {
         if (isSplatHolding)
@@ -102,18 +79,6 @@ private float currentHitInfluence = 0f;
         }
     }
 
-    /// <summary>
-    /// Apply drag to the hit stun velocity. Called during Travel and Recovery substates.
-    /// </summary>
-    /// <summary>
-    /// Apply X-only drag to the hit stun velocity. Y is owned entirely by gravity and clamps.
-    /// Called during Travel and Recovery substates.
-    /// </summary>
-    /// <summary>
-    /// Apply X-only drag to the hit stun velocity. Y is owned entirely by gravity and clamps.
-    /// Travel drag is derived from the attack's influence (low influence = high drag, snappy stop;
-    /// high influence = low drag, carries through). Recovery uses a fixed light drag.
-    /// </summary>
     private void UpdateHitStunDeceleration()
     {
         float drag;
@@ -130,12 +95,6 @@ private float currentHitInfluence = 0f;
         ApplyHitStunDrift();
     }
 
-    /// <summary>
-    /// Rotate the knockback launch vector by directional influence sampled at the Pause->Launch transition.
-    /// Only the component of stick input perpendicular to the knockback contributes (pushing along or against
-    /// it does nothing), and magnitude is preserved - DI steers the trajectory, it never shortens it.
-    /// Raw input, so a partial tilt micro-adjusts and a full tilt gives the full maxDIAngle.
-    /// </summary>
     private Vector3 ApplyDirectionalInfluence(Vector3 knockbackVelocity)
     {
         if (maxDIAngle <= 0f)
@@ -163,12 +122,6 @@ private float currentHitInfluence = 0f;
         return new Vector3(newDir.x, newDir.y, 0f) * magnitude;
     }
 
-    /// <summary>
-    /// Apply a small horizontal nudge toward the held direction during Travel/Recovery. The total X velocity
-    /// drift can ever add across a single hitstun is capped at maxDriftSpeed (tracked in driftVelocityApplied),
-    /// converting borderline KOs into survivals without letting a player steer out of a clean launch.
-    /// Vertical is left untouched; raw horizontalInfluence so a partial tilt nudges gently.
-    /// </summary>
     private void ApplyHitStunDrift()
     {
         if (maxDriftSpeed <= 0f || horizontalInfluence == 0f)
@@ -187,12 +140,6 @@ private float currentHitInfluence = 0f;
         }
     }
 
-
-    /// <summary>
-    /// Detect a bounce condition and, if found, reflect velocity off the impacted surface(s).
-    /// If the reflected magnitude meets the splat threshold during Launch or Travel, hold velocity briefly
-    /// for a dramatic pause before restoring.
-    /// </summary>
     private void CheckForHitStunBounce()
     {
         if (rb.linearVelocity.sqrMagnitude < minBounceVelocity * minBounceVelocity)
@@ -215,9 +162,6 @@ private float currentHitInfluence = 0f;
         rb.linearVelocity = bounceVelocity;
     }
 
-    /// <summary>
-    /// Begin a bounce splat hold. Zeros velocity, stores the reflected vector, and sets the expiration time.
-    /// </summary>
     private void BeginBounceSplat(Vector3 reflectedVelocity)
     {
         splatHeldVelocity = reflectedVelocity;
@@ -226,9 +170,6 @@ private float currentHitInfluence = 0f;
         rb.linearVelocity = Vector3.zero;
     }
 
-    /// <summary>
-    /// End a bounce splat hold and restore the held velocity to the rigidbody.
-    /// </summary>
     private void EndBounceSplat()
     {
         rb.linearVelocity = splatHeldVelocity;
@@ -237,21 +178,12 @@ private float currentHitInfluence = 0f;
         isSplatHolding = false;
     }
 
-    /// <summary>
-    /// While splat-holding, check whether the hold has expired. If so, end the hold and restore velocity.
-    /// </summary>
     private void UpdateBounceSplat()
     {
         if (Time.time >= splatHoldEndTime)
             EndBounceSplat();
     }
 
-
-    /// <summary>
-    /// Find the surface normals the sceneObject should bounce off of.
-    /// First checks for direct contact with surfaces opposing velocity; if none, runs a predictive raycast lookahead.
-    /// Only surfaces that velocity is moving into (negative dot product) are included.
-    /// </summary>
     private bool TryGetBounceNormals(out List<Vector3> normals)
     {
         normals = new List<Vector3>();
@@ -323,10 +255,6 @@ private float currentHitInfluence = 0f;
         return normals.Count > 0;
     }
 
-    /// <summary>
-    /// Reflect the current velocity off the averaged surface normal and apply bounce degrade.
-    /// Returns Vector3.zero if the reflected magnitude falls below the bounce threshold.
-    /// </summary>
     private Vector3 CalculateBounceVelocity(List<Vector3> hitNormals)
     {
         if (hitNormals == null || hitNormals.Count == 0)
@@ -345,5 +273,4 @@ private float currentHitInfluence = 0f;
 
         return bounceVelocity;
     }
-
 }
