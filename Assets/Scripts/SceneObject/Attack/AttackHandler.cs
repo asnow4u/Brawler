@@ -137,7 +137,12 @@ public class AttackHandler : MonoBehaviour, IAttack
         if (attackState == AttackState.Null || actionState.TryChangeState(ActionState.Attacking))
         {
             if (attackState == AttackState.Null && actionState.CurActionState == ActionState.Attacking)
-                actionState.ChangeState(ActionState.Idle);
+            {
+                bool movementOngoing = movementHandler != null && 
+                                       movementHandler.CurMovementState != MovementState.Null;
+
+                actionState.ChangeState(movementOngoing ? ActionState.Moving : ActionState.Idle);
+            }
 
             curAttackState = attackState;
             sceneObject.Log("Attack State: " + curAttackState);

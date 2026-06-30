@@ -66,7 +66,7 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
                                             actionState.CurActionState <= ActionState.Moving;
     private bool aerialMovementAllowed => curMovementData.AerialMovementValid &&
                                           (horizontalInfluence != 0 || verticalInfluence != 0) &&
-                                          actionState.CurActionState <= ActionState.Moving;
+                                          actionState.CurActionState <= ActionState.Attacking;
     private bool climbMovementAllowed => curMovementData.ClimbMovementValid &&
                                          (horizontalInfluence != 0 || verticalInfluence != 0) &&
                                          actionState.CurActionState <= ActionState.Moving;
@@ -106,6 +106,8 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
     private bool ledgeClimbAllowed => curMovementData.LedgeClimbValid &&
                                       ((horizontalInfluence > 0 && IsAgainstRightLedge()) || (horizontalInfluence < 0 && IsAgainstLeftLedge())) &&
                                       actionState.CurActionState <= ActionState.Moving;
+
+    private bool IsAttackPermittedMovementState(MovementState moveState) => moveState == MovementState.AirMove;
 
     public event Action<MovementState> MovementStateChangedEvent;
 
@@ -361,7 +363,10 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
         if (moveState == curMovementState)
             return;
 
-        if (moveState == MovementState.Null || actionState.TryChangeState(ActionState.Moving))
+        bool permittedDuringAttack = actionState.CurActionState == ActionState.Attacking && 
+                                     IsAttackPermittedMovementState(moveState);
+
+        if (moveState == MovementState.Null || permittedDuringAttack || actionState.TryChangeState(ActionState.Moving))
         {
             if (moveState == MovementState.Null && actionState.CurActionState == ActionState.Moving)
                 actionState.ChangeState(ActionState.Idle);
