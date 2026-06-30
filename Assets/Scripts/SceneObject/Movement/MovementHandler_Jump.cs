@@ -18,6 +18,9 @@ internal partial class MovementHandler
     
     [Header("Jump Squat")]
     private bool isJumpSquatPending = false;
+    private bool hasJumped = false;
+    public bool IsInJumpSquat => isJumpSquatPending || (hasJumped && actionState.CurGroundedState == GroundedState.Grounded);
+
     private float lastJumpSquatTime = -100f;
     private bool isJumpingSquating => Time.time < lastJumpSquatTime + curMovementData.JumpSquatDuration;
 
@@ -102,6 +105,6 @@ internal partial class MovementHandler
         float launchVelocity = jumpHeld ? curMovementData.JumpVelocity : curMovementData.ShortHopVelocity;
         rb.linearVelocity = new Vector3(rb.linearVelocity.x, launchVelocity, 0);
         isJumpSquatPending = false;
+        hasJumped = true;
     }
-    
 }

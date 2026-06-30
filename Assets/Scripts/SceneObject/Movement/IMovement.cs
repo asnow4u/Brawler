@@ -20,6 +20,6 @@ public enum MovementState
 public interface IMovement
 {
     public MovementState CurMovementState { get; }
-
+    public bool IsInJumpSquat { get; }
     public event Action<MovementState> MovementStateChangedEvent;
 }

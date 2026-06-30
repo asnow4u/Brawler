@@ -15,7 +15,8 @@ public class AttackHandler : MonoBehaviour, IAttack
     private IStats statHandler;
     private ISOHurtBoxHandler hurtBoxHandler;
     private IAnimationEvent animationEventHandler;
-
+    
+    private IMovement movementHandler;
     private Rigidbody rb;
 
     [Header("State")]
@@ -49,6 +50,8 @@ public class AttackHandler : MonoBehaviour, IAttack
         actionState = GetComponent<IActionState>();
         statHandler = GetComponent<IStats>();
         hurtBoxHandler = GetComponent<ISOHurtBoxHandler>();
+
+        movementHandler = GetComponent<IMovement>();
         rb = GetComponent<Rigidbody>();
 
         actionBuffer = new ActionBuffer<Vector2>(attackBufferWindow);
@@ -61,9 +64,8 @@ public class AttackHandler : MonoBehaviour, IAttack
         actionState.GroundedStateChangedEvent += OnGroundedStateChanged;
         actionState.ActionStateChangedEvent += OnActionStateChanged;
         statHandler.AttackStatsChangedEvent += OnAttackStatsChanged;
-        animationEventHandler.OnAnimationEventFiredEvent += OnAnimationEvent;
-
         hurtBoxHandler.OnHitEvent += OnHitByAttack;
+        animationEventHandler.OnAnimationEventFiredEvent += OnAnimationEvent;
 
         attackInput.AttackPerformedEvent += PerformAttack;
     }    
@@ -78,9 +80,8 @@ public class AttackHandler : MonoBehaviour, IAttack
         actionState.GroundedStateChangedEvent -= OnGroundedStateChanged;
         actionState.ActionStateChangedEvent -= OnActionStateChanged;
         statHandler.AttackStatsChangedEvent -= OnAttackStatsChanged;
-        animationEventHandler.OnAnimationEventFiredEvent -= OnAnimationEvent;
-
         hurtBoxHandler.OnHitEvent -= OnHitByAttack;
+        animationEventHandler.OnAnimationEventFiredEvent -= OnAnimationEvent;
 
         attackInput.AttackPerformedEvent -= PerformAttack;
     }
@@ -152,7 +153,7 @@ public class AttackHandler : MonoBehaviour, IAttack
     private void PerformAttack(Vector2 direction)
     {
         actionBuffer.Buffer(direction);
-        TryBufferedAttack();        
+        TryBufferedAttack();
     }
 
     private void TryBufferedAttack()
@@ -160,6 +161,9 @@ public class AttackHandler : MonoBehaviour, IAttack
         if (curAttackData == null ||
             curAttackState != AttackState.Null ||
             actionState.CurActionState > ActionState.Moving)
+            return;
+
+        if (movementHandler != null && movementHandler.IsInJumpSquat)
             return;
 
         if (actionBuffer.TryConsume(out Vector2 direction))
@@ -220,9 +224,6 @@ public class AttackHandler : MonoBehaviour, IAttack
 
             SetCurrentAttackState(AttackState.ForwardTilt);                               
             
-            //NOTE: Resets y velocity. This helps prevent an areal grounded attack if performed on first few frame of jump
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, 0);
-            
             if (!sceneObject.IsFacingRightDirection)
                 sceneObject.TurnAround();
         }
@@ -244,9 +245,6 @@ public class AttackHandler : MonoBehaviour, IAttack
             if (curAttackData.ForwardTilt == null) return;
 
             SetCurrentAttackState(AttackState.ForwardTilt);
-
-            //NOTE: Resets y velocity. This helps prevent an areal grounded attack if performed on first few frame of jump
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, 0);
 
             if (sceneObject.IsFacingRightDirection)
                     sceneObject.TurnAround();

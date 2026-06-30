@@ -180,6 +180,8 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
     /// </summary>
     private void OnGroundedStateChanged(GroundedState groundedState)
     {
+        hasJumped = false;
+
         if (groundedState == GroundedState.Grounded)
         {
             airJumpsPerformed = 0;
