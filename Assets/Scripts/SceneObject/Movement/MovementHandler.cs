@@ -72,6 +72,7 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
                                          actionState.CurActionState <= ActionState.Moving;
     private bool dashMovementAllowed => curMovementData.DashValid &&
                                         horizontalInfluence != 0 &&
+                                        isLedgeClimbing == false &&
                                         actionState.CurActionState <= ActionState.Moving;
     private bool jumpMovementAllowed => curMovementData.GroundedJumpValid &&
                                         jumpRequested &&
@@ -835,7 +836,6 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
         if (elapsed >= ledgeClimbDuration)
         {
             transform.position = ledgeClimbStandPosition;
-            rb.useGravity = true;
             rb.linearVelocity = new Vector3(storedLedgeClimbXVelocity, 0, 0);
             isLedgeClimbing = false;
             SetCurrentMoveState(MovementState.Null);
