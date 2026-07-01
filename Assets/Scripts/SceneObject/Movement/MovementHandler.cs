@@ -136,6 +136,7 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
 
     private void RegisterToEvents()
     {
+        actionState.ActionStateChangedEvent += OnActionStateChanged;
         actionState.GroundedStateChangedEvent += OnGroundedStateChanged;
         actionState.ClimbStateChangedEvent += OnClimbStateChanged;
 
@@ -160,6 +161,7 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
 
     private void UnregisterToEvents()
     {
+        actionState.ActionStateChangedEvent -= OnActionStateChanged;
         actionState.GroundedStateChangedEvent -= OnGroundedStateChanged;
         actionState.ClimbStateChangedEvent -= OnClimbStateChanged;
 
@@ -177,9 +179,12 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
         }
     }
 
-    /// <summary>
-    /// Handle Ground state changed event
-    /// </summary>
+    private void OnActionStateChanged(ActionState state)
+    {
+        if (state == ActionState.Attacking && isDashing)
+            EndDash();        
+    }
+
     private void OnGroundedStateChanged(GroundedState groundedState)
     {
         hasJumped = false;
@@ -583,7 +588,10 @@ internal partial class MovementHandler : MonoBehaviour, IMovement
         switch (curMovementState)
         {
             case MovementState.Null:
-                DeccelerateGroundedMovement();
+                if (actionState.CurActionState == ActionState.Attacking && horizontalInfluence != 0)
+                    DeccelerateGroundedAttackSlide();
+                else
+                    DeccelerateGroundedMovement();
                 break;
 
             case MovementState.LedgeClimb:

@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 internal partial class MovementHandler
 {
@@ -58,6 +59,30 @@ internal partial class MovementHandler
                 decceleratedXValue = 0;
 
             rb.linearVelocity = new Vector3(decceleratedXValue, rb.linearVelocity.y, 0);
+        }
+    }
+
+    private void DeccelerateGroundedAttackSlide()
+    {
+        float decceleration = curMovementData.GroundedAttackDecceleration;
+
+        if (decceleration == 0)
+        {            
+            decceleration = curMovementData.GroundedDecceleration;
+            Debug.LogWarning("Attack Decceleration not set", gameObject);
+        }
+
+        if (rb.linearVelocity.x > 0)
+        {
+            float v = rb.linearVelocity.x - decceleration * Time.fixedDeltaTime;
+            if (v < 0) v = 0;
+            rb.linearVelocity = new Vector3(v, rb.linearVelocity.y, 0);
+        }
+        else if (rb.linearVelocity.x < 0)
+        {
+            float v = rb.linearVelocity.x + decceleration * Time.fixedDeltaTime;
+            if (v > 0) v = 0;
+            rb.linearVelocity = new Vector3(v, rb.linearVelocity.y, 0);
         }
     }
 

@@ -17,6 +17,7 @@ public class MovementStatData
     public float MaxGroundedVelocity;
     public float GroundedAcceleration;
     public float GroundedDecceleration;
+    public float GroundedAttackDecceleration;
 
     //Dash Movement
     public float WaveLandDashVelocityScaler;

@@ -234,6 +234,7 @@ public class StatHandler : MonoBehaviour, IStats
         if (data.MoveData != null && data.MoveData.IsValid())
         {
             statData.GroundedAcceleration = data.MoveData.GroundedXAcceleration;
+            statData.GroundedAttackDecceleration = data.MoveData.GroundedAttackDecceleration;
             statData.GroundedMovementValid = true;
         }
         else

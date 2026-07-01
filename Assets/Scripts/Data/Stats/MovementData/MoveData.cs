@@ -5,6 +5,7 @@ public class MoveData : BaseMovementData
 {
     [Header("Grounded Movement")]
     public float GroundedXAcceleration;
+    public float GroundedAttackDecceleration;
 
     public override bool IsValid()
     {
