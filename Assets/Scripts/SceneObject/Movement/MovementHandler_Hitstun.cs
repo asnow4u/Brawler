@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-internal partial class MovementHandler
+public partial class MovementHandler
 {
     [Header("Hit Stun Drag")]
     [Tooltip("Per-FixedUpdate X velocity multiplier during Travel for an influence=0 hit (snappy stop, the setup feel).")]

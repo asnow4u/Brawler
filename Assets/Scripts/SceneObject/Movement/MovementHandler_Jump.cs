@@ -2,7 +2,7 @@ using System.Collections;
 using System.ComponentModel;
 using UnityEngine;
 
-internal partial class MovementHandler
+public partial class MovementHandler
 {    
     [Header("Coyote Time")]
     private const float coyoteTimeDuration = 0.1f;

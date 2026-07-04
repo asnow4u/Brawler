@@ -1,6 +1,6 @@
 using UnityEngine;
 
-internal partial class MovementHandler
+public partial class MovementHandler
 {
     private bool isDashing = false;
     private int dashDirection = 0;

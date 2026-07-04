@@ -49,10 +49,19 @@ public class ActionStateHandler : MonoBehaviour, IActionState
     private void UpdateGroundedState()
     {
         GroundedState groundedState = curGroundedState;
-
-        //Switch to climbing
-        bool groundCollision = sceneObject.TryDetectCollision(Direction.Down, 0.01f, LayerMask.GetMask("Environment"), out _);
-        groundedState = groundCollision ? GroundedState.Grounded : GroundedState.Airborn;
+        
+        bool surfaceCollision = sceneObject.TryDetectCollision(Direction.Down, 0.01f, LayerMask.GetMask("Environment"), out _);
+        
+        // Check standing on an object sceneObject
+        if (!surfaceCollision && sceneObject.TryDetectCollision(Direction.Down, 0.01f, LayerMask.GetMask("SceneObject"), out Collider hitCollider))
+        {
+            if (hitCollider.TryGetComponent(out ISceneObject hitSceneObject))
+            {
+                if (hitSceneObject.ObjectType == SceneObjectType.Object)
+                    surfaceCollision = true;
+            }
+        }
+        groundedState = surfaceCollision ? GroundedState.Grounded : GroundedState.Airborn;
 
         if (groundedState != curGroundedState)
         {

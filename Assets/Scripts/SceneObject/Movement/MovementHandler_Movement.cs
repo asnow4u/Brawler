@@ -1,7 +1,7 @@
 using UnityEngine;
 using System;
 
-internal partial class MovementHandler
+public partial class MovementHandler
 {
     #region Grounded Movement
 

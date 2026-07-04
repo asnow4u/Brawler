@@ -9,7 +9,7 @@ using UnityEngine.AI;
 [RequireComponent(typeof(StatHandler))]
 [RequireComponent(typeof(HurtBoxHandler))]
 [RequireComponent(typeof(Rigidbody))]
-internal partial class MovementHandler : MonoBehaviour, IMovement
+public partial class MovementHandler : MonoBehaviour, IMovement
 {
     private ISceneObject sceneObject;
     private IMovementInput movementInput;

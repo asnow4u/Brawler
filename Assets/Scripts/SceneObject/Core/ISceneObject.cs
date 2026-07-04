@@ -8,6 +8,7 @@ public interface ISceneObject
 {
     //Base states
     public Guid UniqueID { get; }    
+    public SceneObjectType ObjectType { get; }
 
     //Direction
     public bool IsFacingRightDirection { get; }
@@ -16,7 +17,6 @@ public interface ISceneObject
     //Collision
     public Bounds Bounds { get; }
     public bool TryDetectCollision(Direction direction, float dist, LayerMask mask, out Collider collidingCollider);
-    public bool CheckForEnvironmentCollision(Vector3 direction, float dist, out RaycastHit hitInfo);
     public bool ClimbableSurfaceAvailable();
 
     //Debug

@@ -1,0 +1,19 @@
+{
+    "name": "SceneObject.Hurtbox.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:5c910f444a332b74abd79ac76a81251c",
+        "GUID:ab16a484669f87b4f9fd7610ae8b2d49"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

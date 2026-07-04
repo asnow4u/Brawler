@@ -8,10 +8,11 @@ public abstract class SceneObject : MonoBehaviour, ISceneObject
     [Header("SceneObject")]
     private Guid uniqueID;
     [SerializeField] private string uniqueIDString; //NOTE: Guid does not show up in inspector
-    [SerializeField] private SceneObjectType ObjectType;
+    [SerializeField] private SceneObjectType objectType;
+    public SceneObjectType ObjectType => objectType;
 
     private Collider col;
-    private Rigidbody rb;    
+    protected Rigidbody rb;
 
     #region Getters        
     
@@ -191,11 +192,6 @@ public abstract class SceneObject : MonoBehaviour, ISceneObject
         }
 
         return null;
-    }
-
-    public bool CheckForEnvironmentCollision(Vector3 direction, float dist, out RaycastHit hitInfo)
-    {
-        return Physics.Raycast(Bounds.center, direction.normalized, out hitInfo, dist, LayerMask.GetMask("Environment"));
     }
 
     public bool ClimbableSurfaceAvailable()
