@@ -198,8 +198,8 @@ GameObject:
   - component: {fileID: 3708894919006485743}
   - component: {fileID: 3622580609105661727}
   - component: {fileID: 1286575091381896554}
-  - component: {fileID: 4546867526952344039}
   - component: {fileID: 3455583353777583617}
+  - component: {fileID: 1757336557130019849}
   m_Layer: 7
   m_Name: Box
   m_TagString: Untagged
@@ -298,7 +298,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: SceneObject.ActionState::ActionStateHandler
   curGroundedState: 0
-  curClimbState: 0
   curActionState: 0
   curIdleState: 0
 --- !u!114 &5460795183357905435
@@ -376,40 +375,6 @@ MonoBehaviour:
   minSceneObjectHitDamage: 2
   maxSceneObjectHitDamage: 20
   sceneObjectHitStunTime: 0.1
---- !u!114 &4546867526952344039
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3815048547600407941}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 33124b1ec40121640b92aa78dda47442, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: SceneObject.Movement::MovementHandler
-  curMovementState: 0
-  horizontalDeadzone: 0
-  horizontalInfluence: 0
-  verticalDeadzone: 0
-  verticalInfluence: 0
-  jumpDeadzone: 0
-  jumpInfluence: 0
-  isClimbSliding: 0
-  ledgeClimbDuration: 0.2
-  movementBufferWindow: 0.1
-  dashInfluenceThreshold: 0.5
-  dashInitiationSpeedScaler: 0.5
-  travelDragSetup: 0.95
-  travelDragFinisher: 0.995
-  recoveryDrag: 0.98
-  maxDIAngle: 15
-  maxDriftSpeed: 2.5
-  driftAccel: 8
-  bounceDegrade: 0.9
-  minBounceVelocity: 0.9
-  splatVelocityThreshold: 15
-  splatHoldDuration: 0.1
 --- !u!114 &3455583353777583617
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -430,6 +395,25 @@ MonoBehaviour:
   maxLifeTimeStart: 0.5
   maxLaunchSpeed: 20
   minTrailVelocity: 15
+--- !u!114 &1757336557130019849
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3815048547600407941}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 200f259a3ed05044dafbdde5253cbec3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SceneObject.Movement::MovementHandler
+  travelDragSetup: 0.95
+  travelDragFinisher: 0.995
+  recoveryDrag: 0.98
+  bounceDegrade: 0.9
+  minBounceVelocity: 0.9
+  splatVelocityThreshold: 15
+  splatHoldDuration: 0.1
 --- !u!1 &6498380575745685673
 GameObject:
   m_ObjectHideFlags: 0

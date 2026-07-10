@@ -10,9 +10,6 @@ public class ActionStateHandler : MonoBehaviour, IActionState
     [SerializeField] private GroundedState curGroundedState;
     public GroundedState CurGroundedState => curGroundedState;
 
-    [SerializeField] private ClimbState curClimbState;
-    public ClimbState CurClimbState => curClimbState;
-
     [SerializeField] private ActionState curActionState;
     public ActionState CurActionState => curActionState;
 
@@ -20,7 +17,6 @@ public class ActionStateHandler : MonoBehaviour, IActionState
     public IdleState CurIdleState => curIdleState;
 
     public event Action<GroundedState> GroundedStateChangedEvent;
-    public event Action<ClimbState> ClimbStateChangedEvent;
 
     public event Action<ActionState> ActionStateChangedEvent;
     public event Action<IdleState> IdleStateChangedEvent;
@@ -43,7 +39,6 @@ public class ActionStateHandler : MonoBehaviour, IActionState
     private void FixedUpdate()
     {
         UpdateGroundedState();
-        CheckClimbingAvailability();
     }
 
     private void UpdateGroundedState()
@@ -73,15 +68,6 @@ public class ActionStateHandler : MonoBehaviour, IActionState
         }
     }
 
-    private void CheckClimbingAvailability()
-    {
-        if (!sceneObject.ClimbableSurfaceAvailable())
-            ChangeClimbState(ClimbState.Unavailable);
-        
-        else if (curClimbState == ClimbState.Unavailable)
-            ChangeClimbState(ClimbState.Available);
-    }
-
     #endregion
 
 
@@ -95,11 +81,6 @@ public class ActionStateHandler : MonoBehaviour, IActionState
 
             sceneObject.Log("ActionState State: " + curActionState);
             ActionStateChangedEvent?.Invoke(curActionState);
-
-            //Cancel Climbing in some states
-            if (curClimbState == ClimbState.Climbing && 
-               (curActionState == ActionState.Attacking || curActionState == ActionState.HitStun))
-                ChangeClimbState(ClimbState.Available);
         }
     }
 
@@ -118,28 +99,14 @@ public class ActionStateHandler : MonoBehaviour, IActionState
     }
 
     private void UpdateIdleState()
-    {
-        if (curClimbState == ClimbState.Climbing)
-            curIdleState = IdleState.ClimbIdle;
-        else if (curGroundedState == GroundedState.Grounded)
+    {        
+        if (curGroundedState == GroundedState.Grounded)
             curIdleState = IdleState.GroundIdle;
         else
             curIdleState = IdleState.AirIdle;
 
         sceneObject.Log("Idle State: " + curIdleState);
         IdleStateChangedEvent?.Invoke(curIdleState);
-    }
-
-    public void ChangeClimbState(ClimbState climbState)
-    {
-        if (climbState != curClimbState)
-        {
-            curClimbState = climbState;
-            sceneObject.Log("Climb State: " + curClimbState);
-            ClimbStateChangedEvent?.Invoke(curClimbState);
-
-            UpdateIdleState();
-        }
     }
 
     #endregion    

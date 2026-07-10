@@ -17,17 +17,7 @@ public partial class MovementHandler
     private float pendingInfluence = 0f;
     
 
-    [Header("DI / Drift")]
-    [Tooltip("Max degrees DI can rotate the launch angle during the hit pause. Magnitude is never changed.")]
-    [Range(0f, 45f)]
-    [SerializeField] private float maxDIAngle = 15f;
-    [Tooltip("Cap on total horizontal velocity mid-flight drift can add across one hitstun. Keeps drift a nudge, not a steer.")]
-    [Range(0f, 10f)]
-    [SerializeField] private float maxDriftSpeed = 2.5f;
-    [Tooltip("How fast drift ramps toward maxDriftSpeed while a direction is held during Travel/Recovery.")]
-    [Range(0f, 30f)]
-    [SerializeField] private float driftAccel = 8f;
-    private float driftVelocityApplied = 0f;
+    // Attack's baked influence for the current hit; drives the Travel drag lerp. Set at Launch, not player input.
     private float currentHitInfluence = 0f;
 
     [Header("Bounce")]
@@ -42,10 +32,8 @@ public partial class MovementHandler
     private float splatHoldEndTime = 0f;
     private Vector3 splatHeldVelocity = Vector3.zero;
 
-    private void ApplyHitStunKnockback(KnockBackHitData hitData)
+    protected virtual void OnRecievedHitStunKnockback(KnockBackHitData hitData)
     {
-        actionBuffer.Clear();
-
         pendingKnockbackVelocity = hitData.KnockBackVelocity;
         pendingInfluence = hitData.Influence;
     }
@@ -62,11 +50,10 @@ public partial class MovementHandler
                 break;
 
             case HitStunState.Launch:
-                rb.linearVelocity = ApplyDirectionalInfluence(pendingKnockbackVelocity);
+                rb.linearVelocity = ApplyLaunchVelocity(pendingKnockbackVelocity);
                 pendingKnockbackVelocity = Vector3.zero;
                 currentHitInfluence = pendingInfluence;
                 pendingInfluence = 0f;
-                driftVelocityApplied = 0f;
                 CheckForHitStunBounce();
                 break;
 
@@ -74,7 +61,34 @@ public partial class MovementHandler
                 pendingKnockbackVelocity = Vector3.zero;
                 pendingInfluence = 0f;
                 currentHitInfluence = 0f;
-                driftVelocityApplied = 0f;
+                break;
+        }
+    }
+
+    protected virtual void UpdateHitStunMovement()
+    {
+        if (isSplatHolding)
+        {
+            UpdateBounceSplat();
+            return;
+        }
+
+        switch (hurtBoxHandler.CurHitStunState)
+        {
+            case HitStunState.Launch:
+                CheckForHitStunBounce();
+                break;
+
+            case HitStunState.Travel:
+                UpdateHitStunDeceleration();
+                ApplyGravity();
+                CheckForHitStunBounce();
+                break;
+
+            case HitStunState.Recovery:
+                UpdateHitStunDeceleration();
+                ApplyGravity();
+                CheckForHitStunBounce();
                 break;
         }
     }
@@ -95,49 +109,14 @@ public partial class MovementHandler
         ApplyHitStunDrift();
     }
 
-    private Vector3 ApplyDirectionalInfluence(Vector3 knockbackVelocity)
+    /// <summary>
+    /// Input-driven mid-flight drift (DI). No-op on the base handler; InputMovementHandler overrides it.
+    /// </summary>
+    protected virtual void ApplyHitStunDrift() { }
+
+    protected virtual Vector3 ApplyLaunchVelocity(Vector3 knockbackVelocity)
     {
-        if (maxDIAngle <= 0f)
-            return knockbackVelocity;
-
-        float magnitude = knockbackVelocity.magnitude;
-        if (magnitude < 0.0001f)
-            return knockbackVelocity;
-
-        Vector2 knockDir = new Vector2(knockbackVelocity.x, knockbackVelocity.y) / magnitude;
-        Vector2 input = new Vector2(horizontalInfluence, verticalInfluence);
-
-        // Component of input perpendicular to the knockback direction.
-        Vector2 perp = input - Vector2.Dot(input, knockDir) * knockDir;
-        float perpAmount = Mathf.Clamp01(perp.magnitude);
-        if (perpAmount < 0.0001f)
-            return knockbackVelocity;
-
-        Vector2 perpDir = perp / perp.magnitude;
-
-        // Blend the original direction toward the perpendicular by the DI angle, then restore magnitude.
-        float angleRad = maxDIAngle * Mathf.Deg2Rad * perpAmount;
-        Vector2 newDir = knockDir * Mathf.Cos(angleRad) + perpDir * Mathf.Sin(angleRad);
-
-        return new Vector3(newDir.x, newDir.y, 0f) * magnitude;
-    }
-
-    private void ApplyHitStunDrift()
-    {
-        if (maxDriftSpeed <= 0f || horizontalInfluence == 0f)
-            return;
-
-        float delta = driftAccel * horizontalInfluence * Time.fixedDeltaTime;
-        float newApplied = Mathf.Clamp(driftVelocityApplied + delta, -maxDriftSpeed, maxDriftSpeed);
-        float actualDelta = newApplied - driftVelocityApplied;
-        driftVelocityApplied = newApplied;
-
-        if (actualDelta != 0f)
-        {
-            Vector3 v = rb.linearVelocity;
-            v.x += actualDelta;
-            rb.linearVelocity = v;
-        }
+        return knockbackVelocity;
     }
 
     private void CheckForHitStunBounce()

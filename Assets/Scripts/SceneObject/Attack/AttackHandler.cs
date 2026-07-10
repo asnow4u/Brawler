@@ -16,7 +16,7 @@ public class AttackHandler : MonoBehaviour, IAttack
     private ISOHurtBoxHandler hurtBoxHandler;
     private IAnimationEvent animationEventHandler;
     
-    private IMovement movementHandler;
+    private IMovementAction movementHandler;
     private Rigidbody rb;
 
     [Header("State")]
@@ -51,7 +51,7 @@ public class AttackHandler : MonoBehaviour, IAttack
         statHandler = GetComponent<IStats>();
         hurtBoxHandler = GetComponent<ISOHurtBoxHandler>();
 
-        movementHandler = GetComponent<IMovement>();
+        movementHandler = GetComponent<IMovementAction>();
         rb = GetComponent<Rigidbody>();
 
         actionBuffer = new ActionBuffer<Vector2>(attackBufferWindow);

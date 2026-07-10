@@ -5,7 +5,6 @@ public class MovementStatData
     public bool GroundedMovementValid = false;
     public bool DashValid = false;
     public bool AerialMovementValid = false;
-    public bool ClimbMovementValid = false;
     public bool GroundedJumpValid = false;
     public bool AerialJumpValid = false;
     public bool WallJumpValid = false;
@@ -41,12 +40,6 @@ public class MovementStatData
     public float GravityFastFalling;
     public float GravityHitStunTravel;
     public float GravityHitStunRecovery;
-
-    //Climb Movement
-    public float MaxClimbXVelocity;
-    public float MaxClimbUpYVelocity;
-    public float MaxClimbDownYVelocity;
-    public float ClimbSlideDecceleration;
 
     //Jump
     public float JumpVelocity;

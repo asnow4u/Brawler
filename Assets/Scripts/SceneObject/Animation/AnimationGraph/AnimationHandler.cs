@@ -17,7 +17,7 @@ public class AnimationHandler : MonoBehaviour, IAnimation
     IStats statHandler;
     ISOHurtBoxHandler hurtBoxHandler;
 
-    IMovement movementHandler;
+    IMovementAction movementHandler;
     IAttack attackHandler;
 
     private Animator animator;
@@ -58,7 +58,7 @@ public class AnimationHandler : MonoBehaviour, IAnimation
         actionState = GetComponent<IActionState>();
         statHandler = GetComponent<IStats>();
         hurtBoxHandler = GetComponent<ISOHurtBoxHandler>();
-        movementHandler = GetComponent<IMovement>();
+        movementHandler = GetComponent<IMovementAction>();
         attackHandler = GetComponent<IAttack>();
 
         animationGraph = new AnimationGraph(animator, idleController, movementController, attackController, hitStunController);

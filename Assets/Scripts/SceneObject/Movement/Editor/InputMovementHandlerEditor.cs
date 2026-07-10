@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(MovementHandler))]
+[CustomEditor(typeof(InputMovementHandler))]
 internal sealed class MovementHandlerEditor : Editor
 {
     private const int MaxTrail = 150;       // ~2.5s of samples at 60fps
@@ -37,7 +37,7 @@ internal sealed class MovementHandlerEditor : Editor
             return;
         }
 
-        MovementHandler handler = (MovementHandler)target;
+        InputMovementHandler handler = (InputMovementHandler)target;
         Rigidbody rb = handler.GetComponent<Rigidbody>();
 
         serializedObject.Update();

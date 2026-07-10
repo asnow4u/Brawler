@@ -10,7 +10,6 @@ public class MovementDataCollection : ScriptableObject
     public GroundedJumpData GroundedJumpData;
     public AirJumpData AirJumpData;
     public WallJumpData WallJumpData;
-    public ClimbMoveData ClimbMoveData;
     public LedgeClimbData LedgeClimbData;
     public WallLeanData WallLeanData;
     public WallSlideData WallSlideData;

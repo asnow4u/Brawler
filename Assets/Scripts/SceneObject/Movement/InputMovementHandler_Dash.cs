@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public partial class MovementHandler
+public partial class InputMovementHandler
 {
     private bool isDashing = false;
     private int dashDirection = 0;
@@ -77,11 +77,6 @@ public partial class MovementHandler
         }
     }
 
-    /// <summary>
-    /// Drive the dash each FixedUpdate. Speed eases linearly from the initial burst down to
-    /// MaxGroundedVelocity across the dash duration, so control hands back to normal grounded movement
-    /// with no velocity discontinuity. Ends when the duration elapses.
-    /// </summary>
     private void UpdateDash()
     {
         dashDuration -= Time.fixedDeltaTime;
