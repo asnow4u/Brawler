@@ -15,6 +15,9 @@ public partial class MovementHandler : MonoBehaviour
     protected Rigidbody rb;
     
     protected MovementStatData curMovementData = null;
+    
+    protected virtual bool UsesNativeGravity => true;
+    protected float sleepVelocityThreshold;
 
 
     protected virtual void Awake()
@@ -29,7 +32,8 @@ public partial class MovementHandler : MonoBehaviour
 
         rb = GetComponent<Rigidbody>();
         rb.linearDamping = 0;
-        rb.useGravity = false;
+        rb.useGravity = UsesNativeGravity;
+        sleepVelocityThreshold = Mathf.Sqrt(2f * rb.sleepThreshold);
 
         RegisterToEvents();
     }
@@ -71,9 +75,10 @@ public partial class MovementHandler : MonoBehaviour
             UpdateMovement();
     }
 
-    private void UpdateMovement()
+    protected virtual void UpdateMovement()
     {
-        ApplyGravity();
+        if (!UsesNativeGravity)
+            ApplyGravity();
 
         if (actionState.CurGroundedState == GroundedState.Grounded)
             UpdateGroundedMovement();
@@ -138,6 +143,9 @@ public partial class MovementHandler : MonoBehaviour
 
     protected void DeccelerateGroundedMovement()
     {
+        if (UsesNativeGravity && Mathf.Abs(rb.linearVelocity.x) <= sleepVelocityThreshold)
+            return;
+
         //Positive Decceleration
         if (rb.linearVelocity.x > 0)
         {

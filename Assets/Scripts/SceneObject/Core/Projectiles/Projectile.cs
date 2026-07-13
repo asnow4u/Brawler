@@ -5,7 +5,6 @@ using UnityEngine;
 [RequireComponent(typeof(ProjectileHurtBoxHandler))]
 public class Projectile : SceneObject
 {
-    private Rigidbody rb;
     private ProjectileHitBoxHandler hitBoxHandler;
 
     [SerializeField] private float lifetime = 5f;

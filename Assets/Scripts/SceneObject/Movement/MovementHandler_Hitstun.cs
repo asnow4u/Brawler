@@ -43,6 +43,9 @@ public partial class MovementHandler
         if (isSplatHolding)
             EndBounceSplat();
 
+        if (UsesNativeGravity)
+            rb.useGravity = state == HitStunState.Null;
+
         switch (state)
         {
             case HitStunState.Pause:

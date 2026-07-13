@@ -436,6 +436,8 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
 
     #region Gravity
 
+    protected override bool UsesNativeGravity => false;
+
     protected override void ApplyGravity()
     {
         if (isLedgeClimbing)
@@ -456,6 +458,13 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
     }
 
     #endregion
+
+
+    protected override void UpdateMovement()
+    {
+        base.UpdateMovement();
+        UpdateJumpSquat();
+    }
 
 
     #region Ground Movement
@@ -493,8 +502,6 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
                 UpdateGroundedAcceleration();
                 break;
         }
-
-        UpdateJumpSquat();
     }    
 
     private void UpdateGroundedAcceleration()
