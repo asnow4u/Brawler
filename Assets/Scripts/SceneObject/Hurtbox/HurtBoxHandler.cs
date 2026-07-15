@@ -5,13 +5,10 @@ using UnityEngine;
 
 [RequireComponent(typeof(ISceneObject))]
 [RequireComponent(typeof(Rigidbody))]
-[RequireComponent(typeof(Collider))]
 public abstract class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxHandlerEditor
 {
     private ISceneObject sceneObject;
     protected Rigidbody rb;
-    protected Collider physicalCollider;
-
     //Hurt boxs
     protected IHurtBox[] hurtBoxes;
 
@@ -22,7 +19,7 @@ public abstract class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxH
     [SerializeField] protected float damageTaken = 0;
     
     [Header("Knockback")]
-    [Tooltip("Base knockback force applied to any hit (before mass division). Sets the minimum-feel velocity at 0% damage.")]
+    [Tooltip("Base knockback force applied to any attack (before mass division). Sets the minimum-feel velocity at 0% damage.")]
     [SerializeField] private float baseForce = 1200f;
     [Tooltip("Exponential growth of damage-scaled knockback. Lower = smoother curve, higher = sharper ramp at high damage.")]
     [SerializeField] private float exGrowth = 2.0f;
@@ -36,7 +33,6 @@ public abstract class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxH
     {
         sceneObject = GetComponent<ISceneObject>();        
         rb = GetComponent<Rigidbody>();
-        physicalCollider = GetComponent<Collider>();
         lastHitBy = new List<Guid>();
 
         //Get hurtboxs
@@ -76,14 +72,19 @@ public abstract class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxH
 
         //Damage and Knockback
         damageTaken += hitData.Damage;
-        knockBackVelocity = CalculateKnockbackVelocity(hitData.Influence, damageTaken, hitData.LauchAngle, rb.mass);
+
+        float hitBaseForce = hitData is SceneObjectCollisionHitData collisionHitData
+            ? collisionHitData.BaseForce
+            : baseForce;
+
+        knockBackVelocity = CalculateKnockbackVelocity(hitData.Influence, damageTaken, hitData.LauchAngle, rb.mass, hitBaseForce);
 
         OnHitEvent?.Invoke(new KnockBackHitData(knockBackVelocity, hitData));
     }
 
-    private Vector3 CalculateKnockbackVelocity(float influence, float totalDamage, float launchAngle, float mass)
+    private Vector3 CalculateKnockbackVelocity(float influence, float totalDamage, float launchAngle, float mass, float hitBaseForce)
     {
-        float force = baseForce + influence * Mathf.Pow(totalDamage, exGrowth) * damageForceScale;
+        float force = hitBaseForce + influence * Mathf.Pow(totalDamage, exGrowth) * damageForceScale;
         float velocity = force / mass;
 
         float xLaunch = Mathf.Cos(launchAngle * Mathf.Deg2Rad);

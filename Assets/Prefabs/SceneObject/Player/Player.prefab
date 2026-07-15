@@ -58,7 +58,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   uniqueIDString: 
-  ObjectType: 0
+  objectType: 0
 --- !u!136 &921727941412718673
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -122,7 +122,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   curGroundedState: 0
-  curClimbState: 0
   curActionState: -1
   curIdleState: -1
 --- !u!114 &3074049245580660797
@@ -167,6 +166,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 33124b1ec40121640b92aa78dda47442, type: 3}
   m_Name: 
   m_EditorClassIdentifier: SceneObject.Movement::MovementHandler
+  travelDragSetup: 0.95
+  travelDragFinisher: 0.995
+  recoveryDrag: 0.98
+  hitStunPhysicsMaterial: {fileID: 13400000, guid: 5d9051d2f8d00464db5f82892d0cc82d, type: 2}
+  bounceDegrade: 0.9
+  minBounceVelocity: 0.9
+  splatVelocityThreshold: 15
+  splatHoldDuration: 0.1
   curMovementState: 0
   horizontalDeadzone: 0.1
   horizontalInfluence: 0
@@ -176,18 +183,12 @@ MonoBehaviour:
   jumpInfluence: 0
   isClimbSliding: 0
   ledgeClimbDuration: 0.2
-  dashInfluenceThreshold: 0.5
-  dashInitiationSpeedScaler: 0.5
-  travelDragSetup: 0.95
-  travelDragFinisher: 0.995
-  recoveryDrag: 0.98
+  movementBufferWindow: 0.1
   maxDIAngle: 15
   maxDriftSpeed: 2.5
   driftAccel: 8
-  bounceDegrade: 0.9
-  minBounceVelocity: 0.9
-  splatVelocityThreshold: 15
-  splatHoldDuration: 0.1
+  dashInfluenceThreshold: 0.5
+  dashInitiationSpeedScaler: 0.5
 --- !u!114 &6716222281940265772
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -201,6 +202,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: SceneObject.Attack::AttackHandler
   curAttackState: 0
+  attackBufferWindow: 0.1
 --- !u!114 &4056948102680156576
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -214,8 +216,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: SceneObject.Hitbox::HitBoxHandler
   sceneObjectRoot: {fileID: 7033079157145306446}
-  minSceneObjectHitLaunchAngle: 70
-  maxSceneObjectHitLaunchAngle: 30
+  minRelativeHitSpeed: 4
+  momentumForceScale: 0.6
+  killMomentum: 5000
+  deflectionWeight: 0.35
   minSceneObjectHitDamage: 2
   maxSceneObjectHitDamage: 20
   sceneObjectHitStunTime: 0.1

@@ -370,8 +370,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: SceneObject.HitBox::SOHitBoxHandler
   sceneObjectRoot: {fileID: 539879519035582310}
-  minSceneObjectHitLaunchAngle: 70
-  maxSceneObjectHitLaunchAngle: 30
+  minRelativeHitSpeed: 4
+  momentumForceScale: 0.6
+  killMomentum: 5000
+  deflectionWeight: 0.35
   minSceneObjectHitDamage: 2
   maxSceneObjectHitDamage: 20
   sceneObjectHitStunTime: 0.1
@@ -410,6 +412,7 @@ MonoBehaviour:
   travelDragSetup: 0.95
   travelDragFinisher: 0.995
   recoveryDrag: 0.98
+  hitStunPhysicsMaterial: {fileID: 13400000, guid: 5d9051d2f8d00464db5f82892d0cc82d, type: 2}
   bounceDegrade: 0.9
   minBounceVelocity: 0.9
   splatVelocityThreshold: 15

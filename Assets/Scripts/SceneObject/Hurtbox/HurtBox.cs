@@ -13,6 +13,10 @@ internal class HurtBox : MonoBehaviour, IHurtBox
     private ISceneObject sceneObject;
     private Guid ownerID;
     public Guid OwnerID => ownerID;
+
+    private Rigidbody ownerRigidbody;
+    public Vector3 Velocity => ownerRigidbody != null ? ownerRigidbody.linearVelocity : Vector3.zero;
+
     public event Action<HitData> OnHitEvent;
 
     private void Awake()
@@ -25,6 +29,10 @@ internal class HurtBox : MonoBehaviour, IHurtBox
         sceneObject = GetComponentInParent<ISceneObject>();
         if (sceneObject == null)
             Debug.LogError("SceneObject not found as a parent to " + gameObject.name, gameObject);
+
+        ownerRigidbody = GetComponentInParent<Rigidbody>();
+        if (ownerRigidbody == null)
+            Debug.LogError("Rigidbody not found as a parent to " + gameObject.name, gameObject);
     }
 
     private void Start()

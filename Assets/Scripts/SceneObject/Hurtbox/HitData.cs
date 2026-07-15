@@ -53,6 +53,26 @@ public class SceneObjectHitData : HitData
 }
 
 
+public class SceneObjectCollisionHitData : SceneObjectHitData
+{
+    //Momentum-derived stand-in for HurtBoxHandler's baseForce
+    public float BaseForce;
+
+    public SceneObjectCollisionHitData(Guid sceneObjectAttackerID, float baseForce, HitData hitData) : base(sceneObjectAttackerID, hitData)
+    {
+        BaseForce = baseForce;
+    }
+
+    public override string ToString()
+    {
+        string str = base.ToString() +
+            "\nBaseForce: " + BaseForce;
+
+        return str;
+    }
+}
+
+
 public class KnockBackHitData : HitData
 {
     public Vector3 KnockBackVelocity;

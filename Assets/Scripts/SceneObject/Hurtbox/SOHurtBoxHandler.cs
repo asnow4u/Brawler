@@ -118,7 +118,6 @@ public class SOHurtBoxHandler : HurtBoxHandler, ISOHurtBoxHandler
 
         if (newState == HitStunState.Null)
         {
-            physicalCollider.enabled = true;
             actionState.ChangeState(ActionState.Idle);
 
             lastHitBy.Clear();
@@ -130,7 +129,6 @@ public class SOHurtBoxHandler : HurtBoxHandler, ISOHurtBoxHandler
         }
         else
         {
-            physicalCollider.enabled = false;
             actionState.ChangeState(ActionState.HitStun);
         }
 

@@ -64,6 +64,7 @@ public class AttackHitBoxHandler : HitBoxHandler
     private void OnActionStateChanged(ActionState state)
     {
         DisableHitboxs();
+        ClearHitRecord();
 
         if (weaponSwingEffect != null)
             weaponSwingEffect.Stop();
@@ -110,6 +111,7 @@ public class AttackHitBoxHandler : HitBoxHandler
 
             case AnimationEventState.DisableHitbox:
                 DisableHitboxs();
+                ClearHitRecord();
                 break;
 
             case AnimationEventState.AttackEnded:

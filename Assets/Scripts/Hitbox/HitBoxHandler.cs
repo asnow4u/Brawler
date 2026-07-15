@@ -49,7 +49,10 @@ public abstract class HitBoxHandler : MonoBehaviour, IHitBoxHandler
             hitbox.DeactivateHitBox();
             hitbox.OnCollisionEntered -= OnHit;            
         }
+    }
 
+    protected void ClearHitRecord()
+    {
         sceneObjectsHit.Clear();
     }
 

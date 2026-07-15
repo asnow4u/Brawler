@@ -29,6 +29,7 @@ public class ProjectileHitBoxHandler : HitBoxHandler
     public void SetHitData(HitData hitData)
     {
         baseHitData = hitData;
+        ClearHitRecord();
         EnableHitBoxs();
     }    
 

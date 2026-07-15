@@ -5,6 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(StatHandler))]
 [RequireComponent(typeof(HurtBoxHandler))]
 [RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(Collider))]
 public partial class MovementHandler : MonoBehaviour
 {
     protected ISceneObject sceneObject;
@@ -13,6 +14,7 @@ public partial class MovementHandler : MonoBehaviour
     protected ISOHurtBoxHandler hurtBoxHandler;
 
     protected Rigidbody rb;
+    protected Collider col;
     
     protected MovementStatData curMovementData = null;
     
@@ -29,11 +31,15 @@ public partial class MovementHandler : MonoBehaviour
         actionState = GetComponent<IActionState>();
         statHandler = GetComponent<IStats>();
         hurtBoxHandler = GetComponent<ISOHurtBoxHandler>();
-
+        
         rb = GetComponent<Rigidbody>();
         rb.linearDamping = 0;
         rb.useGravity = UsesNativeGravity;
         sleepVelocityThreshold = Mathf.Sqrt(2f * rb.sleepThreshold);
+
+        col = GetComponent<Collider>();
+
+        InitHitStunCollision();
 
         RegisterToEvents();
     }
@@ -73,6 +79,8 @@ public partial class MovementHandler : MonoBehaviour
             UpdateHitStunMovement();
         else
             UpdateMovement();
+
+        preSolveVelocity = rb.linearVelocity;
     }
 
     protected virtual void UpdateMovement()

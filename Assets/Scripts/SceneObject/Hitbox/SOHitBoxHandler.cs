@@ -23,18 +23,22 @@ public class SOHitBoxHandler : HitBoxHandler
     [Header("SceneObject Collision")]
     [Tooltip("The root of the sceneObject that will be used to find all sceneObject based hitboxs")]
     [SerializeField] private GameObject sceneObjectRoot;
-    [Tooltip("The minimum launch angle that can be applied to a sceneObject hit by this sceneObject." +
-        "\nThis is used when this sceneObject is moving slowly, poping the collided sceneObject more up")]
-    [SerializeField] private float minSceneObjectHitLaunchAngle = 70f;
-    [Tooltip("The maximum launch angle that can be applied to a sceneObject hit by this sceneObject." +
-        "\nThis is used when this sceneObject is moving quickly, pushing the collided sceneObject more horizontally")]
-    [SerializeField] private float maxSceneObjectHitLaunchAngle = 30f;
-    [Tooltip("The minimum damage that can be applied to a sceneObject hit by this sceneObject." +
-        "\nThis is used when this sceneObject is moving slowly and/or has low mass, dealing less damage")]
-    [SerializeField] private float minSceneObjectHitDamage = 2f;
-    [Tooltip("The maximum damage that can be applied to a sceneObject hit by this sceneObject." +
-        "\nThis is used when this sceneObject is moving quickly and/or has high mass, dealing more damage")]
-    [SerializeField] private float maxSceneObjectHitDamage = 20f;
+    [Tooltip("Momentum below which no hit registers at all." +
+        "\nThis is a gate, not a floor - objects drifting together aren't colliding and shouldn't trade hits.")]
+    [SerializeField] private float minHitMomentum = 600f;
+    [Tooltip("Converts this sceneObject's momentum into knockback force. (How much of the velocity carries into the target)")]
+    [SerializeField] private float momentumForceScale = 0.45f;
+    [Tooltip("Momentum at which a collision reaches full influence (kill power).")]
+    [SerializeField] private float killMomentum = 7000f;
+    [Tooltip("Converts momentum into damage dealt.")]
+    [SerializeField] private float damageScale = 0.0025f;
+    [Tooltip("How far the launch angle bends from the incoming trajectory toward the contact geometry.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float deflectionWeight = 0.35f;
+    [Tooltip("The minimum damage that can be applied to a sceneObject hit by this sceneObject.")]
+    [SerializeField] private float minSceneObjectHitDamage = 1f;
+    [Tooltip("The maximum damage that can be applied to a sceneObject hit by this sceneObject.")]
+    [SerializeField] private float maxSceneObjectHitDamage = 10f;
     [SerializeField] private float sceneObjectHitStunTime = 0.1f;
 
     private MovementStatData movementStatData;
@@ -96,6 +100,9 @@ public class SOHitBoxHandler : HitBoxHandler
             EnableHitBoxs();
         else
             DisableHitboxs();
+
+        if (state == HitStunState.Null)
+            ClearHitRecord();
     }    
 
     protected override void OnHit(IHitBox hitBox, IHurtBox hurtBox, Vector3 hitPoint)
@@ -105,20 +112,51 @@ public class SOHitBoxHandler : HitBoxHandler
             hurtBoxHandler.LastHitBy.Contains(hurtBox.OwnerID))
             return;
 
+        Vector3 relativeVelocity = rb.linearVelocity - hurtBox.Velocity;
+        relativeVelocity.z = 0;
+
+        //Momentum, not speed. Launch velocity is force/mass, so an object's momentum after being
+        //hit equals the attack's force whatever it weighs - the mass cancels. Every knob below
+        //therefore calibrates against the attack force scale once and holds for any object.
+        float momentum = rb.mass * relativeVelocity.magnitude;
+        if (momentum < minHitMomentum)
+            return;
+
         sceneObjectsHit.Add(hurtBox.OwnerID);
 
         animationHandler.PauseAnimation(sceneObjectHitStunTime);
 
-        float t = Mathf.Clamp01(rb.linearVelocity.x / movementStatData.MaxAerialXVelocity);
-        float launchAngle = Mathf.Lerp(minSceneObjectHitLaunchAngle, maxSceneObjectHitLaunchAngle, t);
-        if (rb.linearVelocity.x < 0)
-            launchAngle = 180 - launchAngle;
+        float baseForce = momentum * momentumForceScale;
+        float influence = Mathf.Clamp01(momentum / killMomentum);
+        float damage = Mathf.Clamp(momentum * damageScale, minSceneObjectHitDamage, maxSceneObjectHitDamage);
 
-        float speed = rb.linearVelocity.magnitude;
-        float damage = rb.mass * speed * speed;
-        damage = Mathf.Clamp(damage, minSceneObjectHitDamage, maxSceneObjectHitDamage);
+        float launchAngle = CalculateDeflectionAngle(relativeVelocity, hitPoint);
 
-        HitData hitData = new HitData(0f, launchAngle, damage, sceneObjectHitStunTime, hitPoint, 0);
-        hurtBox.Hit(new SceneObjectHitData(sceneObject.UniqueID, hitData));
+        HitData hitData = new HitData(influence, launchAngle, damage, sceneObjectHitStunTime, hitPoint, 0);
+        hurtBox.Hit(new SceneObjectCollisionHitData(sceneObject.UniqueID, baseForce, hitData));
+    }
+
+    private float CalculateDeflectionAngle(Vector3 relativeVelocity, Vector3 hitPoint)
+    {
+        Vector3 incomingDirection = relativeVelocity.normalized;
+
+        Vector3 contactNormal = hitPoint - rb.worldCenterOfMass;
+        contactNormal.z = 0;
+
+        //A contact sitting on the centre of mass gives no usable normal; fall back to trajectory
+        if (contactNormal.sqrMagnitude < 1e-6f)
+            return ToAngle(incomingDirection);
+
+        Vector3 launchDirection = Vector3.Slerp(incomingDirection, contactNormal.normalized, deflectionWeight);
+        return ToAngle(launchDirection);
+    }
+
+    private static float ToAngle(Vector3 direction)
+    {
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        if (angle < 0f)
+            angle += 360f;
+
+        return angle;
     }
 }
