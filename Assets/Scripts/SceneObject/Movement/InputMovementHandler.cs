@@ -144,10 +144,13 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
         actionState.ActionStateChangedEvent -= OnActionStateChanged;
         actionState.GroundedStateChangedEvent -= OnGroundedStateChanged;
 
-        movementInput.MovementPerformedEvent -= SetMovementInfluence;
-        movementInput.MovementStoppedEvent -= ResetMovementInfluence;
-        movementInput.JumpPerformedEvent -= SetJumpInfluence;
-        movementInput.JumpStoppedEvent -= ResetJumpInfluence;
+        if (movementInput != null)
+        {
+            movementInput.MovementPerformedEvent -= SetMovementInfluence;
+            movementInput.MovementStoppedEvent -= ResetMovementInfluence;
+            movementInput.JumpPerformedEvent -= SetJumpInfluence;
+            movementInput.JumpStoppedEvent -= ResetJumpInfluence;            
+        }
     
         base.UnregisterFromEvents();
     }

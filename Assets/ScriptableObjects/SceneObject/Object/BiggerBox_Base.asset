@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e482dae485748046b5d0bafe4990f98, type: 3}
+  m_Name: BiggerBox_Base
+  m_EditorClassIdentifier: 
+  Mass: 200
+  GroundedMaxVelocity: 15
+  GroundedDecceleration: 50
+  AerialMaxXVelocity: 10
+  AerialXDecceleration: 100
+  AerialMaxRisingVelocity: 25
+  AerialRisingDecceleration: 100
+  AerialMaxFallVelocity: 25
+  GravityRaising: 30
+  GravityFalling: 30
+  GravityFastFalling: 45
+  GravityHitStunTravel: 24.5
+  GravityHitStunRecovery: 11
+  AnimationCollection: {fileID: 11400000, guid: d6018480326895f4ca5aa234440926e3, type: 2}
+  MovementCollection: {fileID: 0}

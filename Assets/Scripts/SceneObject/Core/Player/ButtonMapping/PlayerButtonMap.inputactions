@@ -120,7 +120,7 @@
                 {
                     "name": "",
                     "id": "b24c037f-d84b-47c8-b3fe-fdab4fb0766c",
-                    "path": "<XInputController>/leftStick",
+                    "path": "<Gamepad>/leftStick",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -186,7 +186,7 @@
                 {
                     "name": "",
                     "id": "8f8e713a-1685-4d7c-9dd8-0b01ac02b954",
-                    "path": "<XInputController>/rightStick",
+                    "path": "<Gamepad>/rightStick",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -219,7 +219,18 @@
                 {
                     "name": "",
                     "id": "1e9ccae7-1d70-4b1b-8e4a-af5cddf4ef7b",
-                    "path": "<XInputController>/rightShoulder",
+                    "path": "<Gamepad>/rightShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Jump",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "5b7cf84a-6abd-4b6c-8b5f-86f7a4d4996f",
+                    "path": "<Gamepad>/buttonSouth",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -252,7 +263,7 @@
                 {
                     "name": "",
                     "id": "f3c37810-9fab-4ef7-8dc6-b0e2b91d257e",
-                    "path": "<XInputController>/buttonWest",
+                    "path": "<Gamepad>/buttonWest",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
