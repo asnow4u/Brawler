@@ -15,9 +15,12 @@ MonoBehaviour:
   AnimationData:
     Animation: {fileID: 7400000, guid: 9cc183c22403ee54595c802963aa26e0, type: 2}
     AnimationSpeed: 1
-  WaveLandVelocityScaler: 1.1
-  WaveLandDuration: 0.02
-  InitialDashVelocityScaler: 1.1
-  InitalDashDuration: 0.02
-  HorizontalDashVelocity: 1.1
-  HorizontalDashDuration: 0.1
+  WaveLandVelocity: 30
+  WaveLandDuration: 0.05
+  InitialDashVelocity: 20
+  InitalDashDuration: 0.05
+  InputDashVelocity: 20
+  InputDashDuration: 0.1
+  HorizontalEndDashVelocity: 15
+  VerticalEndDashVelocity: 8
+  DashSpeedHoldPercentage: 0.9

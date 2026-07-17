@@ -14,6 +14,8 @@ public abstract class SceneObject : MonoBehaviour, ISceneObject
     private Collider col;
     protected Rigidbody rb;
 
+    private bool beingDestroyed = false;
+
     #region Getters        
     
     public Guid UniqueID => uniqueID;   
@@ -34,6 +36,11 @@ public abstract class SceneObject : MonoBehaviour, ISceneObject
 
         col = GetComponent<Collider>();
     }    
+
+    protected virtual void OnDestroy()
+    {
+        beingDestroyed = true;
+    }
 
     #endregion
 
@@ -217,7 +224,8 @@ public abstract class SceneObject : MonoBehaviour, ISceneObject
 
     public void Log(string log)
     {
-        Debug.Log($"({ObjectType}) {gameObject.name}: {log}", gameObject);
+        if (!beingDestroyed)
+            Debug.Log($"({ObjectType}) {gameObject.name}: {log}", gameObject);
     }
 
     #endregion

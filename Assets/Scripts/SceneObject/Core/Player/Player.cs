@@ -11,6 +11,7 @@ internal class Player : SceneObject, IMovementInput, IAttackInput, IInteractionI
     public event Action MovementStoppedEvent;
     public event Action<float> JumpPerformedEvent;
     public event Action JumpStoppedEvent;
+    public event Action DashPerformedEvent;
 
     //Attack
     private const float ATTACK_INPUT_THRESHOLD = 0.7f;
@@ -38,6 +39,7 @@ internal class Player : SceneObject, IMovementInput, IAttackInput, IInteractionI
         inputHandler.input.PlayerActions.Movement.canceled += MovementCanceled;
         inputHandler.input.PlayerActions.Jump.performed += JumpInput;
         inputHandler.input.PlayerActions.Jump.canceled += JumpCanceled;
+        inputHandler.input.PlayerActions.Dash.performed += DashInput;
 
         inputHandler.input.PlayerActions.Attack.performed += AttackInput;
         inputHandler.input.PlayerActions.Attack.canceled += AttackCanceled;
@@ -77,6 +79,11 @@ internal class Player : SceneObject, IMovementInput, IAttackInput, IInteractionI
     private void JumpCanceled(InputAction.CallbackContext obj)
     {
         JumpStoppedEvent?.Invoke();
+    }
+
+    private void DashInput(InputAction.CallbackContext obj)
+    {
+        DashPerformedEvent?.Invoke();
     }
 
     #endregion

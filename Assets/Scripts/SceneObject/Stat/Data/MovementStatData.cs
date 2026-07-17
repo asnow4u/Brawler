@@ -19,12 +19,15 @@ public class MovementStatData
     public float GroundedAttackDecceleration;
 
     //Dash Movement
-    public float WaveLandDashVelocityScaler;
+    public float WaveLandDashVelocity;
     public float WaveLandDashDuration;
-    public float InitialDashVelocityScaler;
+    public float InitialDashVelocity;
     public float InitialDashDuration;
-    public float HorizontalDashVelocity;
-    public float HorizontalDashDuration;
+    public float InputDashVelocity;
+    public float InputDashDuration;
+    public float HorizontalEndDashVelocity;
+    public float VerticalEndDashVelocity;
+    public float DashSpeedHoldPercentage;
 
     //Aerial Movement
     public float MaxAerialXVelocity;

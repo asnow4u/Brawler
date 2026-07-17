@@ -70,10 +70,6 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
     private bool aerialMovementAllowed => curMovementData.AerialMovementValid &&
                                           (horizontalInfluence != 0 || verticalInfluence != 0) &&
                                           actionState.CurActionState <= ActionState.Attacking;
-    private bool dashMovementAllowed => curMovementData.DashValid &&
-                                        horizontalInfluence != 0 &&
-                                        isLedgeClimbing == false &&
-                                        actionState.CurActionState <= ActionState.Moving;
     private bool jumpMovementAllowed => curMovementData.GroundedJumpValid &&
                                         jumpRequested &&
                                         jumpInputAvailable &&
@@ -135,6 +131,7 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
         movementInput.MovementStoppedEvent += ResetMovementInfluence;
         movementInput.JumpPerformedEvent += SetJumpInfluence;
         movementInput.JumpStoppedEvent += ResetJumpInfluence;
+        movementInput.DashPerformedEvent += StartInputDash;
 
         base.RegisterToEvents();
     }
@@ -149,7 +146,8 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
             movementInput.MovementPerformedEvent -= SetMovementInfluence;
             movementInput.MovementStoppedEvent -= ResetMovementInfluence;
             movementInput.JumpPerformedEvent -= SetJumpInfluence;
-            movementInput.JumpStoppedEvent -= ResetJumpInfluence;            
+            movementInput.JumpStoppedEvent -= ResetJumpInfluence;
+            movementInput.DashPerformedEvent -= StartInputDash;          
         }
     
         base.UnregisterFromEvents();
@@ -168,6 +166,7 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
         if (groundedState == GroundedState.Grounded)
         {
             airJumpsPerformed = 0;
+            RefreshDash();
             StartWaveLanding();
         }
         else if (groundedState == GroundedState.Airborn)
@@ -279,7 +278,7 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
         verticalInfluence = 0;
     }
 
-    public void SetJumpInfluence(float inputInfluence)
+    private void SetJumpInfluence(float inputInfluence)
     {
         if (inputInfluence < jumpDeadzone)
             return;
@@ -372,8 +371,21 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
         if (isJumpingSquating || isLedgeClimbing)
             return;
 
+        if (isDashing)
+        {
+            if (aerialJumpMovementAllowed)
+            {
+                SetCurrentMoveState(MovementState.AirJump);
+                if (curMovementState == MovementState.AirJump)
+                {
+                    EndDash();
+                    StartJump();
+                }
+            }
+        }
+
         //Coyote Time Jump
-        if (coyoteJumpMovementAllowed)
+        else if (coyoteJumpMovementAllowed)
         {
             SetCurrentMoveState(MovementState.GroundJump);
             if (curMovementState == MovementState.GroundJump)
@@ -406,7 +418,10 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
 
         //Wall Slide
         else if (wallSlideAllowed)
+        {
             SetCurrentMoveState(MovementState.WallSlide);
+            RefreshDash();
+        }
                        
         //Accelerate
         else if (aerialMovementAllowed)
@@ -443,7 +458,7 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
 
     protected override void ApplyGravity()
     {
-        if (isLedgeClimbing)
+        if (isLedgeClimbing || isDashing)
             return;
 
         base.ApplyGravity();        
@@ -568,6 +583,10 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
 
         switch (curMovementState)
         {
+            case MovementState.Dash:
+                UpdateDash();
+                break;
+
             case MovementState.LedgeClimb:
                 UpdateLedgeClimbMovement();
                 break;

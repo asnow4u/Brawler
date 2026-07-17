@@ -7,6 +7,7 @@ public interface IMovementInput
     public event Action MovementStoppedEvent;
     public event Action<float> JumpPerformedEvent;
     public event Action JumpStoppedEvent;
+    public event Action DashPerformedEvent;
 }
 
 public interface IAttackInput
