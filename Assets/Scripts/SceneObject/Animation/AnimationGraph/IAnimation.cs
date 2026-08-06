@@ -3,8 +3,7 @@ using UnityEngine;
 
 public interface IAnimation
 {
-    public float GetCurrentAnimationDelta();
-    public void PauseAnimation(float seconds);
+    public float GetCurrentAnimationDelta();    
 }
 
 

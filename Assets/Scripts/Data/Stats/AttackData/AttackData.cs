@@ -35,9 +35,15 @@ public class AttackData : ScriptableObject
         "\n 270 is down")]
     public float LaunchAngle;
 
-    [Tooltip("Amount of time(Sec) that attacker and target are stunned when hit." +
-        "\nThis helps add enphisis and weight to the attack.")]
+    [Tooltip("Amount of time(Sec) the attacker's animation freezes when this attack connects." +
+        "\nThis is a feel knob - it adds emphasis and weight to the attack." +
+        "\nHeavier attacks want a longer pause. Typical range is 0.05 - 0.15.")]
     public float HitPauseTime = 0.1f;
+
+    [Tooltip("Amount of time(Sec) the target is held in hitstun after being hit by this attack." +
+        "\nThis is the combo timing knob - it decides whether a follow up can connect" +
+        "\nbefore the target recovers. Setups want longer stun than their own recovery.")]
+    public float HitStunTime = 0.1f;
 
 
     #region Editor Updating

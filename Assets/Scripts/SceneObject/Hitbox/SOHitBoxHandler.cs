@@ -9,13 +9,11 @@ using static AttackStatData;
 [RequireComponent(typeof(ActionStateHandler))]
 [RequireComponent(typeof(StatHandler))]
 [RequireComponent(typeof(HurtBoxHandler))]
-[RequireComponent(typeof(AnimationHandler))]
 public class SOHitBoxHandler : HitBoxHandler
 {
     private ISceneObject sceneObject;
     private IActionState actionState;
     private IStats statHandler;
-    private IAnimation animationHandler;
     private ISOHurtBoxHandler hurtBoxHandler;
     
 
@@ -48,7 +46,6 @@ public class SOHitBoxHandler : HitBoxHandler
         sceneObject = GetComponent<ISceneObject>();
         actionState = GetComponent<IActionState>();
         statHandler = GetComponent<IStats>();
-        animationHandler = GetComponent<IAnimation>();
         hurtBoxHandler = GetComponent<ISOHurtBoxHandler>();
 
         base.Awake();
@@ -122,9 +119,7 @@ public class SOHitBoxHandler : HitBoxHandler
         if (momentum < minHitMomentum)
             return;
 
-        sceneObjectsHit.Add(hurtBox.OwnerID);
-
-        animationHandler.PauseAnimation(sceneObjectHitStunTime);
+        sceneObjectsHit.Add(hurtBox.OwnerID);      
 
         float baseForce = momentum * momentumForceScale;
         float influence = Mathf.Clamp01(momentum / killMomentum);
@@ -132,8 +127,10 @@ public class SOHitBoxHandler : HitBoxHandler
 
         float launchAngle = CalculateDeflectionAngle(relativeVelocity, hitPoint);
 
-        HitData hitData = new HitData(influence, launchAngle, damage, sceneObjectHitStunTime, hitPoint, 0);
-        hurtBox.Hit(new SceneObjectCollisionHitData(sceneObject.UniqueID, baseForce, hitData));
+        HitData baseHitData = new HitData(influence, launchAngle, damage, sceneObjectHitStunTime, hitPoint, 0);
+        SceneObjectCollisionHitData collisionHitData = new SceneObjectCollisionHitData(sceneObject.UniqueID, baseForce, baseHitData);
+
+        DeclareHit(new HitBoxConnectedData(sceneObjectHitStunTime), hurtBox, collisionHitData);
     }
 
     private float CalculateDeflectionAngle(Vector3 relativeVelocity, Vector3 hitPoint)

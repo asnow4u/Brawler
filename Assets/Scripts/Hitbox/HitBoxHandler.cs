@@ -9,6 +9,9 @@ public abstract class HitBoxHandler : MonoBehaviour, IHitBoxHandler
     protected IHitBox[] hitboxs;  
     protected HashSet<Guid> sceneObjectsHit = new HashSet<Guid>();
 
+    public event Action<HitBoxConnectedData> OnHitConnected;
+
+
     protected virtual void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -35,15 +38,24 @@ public abstract class HitBoxHandler : MonoBehaviour, IHitBoxHandler
 
     protected virtual void EnableHitBoxs()
     {
+        if (hitboxs == null)
+            return;
+
         foreach (IHitBox hitbox in hitboxs)
         {
             hitbox.ActivateHitBox();
+
+            //Detach first so a second enable without an intervening disable cannot double subscribe
+            hitbox.OnCollisionEntered -= OnHit;
             hitbox.OnCollisionEntered += OnHit;    
         }
     }
 
     protected virtual void DisableHitboxs()
     {
+        if (hitboxs == null)
+            return;
+
         foreach (IHitBox hitbox in hitboxs)
         {
             hitbox.DeactivateHitBox();
@@ -57,4 +69,11 @@ public abstract class HitBoxHandler : MonoBehaviour, IHitBoxHandler
     }
 
     protected abstract void OnHit(IHitBox hitBox, IHurtBox hurtBox, Vector3 hitPoint);
+
+
+    protected void DeclareHit(HitBoxConnectedData hitBoxConnectedData, IHurtBox hurtBox, HitData hitData)
+    {
+        OnHitConnected?.Invoke(hitBoxConnectedData);
+        hurtBox.Hit(hitData);
+    }
 }

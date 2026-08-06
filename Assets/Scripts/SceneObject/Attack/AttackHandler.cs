@@ -1,10 +1,12 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using static AttackStatData;
 
 [RequireComponent(typeof(ISceneObject))]
 [RequireComponent(typeof(ActionStateHandler))]
 [RequireComponent(typeof(StatHandler))]
+[RequireComponent(typeof(AttackHitBoxHandler))]
 [RequireComponent(typeof(HurtBoxHandler))]
 [RequireComponent(typeof(Rigidbody))]
 public class AttackHandler : MonoBehaviour, IAttack
@@ -13,6 +15,7 @@ public class AttackHandler : MonoBehaviour, IAttack
     private IAttackInput attackInput;
     private IActionState actionState;   
     private IStats statHandler;
+    private IAttackHitBoxHandler attackHitBoxHandler;
     private ISOHurtBoxHandler hurtBoxHandler;
     private IAnimationEvent animationEventHandler;
     
@@ -49,6 +52,7 @@ public class AttackHandler : MonoBehaviour, IAttack
 
         actionState = GetComponent<IActionState>();
         statHandler = GetComponent<IStats>();
+        attackHitBoxHandler = GetComponent<IAttackHitBoxHandler>();
         hurtBoxHandler = GetComponent<ISOHurtBoxHandler>();
 
         movementHandler = GetComponent<IMovementAction>();
@@ -146,8 +150,50 @@ public class AttackHandler : MonoBehaviour, IAttack
 
             curAttackState = attackState;
             sceneObject.Log("Attack State: " + curAttackState);
+            
+            UpdateHitBox();
             AttackStateChangedEvent?.Invoke(curAttackState);
         }
+    }
+
+    private void UpdateHitBox()
+    {
+        
+        if (curAttackData == null)
+        {
+            attackHitBoxHandler.SetCurrentAttackStat(null);
+            return;
+        }
+
+        AttackStats attackStats = null;
+        switch (curAttackState)
+        {
+            case AttackState.UpTilt:
+                attackStats = curAttackData.UpTilt;
+                break;
+
+            case AttackState.ForwardTilt:
+                attackStats = curAttackData.ForwardTilt;
+                break;
+
+            case AttackState.DownTilt:
+                attackStats = curAttackData.DownTilt;
+                break;
+
+            case AttackState.UpAir:
+                attackStats = curAttackData.UpAir;
+                break;
+
+            case AttackState.ForwardAir:
+                attackStats = curAttackData.ForwardAir;
+                break;
+
+            case AttackState.DownAir:
+                attackStats = curAttackData.DownAir;
+                break;
+        }
+
+        attackHitBoxHandler.SetCurrentAttackStat(attackStats);
     }
 
     #endregion

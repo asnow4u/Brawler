@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using static AttackStatData;
@@ -5,19 +6,16 @@ using static AttackStatData;
 [RequireComponent(typeof(ISceneObject))]
 [RequireComponent(typeof(ActionStateHandler))]
 [RequireComponent(typeof(StatHandler))]
-[RequireComponent(typeof(AnimationHandler))]
-[RequireComponent(typeof(AttackHandler))]
-public class AttackHitBoxHandler : HitBoxHandler
+public class AttackHitBoxHandler : HitBoxHandler, IAttackHitBoxHandler
 {
     private ISceneObject sceneObject;
     private IActionState actionState;
     private IStats statHandler;
-    private IAnimation animationHandler;
     private IAnimationEvent animationEventHandler;
-    private IAttack attackHandler;
 
-    private ParticleSystem weaponSwingEffect;
-    private Dictionary<AttackState, AttackStats> weaponAttackDatas = null;    
+    private AttackStats curAttackStats;
+    private ParticleSystem weaponSwingEffect;    
+
 
     protected override void Awake()
     {
@@ -31,8 +29,6 @@ public class AttackHitBoxHandler : HitBoxHandler
 
         actionState = GetComponent<IActionState>();
         statHandler = GetComponent<IStats>();
-        animationHandler = GetComponent<IAnimation>();
-        attackHandler = GetComponent<IAttack>();
 
         base.Awake();
     }
@@ -72,28 +68,24 @@ public class AttackHitBoxHandler : HitBoxHandler
 
     private void OnAttackStatsChanged(AttackStatData data)
     {
+        DisableHitboxs();
+        ClearHitRecord();
+
+        if (weaponSwingEffect != null)
+            weaponSwingEffect.Stop();
+
         if (data == null || data.WeaponRootGameObject == null)
+        {
+            hitboxs = null;
+            weaponSwingEffect = null;
             return;
+        }
         
         hitboxs = data.WeaponRootGameObject.GetComponentsInChildren<IHitBox>(true);
         foreach (IHitBox hitbox in hitboxs)
             hitbox.SetOwner(sceneObject.UniqueID);
 
-        weaponSwingEffect = data.SwingEffect;
-        weaponAttackDatas = new Dictionary<AttackState, AttackStats>();
-
-        if (data.UpTilt != null)
-            weaponAttackDatas.Add(AttackState.UpTilt, data.UpTilt);
-        if (data.ForwardTilt != null)
-            weaponAttackDatas.Add(AttackState.ForwardTilt, data.ForwardTilt);
-        if (data.DownTilt != null)
-            weaponAttackDatas.Add(AttackState.DownTilt, data.DownTilt);
-        if (data.UpAir != null)
-            weaponAttackDatas.Add(AttackState.UpAir, data.UpAir);
-        if (data.ForwardAir != null)
-            weaponAttackDatas.Add(AttackState.ForwardAir, data.ForwardAir);
-        if (data.DownAir != null)
-            weaponAttackDatas.Add(AttackState.DownAir, data.DownAir);
+        weaponSwingEffect = data.SwingEffect;       
     }
 
     private void OnAnimationEventFired(AnimationEventState eventState)
@@ -121,26 +113,26 @@ public class AttackHitBoxHandler : HitBoxHandler
         }
     }
 
+    public void SetCurrentAttackStat(AttackStats attackStats)
+    {
+        curAttackStats = attackStats;
+    }
+
     protected override void OnHit(IHitBox hitBox, IHurtBox hurtBox, Vector3 hitPoint)
     {
-        if (attackHandler == null ||
-            attackHandler.CurAttackState == AttackState.Null || 
+        if (curAttackStats == null ||
             sceneObjectsHit.Contains(hurtBox.OwnerID))
             return;
 
         sceneObjectsHit.Add(hurtBox.OwnerID);
 
-        AttackStats curAttackStats = weaponAttackDatas[attackHandler.CurAttackState];
-
-        animationHandler.PauseAnimation(curAttackStats.HitStunTime);
-
-        float animationDelta = animationHandler.GetCurrentAnimationDelta();
-
         float launchAngle = curAttackStats.LaunchAngle;
         if (!sceneObject.IsFacingRightDirection)
             launchAngle = 180 - launchAngle;
 
-        HitData hitData = new HitData(curAttackStats.Influence, launchAngle, curAttackStats.Damage, curAttackStats.HitStunTime, hitPoint, curAttackStats.Type);
-        hurtBox.Hit(new SceneObjectHitData(sceneObject.UniqueID, hitData));
+        HitData baseHitData = new HitData(curAttackStats.Influence, launchAngle, curAttackStats.Damage, curAttackStats.HitStunTime, hitPoint, curAttackStats.Type);
+        SceneObjectHitData sceneObjectHitData = new SceneObjectHitData(sceneObject.UniqueID, baseHitData);
+
+        DeclareHit(new HitBoxConnectedData(curAttackStats.HitPauseTime), hurtBox, sceneObjectHitData);
     }
 }

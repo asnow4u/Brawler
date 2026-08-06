@@ -19,6 +19,7 @@ public class AnimationHandler : MonoBehaviour, IAnimation
 
     IMovementAction movementHandler;
     IAttack attackHandler;
+    IHitBoxHandler[] hitBoxHandlers;
 
     private Animator animator;
     private AnimationGraph animationGraph;
@@ -60,7 +61,7 @@ public class AnimationHandler : MonoBehaviour, IAnimation
         hurtBoxHandler = GetComponent<ISOHurtBoxHandler>();
         movementHandler = GetComponent<IMovementAction>();
         attackHandler = GetComponent<IAttack>();
-
+        hitBoxHandlers = GetComponents<IHitBoxHandler>();
         animationGraph = new AnimationGraph(animator, idleController, movementController, attackController, hitStunController);
         
         RegisterToEvents();
@@ -79,6 +80,12 @@ public class AnimationHandler : MonoBehaviour, IAnimation
         
         if (attackHandler != null)
             attackHandler.AttackStateChangedEvent += OnAttackStateChanged;
+
+        if (hitBoxHandlers != null)
+        {
+            foreach (IHitBoxHandler hitBoxHandler in hitBoxHandlers)
+                hitBoxHandler.OnHitConnected += OnHitConnected;
+        }
     }
 
     private void OnDestroy()
@@ -103,6 +110,12 @@ public class AnimationHandler : MonoBehaviour, IAnimation
 
         if (attackHandler != null)
             attackHandler.AttackStateChangedEvent -= OnAttackStateChanged;
+
+        if (hitBoxHandlers != null)
+        {
+            foreach (IHitBoxHandler hitBoxHandler in hitBoxHandlers)
+                hitBoxHandler.OnHitConnected -= OnHitConnected;
+        }
     }
 
     private void OnAnimationStatsChanged(AnimationStatData data)
@@ -149,7 +162,12 @@ public class AnimationHandler : MonoBehaviour, IAnimation
             return;
 
         animationGraph.ChangeHitStunStateInput(hitStunState);
-    }    
+    }
+
+    private void OnHitConnected(HitBoxConnectedData hitBoxConnectedData)
+    {
+        animationGraph.Pause(hitBoxConnectedData.hitPauseTime);
+    }
 
     #endregion
 
@@ -157,10 +175,5 @@ public class AnimationHandler : MonoBehaviour, IAnimation
     private void Update()
     {
         animationGraph.Update();
-    }
-
-    public void PauseAnimation(float seconds)
-    {
-        animationGraph.Pause(seconds);
     }
 }

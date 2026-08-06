@@ -123,10 +123,10 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: -40, y: -3}
-      - {x: 40, y: -3}
-      - {x: 40, y: 27}
-      - {x: -40, y: 27}
+    - - {x: -11.184511, y: -4.7254796}
+      - {x: 120.49829, y: -4.7405033}
+      - {x: 120.71585, y: 56.58856}
+      - {x: -10.846561, y: 56.370995}
   m_UseDelaunayMesh: 1
 --- !u!114 &7564468384267563778
 MonoBehaviour:
@@ -168,7 +168,7 @@ Transform:
   m_GameObject: {fileID: 2419654141160620901}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 6, z: -25}
+  m_LocalPosition: {x: 0, y: 6, z: -40}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -265,7 +265,7 @@ Transform:
   m_GameObject: {fileID: 3456567382298368752}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 3, z: -25}
+  m_LocalPosition: {x: 0, y: 3, z: -40}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -417,7 +417,7 @@ MonoBehaviour:
   m_TargetMovementOnly: 1
   m_ScreenX: 0.5
   m_ScreenY: 0.5
-  m_CameraDistance: 25
+  m_CameraDistance: 40
   m_DeadZoneWidth: 0
   m_DeadZoneHeight: 0
   m_DeadZoneDepth: 0
@@ -630,7 +630,7 @@ Transform:
   m_GameObject: {fileID: 7012083545561022948}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 3.69873, z: -25}
+  m_LocalPosition: {x: 2.2278433, y: 2.9969099, z: -40}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

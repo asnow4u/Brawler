@@ -12,6 +12,11 @@ public class AttackStatData
         public AnimationClip Animation;
         public float Influence;
         public float LaunchAngle;
+
+        //Attacker side - how long this object's animation freezes on connect
+        public float HitPauseTime;
+
+        //Target side - how long the object that was hit stays in hitstun
         public float HitStunTime;
 
         public float Damage;
@@ -23,14 +28,10 @@ public class AttackStatData
             Animation = data.AnimationData.Animation;
             Influence = data.Influence;
             LaunchAngle = data.LaunchAngle;
-            HitStunTime = data.HitPauseTime;
-            this.Damage = data.Damage;
+            HitPauseTime = data.HitPauseTime;
+            HitStunTime = data.HitStunTime;
+            Damage = data.Damage;
         }
-
-        // public float GetAttackDamage(float frame)
-        // {
-        //     return damageCurve.Evaluate(frame);
-        // }
     }
 
     public AttackStats UpTilt;
