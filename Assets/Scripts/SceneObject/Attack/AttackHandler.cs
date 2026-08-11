@@ -15,21 +15,24 @@ public class AttackHandler : MonoBehaviour, IAttack
     private IAttackInput attackInput;
     private IActionState actionState;   
     private IStats statHandler;
+    private IInputBuffer inputBuffer;
     private IAttackHitBoxHandler attackHitBoxHandler;
     private ISOHurtBoxHandler hurtBoxHandler;
     private IAnimationEvent animationEventHandler;
     
     private IMovementAction movementHandler;
+    private IAttackCancel[] attackCancelSources;
     private Rigidbody rb;
 
     [Header("State")]
     [SerializeField] private AttackState curAttackState;
     public AttackState CurAttackState => curAttackState;
 
-    private ActionBuffer<Vector2> actionBuffer;
-    [Header("Buffer")]
-    [SerializeField] private float attackBufferWindow = 0.1f;            
-    
+    [Header("Finisher")]
+    [Tooltip("Multiplier applied to BaseForce and Damage when an attack is thrown as a finisher.")]
+    [SerializeField] private float finisherStrength = 1.2f;
+    private bool isFinisherAttack = false;
+
     private AttackStatData curAttackData;
 
     public event Action<AttackState> AttackStateChangedEvent;
@@ -50,15 +53,19 @@ public class AttackHandler : MonoBehaviour, IAttack
         if (animationEventHandler == null)
             Debug.LogError($"No IAnimationEvent found on {gameObject.name}.", gameObject);
 
+        inputBuffer = GetComponent<IInputBuffer>();
+        if (inputBuffer == null)
+            Debug.LogError($"No IInputBuffer found on {gameObject.name}.", gameObject);
+
         actionState = GetComponent<IActionState>();
         statHandler = GetComponent<IStats>();
         attackHitBoxHandler = GetComponent<IAttackHitBoxHandler>();
         hurtBoxHandler = GetComponent<ISOHurtBoxHandler>();
 
         movementHandler = GetComponent<IMovementAction>();
+        attackCancelSources = GetComponents<IAttackCancel>();
         rb = GetComponent<Rigidbody>();
 
-        actionBuffer = new ActionBuffer<Vector2>(attackBufferWindow);
 
         RegisterToEvents();
     }
@@ -66,12 +73,12 @@ public class AttackHandler : MonoBehaviour, IAttack
     private void RegisterToEvents()
     {
         actionState.GroundedStateChangedEvent += OnGroundedStateChanged;
-        actionState.ActionStateChangedEvent += OnActionStateChanged;
         statHandler.AttackStatsChangedEvent += OnAttackStatsChanged;
         hurtBoxHandler.OnHitEvent += OnHitByAttack;
         animationEventHandler.OnAnimationEventFiredEvent += OnAnimationEvent;
 
-        attackInput.AttackPerformedEvent += PerformAttack;
+        foreach (IAttackCancel cancelSource in attackCancelSources)
+            cancelSource.PerformedAttackCancel += OnPerformedAttackCancel;
     }    
 
     private void OnDestroy()
@@ -82,15 +89,18 @@ public class AttackHandler : MonoBehaviour, IAttack
     private void UnregisterFromEvents()
     {
         actionState.GroundedStateChangedEvent -= OnGroundedStateChanged;
-        actionState.ActionStateChangedEvent -= OnActionStateChanged;
         statHandler.AttackStatsChangedEvent -= OnAttackStatsChanged;
         hurtBoxHandler.OnHitEvent -= OnHitByAttack;
         animationEventHandler.OnAnimationEventFiredEvent -= OnAnimationEvent;
 
-        attackInput.AttackPerformedEvent -= PerformAttack;
+        foreach (IAttackCancel cancelSource in attackCancelSources)
+            cancelSource.PerformedAttackCancel -= OnPerformedAttackCancel;
     }
 
-    #endregion
+    #endregion    
+
+
+    #region Event Handlers
 
     private void OnGroundedStateChanged(GroundedState groundedState)
     {
@@ -98,19 +108,11 @@ public class AttackHandler : MonoBehaviour, IAttack
         {
             SetCurrentAttackState(AttackState.Null);
         }
-        
-        TryBufferedAttack();
     }
 
     private void OnAttackStatsChanged(AttackStatData data)
     {        
         curAttackData = data;
-    }
-
-    private void OnActionStateChanged(ActionState state)
-    {        
-        if (state <= ActionState.Moving)
-            TryBufferedAttack();
     }
 
     private void OnAnimationEvent(AnimationEventState state)
@@ -119,16 +121,34 @@ public class AttackHandler : MonoBehaviour, IAttack
             return;
 
         if (state == AnimationEventState.AttackEnded)
-        {
             SetCurrentAttackState(AttackState.Null);
-            TryBufferedAttack();
-        }
     }
 
     private void OnHitByAttack(KnockBackHitData hitData)
     {
-        actionBuffer.Clear();
+        inputBuffer?.Clear(BufferedInput.Attack);
     }    
+
+    private void OnPerformedAttackCancel(BufferedInput input)
+    {
+        AttackState cancelledState = curAttackState;
+
+        SetCurrentAttackState(AttackState.Null);
+
+        if (input != BufferedInput.SwapWeapon || cancelledState == AttackState.Null)
+            return;
+        
+        isFinisherAttack = true;
+        SetCurrentAttackState(cancelledState);
+    }
+
+    #endregion
+
+
+    private void FixedUpdate()
+    {
+        TryBufferedAttack();
+    }
 
 
     #region Attack State
@@ -140,28 +160,33 @@ public class AttackHandler : MonoBehaviour, IAttack
 
         if (attackState == AttackState.Null || actionState.TryChangeState(ActionState.Attacking))
         {
-            if (attackState == AttackState.Null && actionState.CurActionState == ActionState.Attacking)
+            if (attackState == AttackState.Null)
             {
-                bool movementOngoing = movementHandler != null && 
-                                       movementHandler.CurMovementState != MovementState.Null;
+                isFinisherAttack = false;
 
-                actionState.ChangeState(movementOngoing ? ActionState.Moving : ActionState.Idle);
+                if (actionState.CurActionState == ActionState.Attacking)
+                {
+                    bool movementOngoing = movementHandler != null && 
+                                           movementHandler.CurMovementState != MovementState.Null;
+
+                    actionState.ChangeState(movementOngoing ? ActionState.Moving : ActionState.Idle);
+                }
             }
 
             curAttackState = attackState;
             sceneObject.Log("Attack State: " + curAttackState);
             
-            UpdateHitBox();
+            UpdateHitBoxHandler();
             AttackStateChangedEvent?.Invoke(curAttackState);
         }
     }
 
-    private void UpdateHitBox()
+    private void UpdateHitBoxHandler()
     {
         
         if (curAttackData == null)
         {
-            attackHitBoxHandler.SetCurrentAttackStat(null);
+            attackHitBoxHandler.SetAttackHitData(null, null);
             return;
         }
 
@@ -193,7 +218,20 @@ public class AttackHandler : MonoBehaviour, IAttack
                 break;
         }
 
-        attackHitBoxHandler.SetCurrentAttackStat(attackStats);
+        if (attackStats == null)
+        {
+            attackHitBoxHandler.SetAttackHitData(null, null);
+            return;
+        }
+
+        float strength = isFinisherAttack ? finisherStrength : 1f;
+
+        attackHitBoxHandler.SetAttackHitData(
+            new HitData( attackStats.BaseForce * strength, attackStats.Influence, attackStats.LaunchAngle, attackStats.Damage * strength, attackStats.HitStunTime, Vector3.zero, attackStats.Type),
+            new AttackHitSenderData(attackStats.HitPauseTime, (int)curAttackState, attackStats.LaunchAngle, !isFinisherAttack)
+        );
+
+        attackHitBoxHandler.SetWeaponHitBoxs(curAttackData.WeaponRootGameObject);
     }
 
     #endregion
@@ -201,24 +239,20 @@ public class AttackHandler : MonoBehaviour, IAttack
 
     #region Perform Attack
 
-    private void PerformAttack(Vector2 direction)
-    {
-        actionBuffer.Buffer(direction);
-        TryBufferedAttack();
-    }
-
     private void TryBufferedAttack()
     {
-        if (curAttackData == null ||
+        if (inputBuffer == null ||
+            curAttackData == null ||
             curAttackState != AttackState.Null ||
             actionState.CurActionState > ActionState.Moving)
             return;
 
+        // NOTE: Cant attack while in jump squat
         if (movementHandler != null && movementHandler.IsInJumpSquat)
             return;
 
-        if (actionBuffer.TryConsume(out Vector2 direction))
-            ExecuteAttack(direction);
+        if (inputBuffer.TryConsume(BufferedInput.Attack, out InputRecord record))
+            ExecuteAttack(record.Direction);
     }
 
     private void ExecuteAttack(Vector2 direction)

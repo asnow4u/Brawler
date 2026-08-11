@@ -11,6 +11,7 @@ public class ProjectileLauncher : MonoBehaviour
     private float nextFireTime;
 
     [Header("Hit Data")]
+    [SerializeField] private float baseForce = 1000f;
     [SerializeField] private float influence = 0.5f;
     [SerializeField] private float damage = 8f;
     [SerializeField] private float stunTime = 0.1f;
@@ -44,7 +45,7 @@ public class ProjectileLauncher : MonoBehaviour
         }
 
         Vector3 velocity = transform.right * projectileSpeed;
-        HitData hitData = new HitData(influence, 0f, damage, stunTime, transform.position, effectIndex);
+        HitData hitData = new HitData(baseForce, influence, 0f, damage, stunTime, transform.position, effectIndex);
 
         projectile.Initialize(velocity, hitData);
     }

@@ -11,6 +11,8 @@ internal class WeaponHandler : MonoBehaviour
 
     public IWeapon EquippedWeapon => equippedWeapon;
 
+    public bool HasSecondryWeapon => secondaryWeapon != null;
+
     public event Action<IWeapon> OnWeaponEquippedEvent;
 
 
@@ -80,8 +82,6 @@ internal class WeaponHandler : MonoBehaviour
         SubscribeToRuntimeDataChanges();
     }
 
-  
-
     private void AddWeaponToInventory(IWeapon weapon)
     {
         secondaryWeapon = weapon;
@@ -92,12 +92,44 @@ internal class WeaponHandler : MonoBehaviour
     private void DropEquippedWeapon()
     {
         throw new NotImplementedException();
+        //UnsubscribeFromRuntimeDataChanges();
     }
     
     public void SwapEquippedWeapon()
     {
         if (secondaryWeapon != null)
             EquipWeapon(secondaryWeapon);
+    }
+
+    public AttackStatData ParseWeaponAttackData(IWeapon weapon)
+    {
+        if (weapon == null || weapon.WeaponData == null) return null;
+
+        AttackStatData data = new AttackStatData();
+        data.WeaponRootGameObject = weapon.gameObject;
+        data.SwingEffect = weapon.AttackEffect;
+
+        AttackDataCollection attackData = weapon.WeaponData.AttackCollection;
+
+        if (attackData.UpTiltData != null)
+            data.UpTilt = new AttackStatData.AttackStats(0, attackData.UpTiltData);
+
+        if (attackData.DownTiltData != null)
+            data.DownTilt = new AttackStatData.AttackStats(1, attackData.DownTiltData);
+
+        if (attackData.ForwardTiltData != null)
+            data.ForwardTilt = new AttackStatData.AttackStats(2, attackData.ForwardTiltData);
+
+        if (attackData.UpAirData != null)
+            data.UpAir = new AttackStatData.AttackStats(3, attackData.UpAirData);
+
+        if (attackData.DownAirData != null)
+            data.DownAir = new AttackStatData.AttackStats(4, attackData.DownAirData);
+
+        if (attackData.ForwardAirData != null)
+            data.ForwardAir = new AttackStatData.AttackStats(5, attackData.ForwardAirData);
+
+        return data;
     }
 
 
@@ -158,7 +190,7 @@ internal class WeaponHandler : MonoBehaviour
         if (movementData == null) return;
 
         if (movementData.MoveData != null)       movementData.MoveData.OnChangedEvent       += OnWeaponDataChanged;
-        if (movementData.DashData != null)       movementData.MoveData.OnChangedEvent       += OnWeaponDataChanged;
+        if (movementData.DashData != null)       movementData.DashData.OnChangedEvent       += OnWeaponDataChanged;
         if (movementData.AirMoveData != null)    movementData.AirMoveData.OnChangedEvent    += OnWeaponDataChanged;
         if (movementData.GroundedJumpData != null)       movementData.GroundedJumpData.OnChangedEvent       += OnWeaponDataChanged;
         if (movementData.AirJumpData != null)    movementData.AirJumpData.OnChangedEvent    += OnWeaponDataChanged;
@@ -175,7 +207,7 @@ internal class WeaponHandler : MonoBehaviour
         if (movementData == null) return;
 
         if (movementData.MoveData != null)       movementData.MoveData.OnChangedEvent       -= OnWeaponDataChanged;
-        if (movementData.DashData != null)       movementData.MoveData.OnChangedEvent       -= OnWeaponDataChanged;
+        if (movementData.DashData != null)       movementData.DashData.OnChangedEvent       -= OnWeaponDataChanged;
         if (movementData.AirMoveData != null)    movementData.AirMoveData.OnChangedEvent    -= OnWeaponDataChanged;
         if (movementData.GroundedJumpData != null)       movementData.GroundedJumpData.OnChangedEvent       -= OnWeaponDataChanged;
         if (movementData.AirJumpData != null)    movementData.AirJumpData.OnChangedEvent    -= OnWeaponDataChanged;

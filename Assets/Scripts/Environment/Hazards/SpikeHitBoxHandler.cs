@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 public class SpikeHitBoxHandler : HitBoxHandler
 {
+    [SerializeField] private float baseForce = 1000;
     [SerializeField] private float influence = 0;
     [SerializeField] private float launchAngle = 0;
     [SerializeField] private float damage = 0;
@@ -45,6 +46,7 @@ public class SpikeHitBoxHandler : HitBoxHandler
         resetTimers.Add(hurtBox.OwnerID, resetTime);
 
         HitData data = new HitData(                       
+            baseForce,
             influence, 
             launchAngle, 
             damage, 

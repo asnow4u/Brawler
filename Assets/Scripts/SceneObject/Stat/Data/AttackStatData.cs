@@ -1,7 +1,7 @@
 using UnityEngine;
 
 public class AttackStatData
-{
+{    
     public GameObject WeaponRootGameObject;
     public ParticleSystem SwingEffect;
 
@@ -12,6 +12,9 @@ public class AttackStatData
         public AnimationClip Animation;
         public float Influence;
         public float LaunchAngle;
+
+        //Knockback at 0 damage. Influence scales growth from here.
+        public float BaseForce;
 
         //Attacker side - how long this object's animation freezes on connect
         public float HitPauseTime;
@@ -26,6 +29,7 @@ public class AttackStatData
             State = state;
             Type = (int)data.AttackType;
             Animation = data.AnimationData.Animation;
+            BaseForce = data.BaseForce;
             Influence = data.Influence;
             LaunchAngle = data.LaunchAngle;
             HitPauseTime = data.HitPauseTime;

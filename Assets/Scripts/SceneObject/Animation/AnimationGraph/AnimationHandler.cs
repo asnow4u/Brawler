@@ -164,7 +164,7 @@ public class AnimationHandler : MonoBehaviour, IAnimation
         animationGraph.ChangeHitStunStateInput(hitStunState);
     }
 
-    private void OnHitConnected(HitBoxConnectedData hitBoxConnectedData)
+    private void OnHitConnected(HitSenderData hitBoxConnectedData)
     {
         animationGraph.Pause(hitBoxConnectedData.hitPauseTime);
     }

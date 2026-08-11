@@ -9,6 +9,7 @@ public abstract class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxH
 {
     private ISceneObject sceneObject;
     protected Rigidbody rb;
+
     //Hurt boxs
     protected IHurtBox[] hurtBoxes;
 
@@ -19,8 +20,6 @@ public abstract class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxH
     [SerializeField] protected float damageTaken = 0;
     
     [Header("Knockback")]
-    [Tooltip("Base knockback force applied to any attack (before mass division). Sets the minimum-feel velocity at 0% damage.")]
-    [SerializeField] private float baseForce = 1200f;
     [Tooltip("Exponential growth of damage-scaled knockback. Lower = smoother curve, higher = sharper ramp at high damage.")]
     [SerializeField] private float exGrowth = 2.0f;
     [Tooltip("Multiplier on the damage-scaled portion. Controls how much added force comes from damage scaling.")]
@@ -31,7 +30,7 @@ public abstract class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxH
 
     protected virtual void Awake()
     {
-        sceneObject = GetComponent<ISceneObject>();        
+        sceneObject = GetComponent<ISceneObject>();
         rb = GetComponent<Rigidbody>();
         lastHitBy = new List<Guid>();
 
@@ -67,17 +66,13 @@ public abstract class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxH
 
     protected virtual void OnHit(HitData hitData)
     {
-        if (hitData == null)
+        if (hitData == null || !hitData.IsValid())
             return;
 
         //Damage and Knockback
         damageTaken += hitData.Damage;
 
-        float hitBaseForce = hitData is SceneObjectCollisionHitData collisionHitData
-            ? collisionHitData.BaseForce
-            : baseForce;
-
-        knockBackVelocity = CalculateKnockbackVelocity(hitData.Influence, damageTaken, hitData.LauchAngle, rb.mass, hitBaseForce);
+        knockBackVelocity = CalculateKnockbackVelocity(hitData.Influence, damageTaken, hitData.LaunchAngle, rb.mass, hitData.BaseForce);
 
         OnHitEvent?.Invoke(new KnockBackHitData(knockBackVelocity, hitData));
     }
@@ -98,12 +93,14 @@ public abstract class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxH
 
     [Header("Debug")]
     [SerializeField, HideInInspector] private bool debugMode;
+    [SerializeField, HideInInspector] private float debugBaseForce = 1200f;
     [SerializeField, HideInInspector] private float debugInfluence = 1f;
     [SerializeField, HideInInspector] private float debugLaunchAngle = 45f;
     [SerializeField, HideInInspector] private float debugDamage = 10f;
     [SerializeField, HideInInspector] private float debugDelaySeconds = 0f;
 
     public bool DebugMode => debugMode;
+    public float DebugBaseForce => debugBaseForce;
     public float DebugInfluence => debugInfluence;
     public float DebugLaunchAngle => debugLaunchAngle;
     public float DebugDamage => debugDamage;
@@ -112,6 +109,11 @@ public abstract class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxH
     public void SetDebugMode(bool value)
     {
         debugMode = value;
+    }
+
+    public void SetDebugBaseForce(float value)
+    {
+        debugBaseForce = Mathf.Max(0f, value);
     }
 
     public void SetDebugInfluence(float value)
@@ -138,7 +140,7 @@ public abstract class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxH
     {
         if (debugDelaySeconds <= 0f)
         {
-            HitData immediateHitData = new HitData(debugInfluence, debugLaunchAngle, debugDamage, 0f, transform.position, 0);
+            HitData immediateHitData = new HitData(debugBaseForce, debugInfluence, debugLaunchAngle, debugDamage, 0f, transform.position, 0);
             OnHit(immediateHitData);
             return;
         }
@@ -150,7 +152,7 @@ public abstract class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxH
     {
         yield return new WaitForSeconds(delaySeconds);
 
-        HitData hitData = new HitData(debugInfluence, debugLaunchAngle, debugDamage, 0f, transform.position, 0);
+        HitData hitData = new HitData(debugBaseForce, debugInfluence, debugLaunchAngle, debugDamage, 0f, transform.position, 0);
         OnHit(hitData);
     }
 

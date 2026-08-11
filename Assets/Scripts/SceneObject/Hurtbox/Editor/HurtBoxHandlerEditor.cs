@@ -43,6 +43,14 @@ internal sealed class HurtBoxHandlerEditor : Editor
 
     private static void DrawDebugFields(Object unityObject, IHurtBoxHandlerEditor handler)
     {
+        float newBaseForce = EditorGUILayout.FloatField("Base Force", handler.DebugBaseForce);
+        if (!Mathf.Approximately(newBaseForce, handler.DebugBaseForce))
+        {
+            Undo.RecordObject(unityObject, "Change Hurtbox Base Force");
+            handler.SetDebugBaseForce(newBaseForce);
+            EditorUtility.SetDirty(unityObject);
+        }
+            
         float newInfluence = EditorGUILayout.Slider("Influence", handler.DebugInfluence, 0f, 1f);
         if (!Mathf.Approximately(newInfluence, handler.DebugInfluence))
         {

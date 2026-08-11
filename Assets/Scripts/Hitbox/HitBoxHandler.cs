@@ -9,7 +9,7 @@ public abstract class HitBoxHandler : MonoBehaviour, IHitBoxHandler
     protected IHitBox[] hitboxs;  
     protected HashSet<Guid> sceneObjectsHit = new HashSet<Guid>();
 
-    public event Action<HitBoxConnectedData> OnHitConnected;
+    public event Action<HitSenderData> OnHitConnected;
 
 
     protected virtual void Awake()
@@ -71,7 +71,7 @@ public abstract class HitBoxHandler : MonoBehaviour, IHitBoxHandler
     protected abstract void OnHit(IHitBox hitBox, IHurtBox hurtBox, Vector3 hitPoint);
 
 
-    protected void DeclareHit(HitBoxConnectedData hitBoxConnectedData, IHurtBox hurtBox, HitData hitData)
+    protected void DeclareHit(HitSenderData hitBoxConnectedData, IHurtBox hurtBox, HitData hitData)
     {
         OnHitConnected?.Invoke(hitBoxConnectedData);
         hurtBox.Hit(hitData);

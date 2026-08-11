@@ -11,25 +11,59 @@ public partial class InputMovementHandler
     [Header("Wall Jump")]
     private const float wallJumpDetachDuration = 0.2f;
     private float lastWallJumpTime = -100f;
-
-    //Jump available is only true after the user has released the jump button
-    private bool jumpInputAvailable = true;
-    private bool jumpRequested => jumpInfluence > 0 || actionBuffer.HasBuffered;
     
-    [Header("Jump Squat")]
+    // Jump Squat
     private bool isJumpSquatPending = false;
     private bool hasJumped = false;
     public bool IsInJumpSquat => isJumpSquatPending || (hasJumped && actionState.CurGroundedState == GroundedState.Grounded);
-
     private float lastJumpSquatTime = -100f;
     private bool isJumpingSquating => Time.time < lastJumpSquatTime + curMovementData.JumpSquatDuration;
 
+    // NOTE: Prevents multiple Jumps from single held jump input
+    private bool jumpInputAvailable = true;  
     private int airJumpsPerformed = 0;
 
 
+    #region Movement Conditions
+
+    private bool jumpRequested => jumpInfluence > 0 ||
+                                  (inputBuffer != null && inputBuffer.Peek(BufferedInput.Jump));
+
+    private bool groundedJumpMovementAllowed => curMovementData.GroundedJumpValid &&
+                                                jumpRequested &&
+                                                jumpInputAvailable &&
+                                                actionState.CurActionState <= ActionState.Moving;
+
+    private bool coyoteJumpMovementAllowed => groundedJumpMovementAllowed &&
+                                              Time.time <= lastGroundedTime + coyoteTimeDuration;
+
+    private bool aerialJumpMovementAllowed => curMovementData.AerialJumpValid &&
+                                              jumpRequested &&
+                                              jumpInputAvailable &&
+                                              airJumpsPerformed < curMovementData.AirJumpsAvailable &&
+                                              actionState.CurActionState <= ActionState.Moving;
+
+    private bool wallJumpAllowed => curMovementData.WallJumpValid &&
+                                    jumpRequested &&
+                                    jumpInputAvailable &&
+                                    IsAgainstWall() &&
+                                    actionState.CurActionState <= ActionState.Moving &&
+                                    Time.time >= lastWallJumpTime + wallJumpDetachDuration;
+
+    #endregion
+
+
+    private void UpdateJump()
+    {
+        if (!jumpInputAvailable && jumpInfluence == 0)
+            jumpInputAvailable = true;
+
+        UpdateJumpSquat();
+    }
+
     private void StartJump()
     {
-        actionBuffer.Clear();
+        ConsumeBufferedJump();
 
         if (curMovementState == MovementState.GroundJump)
         {

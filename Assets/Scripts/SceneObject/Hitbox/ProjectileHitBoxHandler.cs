@@ -45,6 +45,7 @@ public class ProjectileHitBoxHandler : HitBoxHandler
             launchAngle += 360f;
 
         HitData hitData = new HitData(
+            baseHitData.BaseForce,            
             baseHitData.Influence,
             launchAngle,
             baseHitData.Damage,

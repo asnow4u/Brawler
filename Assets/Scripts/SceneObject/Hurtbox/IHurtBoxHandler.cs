@@ -25,12 +25,14 @@ public interface ISOHurtBoxHandler : IHurtBoxHandler
 public interface IHurtBoxHandlerEditor
 {
     public bool DebugMode { get; }
+    public float DebugBaseForce { get; }
     public float DebugInfluence { get; }
     public float DebugLaunchAngle { get; }
     public float DebugDamage { get; }
     public float DebugDelaySeconds { get; }
 
     public void SetDebugMode(bool value);
+    public void SetDebugBaseForce(float value);
     public void SetDebugInfluence(float value);
     public void SetDebugLaunchAngle(float value);
     public void SetDebugDamage(float value);

@@ -8,12 +8,12 @@ using UnityEngine;
 public class StatHandler : MonoBehaviour, IStats
 {
     //Dependecies
-    protected ISceneObject sceneObject;
-    protected IActionState actionState;
+    private ISceneObject sceneObject;
+    private IActionState actionState;
 
-    [SerializeField] protected SceneObjectData baseSceneObjectData;
+    [SerializeField] private SceneObjectData baseSceneObjectData;
 
-    protected Rigidbody rb;
+    private Rigidbody rb;
 
     //Events
     public event Action<AnimationStatData> AnimationStatsChangedEvent;
@@ -22,7 +22,7 @@ public class StatHandler : MonoBehaviour, IStats
 
     #region Initialize
 
-    protected virtual void Awake()
+    private void Awake()
     {
         if (baseSceneObjectData == null)
             Debug.LogError("StatHandler: No SceneObject Base Data found", gameObject);
@@ -35,19 +35,19 @@ public class StatHandler : MonoBehaviour, IStats
 
         actionState = GetComponent<IActionState>();
         rb = GetComponent<Rigidbody>();
-        rb.mass = baseSceneObjectData.Mass;
+        UpdateAccumulatedMass(0f);
 
         RegisterToEvents();
     }
 
-    protected virtual void RegisterToEvents()
+    private void RegisterToEvents()
     {
         SubscribeToRuntimeDataChanges();        
     }
 
-    protected virtual void Start()
+    private void Start()
     {
-        UpdateSceneObjectStats();
+        SetSceneObjectBaseStats();
     }
 
     private void OnDestroy()
@@ -55,7 +55,7 @@ public class StatHandler : MonoBehaviour, IStats
         UnregisterFromEvents();
     }
 
-    protected virtual void UnregisterFromEvents()
+    private void UnregisterFromEvents()
     {        
         UnsubscribeFromRuntimeDataChanges();
     }
@@ -65,28 +65,33 @@ public class StatHandler : MonoBehaviour, IStats
 
     #region Data
 
-    [ContextMenu("Update Stats")]
-    private void UpdateSceneObjectStats()
+    private void SetSceneObjectBaseStats()
     {
         UpdateAnimationStats(baseSceneObjectData.MovementCollection);
         UpdateMovementStats(baseSceneObjectData.MovementCollection);        
     }
 
-    protected void UpdateAnimationStats(MovementDataCollection movementData = null, AttackDataCollection attackData = null)
+    public void UpdateAccumulatedMass(float extraMass)
+    {
+        if (rb != null)
+            rb.mass = baseSceneObjectData.Mass + extraMass;
+    }
+
+    public void UpdateAnimationStats(MovementDataCollection movementData = null, AttackDataCollection attackData = null)
     {
         AnimationStatData statData = ParseAnimationData(movementData, attackData);
         if (statData != null)
             AnimationStatsChangedEvent?.Invoke(statData);
     }
 
-    protected void UpdateMovementStats(MovementDataCollection moveData)
+    public void UpdateMovementStats(MovementDataCollection moveData)
     {
         MovementStatData statData = ParseMovementData(moveData);
         if (statData != null)
             MovementStatsChangedEvent?.Invoke(statData);
     }
 
-    protected void UpdateAttackStats(AttackStatData attackStats)
+    public void UpdateAttackStats(AttackStatData attackStats)
     {
         if (attackStats != null)
             AttackStatsChangedEvent?.Invoke(attackStats);
@@ -445,7 +450,7 @@ public class StatHandler : MonoBehaviour, IStats
     private void OnDataChanged()
     {
         if (baseSceneObjectData.IsValid())
-            UpdateSceneObjectStats();
+            SetSceneObjectBaseStats();
         else
             Debug.Log("StatHandler: Change to SceneObject Base Data is not valid", gameObject);
     }

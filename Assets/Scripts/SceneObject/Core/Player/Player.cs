@@ -2,26 +2,34 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-internal class Player : SceneObject, IMovementInput, IAttackInput, IInteractionInput, IEquipmentInput, IMovementInputEditor, IAttackInputEditor
+internal class Player : SceneObject, IMovementInput, IAttackInput, IInteractionInput, IEquipmentInput, IInputBuffer, IMovementInputEditor, IAttackInputEditor
 {
     private PlayerInputHandler inputHandler;
 
-    //Movement
-    public event Action<Vector2> MovementPerformedEvent;
-    public event Action MovementStoppedEvent;
-    public event Action<float> JumpPerformedEvent;
-    public event Action JumpStoppedEvent;
-    public event Action DashPerformedEvent;
+    [Header("Input Buffer")]
+    [Tooltip("How long a press stays live while the object cannot act on it.")]
+    [SerializeField] private float inputBufferWindow = 0.2f;
+    private InputBuffer inputBuffer;
+
+    [Header("Input Deadzone")]
+    [Range(0, 1)]
+    [SerializeField] private float horizontalDeadzone = 0.2f;
+    [Range(0, 1)]
+    [SerializeField] private float verticalDeadzone = 0.2f;
+    [Range(0, 1)]
+    [SerializeField] private float jumpDeadzone = 0.1f;
+    private Vector2 rawMovement;
+    private float rawJump;
+
+    public float HorizontalInfluence => Mathf.Abs(rawMovement.x) > horizontalDeadzone ? Mathf.Clamp(rawMovement.x, -1f, 1f) : 0f;
+    public float VerticalInfluence => Mathf.Abs(rawMovement.y) > verticalDeadzone ? Mathf.Clamp(rawMovement.y, -1f, 1f) : 0f;
+    public float JumpInfluence => rawJump > jumpDeadzone ? Mathf.Clamp01(rawJump) : 0f;
 
     //Attack
     private const float ATTACK_INPUT_THRESHOLD = 0.7f;
     private const float ATTACK_INPUT_RESET_THRESHOLD = 0.2f;
-    private bool attackInputTriggered = false;
-    public event Action<Vector2> AttackPerformedEvent;        
+    private bool attackInputTriggered = false; // NOTE: Prevent multi buffering off of a single attack.
 
-    public event Action InteractionPerformedEvent;
-
-    public event Action ToggleEquippedWeaponEvent;
 
     #region Initialize
 
@@ -34,6 +42,7 @@ internal class Player : SceneObject, IMovementInput, IAttackInput, IInteractionI
     private void InitializeInput()
     {
         inputHandler = new PlayerInputHandler();
+        inputBuffer = new InputBuffer(inputBufferWindow);
 
         inputHandler.input.PlayerActions.Movement.performed += MovementInput;
         inputHandler.input.PlayerActions.Movement.canceled += MovementCanceled;
@@ -61,29 +70,30 @@ internal class Player : SceneObject, IMovementInput, IAttackInput, IInteractionI
 
     private void MovementInput(InputAction.CallbackContext obj)
     {
-        MovementPerformedEvent?.Invoke(obj.ReadValue<Vector2>());
+        rawMovement = obj.ReadValue<Vector2>();
     }
 
     private void MovementCanceled(InputAction.CallbackContext obj)
     {
-        MovementStoppedEvent?.Invoke();
+        rawMovement = Vector2.zero;
     }
 
-    //Vertical Jump
-    
     private void JumpInput(InputAction.CallbackContext obj)
     {
-        JumpPerformedEvent?.Invoke(obj.ReadValue<float>());
+        rawJump = obj.ReadValue<float>();
+
+        if (rawJump > jumpDeadzone)
+            inputBuffer.Buffer(BufferedInput.Jump, rawJump);
     }
 
     private void JumpCanceled(InputAction.CallbackContext obj)
     {
-        JumpStoppedEvent?.Invoke();
+        rawJump = 0f;
     }
 
     private void DashInput(InputAction.CallbackContext obj)
     {
-        DashPerformedEvent?.Invoke();
+        inputBuffer.Buffer(BufferedInput.Dash);
     }
 
     #endregion
@@ -104,7 +114,7 @@ internal class Player : SceneObject, IMovementInput, IAttackInput, IInteractionI
         if (!attackInputTriggered && direction.magnitude > ATTACK_INPUT_THRESHOLD)
         {
             attackInputTriggered = true;
-            AttackPerformedEvent?.Invoke(direction);
+            inputBuffer.Buffer(BufferedInput.Attack, direction.magnitude, direction);
         }
     }
 
@@ -120,19 +130,32 @@ internal class Player : SceneObject, IMovementInput, IAttackInput, IInteractionI
 
     private void InteractInput(InputAction.CallbackContext obj)
     {
-        InteractionPerformedEvent?.Invoke();
     }
 
     #endregion
 
 
-    #region Equipment Input Input
+    #region Equipment Input
 
     private void ToggleWeapon(InputAction.CallbackContext obj)
     {
-        ToggleEquippedWeaponEvent?.Invoke();
+        inputBuffer.Buffer(BufferedInput.SwapWeapon);
     }
 
+    #endregion
+
+
+    #region Input Buffer
+
+    public float BufferWindow => inputBuffer.BufferWindow;
+    public void Buffer(BufferedInput input, float value = 0f, Vector2 direction = default) => inputBuffer.Buffer(input, value, direction);
+    public bool Peek(BufferedInput input) => inputBuffer.Peek(input);
+    public bool TryConsume(BufferedInput input) => inputBuffer.TryConsume(input);
+    public bool TryConsume(BufferedInput input, out InputRecord record) => inputBuffer.TryConsume(input, out record);
+    public float LastPressTime(BufferedInput input) => inputBuffer.LastPressTime(input);
+    public bool TryGetNewestLive(BufferedInput[] inputs, out BufferedInput newest) => inputBuffer.TryGetNewestLive(inputs, out newest);
+    public void Clear(BufferedInput input) => inputBuffer.Clear(input);
+    public void ClearAll() => inputBuffer.ClearAll();
 
     #endregion
 
@@ -141,27 +164,22 @@ internal class Player : SceneObject, IMovementInput, IAttackInput, IInteractionI
 
     public void DebugMovementInput(Vector2 movementInput)
     {
-        if (movementInput.magnitude > 0)
-            MovementPerformedEvent?.Invoke(movementInput);
-
-        else
-            MovementStoppedEvent?.Invoke();
+        rawMovement = movementInput;
     }
 
     public void DebugJumpInput(float jumpInput)
     {
-        if (jumpInput > 0)
-            JumpPerformedEvent?.Invoke(jumpInput);
-        else
-            JumpStoppedEvent?.Invoke();
+        rawJump = jumpInput;
+
+        if (rawJump > jumpDeadzone)
+            inputBuffer.Buffer(BufferedInput.Jump, rawJump);
     }
 
     public void DebugAttackInput(Vector2 direction)
     {            
         if (direction.magnitude > ATTACK_INPUT_THRESHOLD)
-            AttackPerformedEvent?.Invoke(direction);
+            inputBuffer.Buffer(BufferedInput.Attack, direction.magnitude, direction);
     }
 
     #endregion
 }
-

@@ -19,7 +19,11 @@ public class AttackData : ScriptableObject
     [Header("Animation")]
     public AnimationData AnimationData;
 
-    [Header("Attack Details")]    
+    [Header("Attack Details")]
+
+    [Tooltip("Base knockback at 0 damage, before mass division.")]
+    public float BaseForce = 1200f;
+
     [Tooltip("Influence defines the amount of knockback velocity that will be applied when the attack makes contact." +
         "\n 0 is no additional knockback," +
         "\n 1 is full knockback")]

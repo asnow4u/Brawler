@@ -4,35 +4,23 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public partial class InputMovementHandler : MovementHandler, IMovementAction
+public partial class InputMovementHandler : MovementHandler, IMovementAction, IAttackCancel
 {    
     private IMovementInput movementInput;
+    private IInputBuffer inputBuffer;
 
-    //Movement State Data
+    // Optional Components
+    private IAttackHitBoxHandler attackHitBoxHandler;
+
+    [Header("Movement State")]
     [SerializeField] private MovementState curMovementState;
     public MovementState CurMovementState => curMovementState;
     
     [Header("Influence")]
-    [Range(0, 1)]
-    [SerializeField] private float horizontalDeadzone;
-    [Range(-1, 1)]
-    [SerializeField] private float horizontalInfluence;
-
-    [Range(0, 1)]
-    [SerializeField] private float verticalDeadzone;
-    [Range(-1, 1)]
-    [SerializeField] private float verticalInfluence;
-
-    [Range(0, 1)]
-    [SerializeField] private float jumpDeadzone;
-    [Range(0, 1)]
-    [SerializeField] private float jumpInfluence;    
+    private float horizontalInfluence => movementInput.HorizontalInfluence;
+    private float verticalInfluence => movementInput.VerticalInfluence;
+    private float jumpInfluence => movementInput.JumpInfluence;
     
-    //Climb Properties
-    [SerializeField] private bool isClimbSliding = false;
-    private const float climbSlideVelocityThreshold = -10f; //When switching to climbing, this determines whether a slide decceleration is applied
-
-    //Ledge Climb Properties
     [Header("Ledge Climb")]
     [SerializeField] private float ledgeClimbDuration = 0.2f;
     private bool isLedgeClimbing = false;
@@ -42,10 +30,6 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
     private Vector3 ledgeClimbStandPosition;
     private float storedLedgeClimbXVelocity;
     private const float requiredLedgeClimbPercentage = 0.3f;
-
-    [Header("Buffer")]
-    [SerializeField] private float movementBufferWindow = 0.1f;
-    private ActionBuffer<float> actionBuffer;
 
     [Header("DI / Drift")]
     [Tooltip("Max degrees DI can rotate the launch angle during the hit pause. Magnitude is never changed.")]
@@ -57,9 +41,10 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
     [Tooltip("How fast drift ramps toward maxDriftSpeed while a direction is held during Travel/Recovery.")]
     [Range(0f, 30f)]
     [SerializeField] private float driftAccel = 8f;
-    private float driftVelocityApplied = 0f;
+    private float driftVelocityApplied = 0f;    
 
-    public event Action<MovementState> MovementStateChangedEvent;
+    // Events
+    public event Action<MovementState> MovementStateChangedEvent;    
     
     
     #region Movement Conditions
@@ -70,26 +55,7 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
     private bool aerialMovementAllowed => curMovementData.AerialMovementValid &&
                                           (horizontalInfluence != 0 || verticalInfluence != 0) &&
                                           actionState.CurActionState <= ActionState.Attacking;
-    private bool jumpMovementAllowed => curMovementData.GroundedJumpValid &&
-                                        jumpRequested &&
-                                        jumpInputAvailable &&
-                                        actionState.CurActionState <= ActionState.Moving;
-    private bool aerialJumpMovementAllowed => curMovementData.AerialJumpValid &&
-                                              jumpRequested &&
-                                              jumpInputAvailable &&
-                                              airJumpsPerformed < curMovementData.AirJumpsAvailable &&
-                                              actionState.CurActionState <= ActionState.Moving;
-
-    private bool coyoteJumpMovementAllowed => jumpMovementAllowed &&
-                                              Time.time <= lastGroundedTime + coyoteTimeDuration;
-
-    private bool wallJumpAllowed => curMovementData.WallJumpValid &&
-                                    jumpRequested &&
-                                    jumpInputAvailable &&
-                                    IsAgainstWall() &&
-                                    actionState.CurActionState <= ActionState.Moving &&
-                                    Time.time >= lastWallJumpTime + wallJumpDetachDuration;
-
+    
     private bool wallLeanAllowed => curMovementData.WallLeanValid &&
                                     ((IsAgainstLeftWall() && horizontalInfluence < 0) || (IsAgainstRightWall() && horizontalInfluence > 0)) &&
                                     actionState.CurActionState <= ActionState.Moving;
@@ -115,9 +81,14 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
     {
         movementInput = GetComponent<IMovementInput>();
         if (movementInput == null)
-            Debug.LogError("InputMovementHandler Requires a IMovmentInput. If no input is desired use SOMovementHandler instead.", this);
-     
-        actionBuffer = new ActionBuffer<float>(movementBufferWindow);        
+            Debug.LogError("InputMovementHandler Requires a IMovmentInput. If no input is desired use MovementHandler instead.", this);
+
+        inputBuffer = GetComponent<IInputBuffer>();
+        if (inputBuffer == null)
+            Debug.LogError("InputMovementHandler Requires a IInputBuffer. If no input is desired use MovementHandler instead.", this);
+
+        // Optional Components
+        attackHitBoxHandler = GetComponent<IAttackHitBoxHandler>();
 
         base.Awake();
     }
@@ -126,12 +97,10 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
     {        
         actionState.ActionStateChangedEvent += OnActionStateChanged;
         actionState.GroundedStateChangedEvent += OnGroundedStateChanged;
+        hurtBoxHandler.OnHitEvent += OnHitByAttack;
 
-        movementInput.MovementPerformedEvent += SetMovementInfluence;
-        movementInput.MovementStoppedEvent += ResetMovementInfluence;
-        movementInput.JumpPerformedEvent += SetJumpInfluence;
-        movementInput.JumpStoppedEvent += ResetJumpInfluence;
-        movementInput.DashPerformedEvent += StartInputDash;
+        if (attackHitBoxHandler != null)
+            attackHitBoxHandler.OnHitConnected += OnHitConnected;
 
         base.RegisterToEvents();
     }
@@ -140,15 +109,10 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
     {
         actionState.ActionStateChangedEvent -= OnActionStateChanged;
         actionState.GroundedStateChangedEvent -= OnGroundedStateChanged;
+        hurtBoxHandler.OnHitEvent -= OnHitByAttack;
 
-        if (movementInput != null)
-        {
-            movementInput.MovementPerformedEvent -= SetMovementInfluence;
-            movementInput.MovementStoppedEvent -= ResetMovementInfluence;
-            movementInput.JumpPerformedEvent -= SetJumpInfluence;
-            movementInput.JumpStoppedEvent -= ResetJumpInfluence;
-            movementInput.DashPerformedEvent -= StartInputDash;          
-        }
+        if (attackHitBoxHandler != null)
+            attackHitBoxHandler.OnHitConnected -= OnHitConnected;
     
         base.UnregisterFromEvents();
     }
@@ -179,30 +143,38 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
         }
     }
 
+    private void OnHitByAttack(KnockBackHitData hitData)
+    {
+        inputBuffer?.Clear(BufferedInput.Jump);
+        inputBuffer?.Clear(BufferedInput.Dash);
+    }
+
+    private void OnHitConnected(HitSenderData hitSenderData)
+    {        
+        if (hitSenderData is not AttackHitSenderData attackSenderData)
+            return;
+
+        if (!attackSenderData.Cancelable)
+            return;
+
+        hitCancelExecuteTime = Time.time + attackSenderData.hitPauseTime;
+    }
+
     #endregion
 
 
     #region Environment Collision Check
 
-    /// <summary>
-    /// Determine if the sceneObject is against a wall
-    /// </summary>
     private bool IsAgainstWall()
     {
         return IsAgainstRightWall() || IsAgainstLeftWall();
     }
 
-    /// <summary>
-    /// Determine if the sceneObject is against a wall on the right side
-    /// </summary>
     private bool IsAgainstRightWall()
     {
         return sceneObject.TryDetectCollision(Direction.Right, 0.5f, LayerMask.GetMask("Environment"), out _);
     }
 
-    /// <summary>
-    /// Determine if the sceneObject is against a wall on the left side
-    /// </summary>
     private bool IsAgainstLeftWall()
     {
         return sceneObject.TryDetectCollision(Direction.Left, 0.5f, LayerMask.GetMask("Environment"), out _);
@@ -261,46 +233,6 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
     #endregion
 
 
-    #region Influence
-    
-    private void SetMovementInfluence(Vector2 inputInfluence)
-    {
-        if (inputInfluence.x > horizontalDeadzone || inputInfluence.x < -horizontalDeadzone)
-            horizontalInfluence = Mathf.Clamp(inputInfluence.x, -1, 1);
-
-        if (inputInfluence.y > verticalDeadzone || inputInfluence.y < -verticalDeadzone)
-            verticalInfluence = Mathf.Clamp(inputInfluence.y, -1, 1);
-    }
-
-    private void ResetMovementInfluence()
-    {
-        horizontalInfluence = 0;
-        verticalInfluence = 0;
-    }
-
-    private void SetJumpInfluence(float inputInfluence)
-    {
-        if (inputInfluence < jumpDeadzone)
-            return;
-
-        if (!jumpInputAvailable && inputInfluence == 0)
-            jumpInputAvailable = true;
-
-        jumpInfluence = Mathf.Clamp(inputInfluence, 0, 1);
-        actionBuffer.Buffer(jumpInfluence);
-    }
-
-    private void ResetJumpInfluence()
-    {
-        if (!jumpInputAvailable)
-            jumpInputAvailable = true;
-
-        jumpInfluence = 0;
-    }
-
-    #endregion
-
-
     #region State Updates
 
     private void SetCurrentMoveState(MovementState moveState)
@@ -327,10 +259,10 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
         if (isJumpingSquating || isLedgeClimbing) 
             return;
 
-        //Dash - locked until it ends; only a jump may cancel it (reversing direction will not)
+        // NOTE: Dash locked until it ends or with a jump cancel.
         if (isDashing)
         {
-            if (jumpMovementAllowed)
+            if (groundedJumpMovementAllowed)
             {
                 EndDash();
                 SetCurrentMoveState(MovementState.GroundJump);
@@ -339,7 +271,7 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
         }
 
         //Jump
-        else if (jumpMovementAllowed)
+        else if (groundedJumpMovementAllowed)
         {
             SetCurrentMoveState(MovementState.GroundJump);
             StartJump();
@@ -367,7 +299,6 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
 
     private void UpdateAerialMovementState()
     {
-        //NOTE: Movement not allowed while in jump animation
         if (isJumpingSquating || isLedgeClimbing)
             return;
 
@@ -432,23 +363,6 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
             SetCurrentMoveState(MovementState.Null);
     }   
 
-    /// <summary>
-    /// Update the current climb movement state based on input influence and sceneObject state
-    /// </summary>
-    private void UpdateClimbMovementState()
-    {
-        if (isClimbSliding)
-            return;
-
-        //Jump
-        if (jumpMovementAllowed)
-            SetCurrentMoveState(MovementState.GroundJump);
-
-        //Idle
-        else
-            SetCurrentMoveState(MovementState.Null);
-    }
-
     #endregion
 
 
@@ -480,9 +394,11 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
 
     protected override void UpdateMovement()
     {
-        base.UpdateMovement();
-        UpdateJumpSquat();
-    }
+        base.UpdateMovement(); 
+        
+        UpdateJump();
+        UpdateBuffer();
+    }    
 
 
     #region Ground Movement
@@ -664,9 +580,10 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
     #region  HitStun
 
     protected override void OnRecievedHitStunKnockback(KnockBackHitData hitData)
-    {
-        actionBuffer.Clear();
+    {        
+        inputBuffer?.ClearAll();
         driftVelocityApplied = 0f;
+        ClearCancelWindow();
         base.OnRecievedHitStunKnockback(hitData);
     }
 
@@ -727,7 +644,7 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction
     #endregion
 
 
-    #region Wall Slide    
+    #region Wall Slide
 
     private void DeccelerateWallSlide()
     {

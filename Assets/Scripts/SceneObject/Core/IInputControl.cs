@@ -3,27 +3,21 @@ using UnityEngine;
 
 public interface IMovementInput
 {
-    public event Action<Vector2> MovementPerformedEvent;
-    public event Action MovementStoppedEvent;
-    public event Action<float> JumpPerformedEvent;
-    public event Action JumpStoppedEvent;
-    public event Action DashPerformedEvent;
+    public float HorizontalInfluence { get; }
+    public float VerticalInfluence { get; }
+    public float JumpInfluence { get; }
 }
 
 public interface IAttackInput
 {
-    public event Action<Vector2> AttackPerformedEvent;
 }
 
 public interface IInteractionInput
-{    
-    public event Action InteractionPerformedEvent;
+{
 }
-
 
 public interface IEquipmentInput 
 {
-    public event Action ToggleEquippedWeaponEvent;
 }
 
 #region Debug
@@ -41,4 +35,3 @@ public interface IAttackInputEditor
 }
 
 #endregion
-

@@ -3,17 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static AttackStatData;
 
 [RequireComponent(typeof(ISceneObject))]
 [RequireComponent(typeof(ActionStateHandler))]
-[RequireComponent(typeof(StatHandler))]
 [RequireComponent(typeof(HurtBoxHandler))]
 public class SOHitBoxHandler : HitBoxHandler
 {
     private ISceneObject sceneObject;
     private IActionState actionState;
-    private IStats statHandler;
+
     private ISOHurtBoxHandler hurtBoxHandler;
     
 
@@ -39,13 +37,10 @@ public class SOHitBoxHandler : HitBoxHandler
     [SerializeField] private float maxSceneObjectHitDamage = 10f;
     [SerializeField] private float sceneObjectHitStunTime = 0.1f;
 
-    private MovementStatData movementStatData;
-
     protected override void Awake()
     {
         sceneObject = GetComponent<ISceneObject>();
         actionState = GetComponent<IActionState>();
-        statHandler = GetComponent<IStats>();
         hurtBoxHandler = GetComponent<ISOHurtBoxHandler>();
 
         base.Awake();
@@ -70,14 +65,12 @@ public class SOHitBoxHandler : HitBoxHandler
     protected override void RegisterToEvents()
     {
         actionState.ActionStateChangedEvent += OnActionStateChanged;
-        statHandler.MovementStatsChangedEvent += OnMovementStatsChanged;
         hurtBoxHandler.HitStunStateChangedEvent += OnHitStunStateChanged;
     }
 
     protected override void UnregisterFromEvents()
     {
         actionState.ActionStateChangedEvent -= OnActionStateChanged;
-        statHandler.MovementStatsChangedEvent -= OnMovementStatsChanged;        
         hurtBoxHandler.HitStunStateChangedEvent -= OnHitStunStateChanged;
     }    
 
@@ -85,11 +78,6 @@ public class SOHitBoxHandler : HitBoxHandler
     {
         DisableHitboxs();
     }
-
-    private void OnMovementStatsChanged(MovementStatData data)
-    {
-        movementStatData = data;
-    }    
 
     private void OnHitStunStateChanged(HitStunState state)
     {
@@ -112,9 +100,6 @@ public class SOHitBoxHandler : HitBoxHandler
         Vector3 relativeVelocity = rb.linearVelocity - hurtBox.Velocity;
         relativeVelocity.z = 0;
 
-        //Momentum, not speed. Launch velocity is force/mass, so an object's momentum after being
-        //hit equals the attack's force whatever it weighs - the mass cancels. Every knob below
-        //therefore calibrates against the attack force scale once and holds for any object.
         float momentum = rb.mass * relativeVelocity.magnitude;
         if (momentum < minHitMomentum)
             return;
@@ -127,10 +112,10 @@ public class SOHitBoxHandler : HitBoxHandler
 
         float launchAngle = CalculateDeflectionAngle(relativeVelocity, hitPoint);
 
-        HitData baseHitData = new HitData(influence, launchAngle, damage, sceneObjectHitStunTime, hitPoint, 0);
+        HitData baseHitData = new HitData(baseForce, influence, launchAngle, damage, sceneObjectHitStunTime, hitPoint, 0);
         SceneObjectCollisionHitData collisionHitData = new SceneObjectCollisionHitData(sceneObject.UniqueID, baseForce, baseHitData);
 
-        DeclareHit(new HitBoxConnectedData(sceneObjectHitStunTime), hurtBox, collisionHitData);
+        DeclareHit(new HitSenderData(sceneObjectHitStunTime), hurtBox, collisionHitData);
     }
 
     private float CalculateDeflectionAngle(Vector3 relativeVelocity, Vector3 hitPoint)

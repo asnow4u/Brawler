@@ -20,7 +20,7 @@ MonoBehaviour:
   InitialDashVelocity: 20
   InitalDashDuration: 0.05
   InputDashVelocity: 20
-  InputDashDuration: 0.1
-  HorizontalEndDashVelocity: 15
+  InputDashDuration: 0.05
+  HorizontalEndDashVelocity: 8
   VerticalEndDashVelocity: 8
   DashSpeedHoldPercentage: 0.9

@@ -1,8 +1,7 @@
 using UnityEngine;
 
-using static AttackStatData;
-
-public interface IAttackHitBoxHandler
+public interface IAttackHitBoxHandler : IHitBoxHandler
 {
-    public void SetCurrentAttackStat(AttackStats attackStats);
+    public void SetWeaponHitBoxs(GameObject weapon);
+    public void SetAttackHitData(HitData hitData, AttackHitSenderData attackHitSenderData);
 }
