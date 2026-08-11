@@ -154,9 +154,6 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
         if (hitSenderData is not AttackHitSenderData attackSenderData)
             return;
 
-        if (!attackSenderData.Cancelable)
-            return;
-
         hitCancelExecuteTime = Time.time + attackSenderData.hitPauseTime;
     }
 

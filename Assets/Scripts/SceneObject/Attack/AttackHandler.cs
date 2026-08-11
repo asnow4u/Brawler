@@ -28,11 +28,6 @@ public class AttackHandler : MonoBehaviour, IAttack
     [SerializeField] private AttackState curAttackState;
     public AttackState CurAttackState => curAttackState;
 
-    [Header("Finisher")]
-    [Tooltip("Multiplier applied to BaseForce and Damage when an attack is thrown as a finisher.")]
-    [SerializeField] private float finisherStrength = 1.2f;
-    private bool isFinisherAttack = false;
-
     private AttackStatData curAttackData;
 
     public event Action<AttackState> AttackStateChangedEvent;
@@ -131,15 +126,7 @@ public class AttackHandler : MonoBehaviour, IAttack
 
     private void OnPerformedAttackCancel(BufferedInput input)
     {
-        AttackState cancelledState = curAttackState;
-
         SetCurrentAttackState(AttackState.Null);
-
-        if (input != BufferedInput.SwapWeapon || cancelledState == AttackState.Null)
-            return;
-        
-        isFinisherAttack = true;
-        SetCurrentAttackState(cancelledState);
     }
 
     #endregion
@@ -160,17 +147,12 @@ public class AttackHandler : MonoBehaviour, IAttack
 
         if (attackState == AttackState.Null || actionState.TryChangeState(ActionState.Attacking))
         {
-            if (attackState == AttackState.Null)
+            if (attackState == AttackState.Null && actionState.CurActionState == ActionState.Attacking)
             {
-                isFinisherAttack = false;
+                bool movementOngoing = movementHandler != null && 
+                                       movementHandler.CurMovementState != MovementState.Null;
 
-                if (actionState.CurActionState == ActionState.Attacking)
-                {
-                    bool movementOngoing = movementHandler != null && 
-                                           movementHandler.CurMovementState != MovementState.Null;
-
-                    actionState.ChangeState(movementOngoing ? ActionState.Moving : ActionState.Idle);
-                }
+                actionState.ChangeState(movementOngoing ? ActionState.Moving : ActionState.Idle);
             }
 
             curAttackState = attackState;
@@ -224,11 +206,9 @@ public class AttackHandler : MonoBehaviour, IAttack
             return;
         }
 
-        float strength = isFinisherAttack ? finisherStrength : 1f;
-
         attackHitBoxHandler.SetAttackHitData(
-            new HitData( attackStats.BaseForce * strength, attackStats.Influence, attackStats.LaunchAngle, attackStats.Damage * strength, attackStats.HitStunTime, Vector3.zero, attackStats.Type),
-            new AttackHitSenderData(attackStats.HitPauseTime, (int)curAttackState, attackStats.LaunchAngle, !isFinisherAttack)
+            new HitData( attackStats.BaseForce, attackStats.Influence, attackStats.LaunchAngle, attackStats.Damage, attackStats.HitStunTime, Vector3.zero, attackStats.Type),
+            new AttackHitSenderData(attackStats.HitPauseTime, (int)curAttackState, attackStats.LaunchAngle)
         );
 
         attackHitBoxHandler.SetWeaponHitBoxs(curAttackData.WeaponRootGameObject);

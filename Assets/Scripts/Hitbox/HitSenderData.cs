@@ -15,12 +15,9 @@ public class AttackHitSenderData : HitSenderData
     public int AttackState;
     public float LaunchAngle;
 
-    public bool Cancelable;
-
-    public AttackHitSenderData(float hitPauseTime, int attackState, float launchAngle, bool cancelable = true) : base(hitPauseTime)
+    public AttackHitSenderData(float hitPauseTime, int attackState, float launchAngle) : base(hitPauseTime)
     {
         AttackState = attackState;
         LaunchAngle = launchAngle;
-        Cancelable = cancelable;
     }
 }

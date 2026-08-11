@@ -20,7 +20,7 @@ public class EquipmentHandler : MonoBehaviour, IEquipment, IAttackCancel
                                 weaponHandler.HasSecondryWeapon &&
                                 actionState.CurActionState < ActionState.Attacking;
     
-    private bool finisherAllowed => weaponHandler != null &&
+    private bool swapCancelAllowed => weaponHandler != null &&
                                     weaponHandler.HasSecondryWeapon;
 
     
@@ -102,9 +102,6 @@ public class EquipmentHandler : MonoBehaviour, IEquipment, IAttackCancel
         if (hitSenderData is not AttackHitSenderData attackSenderData)
             return;
 
-        if (!attackSenderData.Cancelable)
-            return;
-
         hitCancelExecuteTime = Time.time + attackSenderData.hitPauseTime;
     }
 
@@ -117,13 +114,13 @@ public class EquipmentHandler : MonoBehaviour, IEquipment, IAttackCancel
         if (Time.time < hitCancelExecuteTime)
             return;
 
-        TryFinisherCancel();
+        TrySwapCancel();
         hitCancelExecuteTime = -1f;
     }
 
-    private void TryFinisherCancel()
+    private void TrySwapCancel()
     {
-        if (inputBuffer == null || !finisherAllowed)
+        if (inputBuffer == null || !swapCancelAllowed)
             return;
 
         if (!inputBuffer.TryGetNewestLive(InputSets.AttackHitCancelInputs, out BufferedInput newest) ||
@@ -149,7 +146,7 @@ public class EquipmentHandler : MonoBehaviour, IEquipment, IAttackCancel
         statHandler.UpdateAccumulatedMass(CalculateAccumulatedMass());
         statHandler.UpdateAnimationStats(weapon.WeaponData.MovementCollection, weapon.WeaponData.AttackCollection);
         statHandler.UpdateMovementStats(weapon.WeaponData.MovementCollection);
-        statHandler.UpdateAttackStats(weaponHandler.ParseWeaponAttackData(weapon));
+        statHandler.UpdateAttackStats(weaponHandler.ParseWeaponAttackData(weapon));        
     }
 
     private float CalculateAccumulatedMass()
