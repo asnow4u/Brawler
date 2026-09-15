@@ -35,12 +35,12 @@ public class MovementStatData
     public float AerialXDecceleration;
     public float MaxAerialRisingVelocity;
     public float MaxFallVelocity;
+    public float FastFallVelocity;
     public float AerialRisingDecceleration;
 
     //Gravity
     public float GravityRaising;
     public float GravityFalling;
-    public float GravityFastFalling;
     public float GravityHitStunTravel;
     public float GravityHitStunRecovery;
 

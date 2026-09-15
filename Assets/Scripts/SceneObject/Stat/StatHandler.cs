@@ -221,7 +221,6 @@ public class StatHandler : MonoBehaviour, IStats
     
         statData.GravityRaising = baseSceneObjectData.GravityRaising;
         statData.GravityFalling = baseSceneObjectData.GravityFalling;
-        statData.GravityFastFalling = baseSceneObjectData.GravityFastFalling;
         statData.GravityHitStunTravel = baseSceneObjectData.GravityHitStunTravel;
         statData.GravityHitStunRecovery = baseSceneObjectData.GravityHitStunRecovery;
 
@@ -256,6 +255,7 @@ public class StatHandler : MonoBehaviour, IStats
         if (data.AirMoveData != null && data.AirMoveData.IsValid())
         {
             statData.AerialXAcceleration = data.AirMoveData.AerialXAcceleration;
+            statData.FastFallVelocity = data.AirMoveData.FastFallVelocity;
             statData.AerialMovementValid = true;
         }
         else

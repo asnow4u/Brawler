@@ -30,6 +30,11 @@ internal class Player : SceneObject, IMovementInput, IAttackInput, IInteractionI
     private const float ATTACK_INPUT_RESET_THRESHOLD = 0.2f;
     private bool attackInputTriggered = false; // NOTE: Prevent multi buffering off of a single attack.
 
+    //Fast Fall
+    private const float FAST_FALL_INPUT_THRESHOLD = 0.6f;
+    private const float FAST_FALL_INPUT_RESET_THRESHOLD = 0.3f;
+    private bool fastFallInputTriggered = false; // NOTE: Prevent re-buffering while down is held.
+
 
     #region Initialize
 
@@ -71,11 +76,28 @@ internal class Player : SceneObject, IMovementInput, IAttackInput, IInteractionI
     private void MovementInput(InputAction.CallbackContext obj)
     {
         rawMovement = obj.ReadValue<Vector2>();
+        EvaluateFastFallInput(rawMovement.y);
     }
 
     private void MovementCanceled(InputAction.CallbackContext obj)
     {
         rawMovement = Vector2.zero;
+        fastFallInputTriggered = false;
+    }
+
+    private void EvaluateFastFallInput(float verticalRaw)
+    {
+        if (verticalRaw > -FAST_FALL_INPUT_RESET_THRESHOLD)
+        {
+            fastFallInputTriggered = false;
+            return;
+        }
+
+        if (!fastFallInputTriggered && verticalRaw < -FAST_FALL_INPUT_THRESHOLD)
+        {
+            fastFallInputTriggered = true;
+            inputBuffer.Buffer(BufferedInput.FastFall, -verticalRaw);
+        }
     }
 
     private void JumpInput(InputAction.CallbackContext obj)
@@ -165,6 +187,7 @@ internal class Player : SceneObject, IMovementInput, IAttackInput, IInteractionI
     public void DebugMovementInput(Vector2 movementInput)
     {
         rawMovement = movementInput;
+        EvaluateFastFallInput(rawMovement.y);
     }
 
     public void DebugJumpInput(float jumpInput)

@@ -367,6 +367,8 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
 
     protected override bool UsesNativeGravity => false;
 
+    protected override float MaxFallSpeed => isFastFalling ? curMovementData.FastFallVelocity : base.MaxFallSpeed;
+
     protected override void ApplyGravity()
     {
         if (isLedgeClimbing || isDashing)
@@ -375,22 +377,13 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
         base.ApplyGravity();        
     }
 
-    protected override float CalculateGravityForce()
-    {
-        if (actionState.CurActionState == ActionState.HitStun &&
-            verticalInfluence < 0 && rb.linearVelocity.y <= 0)
-        {
-            return curMovementData.GravityFastFalling;   
-        }
-            
-        return base.CalculateGravityForce();
-    }
-
     #endregion
 
 
     protected override void UpdateMovement()
     {
+        UpdateFastFall();
+
         base.UpdateMovement(); 
         
         UpdateJump();
@@ -580,6 +573,7 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
     {        
         inputBuffer?.ClearAll();
         driftVelocityApplied = 0f;
+        EndFastFall();
         ClearCancelWindow();
         base.OnRecievedHitStunKnockback(hitData);
     }

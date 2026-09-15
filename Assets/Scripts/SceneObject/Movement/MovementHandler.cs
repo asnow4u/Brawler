@@ -98,6 +98,9 @@ public partial class MovementHandler : MonoBehaviour
 
     #region Gravity
 
+    //Terminal descent speed. Virtual so subclasses can raise it (fast fall) without reimplementing gravity.
+    protected virtual float MaxFallSpeed => curMovementData.MaxFallVelocity;
+
     protected virtual void ApplyGravity()
     {        
         float gravityForce = CalculateGravityForce();
@@ -107,7 +110,7 @@ public partial class MovementHandler : MonoBehaviour
         //Clamp downward velocity to the appropriate max fall speed
         if (rb.linearVelocity.y < 0)
         {
-            float maxFall = curMovementData.MaxFallVelocity;
+            float maxFall = MaxFallSpeed;
             if (rb.linearVelocity.y < -maxFall)
                 rb.linearVelocity = new Vector3(rb.linearVelocity.x, -maxFall, 0);
         }

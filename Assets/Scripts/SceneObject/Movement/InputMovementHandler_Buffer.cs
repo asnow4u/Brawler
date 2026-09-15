@@ -59,6 +59,9 @@ public partial class InputMovementHandler
 
         else if (newest == BufferedInput.Dash)
             TryDashCancel();
+
+        else if (newest == BufferedInput.FastFall)
+            TryFastFallCancel();
     }
 
     private bool TryJumpCancel()
@@ -96,6 +99,19 @@ public partial class InputMovementHandler
 
         BeginCancel(BufferedInput.Dash);
         StartDashCancel();
+        return true;
+    }
+    
+    private bool TryFastFallCancel()
+    {
+        if (!fastFallAllowed)
+            return false;
+
+        if (!inputBuffer.TryConsume(BufferedInput.FastFall))
+            return false;
+
+        BeginCancel(BufferedInput.FastFall);
+        BeginFastFall();
         return true;
     }
 

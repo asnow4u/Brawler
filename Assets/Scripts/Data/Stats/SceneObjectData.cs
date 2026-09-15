@@ -32,8 +32,6 @@ public class SceneObjectData : ScriptableObject
     public float GravityRaising;
     [Tooltip("The gravity force applied while moving down")]
     public float GravityFalling;
-    [Tooltip("The gravity force applied while fast falling")]
-    public float GravityFastFalling;
     [Tooltip("The gravity force used while in hitstun during the travel state")]
     public float GravityHitStunTravel;
     [Tooltip("The gravity force used while in hitstun during the recovery state" +
@@ -64,7 +62,7 @@ public class SceneObjectData : ScriptableObject
         if (GroundedDecceleration <= 0 || AerialXDecceleration <=0)
             return false;
 
-        if (GravityRaising <= 0 || GravityFalling <= 0 || GravityFastFalling <= 0 || GravityHitStunTravel <= 0 || GravityHitStunRecovery <= 0)
+        if (GravityRaising <= 0 || GravityFalling <= 0 || GravityHitStunTravel <= 0 || GravityHitStunRecovery <= 0)
             return false;
 
         if (AnimationCollection == null) 

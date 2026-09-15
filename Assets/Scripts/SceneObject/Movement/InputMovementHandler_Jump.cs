@@ -64,6 +64,7 @@ public partial class InputMovementHandler
     private void StartJump()
     {
         ConsumeBufferedJump();
+        EndFastFall();
 
         if (curMovementState == MovementState.GroundJump)
         {

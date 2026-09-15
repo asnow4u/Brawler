@@ -6,6 +6,7 @@ public enum BufferedInput
     Dash,
     Attack,
     SwapWeapon,
+    FastFall,
 }
 
 public static class InputSets
@@ -16,6 +17,7 @@ public static class InputSets
         BufferedInput.Jump,
         BufferedInput.Dash,
         BufferedInput.SwapWeapon,
+        BufferedInput.FastFall,
     };
 }
 
