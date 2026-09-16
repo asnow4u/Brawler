@@ -277,8 +277,16 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
         //Horizontal Movement
         else if (groundedMovementAllowed)
         {
+            //Ledge Climb
+            if (ledgeClimbAllowed)
+            {
+                SetCurrentMoveState(MovementState.LedgeClimb);
+                if (curMovementState == MovementState.LedgeClimb)
+                    BeginLedgeClimb();
+            }
+                
             // Against Wall
-            if (wallLeanAllowed)
+            else if (wallLeanAllowed)
                 SetCurrentMoveState(MovementState.WallLean);
 
             // Dash initiation (standstill, walk -> dash, or pivot)
