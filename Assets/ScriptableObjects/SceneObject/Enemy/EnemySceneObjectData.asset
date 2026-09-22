@@ -13,17 +13,16 @@ MonoBehaviour:
   m_Name: EnemySceneObjectData
   m_EditorClassIdentifier: 
   Mass: 100
-  GroundedMaxVelocity: 18
-  GroundedDecceleration: 5000
-  AerialMaxXVelocity: 13
+  GroundedMaxVelocity: 15
+  GroundedDecceleration: 50
+  AerialMaxXVelocity: 10
   AerialXDecceleration: 100
   AerialMaxRisingVelocity: 25
   AerialRisingDecceleration: 100
   AerialMaxFallVelocity: 25
   GravityRaising: 30
   GravityFalling: 30
-  GravityFastFalling: 50
   GravityHitStunTravel: 24.5
   GravityHitStunRecovery: 11
   AnimationCollection: {fileID: 11400000, guid: b97227ff6321bb24a835f88b0b1f3e58, type: 2}
-  MovementCollection: {fileID: 0}
+  MovementCollection: {fileID: 11400000, guid: 245cbd7ac52e237409f25943ff190ab6, type: 2}

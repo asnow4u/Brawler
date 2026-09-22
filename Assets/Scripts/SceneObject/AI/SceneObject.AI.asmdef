@@ -1,0 +1,17 @@
+{
+    "name": "SceneObject.AI",
+    "rootNamespace": "",
+    "references": [
+        "GUID:ab16a484669f87b4f9fd7610ae8b2d49",
+        "GUID:32e110b54e2671740a51b81869f0c8f8"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
