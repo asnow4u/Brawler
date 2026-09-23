@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-internal class Player : SceneObject, IMovementInput, IAttackInput, IInteractionInput, IEquipmentInput, IInputBuffer, IMovementInputEditor, IAttackInputEditor
+public class Player : SceneObject, IMovementInput, IAttackInput, IInteractionInput, IEquipmentInput, IInputBuffer, IMovementInputEditor, IAttackInputEditor
 {
     private PlayerInputHandler inputHandler;
 

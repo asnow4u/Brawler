@@ -10,6 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 5430075751310617596}
   - component: {fileID: 518689040656210144}
+  - component: {fileID: 3633814203630592776}
+  - component: {fileID: 3541207697935860230}
+  - component: {fileID: 3395873887126715069}
   - component: {fileID: 2771487728785574238}
   - component: {fileID: 6069406143441254981}
   - component: {fileID: 7920368824359693601}
@@ -20,7 +23,7 @@ GameObject:
   - component: {fileID: 211902645310765321}
   - component: {fileID: 5971225958984470368}
   m_Layer: 7
-  m_Name: Enemy
+  m_Name: PatrolEnemy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -55,7 +58,72 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: SceneObject.Core::Enemy
   uniqueIDString: 
-  ObjectType: 1
+  objectType: 1
+  inputBufferWindow: 0.2
+  engageRadius: 14
+  disengageRadius: 30
+  searchWaitDuration: 1
+  sightBlockingMask:
+    serializedVersion: 2
+    m_Bits: 64
+  debugTarget: {fileID: 0}
+  drawAwareness: 1
+--- !u!114 &3633814203630592776
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5535485377693572998}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c49ff1897aca70459fca719e7589f8d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SceneObject.AI::EnemyPatrol
+  patrolPoints: {fileID: 0}
+  dwellDuration: 1.5
+  waypointTolerance: 0.75
+--- !u!114 &3541207697935860230
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5535485377693572998}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7bb38b50ec843604c9d97f2d9484a374, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SceneObject.Core::EnemyMovementInput
+--- !u!114 &3395873887126715069
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5535485377693572998}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: beea1f0767c2ce048bf7ef01a927663f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NavAgent
+  navGraph: {fileID: 0}
+  segmentTolerance: 0.35
+  verticalTolerance: 0.6
+  destinationTolerance: 1
+  destinationMoveThreshold: 1.5
+  replanCooldown: 0.25
+  reengageDelay: 0.4
+  maxConsecutiveFailures: 3
+  stuckTimeout: 1.5
+  stuckProgressThreshold: 0.05
+  standingJumpSafety: 0.8
+  launchTolerance: 0.2
+  standingSpeedThreshold: 0.5
+  logNavigation: 1
+  drawPath: 1
+  drawJumpEnvelope: 1
+  envelopeDropDepth: 8
 --- !u!54 &2771487728785574238
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -119,7 +187,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: SceneObject.ActionState::ActionStateHandler
   curGroundedState: 0
-  curClimbState: 0
   curActionState: -1
   curIdleState: -1
 --- !u!114 &6364841736371522827
@@ -148,7 +215,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: SceneObject.Animation::AnimationHandler
   idleController: {fileID: 9100000, guid: 659c75eada4e061488073716691dedce, type: 2}
-  movementController: {fileID: 0}
+  movementController: {fileID: 9100000, guid: c37058b508664c5468b03ccc5cc7966d, type: 2}
   attackController: {fileID: 0}
   hitStunController: {fileID: 9100000, guid: 2d61c65002fdada44b08d4fe16eb871a, type: 2}
 --- !u!114 &326482776337894903
@@ -163,27 +230,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 33124b1ec40121640b92aa78dda47442, type: 3}
   m_Name: 
   m_EditorClassIdentifier: SceneObject.Movement::MovementHandler
-  curMovementState: 0
-  horizontalDeadzone: 0
-  horizontalInfluence: 0
-  verticalDeadzone: 0
-  verticalInfluence: 0
-  jumpDeadzone: 0
-  jumpInfluence: 0
-  isClimbSliding: 0
-  ledgeClimbDuration: 0.2
-  dashInfluenceThreshold: 0.5
-  dashInitiationSpeedScaler: 0.5
   travelDragSetup: 0.95
   travelDragFinisher: 0.995
   recoveryDrag: 0.98
-  maxDIAngle: 15
-  maxDriftSpeed: 2.5
-  driftAccel: 8
+  hitStunPhysicsMaterial: {fileID: 13400000, guid: 5d9051d2f8d00464db5f82892d0cc82d, type: 2}
   bounceDegrade: 0.9
   minBounceVelocity: 0.9
   splatVelocityThreshold: 15
   splatHoldDuration: 0.1
+  curMovementState: 0
+  ledgeClimbDuration: 0.2
+  maxDIAngle: 15
+  maxDriftSpeed: 2.5
+  driftAccel: 8
+  dashInfluenceThreshold: 0.5
+  dashInitiationSpeedScaler: 0.5
+  dashCooldown: 0.5
 --- !u!114 &8546965889012879366
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -217,8 +279,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: SceneObject.Hitbox::HitBoxHandler
   sceneObjectRoot: {fileID: 6726734943523650567}
-  minSceneObjectHitLaunchAngle: 70
-  maxSceneObjectHitLaunchAngle: 30
+  minHitMomentum: 600
+  momentumForceScale: 0.45
+  killMomentum: 7000
+  damageScale: 0.0025
+  deflectionWeight: 0.35
   minSceneObjectHitDamage: 1
   maxSceneObjectHitDamage: 5
   sceneObjectHitStunTime: 0.1
@@ -235,10 +300,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: SceneObject.Hurtbox::SceneObjectHurtBoxHandler
   damageTaken: 0
-  baseForce: 1200
   exGrowth: 2
   damageForceScale: 0.2
   debugMode: 0
+  debugBaseForce: 1200
   debugInfluence: 1
   debugLaunchAngle: 45
   debugDamage: 10
