@@ -1,24 +1,30 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>Patrol settings configured on the enemy.</summary>
+[Serializable]
+internal class PatrolSettings
+{
+    [Tooltip("Object whose children are the waypoints. Found by the name PatrolPoints when empty.")]
+    public Transform PatrolPoints;
+    [Tooltip("How long the enemy waits at each waypoint, in seconds.")]
+    public float DwellDuration = 1.5f;
+    [Tooltip("Distance from a waypoint that counts as reaching it, in world units.")]
+    public float WaypointTolerance = 0.75f;
+}
+
+
 /// <summary>
-/// Walks a route of waypoints, dwelling at each one. The disengage radius is measured from the
-/// nearest waypoint, so the patrol area is the leash. Waypoints are the children of a child object
-/// named PatrolPoints.
-///
-/// With no usable waypoints, or after ReHome, it holds a single spot instead.
+/// Walks a route of waypoints back and forth, dwelling at each one. The disengage radius is measured
+/// from the nearest waypoint. With no usable waypoints, or after ReHome, it holds a single spot.
 /// </summary>
-internal class EnemyPatrol : MonoBehaviour, IEnemyHome
+internal class EnemyPatrol : IEnemyHome
 {
     private const string PatrolPointsName = "PatrolPoints";
 
-    [Tooltip("Object whose children are the waypoints. Found by name when empty.")]
-    [SerializeField] private Transform patrolPoints;
-    [Tooltip("How long the enemy waits at each waypoint, in seconds.")]
-    [SerializeField] private float dwellDuration = 1.5f;
-    [Tooltip("Distance from a waypoint that counts as reaching it, in world units.")]
-    [SerializeField] private float waypointTolerance = 0.75f;
-
+    private readonly Transform owner;
+    private readonly PatrolSettings settings;
     private readonly List<Vector3> route = new List<Vector3>();
 
     private int index;
@@ -31,6 +37,14 @@ internal class EnemyPatrol : MonoBehaviour, IEnemyHome
     private Vector3 fallbackPost;
 
     private bool HasRoute => !degraded && route.Count > 0;
+
+
+    public EnemyPatrol(Transform owner, PatrolSettings settings)
+    {
+        this.owner = owner;
+        this.settings = settings;
+        fallbackPost = owner.position;
+    }
 
 
     #region Home
@@ -89,11 +103,9 @@ internal class EnemyPatrol : MonoBehaviour, IEnemyHome
             return true;
         }
 
-        bool atWaypoint = arrived || Vector3.Distance(currentPosition, route[index]) <= waypointTolerance;
-
         if (dwelling)
         {
-            if (Time.time - dwellStartTime < dwellDuration)
+            if (Time.time - dwellStartTime < settings.DwellDuration)
                 return false;
 
             Advance();
@@ -101,7 +113,7 @@ internal class EnemyPatrol : MonoBehaviour, IEnemyHome
             return true;
         }
 
-        if (atWaypoint)
+        if (arrived || Vector3.Distance(currentPosition, route[index]) <= settings.WaypointTolerance)
         {
             dwelling = true;
             dwellStartTime = Time.time;
@@ -127,14 +139,13 @@ internal class EnemyPatrol : MonoBehaviour, IEnemyHome
     {
         route.Clear();
 
-        if (patrolPoints == null)
-            patrolPoints = transform.Find(PatrolPointsName);
+        Transform points = settings.PatrolPoints != null ? settings.PatrolPoints : owner.Find(PatrolPointsName);
 
-        if (patrolPoints == null)
+        if (points == null)
             return;
 
-        for (int i = 0; i < patrolPoints.childCount; i++)
-            route.Add(patrolPoints.GetChild(i).position);
+        for (int i = 0; i < points.childCount; i++)
+            route.Add(points.GetChild(i).position);
     }
 
     /// <summary>Steps to the next waypoint, reversing at either end of the route.</summary>

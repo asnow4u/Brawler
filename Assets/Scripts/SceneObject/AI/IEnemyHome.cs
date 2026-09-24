@@ -1,9 +1,22 @@
 using UnityEngine;
 
+/// <summary>Which home an enemy is built with.</summary>
+public enum EnemyHomeMode
+{
+    /// <summary>No home. Radii are measured from the enemy, and it stops where it is when it disengages.</summary>
+    None,
+
+    /// <summary>Holds a single spot.</summary>
+    Post,
+
+    /// <summary>Walks a route of waypoints.</summary>
+    Patrol,
+}
+
+
 /// <summary>
-/// Where an enemy belongs. Anchors its awareness radii, tells it where to return to, and drives it
-/// while idle. An enemy with no home component engages from its own position and stops wherever it
-/// is when it disengages.
+/// Where an enemy belongs. Anchors its disengage radius, tells it where to return to, and drives it
+/// while idle. Owned and built by the enemy.
 /// </summary>
 internal interface IEnemyHome
 {

@@ -1,15 +1,20 @@
 using UnityEngine;
 
-/// <summary>
-/// Holds a single spot. The enemy engages from it, returns to it, and stands still while idle.
-/// </summary>
-internal class EnemyPost : MonoBehaviour, IEnemyHome
+/// <summary>Holds a single spot. The enemy returns to it and stands still while idle.</summary>
+internal class EnemyPost : IEnemyHome
 {
+    private readonly Transform owner;
+
     private Vector3 post;
     private bool initialized;
 
-    private Vector3 Anchor => initialized ? post : transform.position;
+    private Vector3 Anchor => initialized ? post : owner.position;
 
+
+    public EnemyPost(Transform owner)
+    {
+        this.owner = owner;
+    }
 
     public void Initialize(Vector3 spawnPosition)
     {
