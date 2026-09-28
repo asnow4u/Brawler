@@ -55,8 +55,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5430075751310617596}
-  - component: {fileID: 518689040656210144}
-  - component: {fileID: 1222361335302959250}
+  - component: {fileID: 5767468327159774823}
   - component: {fileID: 3395873887126715069}
   - component: {fileID: 2771487728785574238}
   - component: {fileID: 6069406143441254981}
@@ -64,10 +63,7 @@ GameObject:
   - component: {fileID: 6364841736371522827}
   - component: {fileID: 2320645713026566502}
   - component: {fileID: 557284054321077142}
-  - component: {fileID: 3541207697935860230}
   - component: {fileID: 326482776337894903}
-  - component: {fileID: 1342213309043004227}
-  - component: {fileID: 3801556416746383553}
   - component: {fileID: 1209283738170696011}
   - component: {fileID: 1933714625102194033}
   - component: {fileID: 8546965889012879366}
@@ -97,7 +93,7 @@ Transform:
   - {fileID: 2670435732351776987}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &518689040656210144
+--- !u!114 &5767468327159774823
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -106,32 +102,30 @@ MonoBehaviour:
   m_GameObject: {fileID: 5535485377693572998}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0a2ddedd6e20d2e4084c0d9cf7171bed, type: 3}
+  m_Script: {fileID: 11500000, guid: dee3cb1074bb9dc47b5e619ddcbaa113, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: SceneObject.Core::Enemy
+  m_EditorClassIdentifier: SceneObject.AI::RushdownEnemy
   uniqueIDString: 
   objectType: 1
-  inputBufferWindow: 0.2
-  engageRadius: 14
-  disengageRadius: 30
+  homeMode: 1
+  patrol:
+    PatrolPoints: {fileID: 0}
+    DwellDuration: 1.5
+    WaypointTolerance: 0.75
+  engageRadius: 12
+  disengageRadius: 18
   searchWaitDuration: 1
   sightBlockingMask:
     serializedVersion: 2
     m_Bits: 64
   debugTarget: {fileID: 0}
-  drawAwareness: 1
---- !u!114 &1222361335302959250
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5535485377693572998}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2a823331580f5464a9d3c0166ee8dc22, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: SceneObject.AI::EnemyPost
+  drawAwareness: 0
+  inputBufferWindow: 0.2
+  attackRange: 1.75
+  verticalSlotThreshold: 1
+  attackCooldown:
+    duration: 1.2
+    randomness: 0.5
 --- !u!114 &3395873887126715069
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -267,18 +261,6 @@ MonoBehaviour:
   movementController: {fileID: 9100000, guid: c37058b508664c5468b03ccc5cc7966d, type: 2}
   attackController: {fileID: 9100000, guid: ba977fa0a01f4c34fb7e5a7d430ff24a, type: 2}
   hitStunController: {fileID: 9100000, guid: 2d61c65002fdada44b08d4fe16eb871a, type: 2}
---- !u!114 &3541207697935860230
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5535485377693572998}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7bb38b50ec843604c9d97f2d9484a374, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: SceneObject.Core::EnemyMovementInput
 --- !u!114 &326482776337894903
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -307,35 +289,6 @@ MonoBehaviour:
   dashInfluenceThreshold: 0.5
   dashInitiationSpeedScaler: 0.5
   dashCooldown: 0.5
---- !u!114 &1342213309043004227
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5535485377693572998}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 932d9e83ffa5fe242ad4f457140447c0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: SceneObject.AI::EnemyAttackInput
---- !u!114 &3801556416746383553
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5535485377693572998}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a9eeeeb84bc259c42b4cbdb1bdca8263, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: SceneObject.AI::EnemyMeleeCombat
-  attackRange: 1.75
-  verticalSlotThreshold: 1
-  attackCooldown: 1.2
-  attackCooldownRandomness: 0.5
-  drawRange: 0
 --- !u!114 &1209283738170696011
 MonoBehaviour:
   m_ObjectHideFlags: 0

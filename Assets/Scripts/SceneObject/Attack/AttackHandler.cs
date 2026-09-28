@@ -172,33 +172,7 @@ public class AttackHandler : MonoBehaviour, IAttack
             return;
         }
 
-        AttackStats attackStats = null;
-        switch (curAttackState)
-        {
-            case AttackState.UpTilt:
-                attackStats = curAttackData.UpTilt;
-                break;
-
-            case AttackState.ForwardTilt:
-                attackStats = curAttackData.ForwardTilt;
-                break;
-
-            case AttackState.DownTilt:
-                attackStats = curAttackData.DownTilt;
-                break;
-
-            case AttackState.UpAir:
-                attackStats = curAttackData.UpAir;
-                break;
-
-            case AttackState.ForwardAir:
-                attackStats = curAttackData.ForwardAir;
-                break;
-
-            case AttackState.DownAir:
-                attackStats = curAttackData.DownAir;
-                break;
-        }
+        AttackStats attackStats = curAttackData.GetAttackStats((int)curAttackState);
 
         if (attackStats == null)
         {

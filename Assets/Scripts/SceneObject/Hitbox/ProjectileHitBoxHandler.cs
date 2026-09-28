@@ -20,21 +20,23 @@ public class ProjectileHitBoxHandler : HitBoxHandler
         return GetComponentsInChildren<IHitBox>();
     }
 
-    private void Start()
+    /// <summary>Sets the owner the hitboxes ignore and the hit data applied on contact, then enables the hitboxes.</summary>
+    public void Initialize(Guid ownerID, HitData hitData)
     {
         foreach (IHitBox hitbox in hitboxs)
-            hitbox.SetOwner(sceneObject.UniqueID);
-    }
+            hitbox.SetOwner(ownerID);
 
-    public void SetHitData(HitData hitData)
-    {
         baseHitData = hitData;
         ClearHitRecord();
         EnableHitBoxs();
-    }    
+    }
 
     protected override void OnHit(IHitBox hitBox, IHurtBox hurtBox, Vector3 hitPoint)
     {
+        // A projectile never hits its own hurtbox.
+        if (hurtBox.OwnerID == sceneObject.UniqueID)
+            return;
+
         if (sceneObjectsHit.Contains(hurtBox.OwnerID))
             return;
 

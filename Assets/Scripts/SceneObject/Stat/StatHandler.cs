@@ -19,6 +19,7 @@ public class StatHandler : MonoBehaviour, IStats
     public event Action<AnimationStatData> AnimationStatsChangedEvent;
     public event Action<MovementStatData> MovementStatsChangedEvent;
     public event Action<AttackStatData> AttackStatsChangedEvent;
+    public event Action<EnhancementStatData> EnhancementStatsChangedEvent;
 
     #region Initialize
 
@@ -95,6 +96,12 @@ public class StatHandler : MonoBehaviour, IStats
     {
         if (attackStats != null)
             AttackStatsChangedEvent?.Invoke(attackStats);
+    }
+
+    public void UpdateEnhancementStats(EnhancementStatData enhancementStats)
+    {
+        if (enhancementStats != null)
+            EnhancementStatsChangedEvent?.Invoke(enhancementStats);
     }
 
     private AnimationStatData ParseAnimationData(MovementDataCollection movementData = null, AttackDataCollection attackData = null)

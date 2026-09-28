@@ -1,12 +1,15 @@
 {
-    "name": "Projectile",
+    "name": "SceneObject.Enhancement",
     "rootNamespace": "",
     "references": [
         "GUID:ab16a484669f87b4f9fd7610ae8b2d49",
+        "GUID:9e7d7f1e0612df848b86625cbe6c59af",
+        "GUID:9cc72b0a92ea69041afa42d2e66dc25d",
+        "GUID:80576365812a8274ba6e669b1aad0f40",
+        "GUID:28f8019663a947340be186ad0576c935",
+        "GUID:4a51cc1174f57774f9e8702b83e0a20e",
         "GUID:b6ec7fe7ad11c25458e7476035ed614e",
-        "GUID:5c910f444a332b74abd79ac76a81251c",
-        "GUID:ffa81e0146ffbaa42a610bf81413d589",
-        "GUID:9cc72b0a92ea69041afa42d2e66dc25d"
+        "GUID:ffa81e0146ffbaa42a610bf81413d589"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -49,7 +49,10 @@ public class EquipmentHandler : MonoBehaviour, IEquipment, IAttackCancel
     private void RegisterToEvents()
     {
         if (weaponHandler != null)
+        {
             weaponHandler.OnWeaponEquippedEvent += OnWeaponChanged;
+            weaponHandler.OnEquippedEnhancementsChangedEvent += OnEnhancementsChanged;
+        }
 
         if (attackHitBoxHandler != null)
             attackHitBoxHandler.OnHitConnected += OnHitConnected;
@@ -69,7 +72,10 @@ public class EquipmentHandler : MonoBehaviour, IEquipment, IAttackCancel
     private void UnregisterFromEvents()
     {
         if (weaponHandler != null)
+        {
             weaponHandler.OnWeaponEquippedEvent -= OnWeaponChanged;
+            weaponHandler.OnEquippedEnhancementsChangedEvent -= OnEnhancementsChanged;
+        }
 
         if (attackHitBoxHandler != null)
             attackHitBoxHandler.OnHitConnected -= OnHitConnected;
@@ -147,6 +153,12 @@ public class EquipmentHandler : MonoBehaviour, IEquipment, IAttackCancel
         statHandler.UpdateAnimationStats(weapon.WeaponData.MovementCollection, weapon.WeaponData.AttackCollection);
         statHandler.UpdateMovementStats(weapon.WeaponData.MovementCollection);
         statHandler.UpdateAttackStats(weaponHandler.ParseWeaponAttackData(weapon));        
+        statHandler.UpdateEnhancementStats(weaponHandler.ParseWeaponEnhancementData(weapon));
+    }
+
+    private void OnEnhancementsChanged(IWeapon weapon)
+    {
+        statHandler.UpdateEnhancementStats(weaponHandler.ParseWeaponEnhancementData(weapon));
     }
 
     private float CalculateAccumulatedMass()

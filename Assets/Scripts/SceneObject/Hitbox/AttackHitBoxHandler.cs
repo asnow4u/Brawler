@@ -13,6 +13,8 @@ public class AttackHitBoxHandler : HitBoxHandler, IAttackHitBoxHandler
     private HitData curHitData;
     private AttackHitSenderData curAttackSenderData;
 
+    private readonly HashSet<Guid> ignoredThisAttack = new HashSet<Guid>();
+
     protected override void Awake()
     {
         sceneObject = GetComponent<ISceneObject>();
@@ -54,6 +56,7 @@ public class AttackHitBoxHandler : HitBoxHandler, IAttackHitBoxHandler
     {
         DisableHitboxs();
         ClearHitRecord();
+        ignoredThisAttack.Clear();
     }    
 
     private void OnAnimationEventFired(AnimationEventState eventState)
@@ -75,6 +78,7 @@ public class AttackHitBoxHandler : HitBoxHandler, IAttackHitBoxHandler
     {
         DisableHitboxs();
         ClearHitRecord();
+        ignoredThisAttack.Clear();
 
         if (weapon == null)
         {
@@ -93,11 +97,17 @@ public class AttackHitBoxHandler : HitBoxHandler, IAttackHitBoxHandler
         curAttackSenderData = attackHitBoxConnectedData;
     }
 
+    public void IgnoreForCurrentAttack(Guid sceneObjectID)
+    {
+        ignoredThisAttack.Add(sceneObjectID);
+    }
+
     protected override void OnHit(IHitBox hitBox, IHurtBox hurtBox, Vector3 hitPoint)
     {
         if (curHitData == null ||
             curAttackSenderData == null ||
-            sceneObjectsHit.Contains(hurtBox.OwnerID))
+            sceneObjectsHit.Contains(hurtBox.OwnerID) ||
+            ignoredThisAttack.Contains(hurtBox.OwnerID))
             return;
 
         sceneObjectsHit.Add(hurtBox.OwnerID);

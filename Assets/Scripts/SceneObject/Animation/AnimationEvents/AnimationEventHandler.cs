@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public enum AnimationEventState { Null, AttackStarted, EnableHitbox, DisableHitbox, AttackEnded }
+public enum AnimationEventState { Null, AttackStarted, EnableHitbox, DisableHitbox, AttackEnded, Spawn }
 
 [RequireComponent(typeof(Animator))]
 internal class AnimationEventHandler : MonoBehaviour, IAnimationEvent
@@ -26,5 +26,10 @@ internal class AnimationEventHandler : MonoBehaviour, IAnimationEvent
     public void EndAttack()
     {
         OnAnimationEventFiredEvent?.Invoke(AnimationEventState.AttackEnded);
+    }
+
+    public void Spawn()
+    {
+        OnAnimationEventFiredEvent?.Invoke(AnimationEventState.Spawn);
     }
 }

@@ -44,6 +44,21 @@ public class AttackStatData
     public AttackStats UpAir;
     public AttackStats ForwardAir;
     public AttackStats DownAir;
+
+    /// <summary>Stats for an attack state, passed as its AttackState value. Null for no attack.</summary>
+    public AttackStats GetAttackStats(int attackState)
+    {
+        switch (attackState)
+        {
+            case 0: return UpTilt;
+            case 1: return DownTilt;
+            case 2: return ForwardTilt;
+            case 3: return UpAir;
+            case 4: return DownAir;
+            case 5: return ForwardAir;
+            default: return null;
+        }
+    }
 }
 
 

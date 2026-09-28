@@ -14,12 +14,19 @@ internal class WeaponHandler : MonoBehaviour
     public bool HasSecondryWeapon => secondaryWeapon != null;
 
     public event Action<IWeapon> OnWeaponEquippedEvent;
+    public event Action<IWeapon> OnEquippedEnhancementsChangedEvent;
 
 
     private void Awake()
     {
         if (grabPoint == null)
             Debug.LogError("Weapon GrabPoint is Null", gameObject);
+    }
+
+    private void OnDestroy()
+    {
+        if (equippedWeapon != null)
+            equippedWeapon.EnhancementsChangedEvent -= OnEquippedEnhancementsChanged;
     }
 
     public void Initialize()
@@ -60,6 +67,9 @@ internal class WeaponHandler : MonoBehaviour
     
     private void EquipWeapon(IWeapon weapon)
     {
+        if (equippedWeapon != null)
+            equippedWeapon.EnhancementsChangedEvent -= OnEquippedEnhancementsChanged;
+
         if (weapon == secondaryWeapon)
         {
             AddWeaponToInventory(equippedWeapon);            
@@ -68,6 +78,7 @@ internal class WeaponHandler : MonoBehaviour
         
         equippedWeapon = weapon;
         equippedWeapon.gameObject.SetActive(true);
+        equippedWeapon.EnhancementsChangedEvent += OnEquippedEnhancementsChanged;
 
         Quaternion rotationOffset = grabPoint.rotation * Quaternion.Inverse(weapon.GripPoint.rotation);
         equippedWeapon.transform.rotation = rotationOffset * equippedWeapon.transform.rotation;
@@ -130,6 +141,32 @@ internal class WeaponHandler : MonoBehaviour
             data.ForwardAir = new AttackStatData.AttackStats(5, attackData.ForwardAirData);
 
         return data;
+    }
+
+    public EnhancementStatData ParseWeaponEnhancementData(IWeapon weapon)
+    {
+        EnhancementStatData data = new EnhancementStatData();
+
+        if (weapon == null || weapon.Enhancements == null)
+            return data;
+
+        foreach (EnhancementData enhancement in weapon.Enhancements)
+        {
+            if (!enhancement.IsValid())
+            {
+                Debug.LogWarning($"{weapon.gameObject.name} has a invalid enhancement.", weapon.gameObject);
+                continue;
+            }
+
+            data.Enhancements.Add(new EnhancementStatData.EnhancementStats(enhancement));
+        }
+
+        return data;
+    }
+
+    private void OnEquippedEnhancementsChanged()
+    {
+        OnEquippedEnhancementsChangedEvent?.Invoke(equippedWeapon);
     }
 
 

@@ -21,6 +21,7 @@ GameObject:
   - component: {fileID: 4056948102680156576}
   - component: {fileID: 1627288914778769611}
   - component: {fileID: 2313680389307727192}
+  - component: {fileID: 6573494119960046876}
   - component: {fileID: 3037421926973292070}
   m_Layer: 7
   m_Name: Player
@@ -60,6 +61,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   uniqueIDString: 
   objectType: 0
+  inputBufferWindow: 0.2
+  horizontalDeadzone: 0.2
+  verticalDeadzone: 0.2
+  jumpDeadzone: 0.1
 --- !u!136 &921727941412718673
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -150,7 +155,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 33a7baaf386692b43a6b09116db63a70, type: 3}
   m_Name: 
   m_EditorClassIdentifier: SceneObject.Equipment::EquipmentHandler
-  pickupRange: 1
 --- !u!114 &1038983007141306246
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -188,23 +192,13 @@ MonoBehaviour:
   splatVelocityThreshold: 15
   splatHoldDuration: 0.1
   curMovementState: 0
-  horizontalDeadzone: 0.1
-  horizontalInfluence: 0
-  verticalDeadzone: 0.1
-  verticalInfluence: 0
-  jumpDeadzone: 0.1
-  jumpInfluence: 0
-  isClimbSliding: 0
   ledgeClimbDuration: 0.2
-  movementBufferWindow: 0.1
   maxDIAngle: 15
   maxDriftSpeed: 2.5
   driftAccel: 8
   dashInfluenceThreshold: 0.5
   dashInitiationSpeedScaler: 0.5
   dashCooldown: 0.5
-  earlyCancelInputWindow: 0.25
-  lateCancelInputGrace: 0
 --- !u!114 &6716222281940265772
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -218,7 +212,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: SceneObject.Attack::AttackHandler
   curAttackState: 0
-  attackBufferWindow: 0.1
 --- !u!114 &4056948102680156576
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -280,6 +273,18 @@ MonoBehaviour:
   apexApproach: 0.9
   minTravelDuration: 0.05
   recoveryDuration: 0.25
+--- !u!114 &6573494119960046876
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 296744456200019224}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 172a04563dae96a4381116ac7e3a442c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SceneObject.Enhancement::EnhancementHandler
 --- !u!114 &3037421926973292070
 MonoBehaviour:
   m_ObjectHideFlags: 0

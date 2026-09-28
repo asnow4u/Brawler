@@ -7,5 +7,6 @@ public interface IStats
     public event Action<AnimationStatData> AnimationStatsChangedEvent;
     public event Action<MovementStatData> MovementStatsChangedEvent;
     public event Action<AttackStatData> AttackStatsChangedEvent;
+    public event Action<EnhancementStatData> EnhancementStatsChangedEvent;
 }
 
