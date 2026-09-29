@@ -20,3 +20,5 @@ MonoBehaviour:
   ForwardAirAngle: 0
   Speed: 12
   Lifetime: 3
+  AssistRange: 10
+  AssistMaxCorrection: 5

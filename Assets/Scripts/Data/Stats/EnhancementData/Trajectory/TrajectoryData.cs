@@ -26,6 +26,13 @@ public abstract class TrajectoryData : ScriptableObject
     [Tooltip("Time in seconds before the spawned object is removed.")]
     public float Lifetime = 3f;
 
+    [Header("Targeting Assist")]
+    [Tooltip("Distance in world units within which a target is used to aim the spawned object.")]
+    public float AssistRange = 10f;
+
+    [Tooltip("Largest adjustment in degrees the assist can make to a launch angle.")]
+    public float AssistMaxCorrection = 15f;
+
 
     /// <summary>Launch angle for an attack state, passed as its AttackState value. Zero for no attack.</summary>
     public float GetAngle(int attackState)

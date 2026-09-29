@@ -31,6 +31,15 @@ public class ProjectileHitBoxHandler : HitBoxHandler
         EnableHitBoxs();
     }
 
+    /// <summary>Sets a new owner for the hitboxes to ignore and clears the hit record.</summary>
+    public void TransferOwnership(Guid ownerID)
+    {
+        foreach (IHitBox hitbox in hitboxs)
+            hitbox.SetOwner(ownerID);
+
+        ClearHitRecord();
+    }
+
     protected override void OnHit(IHitBox hitBox, IHurtBox hurtBox, Vector3 hitPoint)
     {
         // A projectile never hits its own hurtbox.
