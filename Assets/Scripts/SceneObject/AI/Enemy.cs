@@ -53,6 +53,7 @@ internal abstract partial class Enemy : SceneObject
 
     protected EnemyState State => state;
     protected Vector3 LastKnownPlayerPosition => lastKnownPlayerPosition;
+    protected LayerMask SightBlockingMask => sightBlockingMask;
     protected bool CanNavigate => navAgent != null;
     protected bool IsAttacking => attack != null && attack.CurAttackState != AttackState.Null;
     protected bool IsGrounded => actionState == null || actionState.CurGroundedState == GroundedState.Grounded;
@@ -65,6 +66,7 @@ internal abstract partial class Enemy : SceneObject
         base.Awake();
 
         InitializeInput();
+        InitializeWeapons();
 
         // Optional Components
         navAgent = GetComponent<NavAgent>();
@@ -216,6 +218,7 @@ internal abstract partial class Enemy : SceneObject
             return;
         }
 
+        UpdateReachability(player.Bounds.center);
         OnEngaged(player.Bounds.center);
     }
 
@@ -280,16 +283,30 @@ internal abstract partial class Enemy : SceneObject
             navAgent.Stop();
     }
 
+    /// <summary>The run of ground under the enemy it can walk along. False without a nav agent or ground.</summary>
+    protected bool TryGetGroundSpan(out float minX, out float maxX, out float surfaceY)
+    {
+        minX = maxX = surfaceY = 0f;
+
+        return CanNavigate && navAgent.TryGetGroundSpan(out minX, out maxX, out surfaceY);
+    }
+
     /// <summary>True once the agent has arrived, given up, or when there is no agent at all.</summary>
     private bool HasFinishedMoving()
     {
         return !CanNavigate || navAgent.HasArrived || navAgent.GaveUp;
     }
 
-    /// <summary>Applies a navigation intent to movement input, pressing or releasing jump when HoldJump changes.</summary>
+    /// <summary>
+    /// Applies a navigation intent to movement input, pressing or releasing jump when HoldJump changes.
+    /// A facing request replaces the horizontal input for this tick.
+    /// </summary>
     private void ApplyNavIntent(NavIntent intent)
     {
-        SetMovement(new Vector2(intent.Horizontal, intent.Vertical));
+        float horizontal = faceDirection != 0f ? faceDirection : intent.Horizontal;
+        faceDirection = 0f;
+
+        SetMovement(new Vector2(horizontal, intent.Vertical));
 
         if (intent.HoldJump == IsJumpHeld)
             return;

@@ -67,6 +67,7 @@ public class NavAgent : MonoBehaviour
     private Vector3 destination;
     private bool hasDestination;
     private readonly NavPath path = new NavPath();
+    private readonly NavPath reachCheckPath = new NavPath();
     private int segmentIndex;
 
     // Set when the final segment completes. Cleared when the destination changes, on hitstun, or when pushed away.
@@ -95,6 +96,48 @@ public class NavAgent : MonoBehaviour
     public bool HasPath => path.IsValid && segmentIndex < path.Count;
     public bool HasArrived => arrived;
     public bool GaveUp => givenUp;
+
+    /// <summary>Whether this agent has a route to a position. Does not change the current destination or path.</summary>
+    public bool CanReach(Vector3 worldPosition)
+    {
+        if (navGraph == null || navGraph.Navigator == null || curMovementData == null)
+            return false;
+
+        return navGraph.Navigator.IsReachable(transform.position, worldPosition, profile, reachCheckPath);
+    }
+
+    /// <summary>
+    /// The run of ground under the agent that it can walk along: the x of its left and right ends and
+    /// the surface height. False when there is no ground under the agent.
+    /// </summary>
+    public bool TryGetGroundSpan(out float minX, out float maxX, out float surfaceY)
+    {
+        minX = maxX = surfaceY = 0f;
+
+        if (navGraph == null || navGraph.Navigator == null || !navGraph.Navigator.TryResolveNode(transform.position, out int node))
+            return false;
+
+        NavGrid grid = navGraph.Grid;
+        int row = grid.RowOf(node);
+        int leftColumn = grid.ColumnOf(node);
+        int rightColumn = leftColumn;
+
+        while (IsWalkableForAgent(grid, leftColumn - 1, row))
+            leftColumn--;
+
+        while (IsWalkableForAgent(grid, rightColumn + 1, row))
+            rightColumn++;
+
+        minX = grid.NodePosition(leftColumn, row).x;
+        maxX = grid.NodePosition(rightColumn, row).x;
+        surfaceY = grid.SurfaceY(node);
+        return true;
+    }
+
+    private bool IsWalkableForAgent(NavGrid grid, int column, int row)
+    {
+        return grid.IsGroundInBounds(column, row) && grid.Get(column, row).Clearance >= profile.Height;
+    }
 
     /// <summary>Sets the destination. Moves shorter than destinationMoveThreshold keep the current path.</summary>
     public void SetDestination(Vector3 worldPosition)

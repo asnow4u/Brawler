@@ -90,6 +90,21 @@ public class LevelNavigator
         return false;
     }
 
+    /// <summary>
+    /// Whether a route exists from start to destination for this agent. True when both resolve to the
+    /// same cell. Uses the given path as scratch space.
+    /// </summary>
+    public bool IsReachable(Vector3 start, Vector3 destination, NavAgentProfile profile, NavPath scratch)
+    {
+        if (!TryResolveNode(start, out int startNode) || !TryResolveNode(destination, out int goalNode))
+            return false;
+
+        if (startNode == goalNode)
+            return true;
+
+        return TryFindPath(start, destination, profile, scratch);
+    }
+
     private void ExpandWalk(int current, int goalNode, NavAgentProfile profile)
     {
         if (!profile.CanWalk)
@@ -161,7 +176,7 @@ public class LevelNavigator
     /// Resolves a position to the ground cell beneath it, probing straight down from slightly above
     /// the position. Falls back to the nearest ground in any direction.
     /// </summary>
-    private bool TryResolveNode(Vector3 position, out int node)
+    public bool TryResolveNode(Vector3 position, out int node)
     {
         float lift = grid.Spacing * 2f;
         Vector3 probe = position + Vector3.up * lift;

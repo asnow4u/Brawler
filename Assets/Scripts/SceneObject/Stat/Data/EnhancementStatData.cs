@@ -8,12 +8,14 @@ public class EnhancementStatData
         public EnhancementTrigger Trigger;
         public GameObject SpawnPrefab;
         public TrajectoryData Trajectory;
+        public bool IsRanged;
 
         public EnhancementStats(EnhancementData data)
         {
             Trigger = data.Trigger;
             SpawnPrefab = data.SpawnPrefab;
             Trajectory = data.Trajectory;
+            IsRanged = data.IsRanged;
         }
     }
 

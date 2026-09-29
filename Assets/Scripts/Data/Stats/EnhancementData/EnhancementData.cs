@@ -22,6 +22,9 @@ public class EnhancementData : ScriptableObject
     [Tooltip("How the spawned prefab flies.")]
     public TrajectoryData Trajectory;
 
+    [Tooltip("Spawns something that travels to distant targets.")]
+    public bool IsRanged;
+
     public bool IsValid()
     {
         return SpawnPrefab != null && Trajectory != null;

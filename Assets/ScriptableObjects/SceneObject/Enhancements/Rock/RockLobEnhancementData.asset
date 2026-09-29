@@ -15,3 +15,4 @@ MonoBehaviour:
   Trigger: 0
   SpawnPrefab: {fileID: 6006882022988511102, guid: 36046fc5070e2b743a4f25b4fb54dc91, type: 3}
   Trajectory: {fileID: 11400000, guid: fb5080c3d4c67904a92d3edf7941036d, type: 2}
+  IsRanged: 1

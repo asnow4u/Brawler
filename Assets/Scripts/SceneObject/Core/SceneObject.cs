@@ -19,7 +19,19 @@ public abstract class SceneObject : MonoBehaviour, ISceneObject
     #region Getters        
     
     public Guid UniqueID => uniqueID;   
-    public Bounds Bounds => col.bounds; //TODO: This will represent all colliders, this is the volume of the sceneObject 
+
+    //TODO: This will represent all colliders, this is the volume of the sceneObject 
+    public Bounds Bounds
+    {
+        get
+        {
+            // Looks up the collider when it has not been cached.
+            if (col == null)
+                col = GetComponent<Collider>();
+
+            return col.bounds;
+        }
+    }
 
     #endregion
 

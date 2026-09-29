@@ -70,7 +70,7 @@ public class Projectile : SceneObject
         this.trajectory = trajectory;
 
         float trajectoryGravity = trajectory is LobTrajectoryData lob ? lob.Gravity : 0f;
-        float angle = AssistedLaunchAngle(launchAngle, trajectory, trajectoryGravity, ownerID);
+        float angle = AssistedLaunchAngle(launchAngle, trajectory, ownerID);
 
         Launch(ownerID, AngleToDirection(angle) * trajectory.Speed, trajectoryGravity, trajectory.Lifetime);
     }
@@ -94,7 +94,7 @@ public class Projectile : SceneObject
     /// The angle that hits the target needing the smallest correction, when that correction is within
     /// the trajectory's maximum. Otherwise the intended angle.
     /// </summary>
-    private float AssistedLaunchAngle(float intendedAngle, TrajectoryData trajectory, float gravity, Guid ownerID)
+    private float AssistedLaunchAngle(float intendedAngle, TrajectoryData trajectory, Guid ownerID)
     {
         float bestAngle = intendedAngle;
         float bestCorrection = trajectory.AssistMaxCorrection;
@@ -104,7 +104,9 @@ public class Projectile : SceneObject
             if (!IsAssistCandidate(candidate, ownerID, trajectory.AssistRange))
                 continue;
 
-            if (!TrySolveAngles(candidate.Bounds.center, trajectory.Speed, gravity, out float lowAngle, out float highAngle))
+            Vector3 offset = candidate.Bounds.center - transform.position;
+
+            if (!trajectory.TrySolveAngles(offset, trajectory.Speed, out float lowAngle, out float highAngle))
                 continue;
 
             float angle = ClosestAngle(intendedAngle, lowAngle, highAngle);
@@ -193,7 +195,7 @@ public class Projectile : SceneObject
     /// <summary>Direction of the low arc that reaches the target, or 45 degrees toward it when out of reach.</summary>
     private Vector3 AimAt(Vector3 target, float speed)
     {
-        if (TrySolveAngles(target, speed, gravity, out float lowAngle, out _))
+        if (trajectory.TrySolveAngles(target - transform.position, speed, out float lowAngle, out _))
             return AngleToDirection(lowAngle);
 
         float side = target.x >= transform.position.x ? 1f : -1f;
@@ -205,40 +207,6 @@ public class Projectile : SceneObject
 
 
     #region Aim Math
-
-    /// <summary>
-    /// Launch angles in degrees that reach a target at a speed under a gravity. The same angle twice
-    /// when there is no gravity. False when the target is out of reach.
-    /// </summary>
-    private bool TrySolveAngles(Vector3 target, float speed, float gravity, out float lowAngle, out float highAngle)
-    {
-        Vector3 toTarget = target - transform.position;
-        float dx = Mathf.Abs(toTarget.x);
-        float side = toTarget.x >= 0f ? 1f : -1f;
-
-        if (gravity <= 0f || dx < 0.01f)
-        {
-            lowAngle = highAngle = Mathf.Atan2(toTarget.y, toTarget.x) * Mathf.Rad2Deg;
-            return true;
-        }
-
-        float speedSquared = speed * speed;
-        float discriminant = speedSquared * speedSquared - gravity * (gravity * dx * dx + 2f * toTarget.y * speedSquared);
-
-        if (discriminant < 0f)
-        {
-            lowAngle = highAngle = 0f;
-            return false;
-        }
-
-        float root = Mathf.Sqrt(discriminant);
-        float low = Mathf.Atan((speedSquared - root) / (gravity * dx)) * Mathf.Rad2Deg;
-        float high = Mathf.Atan((speedSquared + root) / (gravity * dx)) * Mathf.Rad2Deg;
-
-        lowAngle = MirrorToSide(low, side);
-        highAngle = MirrorToSide(high, side);
-        return true;
-    }
 
     private static float ClosestAngle(float intendedAngle, float a, float b)
     {
