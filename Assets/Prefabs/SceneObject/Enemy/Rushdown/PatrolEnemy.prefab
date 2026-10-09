@@ -82,6 +82,7 @@ GameObject:
   - component: {fileID: 326482776337894903}
   - component: {fileID: 6206674463327273691}
   - component: {fileID: 282453969499376704}
+  - component: {fileID: 7923607968065911144}
   - component: {fileID: 8546965889012879366}
   - component: {fileID: 211902645310765321}
   - component: {fileID: 5971225958984470368}
@@ -138,11 +139,16 @@ MonoBehaviour:
   debugTarget: {fileID: 0}
   drawAwareness: 0
   inputBufferWindow: 0.2
+  reachCheckInterval: 0.5
+  swapTimeout: 1
   attackRange: 1.75
   verticalSlotThreshold: 1
   attackCooldown:
     duration: 1.2
     randomness: 0.5
+  throwCooldown:
+    duration: 1.5
+    randomness: 0.75
 --- !u!114 &3395873887126715069
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -331,6 +337,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c462c562e2277824d8a2ca6a038752b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: SceneObject.HitBox::AttackHitBoxHandler
+--- !u!114 &7923607968065911144
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5535485377693572998}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 172a04563dae96a4381116ac7e3a442c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SceneObject.Enhancement::EnhancementHandler
 --- !u!114 &8546965889012879366
 MonoBehaviour:
   m_ObjectHideFlags: 0

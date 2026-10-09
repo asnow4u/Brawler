@@ -83,7 +83,7 @@ GameObject:
   - component: {fileID: 2055355248048334755}
   - component: {fileID: 3567638585904029964}
   m_Layer: 0
-  m_Name: Projectile
+  m_Name: Rock
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -192,7 +192,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6006882022988511102}
   serializedVersion: 5
-  m_Mass: 1
+  m_Mass: 50
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -236,10 +236,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: SceneObject.Hurtbox::ProjectileHurtBoxHandler
   damageTaken: 0
-  baseForce: 1200
   exGrowth: 2
   damageForceScale: 0.2
   debugMode: 0
+  debugBaseForce: 1200
   debugInfluence: 1
   debugLaunchAngle: 45
   debugDamage: 10
@@ -257,8 +257,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Projectile::Projectile
   uniqueIDString: 
-  ObjectType: 2
-  lifetime: 5
+  objectType: 2
+  baseForce: 750
+  influence: 0.2
+  damage: 6
+  stunTime: 0.15
+  effectIndex: 0
 --- !u!1 &8893169565193628063
 GameObject:
   m_ObjectHideFlags: 0
