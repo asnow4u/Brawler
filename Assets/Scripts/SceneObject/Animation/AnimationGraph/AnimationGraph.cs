@@ -327,11 +327,18 @@ internal class AnimationGraph : IDisposable
 
     #endregion
 
+    /// <summary>Destroys the graph, then the override controllers it was using.</summary>
     public void Dispose()
     {
         if (graph.IsValid())
-        {
             graph.Destroy();
+
+        for (int i = 0; i < controllerBindings.Length; i++)
+        {
+            if (controllerBindings[i]?.OverrideController != null)
+                UnityEngine.Object.Destroy(controllerBindings[i].OverrideController);
+
+            controllerBindings[i] = null;
         }
     }
 }
