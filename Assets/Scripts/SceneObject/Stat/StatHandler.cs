@@ -249,10 +249,6 @@ public class StatHandler : MonoBehaviour, IStats
             statData.WaveLandDashDuration = data.DashData.WaveLandDuration;
             statData.InitialDashVelocity = data.DashData.InitialDashVelocity;
             statData.InitialDashDuration = data.DashData.InitalDashDuration;
-            statData.InputDashVelocity = data.DashData.InputDashVelocity;
-            statData.InputDashDuration = data.DashData.InputDashDuration;
-            statData.HorizontalEndDashVelocity = data.DashData.HorizontalEndDashVelocity;
-            statData.VerticalEndDashVelocity = data.DashData.VerticalEndDashVelocity;
             statData.DashSpeedHoldPercentage = data.DashData.DashSpeedHoldPercentage;
             statData.DashValid = true;
         }

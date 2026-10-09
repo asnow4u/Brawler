@@ -23,10 +23,6 @@ public class MovementStatData
     public float WaveLandDashDuration;
     public float InitialDashVelocity;
     public float InitialDashDuration;
-    public float InputDashVelocity;
-    public float InputDashDuration;
-    public float HorizontalEndDashVelocity;
-    public float VerticalEndDashVelocity;
     public float DashSpeedHoldPercentage;
 
     //Aerial Movement

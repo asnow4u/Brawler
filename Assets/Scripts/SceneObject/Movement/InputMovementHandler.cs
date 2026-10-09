@@ -130,7 +130,6 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
         if (groundedState == GroundedState.Grounded)
         {
             airJumpsPerformed = 0;
-            RefreshDash();
             StartWaveLanding();
         }
         else if (groundedState == GroundedState.Airborn)
@@ -146,7 +145,6 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
     private void OnHitByAttack(KnockBackHitData hitData)
     {
         inputBuffer?.Clear(BufferedInput.Jump);
-        inputBuffer?.Clear(BufferedInput.Dash);
     }
 
     private void OnHitConnected(HitSenderData hitSenderData)
@@ -356,7 +354,6 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
         else if (wallSlideAllowed)
         {
             SetCurrentMoveState(MovementState.WallSlide);
-            RefreshDash();
         }
                        
         //Accelerate

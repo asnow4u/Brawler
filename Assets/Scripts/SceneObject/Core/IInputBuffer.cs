@@ -3,7 +3,6 @@ using UnityEngine;
 public enum BufferedInput
 {
     Jump,
-    Dash,
     Attack,
     SwapWeapon,
     FastFall,
@@ -15,7 +14,6 @@ public static class InputSets
     public static readonly BufferedInput[] AttackHitCancelInputs =
     {
         BufferedInput.Jump,
-        BufferedInput.Dash,
         BufferedInput.SwapWeapon,
         BufferedInput.FastFall,
     };

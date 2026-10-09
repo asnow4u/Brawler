@@ -11,12 +11,6 @@ public class DashData : BaseMovementData
     public float InitialDashVelocity;
     public float InitalDashDuration;
 
-    [Header("Input Dash [Action]")]
-    public float InputDashVelocity;
-    public float InputDashDuration;
-    public float HorizontalEndDashVelocity;
-    public float VerticalEndDashVelocity;
-
     [Header("Shared [Applies to all dashes]")]
     [Tooltip("Fraction of the dash duration held at full speed before decaying toward the end velocity.")]
     [Range(0f, 1f)]
@@ -28,10 +22,6 @@ public class DashData : BaseMovementData
                 WaveLandVelocity > 0 &&
                 WaveLandDuration > 0 &&
                 InitialDashVelocity > 0 &&
-                InitalDashDuration > 0 &&
-                InputDashVelocity > 0 &&
-                InputDashDuration > 0 &&
-                HorizontalEndDashVelocity >= 0 &&
-                VerticalEndDashVelocity >= 0;
+                InitalDashDuration > 0;
     }
 }

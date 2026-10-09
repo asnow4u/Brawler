@@ -11,18 +11,6 @@ public partial class InputMovementHandler
     private void UpdateBuffer()
     {
         UpdateOnHitCancelWindow();
-        TryConsumeBufferedDash();
-    }
-
-    private void TryConsumeBufferedDash()
-    {
-        if (inputBuffer == null || !inputDashAllowed)
-            return;
-
-        if (!inputBuffer.TryConsume(BufferedInput.Dash))
-            return;
-
-        StartInputDash();
     }
 
     private void ConsumeBufferedJump()
@@ -57,9 +45,6 @@ public partial class InputMovementHandler
         if (newest == BufferedInput.Jump)
             TryJumpCancel();
 
-        else if (newest == BufferedInput.Dash)
-            TryDashCancel();
-
         else if (newest == BufferedInput.FastFall)
             TryFastFallCancel();
     }
@@ -89,19 +74,6 @@ public partial class InputMovementHandler
         return true;
     }
 
-    private bool TryDashCancel()
-    {
-        if (!curMovementData.DashValid || IsInJumpSquat)
-            return false;
-
-        if (!inputBuffer.TryConsume(BufferedInput.Dash))
-            return false;
-
-        BeginCancel(BufferedInput.Dash);
-        StartDashCancel();
-        return true;
-    }
-    
     private bool TryFastFallCancel()
     {
         if (!fastFallAllowed)

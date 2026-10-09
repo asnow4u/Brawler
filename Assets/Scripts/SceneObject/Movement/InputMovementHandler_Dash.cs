@@ -10,12 +10,6 @@ public partial class InputMovementHandler
     [Range(0f, 1f)]
     [SerializeField] private float dashInitiationSpeedScaler = 0.5f;
 
-    [Header("Input Dash")]
-    [Tooltip("Minimum time between input dashes.")]
-    [SerializeField] private float dashCooldown = 0.5f;
-    private bool hasDashed = false;
-    private float lastDashTime = -100f;
-
     private bool isDashing = false;
     private Vector2 dashDirection = Vector2.zero;
     private float dashStartVelocity = 0;
@@ -34,11 +28,6 @@ public partial class InputMovementHandler
                                           horizontalInfluence != 0 &&
                                           Mathf.Abs(horizontalInfluence) >= dashInfluenceThreshold &&
                                           rb.linearVelocity.x * Mathf.Sign(horizontalInfluence) < curMovementData.MaxGroundedVelocity * dashInitiationSpeedScaler;
-
-    private bool inputDashAllowed => dashMovementAllowed &&
-                                     !IsInJumpSquat &&
-                                     Time.time >= lastDashTime + dashCooldown &&
-                                     (actionState.CurGroundedState == GroundedState.Grounded || !hasDashed);
 
     #endregion
 
@@ -67,38 +56,6 @@ public partial class InputMovementHandler
         BeginDash(direction, velocity, curMovementData.MaxGroundedVelocity, duration);
     }
 
-    private void StartInputDash()
-    {
-        if (!inputDashAllowed)
-            return;
-
-        hasDashed = true;
-        lastDashTime = Time.time;
-
-        StartHorizontalDash();
-    }
-
-    private void StartDashCancel()
-    {
-        StartHorizontalDash();
-    }
-
-    private void StartHorizontalDash()
-    {
-        BeginDash(ResolveDashDirection(),
-                  curMovementData.InputDashVelocity,
-                  curMovementData.HorizontalEndDashVelocity,
-                  curMovementData.InputDashDuration);
-    }
-
-    private Vector2 ResolveDashDirection()
-    {
-        if (horizontalInfluence != 0)
-            return new Vector2(Mathf.Sign(horizontalInfluence), 0f);
-
-        return new Vector2(sceneObject.IsFacingRightDirection ? 1f : -1f, 0f);
-    }
-
     private void BeginDash(Vector2 direction, float velocity, float endVelocity, float duration)
     {
         dashDirection = direction;
@@ -115,11 +72,6 @@ public partial class InputMovementHandler
         {
             sceneObject.TurnAround();
         }
-    }
-
-    private void RefreshDash()
-    {
-        hasDashed = false;
     }
 
     private void UpdateDash()
