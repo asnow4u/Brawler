@@ -68,6 +68,7 @@ public class AttackHandler : MonoBehaviour, IAttack
     private void RegisterToEvents()
     {
         actionState.GroundedStateChangedEvent += OnGroundedStateChanged;
+        actionState.ActionStateChangedEvent += OnActionStateChanged;
         statHandler.AttackStatsChangedEvent += OnAttackStatsChanged;
         hurtBoxHandler.OnHitEvent += OnHitByAttack;
         animationEventHandler.OnAnimationEventFiredEvent += OnAnimationEvent;
@@ -84,6 +85,7 @@ public class AttackHandler : MonoBehaviour, IAttack
     private void UnregisterFromEvents()
     {
         actionState.GroundedStateChangedEvent -= OnGroundedStateChanged;
+        actionState.ActionStateChangedEvent -= OnActionStateChanged;
         statHandler.AttackStatsChangedEvent -= OnAttackStatsChanged;
         hurtBoxHandler.OnHitEvent -= OnHitByAttack;
         animationEventHandler.OnAnimationEventFiredEvent -= OnAnimationEvent;
@@ -103,6 +105,12 @@ public class AttackHandler : MonoBehaviour, IAttack
         {
             SetCurrentAttackState(AttackState.Null);
         }
+    }
+
+    private void OnActionStateChanged(ActionState state)
+    {
+        if (state > ActionState.Attacking && curAttackState != AttackState.Null)
+            SetCurrentAttackState(AttackState.Null);
     }
 
     private void OnAttackStatsChanged(AttackStatData data)
