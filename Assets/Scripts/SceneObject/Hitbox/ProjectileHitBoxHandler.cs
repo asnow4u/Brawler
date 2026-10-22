@@ -64,9 +64,13 @@ public class ProjectileHitBoxHandler : HitBoxHandler
             hitPoint,
             baseHitData.EffectIndex
         );
+        hitData.SourcePosition = transform.position;
+        hitData.Unblockable = baseHitData.Unblockable;
 
-        hurtBox.Hit(hitData);
+        HitResponse response = hurtBox.Hit(hitData);
 
-        Destroy(gameObject);
+        // An ignored hit passes through.
+        if (response.Result != HitResult.Ignored)
+            Destroy(gameObject);
     }
 }

@@ -11,6 +11,10 @@ public class HitData
     public Vector3 HitPoint;
     public int EffectIndex; // Defines what effects get played
 
+    //Where the hit came from. Used to tell if the hit is in front of or behind the target.
+    public Vector3 SourcePosition;
+    public bool Unblockable;
+
     public HitData(float baseForce, float influence, float lauchAngle, float damage, float stunTime, Vector3 hitPoint, int effectIndex)
     {
         BaseForce = baseForce;
@@ -20,6 +24,19 @@ public class HitData
         StunTime = stunTime;
         HitPoint = hitPoint;
         EffectIndex = effectIndex;
+    }
+
+    protected HitData(HitData hitData)
+    {
+        BaseForce = hitData.BaseForce;
+        Influence = hitData.Influence;
+        LaunchAngle = hitData.LaunchAngle;
+        Damage = hitData.Damage;
+        StunTime = hitData.StunTime;
+        HitPoint = hitData.HitPoint;
+        EffectIndex = hitData.EffectIndex;
+        SourcePosition = hitData.SourcePosition;
+        Unblockable = hitData.Unblockable;
     }
 
     public bool IsValid()
@@ -35,7 +52,9 @@ public class HitData
             "\nLaunch Angle: " + LaunchAngle +
             "\nDamage: " + Damage +
             "\nStunTime: " + StunTime +
-            "\nEffectIndex: " + EffectIndex;
+            "\nEffectIndex: " + EffectIndex +
+            "\nSourcePosition: " + SourcePosition +
+            "\nUnblockable: " + Unblockable;
 
         return str;
     }
@@ -46,7 +65,7 @@ public class SceneObjectHitData : HitData
     //ID of sceneObject that is attacking
     public Guid SceneObjectAttackerID;
 
-    public SceneObjectHitData(Guid sceneObjectAttackerID, HitData hitData) : base(hitData.BaseForce, hitData.Influence, hitData.LaunchAngle, hitData.Damage, hitData.StunTime, hitData.HitPoint, hitData.EffectIndex)
+    public SceneObjectHitData(Guid sceneObjectAttackerID, HitData hitData) : base(hitData)
     {
         SceneObjectAttackerID = sceneObjectAttackerID;
     }
@@ -74,7 +93,7 @@ public class KnockBackHitData : HitData
 {
     public Vector3 KnockBackVelocity;
 
-    public KnockBackHitData(Vector3 knockBackVelocity, HitData hitData) : base(hitData.BaseForce, hitData.Influence, hitData.LaunchAngle, hitData.Damage, hitData.StunTime, hitData.HitPoint, hitData.EffectIndex)
+    public KnockBackHitData(Vector3 knockBackVelocity, HitData hitData) : base(hitData)
     {
         KnockBackVelocity = knockBackVelocity;
     }

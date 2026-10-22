@@ -23,4 +23,5 @@ public class AnimationStatData
     public Dictionary<int, AnimationData> AttackAnimations;
 
     public AnimationData HitStunAnimation;
+    public AnimationData StaggerAnimation;
 }

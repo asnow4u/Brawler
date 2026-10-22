@@ -10,7 +10,8 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
     private IInputBuffer inputBuffer;
 
     // Optional Components
-    private IAttackHitBoxHandler attackHitBoxHandler;
+    private IHitBoxHandler[] hitBoxHandlers;
+    private IGuard guard;
 
     [Header("Movement State")]
     [SerializeField] private MovementState curMovementState;
@@ -72,6 +73,8 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
 
     private bool IsAttackPermittedMovementState(MovementState moveState) => moveState == MovementState.AirMove;
 
+    private bool IsGuarding => guard != null && guard.CurGuardState != GuardState.Null;
+
     #endregion
     
 
@@ -88,7 +91,8 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
             Debug.LogError("InputMovementHandler Requires a IInputBuffer. If no input is desired use MovementHandler instead.", this);
 
         // Optional Components
-        attackHitBoxHandler = GetComponent<IAttackHitBoxHandler>();
+        hitBoxHandlers = GetComponents<IHitBoxHandler>();
+        guard = GetComponent<IGuard>();
 
         base.Awake();
     }
@@ -99,8 +103,8 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
         actionState.GroundedStateChangedEvent += OnGroundedStateChanged;
         hurtBoxHandler.OnHitEvent += OnHitByAttack;
 
-        if (attackHitBoxHandler != null)
-            attackHitBoxHandler.OnHitConnected += OnHitConnected;
+        foreach (IHitBoxHandler hitBoxHandler in hitBoxHandlers)
+            hitBoxHandler.OnHitConnected += OnHitConnected;
 
         base.RegisterToEvents();
     }
@@ -111,15 +115,15 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
         actionState.GroundedStateChangedEvent -= OnGroundedStateChanged;
         hurtBoxHandler.OnHitEvent -= OnHitByAttack;
 
-        if (attackHitBoxHandler != null)
-            attackHitBoxHandler.OnHitConnected -= OnHitConnected;
+        foreach (IHitBoxHandler hitBoxHandler in hitBoxHandlers)
+            hitBoxHandler.OnHitConnected -= OnHitConnected;
     
         base.UnregisterFromEvents();
     }
 
     private void OnActionStateChanged(ActionState state)
     {
-        if (state == ActionState.Attacking && isDashing)
+        if ((state == ActionState.Attacking || state == ActionState.Guarding) && isDashing)
             EndDash();
     }
 
@@ -253,6 +257,12 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
     {
         if (isJumpingSquating || isLedgeClimbing) 
             return;
+
+        if (IsGuarding)
+        {
+            SetCurrentMoveState(MovementState.Null);
+            return;
+        }
 
         // NOTE: Dash locked until it ends or with a jump cancel.
         if (isDashing)
@@ -405,7 +415,9 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
         switch (curMovementState)
         {
             case MovementState.Null:
-                if (actionState.CurActionState == ActionState.Attacking && horizontalInfluence != 0)
+                if (IsGuarding)
+                    UpdateGuardWalk();
+                else if (actionState.CurActionState == ActionState.Attacking && horizontalInfluence != 0)
                     DeccelerateGroundedAttackSlide();
                 else
                     DeccelerateGroundedMovement();
@@ -457,6 +469,23 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
         {
             sceneObject.TurnAround();
         }
+    }
+
+    /// <summary>Walks at guard speed without turning. Only Hold accepts input; faster speeds decelerate.</summary>
+    private void UpdateGuardWalk()
+    {
+        float walkSpeed = guard.GuardWalkSpeed;
+        bool canWalk = guard.CurGuardState == GuardState.Hold && horizontalInfluence != 0;
+
+        if (!canWalk || Mathf.Abs(rb.linearVelocity.x) > walkSpeed)
+        {
+            DeccelerateGroundedMovement();
+            return;
+        }
+
+        float targetX = horizontalInfluence * walkSpeed;
+        float x = Mathf.MoveTowards(rb.linearVelocity.x, targetX, curMovementData.GroundedAcceleration * Time.fixedDeltaTime);
+        rb.linearVelocity = new Vector3(x, rb.linearVelocity.y, 0);
     }
 
     private void DeccelerateGroundedAttackSlide()

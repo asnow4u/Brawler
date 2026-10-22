@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(HurtBoxHandler))]
+[CustomEditor(typeof(HurtBoxHandler), true)]
 internal sealed class HurtBoxHandlerEditor : Editor
 {
     public override void OnInspectorGUI()
@@ -27,6 +27,26 @@ internal sealed class HurtBoxHandlerEditor : Editor
 
         DrawDebugFields(unityObject, handler);
         DrawApplyDamage(handler);
+
+        if (target is ISOHurtBoxHandlerEditor staggerHandler)
+            DrawStagger(unityObject, staggerHandler);
+    }
+
+    private static void DrawStagger(Object unityObject, ISOHurtBoxHandlerEditor handler)
+    {
+        EditorGUILayout.Space(8);
+
+        float newDuration = EditorGUILayout.FloatField("Stagger Duration (s)", handler.DebugStaggerDuration);
+        newDuration = Mathf.Max(0f, newDuration);
+        if (!Mathf.Approximately(newDuration, handler.DebugStaggerDuration))
+        {
+            Undo.RecordObject(unityObject, "Change Hurtbox Stagger Duration");
+            handler.SetDebugStaggerDuration(newDuration);
+            EditorUtility.SetDirty(unityObject);
+        }
+
+        if (GUILayout.Button("Apply Stagger"))
+            handler.ApplyDebugStagger();
     }
 
     private static void DrawDebugToggle(Object unityObject, IHurtBoxHandlerEditor handler)

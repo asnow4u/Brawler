@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e2f220c6e65e326a3e6fd91a8646d15, type: 3}
+  m_Name: PlayerGuard
+  m_EditorClassIdentifier: StatData::GuardData
+  GuardAnimation:
+    Animation: {fileID: 0}
+    AnimationSpeed: 1
+  CounterAnimation:
+    Animation: {fileID: 0}
+    AnimationSpeed: 1
+  RaiseTime: 0.06
+  DropTime: 0.1
+  BlockstunTime: 0.15
+  StaggerBarMax: 50
+  BarDecayRate: 5
+  HoldFillRate: 3
+  BreakDrainRate: 50
+  GuardWalkSpeed: 2
+  PushbackBase: 2
+  PushbackPerDamage: 0.2
+  AttackerStaggerPerDamage: 0.03
+  CounterWindow: 0.2
+  CounterDuration: 0.25
+  BlastRadius: 2.5
+  BlastExpandTime: 0.12
+  CounterDamage: 3
+  CounterBaseForce: 1500
+  CounterInfluence: 0.2
+  CounterLaunchAngle: 30
+  CounterHitStunTime: 0.2
+  CounterHitPauseTime: 0.06

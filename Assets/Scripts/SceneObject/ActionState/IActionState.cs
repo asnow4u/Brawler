@@ -6,8 +6,10 @@ public enum ActionState
     Null = -1, 
     Idle = 0, 
     Moving = 1, 
-    Attacking = 2, 
-    HitStun = 3 
+    Guarding = 2, 
+    Attacking = 3, 
+    Stagger = 4, 
+    HitStun = 5 
 };
 public enum IdleState 
 { 

@@ -71,6 +71,7 @@ public class AttackHandler : MonoBehaviour, IAttack
         actionState.ActionStateChangedEvent += OnActionStateChanged;
         statHandler.AttackStatsChangedEvent += OnAttackStatsChanged;
         hurtBoxHandler.OnHitEvent += OnHitByAttack;
+        attackHitBoxHandler.OnHitBlocked += OnAttackBlocked;
         animationEventHandler.OnAnimationEventFiredEvent += OnAnimationEvent;
 
         foreach (IAttackCancel cancelSource in attackCancelSources)
@@ -88,6 +89,7 @@ public class AttackHandler : MonoBehaviour, IAttack
         actionState.ActionStateChangedEvent -= OnActionStateChanged;
         statHandler.AttackStatsChangedEvent -= OnAttackStatsChanged;
         hurtBoxHandler.OnHitEvent -= OnHitByAttack;
+        attackHitBoxHandler.OnHitBlocked -= OnAttackBlocked;
         animationEventHandler.OnAnimationEventFiredEvent -= OnAnimationEvent;
 
         foreach (IAttackCancel cancelSource in attackCancelSources)
@@ -125,6 +127,12 @@ public class AttackHandler : MonoBehaviour, IAttack
 
         if (state == AnimationEventState.AttackEnded)
             SetCurrentAttackState(AttackState.Null);
+    }
+
+    private void OnAttackBlocked(HitSenderData senderData, HitResponse response)
+    {
+        if (response.AttackerStaggerTime > 0f)
+            hurtBoxHandler.Stagger(response.AttackerStaggerTime);
     }
 
     private void OnHitByAttack(KnockBackHitData hitData)

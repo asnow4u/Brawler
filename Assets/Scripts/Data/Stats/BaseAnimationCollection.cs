@@ -7,4 +7,5 @@ public class BaseAnimationCollection : ScriptableObject
     public AnimationData GroundIdleAnimation;
     public AnimationData AirIdleAnimation;
     public AnimationData HitStunAnimation;
+    public AnimationData StaggerAnimation;
 }

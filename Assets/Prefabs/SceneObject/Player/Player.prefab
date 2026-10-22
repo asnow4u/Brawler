@@ -23,6 +23,7 @@ GameObject:
   - component: {fileID: 2313680389307727192}
   - component: {fileID: 6573494119960046876}
   - component: {fileID: 3037421926973292070}
+  - component: {fileID: 8513492377190644021}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -45,6 +46,7 @@ Transform:
   m_Children:
   - {fileID: 6124214614963158795}
   - {fileID: 1683213213021435601}
+  - {fileID: 65252984570793934}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2902026480689004344
@@ -169,7 +171,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   idleController: {fileID: 9100000, guid: 659c75eada4e061488073716691dedce, type: 2}
   movementController: {fileID: 9100000, guid: c37058b508664c5468b03ccc5cc7966d, type: 2}
+  guardController: {fileID: 9100000, guid: 92bb5e2388471a348f8ab665f87d5f5b, type: 2}
   attackController: {fileID: 9100000, guid: ba977fa0a01f4c34fb7e5a7d430ff24a, type: 2}
+  staggerController: {fileID: 9100000, guid: cfc95f33ca1ecaddcfb43cd2592fbfee, type: 2}
   hitStunController: {fileID: 9100000, guid: 2d61c65002fdada44b08d4fe16eb871a, type: 2}
 --- !u!114 &402219987774653436
 MonoBehaviour:
@@ -198,7 +202,6 @@ MonoBehaviour:
   driftAccel: 8
   dashInfluenceThreshold: 0.5
   dashInitiationSpeedScaler: 0.5
-  dashCooldown: 0.5
 --- !u!114 &6716222281940265772
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -305,6 +308,88 @@ MonoBehaviour:
   maxLifeTimeStart: 0.5
   maxLaunchSpeed: 20
   minTrailVelocity: 15
+--- !u!114 &8513492377190644021
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 296744456200019224}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acdfc27db11c2aa479f16800794350c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SceneObject.Guard::GuardHandler
+  guardData: {fileID: 11400000, guid: 5d51f205d1d704edb5022f584bdfd652, type: 2}
+  curGuardState: -1
+  staggerBar: 0
+  counterBlastRoot: {fileID: 65252984570793934}
+--- !u!1 &49654668285681687
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 65252984570793934}
+  - component: {fileID: 48438325464231098}
+  - component: {fileID: 47910187852119840}
+  m_Layer: 7
+  m_Name: CounterBlast
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &65252984570793934
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 49654668285681687}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.0973357, z: 0}
+  m_LocalScale: {x: 0.001, y: 0.001, z: 0.001}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7611197570715604898}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!135 &48438325464231098
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 49654668285681687}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 0
+  serializedVersion: 3
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &47910187852119840
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 49654668285681687}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56c7468362ed82848861a431fc88c1d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Hitbox::HitBox
 --- !u!1 &3847254924860446045
 GameObject:
   m_ObjectHideFlags: 0

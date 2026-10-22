@@ -19,6 +19,7 @@ public class AnimationHandler : MonoBehaviour, IAnimation
 
     IMovementAction movementHandler;
     IAttack attackHandler;
+    IGuard guardHandler;
     IHitBoxHandler[] hitBoxHandlers;
 
     private Animator animator;
@@ -26,7 +27,9 @@ public class AnimationHandler : MonoBehaviour, IAnimation
 
     [SerializeField] RuntimeAnimatorController idleController;
     [SerializeField] RuntimeAnimatorController movementController;
+    [SerializeField] RuntimeAnimatorController guardController;
     [SerializeField] RuntimeAnimatorController attackController;
+    [SerializeField] RuntimeAnimatorController staggerController;
     [SerializeField] RuntimeAnimatorController hitStunController;
 
     #region Getters
@@ -61,10 +64,23 @@ public class AnimationHandler : MonoBehaviour, IAnimation
         hurtBoxHandler = GetComponent<ISOHurtBoxHandler>();
         movementHandler = GetComponent<IMovementAction>();
         attackHandler = GetComponent<IAttack>();
+        guardHandler = GetComponent<IGuard>();
         hitBoxHandlers = GetComponents<IHitBoxHandler>();
-        animationGraph = new AnimationGraph(animator, idleController, movementController, attackController, hitStunController);
+        animationGraph = new AnimationGraph(animator, idleController, movementController, guardController, attackController, staggerController, hitStunController);
         
         RegisterToEvents();
+    }
+
+    private void Start()
+    {
+        if (guardHandler == null)
+            return;
+
+        if (guardHandler.GuardAnimation != null)
+            animationGraph.SetGuardAnimation(new AnimationStatData.AnimationData(guardHandler.GuardAnimation, guardHandler.GuardAnimationSpeed));
+
+        if (guardHandler.CounterAnimation != null)
+            animationGraph.SetCounterAnimation(new AnimationStatData.AnimationData(guardHandler.CounterAnimation, guardHandler.CounterAnimationSpeed));
     }
 
     public void RegisterToEvents()
@@ -74,12 +90,16 @@ public class AnimationHandler : MonoBehaviour, IAnimation
         actionState.ActionStateChangedEvent += OnActionStateChanged;
         actionState.IdleStateChangedEvent += OnIdleStateChanged;
         hurtBoxHandler.HitStunStateChangedEvent += OnHitStunStateChanged;
+        hurtBoxHandler.StaggerStateChangedEvent += OnStaggerStateChanged;
 
         if (movementHandler != null)
             movementHandler.MovementStateChangedEvent += OnMovementStateChanged;
         
         if (attackHandler != null)
             attackHandler.AttackStateChangedEvent += OnAttackStateChanged;
+
+        if (guardHandler != null)
+            guardHandler.GuardStateChangedEvent += OnGuardStateChanged;
 
         if (hitBoxHandlers != null)
         {
@@ -104,12 +124,16 @@ public class AnimationHandler : MonoBehaviour, IAnimation
         
         
         hurtBoxHandler.HitStunStateChangedEvent -= OnHitStunStateChanged;
+        hurtBoxHandler.StaggerStateChangedEvent -= OnStaggerStateChanged;
 
         if (movementHandler != null)
             movementHandler.MovementStateChangedEvent -= OnMovementStateChanged;
 
         if (attackHandler != null)
             attackHandler.AttackStateChangedEvent -= OnAttackStateChanged;
+
+        if (guardHandler != null)
+            guardHandler.GuardStateChangedEvent -= OnGuardStateChanged;
 
         if (hitBoxHandlers != null)
         {
@@ -124,6 +148,7 @@ public class AnimationHandler : MonoBehaviour, IAnimation
         animationGraph.SetMovementAnimations(data.MovementAnimations);
         animationGraph.SetAttackAnimations(data.AttackAnimations);
         animationGraph.SetHitStunAnimations(data.HitStunAnimation);
+        animationGraph.SetStaggerAnimation(data.StaggerAnimation);
     }
 
 
@@ -162,6 +187,22 @@ public class AnimationHandler : MonoBehaviour, IAnimation
             return;
 
         animationGraph.ChangeHitStunStateInput(hitStunState);
+    }
+
+    private void OnGuardStateChanged(GuardState guardState)
+    {
+        if (guardState == GuardState.Null)
+            return;
+
+        animationGraph.ChangeGuardStateInput(guardState);
+    }
+
+    private void OnStaggerStateChanged(StaggerState staggerState)
+    {
+        if (staggerState == StaggerState.Null)
+            return;
+
+        animationGraph.ChangeStaggerStateInput(staggerState);
     }
 
     private void OnHitConnected(HitSenderData hitBoxConnectedData)

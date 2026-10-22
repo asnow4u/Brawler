@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class Player : SceneObject, IMovementInput, IAttackInput, IInteractionInput, IEquipmentInput, IInputBuffer, IMovementInputEditor, IAttackInputEditor
+public class Player : SceneObject, IMovementInput, IAttackInput, IGuardInput, IInteractionInput, IEquipmentInput, IInputBuffer, IMovementInputEditor, IAttackInputEditor
 {
     private PlayerInputHandler inputHandler;
 
@@ -30,6 +30,10 @@ public class Player : SceneObject, IMovementInput, IAttackInput, IInteractionInp
     private const float ATTACK_INPUT_RESET_THRESHOLD = 0.2f;
     private bool attackInputTriggered = false; // NOTE: Prevent multi buffering off of a single attack.
 
+    //Guard
+    private bool guardHeld = false;
+    public bool GuardHeld => guardHeld;
+
     //Fast Fall
     private const float FAST_FALL_INPUT_THRESHOLD = 0.6f;
     private const float FAST_FALL_INPUT_RESET_THRESHOLD = 0.3f;
@@ -56,6 +60,9 @@ public class Player : SceneObject, IMovementInput, IAttackInput, IInteractionInp
 
         inputHandler.input.PlayerActions.Attack.performed += AttackInput;
         inputHandler.input.PlayerActions.Attack.canceled += AttackCanceled;
+
+        inputHandler.input.PlayerActions.Guard.performed += GuardInput;
+        inputHandler.input.PlayerActions.Guard.canceled += GuardCanceled;
 
         inputHandler.input.PlayerActions.Interaction.performed += InteractInput;
 
@@ -137,6 +144,21 @@ public class Player : SceneObject, IMovementInput, IAttackInput, IInteractionInp
     private void AttackCanceled(InputAction.CallbackContext obj)
     {
         attackInputTriggered = false;
+    }
+
+    #endregion
+
+
+    #region Guard Input
+
+    private void GuardInput(InputAction.CallbackContext obj)
+    {
+        guardHeld = true;
+    }
+
+    private void GuardCanceled(InputAction.CallbackContext obj)
+    {
+        guardHeld = false;
     }
 
     #endregion

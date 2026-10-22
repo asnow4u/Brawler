@@ -12,6 +12,11 @@ public interface IAttackInput
 {
 }
 
+public interface IGuardInput
+{
+    public bool GuardHeld { get; }
+}
+
 public interface IInteractionInput
 {
 }

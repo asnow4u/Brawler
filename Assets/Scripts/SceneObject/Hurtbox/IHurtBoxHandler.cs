@@ -10,6 +10,12 @@ public enum HitStunState
     Recovery = 3
 }
 
+public enum StaggerState
+{
+    Null = -1,
+    Stagger = 0
+}
+
 public interface IHurtBoxHandler
 {
     public Guid[] LastHitBy { get; }
@@ -20,6 +26,12 @@ public interface ISOHurtBoxHandler : IHurtBoxHandler
 {    
     public HitStunState CurHitStunState { get; }   
     public event Action<HitStunState> HitStunStateChangedEvent;
+
+    public StaggerState CurStaggerState { get; }
+    public event Action<StaggerState> StaggerStateChangedEvent;
+
+    /// <summary>Locks the scene object in stagger for the given duration. Ignored during hitstun.</summary>
+    public void Stagger(float duration);
 }
 
 public interface IHurtBoxHandlerEditor
@@ -39,4 +51,12 @@ public interface IHurtBoxHandlerEditor
     public void SetDebugDelaySeconds(float value);
 
     public void ApplyDebugDamage();
+}
+
+public interface ISOHurtBoxHandlerEditor
+{
+    public float DebugStaggerDuration { get; }
+
+    public void SetDebugStaggerDuration(float value);
+    public void ApplyDebugStagger();
 }

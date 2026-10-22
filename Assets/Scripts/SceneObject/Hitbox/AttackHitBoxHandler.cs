@@ -115,6 +115,7 @@ public class AttackHitBoxHandler : HitBoxHandler, IAttackHitBoxHandler
         curHitData.HitPoint = hitPoint;
 
         SceneObjectHitData sceneObjectHitData = new SceneObjectHitData(sceneObject.UniqueID, curHitData);
+        sceneObjectHitData.SourcePosition = sceneObject.Bounds.center;
         
         // Reverse launch angle if the scene object is facing left.
         if (!sceneObject.IsFacingRightDirection)

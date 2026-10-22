@@ -53,6 +53,8 @@ public class SpikeHitBoxHandler : HitBoxHandler
             hitStunTime, 
             hitPoint,
             effectIndex);
+        data.SourcePosition = transform.position;
+        data.Unblockable = true;
 
         hurtBox.Hit(data);
     }

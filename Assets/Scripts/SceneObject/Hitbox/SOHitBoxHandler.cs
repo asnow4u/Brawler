@@ -114,6 +114,7 @@ public class SOHitBoxHandler : HitBoxHandler
 
         HitData baseHitData = new HitData(baseForce, influence, launchAngle, damage, sceneObjectHitStunTime, hitPoint, 0);
         SceneObjectCollisionHitData collisionHitData = new SceneObjectCollisionHitData(sceneObject.UniqueID, baseForce, baseHitData);
+        collisionHitData.SourcePosition = rb.worldCenterOfMass;
 
         DeclareHit(new HitSenderData(sceneObjectHitStunTime), hurtBox, collisionHitData);
     }

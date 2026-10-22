@@ -1,0 +1,20 @@
+{
+    "name": "SceneObject.Guard",
+    "rootNamespace": "",
+    "references": [
+        "GUID:ab16a484669f87b4f9fd7610ae8b2d49",
+        "GUID:43ba8182e97c6d74686c3f2b19c6404f",
+        "GUID:5c910f444a332b74abd79ac76a81251c",
+        "GUID:9cc72b0a92ea69041afa42d2e66dc25d",
+        "GUID:ffa81e0146ffbaa42a610bf81413d589"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

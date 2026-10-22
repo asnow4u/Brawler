@@ -12,6 +12,7 @@ public abstract class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxH
 
     //Hurt boxs
     protected IHurtBox[] hurtBoxes;
+    private IHitInterceptor[] interceptors;
 
     protected List<Guid> lastHitBy;
     public Guid[] LastHitBy => lastHitBy.ToArray();
@@ -33,6 +34,7 @@ public abstract class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxH
         sceneObject = GetComponent<ISceneObject>();
         rb = GetComponent<Rigidbody>();
         lastHitBy = new List<Guid>();
+        interceptors = GetComponents<IHitInterceptor>();
 
         //Get hurtboxs
         hurtBoxes = CollectHurtBoxs();
@@ -50,7 +52,7 @@ public abstract class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxH
     protected virtual void RegisterToEvents()
     {
         foreach (HurtBox hurtBox in hurtBoxes)
-            hurtBox.OnHitEvent += OnHit;
+            hurtBox.SetReceiver(ReceiveHit);
     }
 
     private void OnDestroy()
@@ -61,8 +63,24 @@ public abstract class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxH
     protected virtual void UnRegisterFromEvents()
     {
         foreach (HurtBox hurtBox in hurtBoxes)
-            hurtBox.OnHitEvent -= OnHit;
+            hurtBox.SetReceiver(null);
     }    
+
+    /// <summary>Offers the hit to each interceptor. Applies it when none claims it.</summary>
+    private HitResponse ReceiveHit(HitData hitData)
+    {
+        if (hitData == null || !hitData.IsValid())
+            return HitResponse.Ignored;
+
+        foreach (IHitInterceptor interceptor in interceptors)
+        {
+            if (interceptor.TryIntercept(hitData, out HitResponse response))
+                return response;
+        }
+
+        OnHit(hitData);
+        return HitResponse.Hit;
+    }
 
     protected virtual void OnHit(HitData hitData)
     {
@@ -141,7 +159,8 @@ public abstract class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxH
         if (debugDelaySeconds <= 0f)
         {
             HitData immediateHitData = new HitData(debugBaseForce, debugInfluence, debugLaunchAngle, debugDamage, 0f, transform.position, 0);
-            OnHit(immediateHitData);
+            immediateHitData.SourcePosition = transform.position;
+            ReceiveHit(immediateHitData);
             return;
         }
 
@@ -153,7 +172,8 @@ public abstract class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxH
         yield return new WaitForSeconds(delaySeconds);
 
         HitData hitData = new HitData(debugBaseForce, debugInfluence, debugLaunchAngle, debugDamage, 0f, transform.position, 0);
-        OnHit(hitData);
+        hitData.SourcePosition = transform.position;
+        ReceiveHit(hitData);
     }
 
     #endregion

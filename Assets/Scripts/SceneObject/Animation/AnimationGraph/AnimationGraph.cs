@@ -10,7 +10,8 @@ internal class AnimationGraph : IDisposable
     // Playables
     private PlayableGraph graph;
     private AnimationMixerPlayable stateMixer;
-    private AnimatorControllerPlayable[] controllers = new AnimatorControllerPlayable[4];
+    private const int LayerCount = 6;
+    private AnimatorControllerPlayable[] controllers = new AnimatorControllerPlayable[LayerCount];
 
     private class ControllerBinding 
     {
@@ -26,7 +27,7 @@ internal class AnimationGraph : IDisposable
         }
     }
 
-    private ControllerBinding[] controllerBindings = new ControllerBinding[4];
+    private ControllerBinding[] controllerBindings = new ControllerBinding[LayerCount];
 
     // Blending state
     private int currentIndex = -1;
@@ -38,22 +39,26 @@ internal class AnimationGraph : IDisposable
     public AnimationGraph(Animator animator, 
         RuntimeAnimatorController idleControllerAsset, 
         RuntimeAnimatorController moveControllerAsset, 
+        RuntimeAnimatorController guardControllerAsset, 
         RuntimeAnimatorController attackControllerAsset, 
+        RuntimeAnimatorController staggerControllerAsset, 
         RuntimeAnimatorController hitstunControllerAsset)
     {
         // Initialize Graph
         graph = PlayableGraph.Create("AnimationGraph");        
         AnimationPlayableOutput output = AnimationPlayableOutput.Create(graph, "Animation", animator);
 
-        // State Mixer: 0 = Idle, 1 = Movement, 2 = Attack, 3 = Hitstun
-        stateMixer = AnimationMixerPlayable.Create(graph, 4);
+        // State Mixer: layer index matches the ActionState value. 0 = Idle, 1 = Movement, 2 = Guard, 3 = Attack, 4 = Stagger, 5 = Hitstun
+        stateMixer = AnimationMixerPlayable.Create(graph, LayerCount);
         output.SetSourcePlayable(stateMixer);
 
         // Setup individual layers
         SetupControllerLayer(0, idleControllerAsset);
         SetupControllerLayer(1, moveControllerAsset);
-        SetupControllerLayer(2, attackControllerAsset);
-        SetupControllerLayer(3, hitstunControllerAsset);
+        SetupControllerLayer(2, guardControllerAsset);
+        SetupControllerLayer(3, attackControllerAsset);
+        SetupControllerLayer(4, staggerControllerAsset);
+        SetupControllerLayer(5, hitstunControllerAsset);
 
         graph.Play();
     }
@@ -122,7 +127,7 @@ internal class AnimationGraph : IDisposable
 
             case 2:
 
-                foreach (AttackState state in Enum.GetValues(typeof(AttackState)))
+                foreach (GuardState state in Enum.GetValues(typeof(GuardState)))
                 {
                     if (animationClip.name.Contains(state.ToString()))
                         return state;
@@ -131,6 +136,26 @@ internal class AnimationGraph : IDisposable
                 break;
 
             case 3:
+
+                foreach (AttackState state in Enum.GetValues(typeof(AttackState)))
+                {
+                    if (animationClip.name.Contains(state.ToString()))
+                        return state;
+                }
+
+                break;
+
+            case 4:
+
+                foreach (StaggerState state in Enum.GetValues(typeof(StaggerState)))
+                {
+                    if (animationClip.name.Contains(state.ToString()))
+                        return state;
+                }
+
+                break;
+
+            case 5:
 
                 foreach (HitStunState state in Enum.GetValues(typeof(HitStunState)))
                 {
@@ -202,7 +227,7 @@ internal class AnimationGraph : IDisposable
         
         int newIndex = (int)newState;
         
-        if (newIndex < 0 || newIndex >= 4 || controllers[newIndex].IsNull()) return;
+        if (newIndex < 0 || newIndex >= LayerCount || controllers[newIndex].IsNull()) return;
         if (newIndex == targetIndex) return;
 
         if (currentIndex != -1 && targetIndex != -1 && currentIndex != targetIndex)
@@ -212,7 +237,7 @@ internal class AnimationGraph : IDisposable
         blendTimer = 0f;
 
         //Reset other weights
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < LayerCount; i++)
         {
             if (i != currentIndex && i != targetIndex)
                 stateMixer.SetInputWeight(i, 0f);
@@ -231,7 +256,7 @@ internal class AnimationGraph : IDisposable
         int best = 0;
         float bestWeight = stateMixer.GetInputWeight(0);
 
-        for (int i = 1; i < 4; i++)
+        for (int i = 1; i < LayerCount; i++)
         {
             float w = stateMixer.GetInputWeight(i);
             if (w > bestWeight)
@@ -248,12 +273,14 @@ internal class AnimationGraph : IDisposable
 
     public void ChangeIdleStateInput(IdleState state) => ForwardToController(0, state);
     public void ChangeMovementStateInput(MovementState state) => ForwardToController(1, state);
-    public void ChangeAttackStateInput(AttackState state) => ForwardToController(2, state);
-    public void ChangeHitStunStateInput(HitStunState state) => ForwardToController(3, state); 
+    public void ChangeGuardStateInput(GuardState state) => ForwardToController(2, state);
+    public void ChangeAttackStateInput(AttackState state) => ForwardToController(3, state);
+    public void ChangeStaggerStateInput(StaggerState state) => ForwardToController(4, state);
+    public void ChangeHitStunStateInput(HitStunState state) => ForwardToController(5, state); 
 
     private void ForwardToController(int layerIndex, Enum stateValue)
     {
-        if (layerIndex >= 0 && layerIndex < 4 && !controllers[layerIndex].IsNull())
+        if (layerIndex >= 0 && layerIndex < LayerCount && !controllers[layerIndex].IsNull())
         {
             Resume();
 
@@ -304,7 +331,7 @@ internal class AnimationGraph : IDisposable
     {
         if (attackAnimations == null) return;
         foreach (var kvp in attackAnimations)
-            ApplyOverride(2, (AttackState)kvp.Key, kvp.Value);
+            ApplyOverride(3, (AttackState)kvp.Key, kvp.Value);
     }
 
     private void ApplyOverride(int layerIndex, Enum state, AnimationStatData.AnimationData animationData)
@@ -322,7 +349,27 @@ internal class AnimationGraph : IDisposable
 
     public void SetHitStunAnimations(AnimationStatData.AnimationData hitStunAnimation)
     {
-        ApplyOverride(3, HitStunState.Launch, hitStunAnimation);
+        ApplyOverride(5, HitStunState.Launch, hitStunAnimation);
+    }
+
+    /// <summary>Applies one clip to every guard state except Counter.</summary>
+    public void SetGuardAnimation(AnimationStatData.AnimationData guardAnimation)
+    {
+        foreach (GuardState state in Enum.GetValues(typeof(GuardState)))
+        {
+            if (state != GuardState.Null && state != GuardState.Counter)
+                ApplyOverride(2, state, guardAnimation);
+        }
+    }
+
+    public void SetCounterAnimation(AnimationStatData.AnimationData counterAnimation)
+    {
+        ApplyOverride(2, GuardState.Counter, counterAnimation);
+    }
+
+    public void SetStaggerAnimation(AnimationStatData.AnimationData staggerAnimation)
+    {
+        ApplyOverride(4, StaggerState.Stagger, staggerAnimation);
     }
 
     #endregion

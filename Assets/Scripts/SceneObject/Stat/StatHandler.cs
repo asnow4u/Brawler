@@ -117,6 +117,10 @@ public class StatHandler : MonoBehaviour, IStats
         AnimationData hitStunAnimation = baseSceneObjectData.AnimationCollection.HitStunAnimation;
         statData.HitStunAnimation = new AnimationStatData.AnimationData(hitStunAnimation.Animation, hitStunAnimation.AnimationSpeed);
 
+        AnimationData staggerAnimation = baseSceneObjectData.AnimationCollection.StaggerAnimation;
+        if (staggerAnimation != null)
+            statData.StaggerAnimation = new AnimationStatData.AnimationData(staggerAnimation.Animation, staggerAnimation.AnimationSpeed);
+
         if (movementData != null)
         {
             //NOTE: Order needs to match that of the ActionState.MovementState enum

@@ -14,7 +14,7 @@ public class EquipmentHandler : MonoBehaviour, IEquipment, IAttackCancel
     private WeaponHandler weaponHandler; 
 
     // Optional Components
-    private IAttackHitBoxHandler attackHitBoxHandler;
+    private IHitBoxHandler[] hitBoxHandlers;
 
     private bool swapAllowed => weaponHandler != null &&
                                 weaponHandler.HasSecondryWeapon &&
@@ -41,7 +41,7 @@ public class EquipmentHandler : MonoBehaviour, IEquipment, IAttackCancel
         weaponHandler = GetComponentInChildren<WeaponHandler>();
 
         // Optional Components
-        attackHitBoxHandler = GetComponent<IAttackHitBoxHandler>();
+        hitBoxHandlers = GetComponents<IHitBoxHandler>();
 
         RegisterToEvents();
     }
@@ -54,8 +54,8 @@ public class EquipmentHandler : MonoBehaviour, IEquipment, IAttackCancel
             weaponHandler.OnEquippedEnhancementsChangedEvent += OnEnhancementsChanged;
         }
 
-        if (attackHitBoxHandler != null)
-            attackHitBoxHandler.OnHitConnected += OnHitConnected;
+        foreach (IHitBoxHandler hitBoxHandler in hitBoxHandlers)
+            hitBoxHandler.OnHitConnected += OnHitConnected;
     }
     
     private void Start()
@@ -77,8 +77,8 @@ public class EquipmentHandler : MonoBehaviour, IEquipment, IAttackCancel
             weaponHandler.OnEquippedEnhancementsChangedEvent -= OnEnhancementsChanged;
         }
 
-        if (attackHitBoxHandler != null)
-            attackHitBoxHandler.OnHitConnected -= OnHitConnected;
+        foreach (IHitBoxHandler hitBoxHandler in hitBoxHandlers)
+            hitBoxHandler.OnHitConnected -= OnHitConnected;
     }
 
     #endregion

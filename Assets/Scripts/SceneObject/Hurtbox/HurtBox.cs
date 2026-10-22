@@ -17,7 +17,7 @@ internal class HurtBox : MonoBehaviour, IHurtBox
     private Rigidbody ownerRigidbody;
     public Vector3 Velocity => ownerRigidbody != null ? ownerRigidbody.linearVelocity : Vector3.zero;
 
-    public event Action<HitData> OnHitEvent;
+    private Func<HitData, HitResponse> receiver;
 
     private void Awake()
     {
@@ -41,10 +41,20 @@ internal class HurtBox : MonoBehaviour, IHurtBox
             ownerID = sceneObject.UniqueID;
     }
 
-    public void Hit(HitData hitData)
+    /// <summary>Sets the handler method that resolves hits landing on this hurtbox.</summary>
+    public void SetReceiver(Func<HitData, HitResponse> hitReceiver)
+    {
+        receiver = hitReceiver;
+    }
+
+    public HitResponse Hit(HitData hitData)
     {
         lastHitFrame = Time.frameCount;
-        OnHitEvent?.Invoke(hitData);
+
+        if (receiver == null)
+            return HitResponse.Ignored;
+
+        return receiver(hitData);
     }
 
     #region Gizmos

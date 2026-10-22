@@ -283,6 +283,7 @@ MonoBehaviour:
   idleController: {fileID: 9100000, guid: 659c75eada4e061488073716691dedce, type: 2}
   movementController: {fileID: 9100000, guid: c37058b508664c5468b03ccc5cc7966d, type: 2}
   attackController: {fileID: 9100000, guid: ba977fa0a01f4c34fb7e5a7d430ff24a, type: 2}
+  staggerController: {fileID: 9100000, guid: cfc95f33ca1ecaddcfb43cd2592fbfee, type: 2}
   hitStunController: {fileID: 9100000, guid: 2d61c65002fdada44b08d4fe16eb871a, type: 2}
 --- !u!114 &326482776337894903
 MonoBehaviour:
@@ -311,7 +312,6 @@ MonoBehaviour:
   driftAccel: 8
   dashInfluenceThreshold: 0.5
   dashInitiationSpeedScaler: 0.5
-  dashCooldown: 0.5
 --- !u!114 &6206674463327273691
 MonoBehaviour:
   m_ObjectHideFlags: 0

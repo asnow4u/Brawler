@@ -4,7 +4,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(ActionStateHandler))]
 [RequireComponent(typeof(StatHandler))]
-public class SOHurtBoxHandler : HurtBoxHandler, ISOHurtBoxHandler
+public class SOHurtBoxHandler : HurtBoxHandler, ISOHurtBoxHandler, ISOHurtBoxHandlerEditor
 {
     [Header("Hit Stun")]
     [SerializeField] private HitStunState curHitStunState;
@@ -32,12 +32,18 @@ public class SOHurtBoxHandler : HurtBoxHandler, ISOHurtBoxHandler
     private float hitStunDuration = 0;
     private Coroutine hitStunTimerCoroutine;
 
+    [Header("Stagger")]
+    [SerializeField] private StaggerState curStaggerState = StaggerState.Null;
+    public StaggerState CurStaggerState => curStaggerState;
+    private Coroutine staggerTimerCoroutine;
+
     private IActionState actionState;
     private IStats statHandler;
 
     private MovementStatData curMovementData;
 
     public event Action<HitStunState> HitStunStateChangedEvent;
+    public event Action<StaggerState> StaggerStateChangedEvent;
 
     protected override void Awake()
     {
@@ -129,6 +135,9 @@ public class SOHurtBoxHandler : HurtBoxHandler, ISOHurtBoxHandler
         }
         else
         {
+            if (curStaggerState != StaggerState.Null)
+                EndStagger();
+
             actionState.ChangeState(ActionState.HitStun);
         }
 
@@ -173,4 +182,71 @@ public class SOHurtBoxHandler : HurtBoxHandler, ISOHurtBoxHandler
         hitStunDuration = 0;
         ChangeHitStunState(HitStunState.Null);
     }
+
+
+    #region Stagger
+
+    public void Stagger(float duration)
+    {
+        if (duration <= 0f || actionState.CurActionState == ActionState.HitStun)
+            return;
+
+        if (staggerTimerCoroutine != null)
+            StopCoroutine(staggerTimerCoroutine);
+
+        actionState.ChangeState(ActionState.Stagger);
+        ChangeStaggerState(StaggerState.Stagger);
+
+        staggerTimerCoroutine = StartCoroutine(StaggerTimer(duration));
+    }
+
+    private IEnumerator StaggerTimer(float duration)
+    {
+        yield return new WaitForSeconds(duration);
+
+        staggerTimerCoroutine = null;
+        EndStagger();
+        actionState.ChangeState(ActionState.Idle);
+    }
+
+    /// <summary>Clears stagger without changing the action state.</summary>
+    private void EndStagger()
+    {
+        if (staggerTimerCoroutine != null)
+        {
+            StopCoroutine(staggerTimerCoroutine);
+            staggerTimerCoroutine = null;
+        }
+
+        ChangeStaggerState(StaggerState.Null);
+    }
+
+    private void ChangeStaggerState(StaggerState newState)
+    {
+        if (newState == curStaggerState)
+            return;
+
+        curStaggerState = newState;
+        StaggerStateChangedEvent?.Invoke(newState);
+    }
+
+    #endregion
+
+
+    #region Editor Debug Stagger
+
+    [SerializeField, HideInInspector] private float debugStaggerDuration = 0.5f;
+    public float DebugStaggerDuration => debugStaggerDuration;
+
+    public void SetDebugStaggerDuration(float value)
+    {
+        debugStaggerDuration = Mathf.Max(0f, value);
+    }
+
+    public void ApplyDebugStagger()
+    {
+        Stagger(debugStaggerDuration);
+    }
+
+    #endregion
 }
