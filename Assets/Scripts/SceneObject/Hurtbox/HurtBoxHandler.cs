@@ -158,7 +158,7 @@ public abstract class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxH
     {
         if (debugDelaySeconds <= 0f)
         {
-            HitData immediateHitData = new HitData(debugBaseForce, debugInfluence, debugLaunchAngle, debugDamage, 0f, transform.position, 0);
+            HitData immediateHitData = new HitData(debugBaseForce, debugInfluence, debugLaunchAngle, debugDamage, 0f, transform.position);
             immediateHitData.SourcePosition = transform.position;
             ReceiveHit(immediateHitData);
             return;
@@ -171,7 +171,7 @@ public abstract class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxH
     {
         yield return new WaitForSeconds(delaySeconds);
 
-        HitData hitData = new HitData(debugBaseForce, debugInfluence, debugLaunchAngle, debugDamage, 0f, transform.position, 0);
+        HitData hitData = new HitData(debugBaseForce, debugInfluence, debugLaunchAngle, debugDamage, 0f, transform.position);
         hitData.SourcePosition = transform.position;
         ReceiveHit(hitData);
     }

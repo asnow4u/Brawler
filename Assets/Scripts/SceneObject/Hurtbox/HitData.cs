@@ -9,13 +9,12 @@ public class HitData
     public float Damage;
     public float StunTime;
     public Vector3 HitPoint;
-    public int EffectIndex; // Defines what effects get played
 
     //Where the hit came from. Used to tell if the hit is in front of or behind the target.
     public Vector3 SourcePosition;
     public bool Unblockable;
 
-    public HitData(float baseForce, float influence, float lauchAngle, float damage, float stunTime, Vector3 hitPoint, int effectIndex)
+    public HitData(float baseForce, float influence, float lauchAngle, float damage, float stunTime, Vector3 hitPoint)
     {
         BaseForce = baseForce;
         Influence = influence;
@@ -23,7 +22,6 @@ public class HitData
         Damage = damage;
         StunTime = stunTime;
         HitPoint = hitPoint;
-        EffectIndex = effectIndex;
     }
 
     protected HitData(HitData hitData)
@@ -34,7 +32,6 @@ public class HitData
         Damage = hitData.Damage;
         StunTime = hitData.StunTime;
         HitPoint = hitData.HitPoint;
-        EffectIndex = hitData.EffectIndex;
         SourcePosition = hitData.SourcePosition;
         Unblockable = hitData.Unblockable;
     }
@@ -52,7 +49,6 @@ public class HitData
             "\nLaunch Angle: " + LaunchAngle +
             "\nDamage: " + Damage +
             "\nStunTime: " + StunTime +
-            "\nEffectIndex: " + EffectIndex +
             "\nSourcePosition: " + SourcePosition +
             "\nUnblockable: " + Unblockable;
 

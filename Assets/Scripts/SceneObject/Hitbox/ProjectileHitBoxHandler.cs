@@ -61,8 +61,7 @@ public class ProjectileHitBoxHandler : HitBoxHandler
             launchAngle,
             baseHitData.Damage,
             baseHitData.StunTime,
-            hitPoint,
-            baseHitData.EffectIndex
+            hitPoint
         );
         hitData.SourcePosition = transform.position;
         hitData.Unblockable = baseHitData.Unblockable;

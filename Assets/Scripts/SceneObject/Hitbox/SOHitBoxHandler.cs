@@ -112,7 +112,7 @@ public class SOHitBoxHandler : HitBoxHandler
 
         float launchAngle = CalculateDeflectionAngle(relativeVelocity, hitPoint);
 
-        HitData baseHitData = new HitData(baseForce, influence, launchAngle, damage, sceneObjectHitStunTime, hitPoint, 0);
+        HitData baseHitData = new HitData(baseForce, influence, launchAngle, damage, sceneObjectHitStunTime, hitPoint);
         SceneObjectCollisionHitData collisionHitData = new SceneObjectCollisionHitData(sceneObject.UniqueID, baseForce, baseHitData);
         collisionHitData.SourcePosition = rb.worldCenterOfMass;
 

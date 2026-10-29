@@ -8,7 +8,6 @@ public class AttackStatData
     public class AttackStats
     {
         public int State;
-        public int Type;
         public AnimationClip Animation;
         public float Influence;
         public float LaunchAngle;
@@ -27,7 +26,6 @@ public class AttackStatData
         public AttackStats(int state, AttackData data)
         {
             State = state;
-            Type = (int)data.AttackType;
             Animation = data.AnimationData.Animation;
             BaseForce = data.BaseForce;
             Influence = data.Influence;

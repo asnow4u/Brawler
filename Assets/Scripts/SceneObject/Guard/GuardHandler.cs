@@ -414,7 +414,7 @@ public class GuardHandler : HitBoxHandler, IGuard, IHitInterceptor
         Vector3 center = sceneObject.Bounds.center;
         float launchAngle = hitPoint.x >= center.x ? guardData.CounterLaunchAngle : 180f - guardData.CounterLaunchAngle;
 
-        HitData baseHitData = new HitData(guardData.CounterBaseForce, guardData.CounterInfluence, launchAngle, guardData.CounterDamage, guardData.CounterHitStunTime, hitPoint, 0);
+        HitData baseHitData = new HitData(guardData.CounterBaseForce, guardData.CounterInfluence, launchAngle, guardData.CounterDamage, guardData.CounterHitStunTime, hitPoint);
         SceneObjectHitData hitData = new SceneObjectHitData(sceneObject.UniqueID, baseHitData);
         hitData.SourcePosition = center;
         hitData.Unblockable = true;

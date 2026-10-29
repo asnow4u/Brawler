@@ -9,7 +9,6 @@ public class SpikeHitBoxHandler : HitBoxHandler
     [SerializeField] private float launchAngle = 0;
     [SerializeField] private float damage = 0;
     [SerializeField] private float hitStunTime = 0.1f;
-    [SerializeField] private int effectIndex = 3;
     [SerializeField] private float resetTime = 0.2f;
 
     private Dictionary<Guid, float> resetTimers = new Dictionary<Guid, float>();
@@ -51,8 +50,7 @@ public class SpikeHitBoxHandler : HitBoxHandler
             launchAngle, 
             damage, 
             hitStunTime, 
-            hitPoint,
-            effectIndex);
+            hitPoint);
         data.SourcePosition = transform.position;
         data.Unblockable = true;
 

@@ -13,9 +13,6 @@ public enum AttackType {Poke, Swing, Sweep, Heavy}
 [CreateAssetMenu(fileName = "AttackData", menuName = "ScriptableObjects/SceneObject/Attack/Attack")]
 public class AttackData : ScriptableObject
 {
-    [Header("Type")]
-    public AttackType AttackType;
-
     [Header("Animation")]
     public AnimationData AnimationData;
 

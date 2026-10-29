@@ -24,7 +24,6 @@ public class Projectile : SceneObject
     [SerializeField] private float influence = 0.2f;
     [SerializeField] private float damage = 6f;
     [SerializeField] private float stunTime = 0.15f;
-    [SerializeField] private int effectIndex = 0;
 
     [Header("Deflection")]
     [Tooltip("Slowest speed after being hit, in world units per second.")]
@@ -87,7 +86,7 @@ public class Projectile : SceneObject
         rb.useGravity = false;
         rb.linearVelocity = velocity;
 
-        hitBoxHandler.Initialize(ownerID, new HitData(baseForce, influence, 0f, damage, stunTime, transform.position, effectIndex));
+        hitBoxHandler.Initialize(ownerID, new HitData(baseForce, influence, 0f, damage, stunTime, transform.position));
     }
 
     /// <summary>

@@ -197,7 +197,7 @@ public class AttackHandler : MonoBehaviour, IAttack
         }
 
         attackHitBoxHandler.SetAttackHitData(
-            new HitData( attackStats.BaseForce, attackStats.Influence, attackStats.LaunchAngle, attackStats.Damage, attackStats.HitStunTime, Vector3.zero, attackStats.Type),
+            new HitData( attackStats.BaseForce, attackStats.Influence, attackStats.LaunchAngle, attackStats.Damage, attackStats.HitStunTime, Vector3.zero),
             new AttackHitSenderData(attackStats.HitPauseTime, (int)curAttackState, attackStats.LaunchAngle)
         );
 
