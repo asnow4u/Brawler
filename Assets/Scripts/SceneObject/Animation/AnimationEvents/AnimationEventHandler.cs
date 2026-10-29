@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public enum AnimationEventState { Null, AttackStarted, EnableHitbox, DisableHitbox, AttackEnded, Spawn }
+public enum AnimationEventState { Null, AttackStarted, EnableHitbox, DisableHitbox, AttackEnded, Spawn, JumpSquatStarted, JumpSquatEnded, JumpEnded }
 
 [RequireComponent(typeof(Animator))]
 internal class AnimationEventHandler : MonoBehaviour, IAnimationEvent
@@ -31,5 +31,20 @@ internal class AnimationEventHandler : MonoBehaviour, IAnimationEvent
     public void Spawn()
     {
         OnAnimationEventFiredEvent?.Invoke(AnimationEventState.Spawn);
+    }
+
+    public void StartJumpSquat()
+    {
+        OnAnimationEventFiredEvent?.Invoke(AnimationEventState.JumpSquatStarted);
+    }
+
+    public void EndJumpSquat()
+    {
+        OnAnimationEventFiredEvent?.Invoke(AnimationEventState.JumpSquatEnded);
+    }
+
+    public void EndJump()
+    {
+        OnAnimationEventFiredEvent?.Invoke(AnimationEventState.JumpEnded);
     }
 }

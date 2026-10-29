@@ -263,11 +263,11 @@ public class StatHandler : MonoBehaviour, IStats
         else
             Debug.LogWarning(gameObject.name + "'s MovementData.AirMoveData is null or invalid", gameObject);
 
-        if (data.GroundedJumpData != null && data.GroundedJumpData.IsValid())
+        if (data.GroundedJumpData != null && data.GroundedJumpData.IsValid() && data.GroundedJumpData.HasJumpSquatEnd())
         {
             statData.JumpVelocity = data.GroundedJumpData.JumpVelocity;
             statData.ShortHopVelocity = data.GroundedJumpData.ShortHopVelocity;
-            statData.JumpSquatDuration = data.GroundedJumpData.JumpSquatDuration;
+            statData.JumpSquatDuration = data.GroundedJumpData.GetJumpSquatDuration();
             statData.GroundedJumpValid = true;
         }
         else

@@ -11,13 +11,20 @@ public partial class InputMovementHandler
     [Header("Wall Jump")]
     private const float wallJumpDetachDuration = 0.2f;
     private float lastWallJumpTime = -100f;
+
+    // Jump Animation
+    private IAnimationEvent animationEventHandler;
+    private bool isJumpAnimationActive = false;
+    private AnimationEventState lastJumpAnimationEvent = AnimationEventState.Null;
+    private bool isJumpSquatLocked => lastJumpAnimationEvent == AnimationEventState.JumpSquatStarted;
     
     // Jump Squat
     private bool isJumpSquatPending = false;
+    private bool isLaunchPending = false;
     private bool hasJumped = false;
-    public bool IsInJumpSquat => isJumpSquatPending || (hasJumped && actionState.CurGroundedState == GroundedState.Grounded);
-    private float lastJumpSquatTime = -100f;
-    private bool isJumpingSquating => Time.time < lastJumpSquatTime + curMovementData.JumpSquatDuration;
+    public bool IsInJumpSquat => isJumpSquatLocked || isJumpSquatPending || (hasJumped && actionState.CurGroundedState == GroundedState.Grounded);
+    private bool isJumpMovementStateLocked => isJumpSquatLocked || isJumpSquatPending;
+    private bool isLaunchRising => hasJumped && rb.linearVelocity.y > 0;
 
     // NOTE: Prevents multiple Jumps from single held jump input
     private bool jumpInputAvailable = true;  
@@ -50,6 +57,10 @@ public partial class InputMovementHandler
                                     actionState.CurActionState <= ActionState.Moving &&
                                     Time.time >= lastWallJumpTime + wallJumpDetachDuration;
 
+    private static bool IsJumpState(MovementState moveState) => moveState == MovementState.GroundJump ||
+                                                                moveState == MovementState.AirJump ||
+                                                                moveState == MovementState.WallJump;
+
     #endregion
 
 
@@ -65,6 +76,7 @@ public partial class InputMovementHandler
     {
         ConsumeBufferedJump();
         EndFastFall();
+        BeginJumpAnimation();
 
         if (curMovementState == MovementState.GroundJump)
         {
@@ -105,7 +117,6 @@ public partial class InputMovementHandler
                 sceneObject.TurnAround();
 
             jumpInputAvailable = false;
-            lastJumpSquatTime = Time.time;
             return;
         }
 
@@ -113,24 +124,72 @@ public partial class InputMovementHandler
         {
             rb.linearVelocity = new Vector3(jumpXVelocity, jumpYVelocity, 0);
             jumpInputAvailable = false;
-            lastJumpSquatTime = Time.time;
         }
     }
 
+
+    #region Jump Animation
+
+    private void BeginJumpAnimation()
+    {
+        isJumpAnimationActive = true;
+        lastJumpAnimationEvent = AnimationEventState.Null;
+    }
+
+    private void EndJumpAnimation()
+    {
+        isJumpAnimationActive = false;
+        lastJumpAnimationEvent = AnimationEventState.Null;
+    }
+
+    /// <summary>Ends the jump animation and drops any squat or launch that has not happened yet.</summary>
+    private void CancelJump()
+    {
+        EndJumpAnimation();
+        isJumpSquatPending = false;
+        isLaunchPending = false;
+    }
+
+    /// <summary>Records jump events from the active jump clip. JumpSquatEnded queues the grounded launch; JumpEnded ends the jump animation.</summary>
+    private void OnJumpAnimationEvent(AnimationEventState state)
+    {
+        if (!isJumpAnimationActive || !IsJumpState(curMovementState))
+            return;
+
+        switch (state)
+        {
+            case AnimationEventState.JumpSquatStarted:
+                lastJumpAnimationEvent = state;
+                break;
+
+            case AnimationEventState.JumpSquatEnded:
+                lastJumpAnimationEvent = state;
+                if (isJumpSquatPending)
+                    isLaunchPending = true;
+                break;
+
+            case AnimationEventState.JumpEnded:
+                EndJumpAnimation();
+                break;
+        }
+    }
+
+    #endregion
+
+
+    #region Jump Squat
+
     private void BeginJumpSquat()
     {
-        lastJumpSquatTime = Time.time;
         isJumpSquatPending = true;
+        isLaunchPending = false;
         jumpInputAvailable = false;
         lastGroundedTime = -100f; // Consume coyote time to prevent double jumps
     }
 
     private void UpdateJumpSquat()
     {
-        if (!isJumpSquatPending)
-            return;
-
-        if (Time.time >= lastJumpSquatTime + curMovementData.JumpSquatDuration)
+        if (isJumpSquatPending && isLaunchPending)
             LaunchFromSquat();
     }
 
@@ -140,6 +199,9 @@ public partial class InputMovementHandler
         float launchVelocity = jumpHeld ? curMovementData.JumpVelocity : curMovementData.ShortHopVelocity;
         rb.linearVelocity = new Vector3(rb.linearVelocity.x, launchVelocity, 0);
         isJumpSquatPending = false;
+        isLaunchPending = false;
         hasJumped = true;
     }
+
+    #endregion
 }

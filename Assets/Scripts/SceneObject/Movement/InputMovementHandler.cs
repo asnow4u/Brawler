@@ -91,6 +91,10 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
         if (inputBuffer == null)
             Debug.LogError("InputMovementHandler Requires a IInputBuffer. If no input is desired use MovementHandler instead.", this);
 
+        animationEventHandler = GetComponentInChildren<IAnimationEvent>();
+        if (animationEventHandler == null)
+            Debug.LogError("InputMovementHandler Requires a IAnimationEvent in its children to drive jumps.", this);
+
         // Optional Components
         hitBoxHandlers = GetComponents<IHitBoxHandler>();
         guard = GetComponent<IGuard>();
@@ -104,6 +108,9 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
         actionState.GroundedStateChangedEvent += OnGroundedStateChanged;
         hurtBoxHandler.OnHitEvent += OnHitByAttack;
 
+        if (animationEventHandler != null)
+            animationEventHandler.OnAnimationEventFiredEvent += OnJumpAnimationEvent;
+
         foreach (IHitBoxHandler hitBoxHandler in hitBoxHandlers)
             hitBoxHandler.OnHitConnected += OnHitConnected;
 
@@ -116,6 +123,9 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
         actionState.GroundedStateChangedEvent -= OnGroundedStateChanged;
         hurtBoxHandler.OnHitEvent -= OnHitByAttack;
 
+        if (animationEventHandler != null)
+            animationEventHandler.OnAnimationEventFiredEvent -= OnJumpAnimationEvent;
+
         foreach (IHitBoxHandler hitBoxHandler in hitBoxHandlers)
             hitBoxHandler.OnHitConnected -= OnHitConnected;
     
@@ -126,6 +136,9 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
     {
         if ((state == ActionState.Attacking || state == ActionState.Guarding) && isDashing)
             EndDash();
+
+        if (state > ActionState.Moving)
+            CancelJump();
     }
 
     private void OnGroundedStateChanged(GroundedState groundedState)
@@ -135,6 +148,7 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
         if (groundedState == GroundedState.Grounded)
         {
             airJumpsPerformed = 0;
+            EndJumpAnimation();
             StartWaveLanding();
         }
         else if (groundedState == GroundedState.Airborn)
@@ -237,7 +251,8 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
 
     private void SetCurrentMoveState(MovementState moveState)
     {        
-        if (moveState == curMovementState)
+        // NOTE: Jump states re-enter so a repeated jump restarts its animation.
+        if (moveState == curMovementState && !IsJumpState(moveState))
             return;
 
         bool permittedDuringAttack = actionState.CurActionState == ActionState.Attacking && 
@@ -248,6 +263,9 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
             if (moveState == MovementState.Null && actionState.CurActionState == ActionState.Moving)
                 actionState.ChangeState(ActionState.Idle);
 
+            if (!IsJumpState(moveState))
+                EndJumpAnimation();
+
             curMovementState = moveState;
             sceneObject.Log("Movement State: " + moveState.ToString());
             MovementStateChangedEvent?.Invoke(moveState);
@@ -256,7 +274,7 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
 
     private void UpdateGroundedMovementState()
     {
-        if (isJumpingSquating || isLedgeClimbing) 
+        if (isJumpMovementStateLocked || isLaunchRising || isLedgeClimbing) 
             return;
 
         if (IsGuarding)
@@ -309,7 +327,7 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
 
     private void UpdateAerialMovementState()
     {
-        if (isJumpingSquating || isLedgeClimbing)
+        if (isJumpMovementStateLocked || isLedgeClimbing)
             return;
 
         if (isDashing)
@@ -362,6 +380,10 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
         {
             SetCurrentMoveState(MovementState.WallSlide);
         }
+
+        //Jump animation holds the jump state
+        else if (isJumpAnimationActive)
+            return;
                        
         //Accelerate
         else if (aerialMovementAllowed)

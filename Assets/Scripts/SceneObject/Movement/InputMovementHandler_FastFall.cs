@@ -19,7 +19,6 @@ public partial class InputMovementHandler
 
     // Shared requirements for any fast fall, cancelled or not.
     private bool fastFallAllowed => fastFallSustainAllowed &&
-                                    !isJumpingSquating &&
                                     !IsInJumpSquat &&
                                     actionState.CurActionState <= ActionState.Attacking;
 
