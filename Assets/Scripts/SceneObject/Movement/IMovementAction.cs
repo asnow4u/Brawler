@@ -6,7 +6,6 @@ public enum MovementState
     Null = -1,
     GroundMove = 0,
     AirMove = 1,
-    WallLean = 3,
     WallSlide = 4,
     LedgeClimb = 5,
     GroundJump = 6,

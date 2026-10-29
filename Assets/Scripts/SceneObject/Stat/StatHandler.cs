@@ -137,11 +137,6 @@ public class StatHandler : MonoBehaviour, IStats
             else
                 movementAnimations.Add(1, null);            
 
-            if (movementData.WallLeanData != null)
-                movementAnimations.Add(3, new AnimationStatData.AnimationData(movementData.WallLeanData.AnimationData.Animation, movementData.WallLeanData.AnimationData.AnimationSpeed));
-            else
-                movementAnimations.Add(3, null);
-
             if (movementData.WallSlideData != null)
                 movementAnimations.Add(4, new AnimationStatData.AnimationData(movementData.WallSlideData.AnimationData.Animation, movementData.WallSlideData.AnimationData.AnimationSpeed));
             else
@@ -303,13 +298,6 @@ public class StatHandler : MonoBehaviour, IStats
         else
             Debug.LogWarning(gameObject.name + "'s MovementData.LedgeClimbData is null or invalid", gameObject);
 
-        if (data.WallLeanData != null && data.WallLeanData.IsValid())
-        {
-            statData.WallLeanValid = true;
-        }
-        else
-            Debug.LogWarning(gameObject.name + "'s MovementData.WallLeanData is null or invalid", gameObject);
-
         if (data.WallSlideData != null && data.WallSlideData.IsValid())
         {
             statData.MaxWallSlideVelocity = data.WallSlideData.SlideVelocity;
@@ -419,7 +407,6 @@ public class StatHandler : MonoBehaviour, IStats
         if (movementData.AirJumpData != null)    movementData.AirJumpData.OnChangedEvent    += OnDataChanged;
         if (movementData.WallJumpData != null)   movementData.WallJumpData.OnChangedEvent   += OnDataChanged;
         if (movementData.LedgeClimbData != null) movementData.LedgeClimbData.OnChangedEvent += OnDataChanged;
-        if (movementData.WallLeanData != null)   movementData.WallLeanData.OnChangedEvent   += OnDataChanged;
         if (movementData.WallSlideData != null)  movementData.WallSlideData.OnChangedEvent  += OnDataChanged;
         #endif
     }
@@ -436,7 +423,6 @@ public class StatHandler : MonoBehaviour, IStats
         if (movementData.AirJumpData != null)    movementData.AirJumpData.OnChangedEvent    -= OnDataChanged;
         if (movementData.WallJumpData != null)   movementData.WallJumpData.OnChangedEvent   -= OnDataChanged;
         if (movementData.LedgeClimbData != null) movementData.LedgeClimbData.OnChangedEvent -= OnDataChanged;
-        if (movementData.WallLeanData != null)   movementData.WallLeanData.OnChangedEvent   -= OnDataChanged;
         if (movementData.WallSlideData != null)  movementData.WallSlideData.OnChangedEvent  -= OnDataChanged;
         #endif
     }

@@ -52,14 +52,15 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
 
     private bool groundedMovementAllowed => curMovementData.GroundedMovementValid &&
                                             horizontalInfluence != 0 &&
+                                            !isRunningIntoUnclimbableWall &&
                                             actionState.CurActionState <= ActionState.Moving;
+
+    private bool isRunningIntoUnclimbableWall => ((horizontalInfluence > 0 && IsAgainstRightWall()) || (horizontalInfluence < 0 && IsAgainstLeftWall())) &&
+                                                 !ledgeClimbAllowed;
+
     private bool aerialMovementAllowed => curMovementData.AerialMovementValid &&
                                           (horizontalInfluence != 0 || verticalInfluence != 0) &&
                                           actionState.CurActionState <= ActionState.Attacking;
-    
-    private bool wallLeanAllowed => curMovementData.WallLeanValid &&
-                                    ((IsAgainstLeftWall() && horizontalInfluence < 0) || (IsAgainstRightWall() && horizontalInfluence > 0)) &&
-                                    actionState.CurActionState <= ActionState.Moving;
 
     private bool wallSlideAllowed => curMovementData.WallSlideValid &&
                                      rb.linearVelocity.y < 0 &&
@@ -292,10 +293,6 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
                 if (curMovementState == MovementState.LedgeClimb)
                     BeginLedgeClimb();
             }
-                
-            // Against Wall
-            else if (wallLeanAllowed)
-                SetCurrentMoveState(MovementState.WallLean);
 
             // Dash initiation (standstill, walk -> dash, or pivot)
             else if (dashInitiationAllowed)
@@ -425,10 +422,6 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
 
             case MovementState.LedgeClimb:
                 UpdateLedgeClimbMovement();
-                break;
-
-            case MovementState.WallLean:
-                DeccelerateGroundedMovement();
                 break;
 
             case MovementState.Dash:

@@ -233,7 +233,6 @@ internal class WeaponHandler : MonoBehaviour
         if (movementData.AirJumpData != null)    movementData.AirJumpData.OnChangedEvent    += OnWeaponDataChanged;
         if (movementData.WallJumpData != null)   movementData.WallJumpData.OnChangedEvent   += OnWeaponDataChanged;
         if (movementData.LedgeClimbData != null) movementData.LedgeClimbData.OnChangedEvent += OnWeaponDataChanged;
-        if (movementData.WallLeanData != null)   movementData.WallLeanData.OnChangedEvent   += OnWeaponDataChanged;
         if (movementData.WallSlideData != null)  movementData.WallSlideData.OnChangedEvent  += OnWeaponDataChanged;
         #endif
     }
@@ -250,7 +249,6 @@ internal class WeaponHandler : MonoBehaviour
         if (movementData.AirJumpData != null)    movementData.AirJumpData.OnChangedEvent    -= OnWeaponDataChanged;
         if (movementData.WallJumpData != null)   movementData.WallJumpData.OnChangedEvent   -= OnWeaponDataChanged;
         if (movementData.LedgeClimbData != null) movementData.LedgeClimbData.OnChangedEvent -= OnWeaponDataChanged;
-        if (movementData.WallLeanData != null)   movementData.WallLeanData.OnChangedEvent   -= OnWeaponDataChanged;
         if (movementData.WallSlideData != null)  movementData.WallSlideData.OnChangedEvent  -= OnWeaponDataChanged;
         #endif
     }
