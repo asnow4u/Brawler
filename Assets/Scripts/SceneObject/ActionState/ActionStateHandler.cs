@@ -57,6 +57,7 @@ public class ActionStateHandler : MonoBehaviour, IActionState
             }
         }
         groundedState = surfaceCollision ? GroundedState.Grounded : GroundedState.Airborn;
+        sceneObject.SetColliderGroundLock(surfaceCollision);
 
         if (groundedState != curGroundedState)
         {

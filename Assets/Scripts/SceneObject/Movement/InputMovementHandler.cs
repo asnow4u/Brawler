@@ -148,8 +148,13 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
         if (groundedState == GroundedState.Grounded)
         {
             airJumpsPerformed = 0;
-            EndJumpAnimation();
-            StartWaveLanding();
+
+            // NOTE: A pending jump squat continues through landing and launches from the ground.
+            if (!isJumpSquatPending)
+            {
+                EndJumpAnimation();
+                StartWaveLanding();
+            }
         }
         else if (groundedState == GroundedState.Airborn)
         {
@@ -264,7 +269,7 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
                 actionState.ChangeState(ActionState.Idle);
 
             if (!IsJumpState(moveState))
-                EndJumpAnimation();
+                CancelJump();
 
             curMovementState = moveState;
             sceneObject.Log("Movement State: " + moveState.ToString());
@@ -479,8 +484,9 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
 
         rb.linearVelocity = new Vector3(currentX, rb.linearVelocity.y, 0);
 
-        if (sceneObject.IsFacingRightDirection && rb.linearVelocity.x < 0 ||
-            !sceneObject.IsFacingRightDirection && rb.linearVelocity.x > 0)
+        if (horizontalInfluence != 0 &&
+            (sceneObject.IsFacingRightDirection && rb.linearVelocity.x < 0 ||
+             !sceneObject.IsFacingRightDirection && rb.linearVelocity.x > 0))
         {
             sceneObject.TurnAround();
         }

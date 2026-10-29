@@ -18,6 +18,7 @@ public interface ISceneObject
     public Bounds Bounds { get; }
     public bool TryDetectCollision(Direction direction, float dist, LayerMask mask, out Collider collidingCollider);
     public bool ClimbableSurfaceAvailable();
+    public void SetColliderGroundLock(bool locked);
 
     //Debug
     public void Log(string log);

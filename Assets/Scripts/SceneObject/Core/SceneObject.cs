@@ -14,6 +14,18 @@ public abstract class SceneObject : MonoBehaviour, ISceneObject
     private Collider col;
     protected Rigidbody rb;
 
+    [Header("Environment Collider")]
+    [Tooltip("Points the root CapsuleCollider or BoxCollider is fitted to each physics step. Leave empty to keep the authored collider.")]
+    [SerializeField] private Transform[] colliderPoints;
+    [Tooltip("Distance added around the points on every side except a ground-locked bottom.")]
+    [SerializeField] private float colliderPadding = 0.05f;
+    [Tooltip("Minimum width and height of the fitted collider.")]
+    [SerializeField] private float minColliderSize = 0.2f;
+    private CapsuleCollider fittedCapsule;
+    private BoxCollider fittedBox;
+    private bool isColliderGroundLocked = false;
+    private float lastColliderFitTime = -1f;
+
     private bool beingDestroyed = false;
 
     #region Getters        
@@ -28,6 +40,8 @@ public abstract class SceneObject : MonoBehaviour, ISceneObject
             // Looks up the collider when it has not been cached.
             if (col == null)
                 col = GetComponent<Collider>();
+
+            FitCollider();
 
             return col.bounds;
         }
@@ -47,6 +61,14 @@ public abstract class SceneObject : MonoBehaviour, ISceneObject
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
 
         col = GetComponent<Collider>();
+
+        if (colliderPoints != null && colliderPoints.Length > 0)
+        {
+            fittedCapsule = col as CapsuleCollider;
+            fittedBox = col as BoxCollider;
+            if (fittedCapsule == null && fittedBox == null)
+                Debug.LogError("Collider points require a CapsuleCollider or BoxCollider on the SceneObject root.", this);
+        }
     }    
 
     protected virtual void OnDestroy()
@@ -227,6 +249,70 @@ public abstract class SceneObject : MonoBehaviour, ISceneObject
         );
 
         return hits.Length > 0;
+    }
+
+    #endregion
+
+
+    #region Environment Collider
+
+    /// <summary>Locks the bottom of the fitted collider to the root's Y.</summary>
+    public void SetColliderGroundLock(bool locked)
+    {
+        isColliderGroundLocked = locked;
+    }
+
+    /// <summary>Fits the CapsuleCollider or BoxCollider to the collider points in root space, at most once per physics step.</summary>
+    private void FitCollider()
+    {
+        if ((fittedCapsule == null && fittedBox == null) || lastColliderFitTime == Time.fixedTime)
+            return;
+
+        lastColliderFitTime = Time.fixedTime;
+
+        Vector2 min = new Vector2(float.MaxValue, float.MaxValue);
+        Vector2 max = new Vector2(float.MinValue, float.MinValue);
+        int pointCount = 0;
+
+        foreach (Transform point in colliderPoints)
+        {
+            if (point == null)
+                continue;
+
+            Vector2 local = transform.InverseTransformPoint(point.position);
+            min = Vector2.Min(min, local);
+            max = Vector2.Max(max, local);
+            pointCount++;
+        }
+
+        if (pointCount == 0)
+            return;
+
+        min -= Vector2.one * colliderPadding;
+        max += Vector2.one * colliderPadding;
+
+        if (isColliderGroundLocked)
+            min.y = 0f;
+
+        Vector2 size = Vector2.Max(max - min, Vector2.one * minColliderSize);
+        Vector2 center = (min + max) * 0.5f;
+
+        if (isColliderGroundLocked)
+            center.y = size.y * 0.5f;
+
+        if (fittedBox != null)
+        {
+            fittedBox.size = new Vector3(size.x, size.y, fittedBox.size.z);
+            fittedBox.center = new Vector3(center.x, center.y, fittedBox.center.z);
+            return;
+        }
+
+        bool isHorizontal = size.x >= size.y;
+
+        fittedCapsule.direction = isHorizontal ? 0 : 1;
+        fittedCapsule.radius = (isHorizontal ? size.y : size.x) * 0.5f;
+        fittedCapsule.height = isHorizontal ? size.x : size.y;
+        fittedCapsule.center = new Vector3(center.x, center.y, fittedCapsule.center.z);
     }
 
     #endregion

@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c6bf4f10d99e3f48b07f3d0a301aea0, type: 3}
+  m_Name: WolfMove
+  m_EditorClassIdentifier: StatData::MoveData
+  AnimationData:
+    Animation: {fileID: 7400000, guid: e6d85a1c4c5fd88459908d6d46473078, type: 2}
+    AnimationSpeed: 0.6
+  GroundedXAcceleration: 100
+  GroundedAttackDecceleration: 15
