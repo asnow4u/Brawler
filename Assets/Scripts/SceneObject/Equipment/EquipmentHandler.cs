@@ -8,6 +8,7 @@ public class EquipmentHandler : MonoBehaviour, IEquipment, IAttackCancel
 {    
     //Componenets
     ActionStateHandler actionState;
+    private ISceneObject sceneObject;
     private StatHandler statHandler;
     IEquipmentInput equipmentInput;
     private IInputBuffer inputBuffer;
@@ -35,6 +36,9 @@ public class EquipmentHandler : MonoBehaviour, IEquipment, IAttackCancel
     private void Awake()
     {
         actionState = GetComponent<ActionStateHandler>();
+        sceneObject = GetComponent<ISceneObject>();
+        if (sceneObject == null)
+            Debug.LogError("EquipmentHandler: No ISceneObject component found", gameObject);
         statHandler = GetComponent<StatHandler>();
         equipmentInput = GetComponent<IEquipmentInput>();
         inputBuffer = GetComponent<IInputBuffer>();
@@ -60,8 +64,8 @@ public class EquipmentHandler : MonoBehaviour, IEquipment, IAttackCancel
     
     private void Start()
     {
-        if (weaponHandler != null)
-            weaponHandler.Initialize();        
+        if (weaponHandler != null && sceneObject != null)
+            weaponHandler.Initialize(sceneObject.ObjectType);        
     }
 
     private void OnDestroy()
@@ -150,8 +154,7 @@ public class EquipmentHandler : MonoBehaviour, IEquipment, IAttackCancel
             return;
 
         statHandler.UpdateAccumulatedMass(CalculateAccumulatedMass());
-        statHandler.UpdateAnimationStats(weapon.WeaponData.MovementCollection, weapon.WeaponData.AttackCollection);
-        statHandler.UpdateMovementStats(weapon.WeaponData.MovementCollection);
+        statHandler.UpdateWeaponAnimationStats(weaponHandler.GetAttackCollection(weapon));
         statHandler.UpdateAttackStats(weaponHandler.ParseWeaponAttackData(weapon));        
         statHandler.UpdateEnhancementStats(weaponHandler.ParseWeaponEnhancementData(weapon));
     }

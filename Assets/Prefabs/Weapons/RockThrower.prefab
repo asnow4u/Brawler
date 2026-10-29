@@ -48,8 +48,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Interactable::Weapon
   mass: 25
   weaponData:
-    MovementCollection: {fileID: 11400000, guid: 245cbd7ac52e237409f25943ff190ab6, type: 2}
-    AttackCollection: {fileID: 11400000, guid: 7f39106e26a9d684992c8b3b3f6096e8, type: 2}
+    PlayerAttackCollection: {fileID: 0}
+    EnemyAttackCollection: {fileID: 11400000, guid: 7f39106e26a9d684992c8b3b3f6096e8, type: 2}
   gripPoint: {fileID: 1185801390339050372}
   attackEffect: {fileID: 0}
   enhancements:

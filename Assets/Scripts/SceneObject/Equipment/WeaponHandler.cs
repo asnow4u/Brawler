@@ -9,6 +9,8 @@ internal class WeaponHandler : MonoBehaviour
     [SerializeField] private IWeapon equippedWeapon;
     [SerializeField] private IWeapon secondaryWeapon;
 
+    private SceneObjectType ownerType;
+
     public IWeapon EquippedWeapon => equippedWeapon;
 
     public bool HasSecondryWeapon => secondaryWeapon != null;
@@ -29,8 +31,9 @@ internal class WeaponHandler : MonoBehaviour
             equippedWeapon.EnhancementsChangedEvent -= OnEquippedEnhancementsChanged;
     }
 
-    public void Initialize()
+    public void Initialize(SceneObjectType ownerType)
     {
+        this.ownerType = ownerType;
         SetupStartingWeapons();        
     }
 
@@ -112,15 +115,39 @@ internal class WeaponHandler : MonoBehaviour
             EquipWeapon(secondaryWeapon);
     }
 
-    public AttackStatData ParseWeaponAttackData(IWeapon weapon)
+    /// <summary>Returns the weapon's attack collection for the owner type. Logs an error when none exists.</summary>
+    public AttackDataCollection GetAttackCollection(IWeapon weapon)
     {
         if (weapon == null || weapon.WeaponData == null) return null;
+
+        AttackDataCollection attackData = SelectAttackCollection(weapon);
+        if (attackData == null)
+            Debug.LogError($"{weapon.gameObject.name} has no attack collection for owner type {ownerType}", weapon.gameObject);
+
+        return attackData;
+    }
+
+    /// <summary>Returns the weapon's attack collection for the owner type, or null.</summary>
+    private AttackDataCollection SelectAttackCollection(IWeapon weapon)
+    {
+        if (weapon == null || weapon.WeaponData == null) return null;
+
+        switch (ownerType)
+        {
+            case SceneObjectType.Player: return weapon.WeaponData.PlayerAttackCollection;
+            case SceneObjectType.Enemy:  return weapon.WeaponData.EnemyAttackCollection;
+            default:                     return null;
+        }
+    }
+
+    public AttackStatData ParseWeaponAttackData(IWeapon weapon)
+    {
+        AttackDataCollection attackData = SelectAttackCollection(weapon);
+        if (attackData == null) return null;
 
         AttackStatData data = new AttackStatData();
         data.WeaponRootGameObject = weapon.gameObject;
         data.SwingEffect = weapon.AttackEffect;
-
-        AttackDataCollection attackData = weapon.WeaponData.AttackCollection;
 
         if (attackData.UpTiltData != null)
             data.UpTilt = new AttackStatData.AttackStats(0, attackData.UpTiltData);
@@ -179,8 +206,7 @@ internal class WeaponHandler : MonoBehaviour
         {
             equippedWeapon.WeaponData.OnChangedEvent += OnWeaponDataChanged;
 
-            SubscribeToMovementCollection(equippedWeapon.WeaponData.MovementCollection);
-            SubscribeToAttackCollection(equippedWeapon.WeaponData.AttackCollection);
+            SubscribeToAttackCollection(SelectAttackCollection(equippedWeapon));
         }
         #endif
     }
@@ -192,78 +218,10 @@ internal class WeaponHandler : MonoBehaviour
         {
             equippedWeapon.WeaponData.OnChangedEvent -= OnWeaponDataChanged;
 
-            UnsubscribeFromMovementCollection(equippedWeapon.WeaponData.MovementCollection);
-            UnsubscribeFromAttackCollection(equippedWeapon.WeaponData.AttackCollection);
+            UnsubscribeFromAttackCollection(SelectAttackCollection(equippedWeapon));
         }
         #endif
     }
-
-
-    #region Movement Data
-
-    private void SubscribeToMovementCollection(MovementDataCollection movementData)
-    {
-        #if UNITY_EDITOR
-        if (movementData == null) return;
-
-        movementData.OnChangedEvent += OnMovementCollectionChanged;
-        SubscribeToMovementData(movementData);
-        #endif
-    }
-
-    private void UnsubscribeFromMovementCollection(MovementDataCollection movementData)
-    {
-        #if UNITY_EDITOR
-        if (movementData == null) return;
-
-        movementData.OnChangedEvent -= OnMovementCollectionChanged;
-        UnsubscribeFromMovementData(movementData);
-        #endif       
-    }
-
-    private void SubscribeToMovementData(MovementDataCollection movementData)
-    {
-        #if UNITY_EDITOR
-        if (movementData == null) return;
-
-        if (movementData.MoveData != null)       movementData.MoveData.OnChangedEvent       += OnWeaponDataChanged;
-        if (movementData.DashData != null)       movementData.DashData.OnChangedEvent       += OnWeaponDataChanged;
-        if (movementData.AirMoveData != null)    movementData.AirMoveData.OnChangedEvent    += OnWeaponDataChanged;
-        if (movementData.GroundedJumpData != null)       movementData.GroundedJumpData.OnChangedEvent       += OnWeaponDataChanged;
-        if (movementData.AirJumpData != null)    movementData.AirJumpData.OnChangedEvent    += OnWeaponDataChanged;
-        if (movementData.WallJumpData != null)   movementData.WallJumpData.OnChangedEvent   += OnWeaponDataChanged;
-        if (movementData.LedgeClimbData != null) movementData.LedgeClimbData.OnChangedEvent += OnWeaponDataChanged;
-        if (movementData.WallSlideData != null)  movementData.WallSlideData.OnChangedEvent  += OnWeaponDataChanged;
-        #endif
-    }
-
-    private void UnsubscribeFromMovementData(MovementDataCollection movementData)
-    {
-        #if UNITY_EDITOR
-        if (movementData == null) return;
-
-        if (movementData.MoveData != null)       movementData.MoveData.OnChangedEvent       -= OnWeaponDataChanged;
-        if (movementData.DashData != null)       movementData.DashData.OnChangedEvent       -= OnWeaponDataChanged;
-        if (movementData.AirMoveData != null)    movementData.AirMoveData.OnChangedEvent    -= OnWeaponDataChanged;
-        if (movementData.GroundedJumpData != null)       movementData.GroundedJumpData.OnChangedEvent       -= OnWeaponDataChanged;
-        if (movementData.AirJumpData != null)    movementData.AirJumpData.OnChangedEvent    -= OnWeaponDataChanged;
-        if (movementData.WallJumpData != null)   movementData.WallJumpData.OnChangedEvent   -= OnWeaponDataChanged;
-        if (movementData.LedgeClimbData != null) movementData.LedgeClimbData.OnChangedEvent -= OnWeaponDataChanged;
-        if (movementData.WallSlideData != null)  movementData.WallSlideData.OnChangedEvent  -= OnWeaponDataChanged;
-        #endif
-    }
-
-    private void OnMovementCollectionChanged()
-    {
-        #if UNITY_EDITOR
-        UnsubscribeFromMovementData(equippedWeapon.WeaponData.MovementCollection);
-        SubscribeToMovementData(equippedWeapon.WeaponData.MovementCollection);
-        #endif
-
-        OnWeaponDataChanged();
-    }
-
-    #endregion
 
 
     #region Attack Data
@@ -319,8 +277,8 @@ internal class WeaponHandler : MonoBehaviour
     private void OnAttackCollectionChanged()
     {
         #if UNITY_EDITOR
-        UnsubscribeFromAttackData(equippedWeapon.WeaponData.AttackCollection);
-        SubscribeToAttackData(equippedWeapon.WeaponData.AttackCollection);
+        UnsubscribeFromAttackData(SelectAttackCollection(equippedWeapon));
+        SubscribeToAttackData(SelectAttackCollection(equippedWeapon));
         #endif
 
         OnWeaponDataChanged();

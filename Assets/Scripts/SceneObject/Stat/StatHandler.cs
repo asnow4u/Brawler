@@ -78,14 +78,19 @@ public class StatHandler : MonoBehaviour, IStats
             rb.mass = baseSceneObjectData.Mass + extraMass;
     }
 
-    public void UpdateAnimationStats(MovementDataCollection movementData = null, AttackDataCollection attackData = null)
+    public void UpdateWeaponAnimationStats(AttackDataCollection attackData)
+    {
+        UpdateAnimationStats(null, attackData);
+    }
+
+    private void UpdateAnimationStats(MovementDataCollection movementData = null, AttackDataCollection attackData = null)
     {
         AnimationStatData statData = ParseAnimationData(movementData, attackData);
         if (statData != null)
             AnimationStatsChangedEvent?.Invoke(statData);
     }
 
-    public void UpdateMovementStats(MovementDataCollection moveData)
+    private void UpdateMovementStats(MovementDataCollection moveData)
     {
         MovementStatData statData = ParseMovementData(moveData);
         if (statData != null)

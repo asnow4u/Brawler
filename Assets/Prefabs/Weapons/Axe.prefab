@@ -81,10 +81,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mass: 15
   weaponData:
-    MovementCollection: {fileID: 11400000, guid: 245cbd7ac52e237409f25943ff190ab6, type: 2}
-    AttackCollection: {fileID: 11400000, guid: aadcd91403f2bfc4c8459c3ac531855f, type: 2}
+    PlayerAttackCollection: {fileID: 0}
+    EnemyAttackCollection: {fileID: 11400000, guid: aadcd91403f2bfc4c8459c3ac531855f, type: 2}
   gripPoint: {fileID: 8737114643990235599}
-  swingEffect: {fileID: 6471762070221594094}
+  attackEffect: {fileID: 0}
+  enhancements: []
 --- !u!65 &1692509777499961395
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -417,11 +418,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7c70c58486efb48458becd999c827a8e, type: 3}
---- !u!198 &6471762070221594094 stripped
-ParticleSystem:
-  m_CorrespondingSourceObject: {fileID: 7342882241206017555, guid: 7c70c58486efb48458becd999c827a8e, type: 3}
-  m_PrefabInstance: {fileID: 4339070004956513277}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &8107084044820887146 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5527426176076051863, guid: 7c70c58486efb48458becd999c827a8e, type: 3}
