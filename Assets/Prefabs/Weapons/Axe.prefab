@@ -81,7 +81,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mass: 15
   weaponData:
-    PlayerAttackCollection: {fileID: 0}
+    PlayerAttackCollection: {fileID: 11400000, guid: 1d409cb69b8bd8e47be459bce4490b5f, type: 2}
     EnemyAttackCollection: {fileID: 11400000, guid: aadcd91403f2bfc4c8459c3ac531855f, type: 2}
   gripPoint: {fileID: 8737114643990235599}
   attackEffect: {fileID: 0}
@@ -197,8 +197,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7151443273176376047}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.0752435, y: -0.062036842, z: -0.7489434, w: 0.6554188}
-  m_LocalPosition: {x: -0.030457672, y: -0.019929927, z: 0.0056702793}
+  m_LocalRotation: {x: -0, y: -0.7071068, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: -0.019929927, z: 0}
   m_LocalScale: {x: 0.6666664, y: 0.6666665, z: 0.6666662}
   m_ConstrainProportionsScale: 0
   m_Children: []

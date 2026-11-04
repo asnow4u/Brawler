@@ -46,7 +46,38 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04c24f135fcd294438865710aa50e645, type: 3}
   m_Name: 
   m_EditorClassIdentifier: SceneObject.Equipment::WeaponHandler
-  grabPoint: {fileID: 4995231925014170598}
+  grabPoint: {fileID: 7596557535485342927}
+--- !u!1 &3850448278286090376
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7596557535485342927}
+  m_Layer: 7
+  m_Name: WeaponSocket
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7596557535485342927
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3850448278286090376}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.58278793, y: -0.4195842, z: 0.47637802, w: 0.5073178}
+  m_LocalPosition: {x: -3.1446755, y: 0.20280638, z: -0.23937452}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4995231925014170598}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5535485377693572998
 GameObject:
   m_ObjectHideFlags: 0
@@ -109,6 +140,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: SceneObject.AI::RushdownEnemy
   uniqueIDString: 
   objectType: 1
+  colliderPoints: []
+  colliderPadding: 0.05
+  minColliderSize: 0.2
   homeMode: 1
   patrol:
     PatrolPoints: {fileID: 0}
@@ -136,6 +170,7 @@ MonoBehaviour:
   throwSpotSearchInterval: 0.5
   throwSpotSampleSpacing: 0.5
   throwSpotEdgeInset: 0.5
+  throwClearanceRadius: 0.25
 --- !u!114 &3395873887126715069
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -269,6 +304,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: SceneObject.Animation::AnimationHandler
   idleController: {fileID: 9100000, guid: 659c75eada4e061488073716691dedce, type: 2}
   movementController: {fileID: 9100000, guid: c37058b508664c5468b03ccc5cc7966d, type: 2}
+  guardController: {fileID: 0}
   attackController: {fileID: 9100000, guid: ba977fa0a01f4c34fb7e5a7d430ff24a, type: 2}
   staggerController: {fileID: 9100000, guid: cfc95f33ca1ecaddcfb43cd2592fbfee, type: 2}
   hitStunController: {fileID: 9100000, guid: 2d61c65002fdada44b08d4fe16eb871a, type: 2}
@@ -405,6 +441,8 @@ MonoBehaviour:
   apexApproach: 0.9
   minTravelDuration: 0.05
   recoveryDuration: 0.25
+  curStaggerState: -1
+  debugStaggerDuration: 0.5
 --- !u!1 &6726734943523650567
 GameObject:
   m_ObjectHideFlags: 0
@@ -906,7 +944,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 6964566456888421796, guid: c64fa6e6aedc9f64eb9f2cf7cd6851bc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7596557535485342927}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c64fa6e6aedc9f64eb9f2cf7cd6851bc, type: 3}
       insertIndex: -1
