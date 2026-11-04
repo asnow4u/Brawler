@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 245e252e2fdc2ce4d9eb5b1a4ae27c20
+guid: 5918e77edc536964898f7cfa92265633
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
@@ -15,7 +15,7 @@ ModelImporter:
     resampleCurves: 1
     optimizeGameObjects: 0
     removeConstantScaleCurves: 0
-    motionNodeName: 
+    motionNodeName: Wolf_Rig/Root
     animationImportErrors: 
     animationImportWarnings: 
     animationRetargetingWarnings: 
@@ -31,18 +31,18 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Wolf_FrontFlip
+      name: Wolf_Run
       takeName: Scene
       internalID: -623603649343465320
       firstFrame: 1
-      lastFrame: 60
+      lastFrame: 17
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
       cycleOffset: 0
       loop: 0
       hasAdditiveReferencePose: 0
-      loopTime: 0
+      loopTime: 1
       loopBlend: 0
       loopBlendOrientation: 1
       loopBlendPositionY: 1

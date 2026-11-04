@@ -76,9 +76,15 @@ public partial class MovementHandler : MonoBehaviour
             return;
 
         if (actionState.CurActionState == ActionState.HitStun)
+        {
+            ClearRootMotionOwnership();
             UpdateHitStunMovement();
+        }
         else
+        {
             UpdateMovement();
+            ApplyRootMotion();
+        }
 
         preSolveVelocity = rb.linearVelocity;
     }

@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 48c8ccb7e7168174587ac5d38b17f38b
+guid: 69d97e50ee4220f4eab6f8e593892598
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
@@ -15,7 +15,7 @@ ModelImporter:
     resampleCurves: 1
     optimizeGameObjects: 0
     removeConstantScaleCurves: 0
-    motionNodeName: 
+    motionNodeName: Wolf_Rig/Root
     animationImportErrors: 
     animationImportWarnings: 
     animationRetargetingWarnings: 
@@ -31,18 +31,18 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Wolf_ForwardAir
+      name: Wolf_IdleAir_C
       takeName: Scene
       internalID: -623603649343465320
       firstFrame: 1
-      lastFrame: 41
+      lastFrame: 91
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
       cycleOffset: 0
       loop: 0
       hasAdditiveReferencePose: 0
-      loopTime: 0
+      loopTime: 1
       loopBlend: 0
       loopBlendOrientation: 1
       loopBlendPositionY: 1

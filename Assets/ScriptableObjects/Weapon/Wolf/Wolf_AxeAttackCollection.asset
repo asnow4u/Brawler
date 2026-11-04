@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a46a9c19b9b87db49aaae755b913c284, type: 3}
   m_Name: Wolf_AxeAttackCollection
   m_EditorClassIdentifier: StatData::AttackDataCollection
-  UpTiltData: {fileID: 0}
+  UpTiltData: {fileID: 11400000, guid: c2502731dddcec4469aa8ba5e5cfe227, type: 2}
   UpAirData: {fileID: 0}
   DownTiltData: {fileID: 0}
   DownAirData: {fileID: 0}

@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: d44220c7803771d4fbd8e4628f66c711
+guid: fc6afa17de7641e4682d271a5ee96b6d
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
@@ -15,7 +15,7 @@ ModelImporter:
     resampleCurves: 1
     optimizeGameObjects: 0
     removeConstantScaleCurves: 0
-    motionNodeName: 
+    motionNodeName: Wolf_Rig/Root
     animationImportErrors: 
     animationImportWarnings: 
     animationRetargetingWarnings: 
@@ -31,18 +31,18 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Wolf_WallSlide
+      name: Wolf_ForwardTilt
       takeName: Scene
       internalID: -623603649343465320
       firstFrame: 1
-      lastFrame: 91
+      lastFrame: 52
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
       cycleOffset: 0
       loop: 0
       hasAdditiveReferencePose: 0
-      loopTime: 1
+      loopTime: 0
       loopBlend: 0
       loopBlendOrientation: 1
       loopBlendPositionY: 1

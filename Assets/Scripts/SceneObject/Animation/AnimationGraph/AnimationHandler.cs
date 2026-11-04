@@ -21,8 +21,10 @@ public class AnimationHandler : MonoBehaviour, IAnimation
     IAttack attackHandler;
     IGuard guardHandler;
     IHitBoxHandler[] hitBoxHandlers;
+    IRootMotion rootMotionReceiver;
 
     private Animator animator;
+    private RootMotionRelay rootMotionRelay;
     private AnimationGraph animationGraph;
 
     [SerializeField] RuntimeAnimatorController idleController;
@@ -51,6 +53,10 @@ public class AnimationHandler : MonoBehaviour, IAnimation
         if (animator == null)
             Debug.LogError("AnimationHandler Animator is null", gameObject);        
         animator.runtimeAnimatorController = null; //Ensure animator controller is null to avoid conflicts with playable graph
+        animator.applyRootMotion = true;
+
+        if (!animator.TryGetComponent(out rootMotionRelay))
+            rootMotionRelay = animator.gameObject.AddComponent<RootMotionRelay>();
 
         // eventHandler = animator.GetComponentInChildren<AnimationEventHandler>();
         // if (eventHandler == null)
@@ -66,6 +72,7 @@ public class AnimationHandler : MonoBehaviour, IAnimation
         attackHandler = GetComponent<IAttack>();
         guardHandler = GetComponent<IGuard>();
         hitBoxHandlers = GetComponents<IHitBoxHandler>();
+        rootMotionReceiver = GetComponent<IRootMotion>();
         animationGraph = new AnimationGraph(animator, idleController, movementController, guardController, attackController, staggerController, hitStunController);
         
         RegisterToEvents();
@@ -91,6 +98,7 @@ public class AnimationHandler : MonoBehaviour, IAnimation
         actionState.IdleStateChangedEvent += OnIdleStateChanged;
         hurtBoxHandler.HitStunStateChangedEvent += OnHitStunStateChanged;
         hurtBoxHandler.StaggerStateChangedEvent += OnStaggerStateChanged;
+        rootMotionRelay.RootMotionEvaluatedEvent += OnRootMotionEvaluated;
 
         if (movementHandler != null)
             movementHandler.MovementStateChangedEvent += OnMovementStateChanged;
@@ -125,6 +133,7 @@ public class AnimationHandler : MonoBehaviour, IAnimation
         
         hurtBoxHandler.HitStunStateChangedEvent -= OnHitStunStateChanged;
         hurtBoxHandler.StaggerStateChangedEvent -= OnStaggerStateChanged;
+        rootMotionRelay.RootMotionEvaluatedEvent -= OnRootMotionEvaluated;
 
         if (movementHandler != null)
             movementHandler.MovementStateChangedEvent -= OnMovementStateChanged;
@@ -155,6 +164,19 @@ public class AnimationHandler : MonoBehaviour, IAnimation
     private void OnActionStateChanged(ActionState actionState)
     {
         animationGraph.OnActionStateChanged(actionState);
+        rootMotionReceiver?.SetRootMotion(Vector3.zero, false);
+    }
+
+    /// <summary>Forwards root motion to the receiver. Reports zero while the graph is blending between action states.</summary>
+    private void OnRootMotionEvaluated(Vector3 velocity)
+    {
+        if (rootMotionReceiver == null)
+            return;
+
+        if (animationGraph.IsBlending)
+            velocity = Vector3.zero;
+
+        rootMotionReceiver.SetRootMotion(velocity, animationGraph.IsPaused);
     }
 
     private void OnIdleStateChanged(IdleState idleState)

@@ -36,6 +36,9 @@ internal class AnimationGraph : IDisposable
     private float pauseTimer = 0f;
     private const float BlendDuration = 0.1f;
 
+    public bool IsBlending => currentIndex != targetIndex;
+    public bool IsPaused => pauseTimer > 0f;
+
     public AnimationGraph(Animator animator, 
         RuntimeAnimatorController idleControllerAsset, 
         RuntimeAnimatorController moveControllerAsset, 
