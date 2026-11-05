@@ -1144,7 +1144,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4413465122408234910}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 4d5746840f16da0438d3e30abfc5abfb, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -1239,6 +1239,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5c7f17dd716bd7489abdda9a04acf61, type: 3}
   m_Name: 
   m_EditorClassIdentifier: SceneObject.Animation::AnimationHandler
+  rootMotionBone: {fileID: 3611185922369411500}
   idleController: {fileID: 9100000, guid: 659c75eada4e061488073716691dedce, type: 2}
   movementController: {fileID: 9100000, guid: c37058b508664c5468b03ccc5cc7966d, type: 2}
   guardController: {fileID: 9100000, guid: 92bb5e2388471a348f8ab665f87d5f5b, type: 2}
@@ -1265,6 +1266,7 @@ MonoBehaviour:
   minBounceVelocity: 0.9
   splatVelocityThreshold: 15
   splatHoldDuration: 0.1
+  rootMotionThreshold: 0.05
   curMovementState: 0
   ledgeClimbDuration: 0.2
   maxDIAngle: 15

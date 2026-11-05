@@ -183,11 +183,18 @@ public class AnimationHandler : MonoBehaviour, IAnimation
 
         if (deltaTime > 0f)
         {
-            if (hasRootMotionSample && !animationGraph.IsBlending)
-                velocity = rootMotionBone.parent.TransformVector(sample - lastRootMotionSample) / deltaTime;
+            if (animationGraph.IsBlending)
+            {
+                hasRootMotionSample = false;
+            }
+            else
+            {
+                if (hasRootMotionSample)
+                    velocity = rootMotionBone.parent.TransformVector(sample - lastRootMotionSample) / deltaTime;
 
-            lastRootMotionSample = sample;
-            hasRootMotionSample = true;
+                lastRootMotionSample = sample;
+                hasRootMotionSample = true;
+            }
         }
 
         rootMotionBone.localPosition = rootMotionBoneRest;
