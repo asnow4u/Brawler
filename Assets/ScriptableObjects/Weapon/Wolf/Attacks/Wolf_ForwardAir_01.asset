@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Wolf_ForwardAir_01
   m_EditorClassIdentifier: StatData::AttackData
   AnimationData:
-    Animation: {fileID: 7400000, guid: 9ac522b7a3d265f4597236cdc431e60c, type: 2}
+    Animation: {fileID: -623603649343465320, guid: 48c8ccb7e7168174587ac5d38b17f38b, type: 3}
     AnimationSpeed: 1
   BaseForce: 850
   Influence: 0.25

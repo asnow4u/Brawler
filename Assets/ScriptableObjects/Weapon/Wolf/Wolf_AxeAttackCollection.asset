@@ -16,5 +16,5 @@ MonoBehaviour:
   UpAirData: {fileID: 0}
   DownTiltData: {fileID: 0}
   DownAirData: {fileID: 0}
-  ForwardTiltData: {fileID: 11400000, guid: 46c3aa4c6aebd2a40b3265badf87c6c8, type: 2}
+  ForwardTiltData: {fileID: 0}
   ForwardAirData: {fileID: 11400000, guid: c75a8855952386a4bab5e267d3b28824, type: 2}
