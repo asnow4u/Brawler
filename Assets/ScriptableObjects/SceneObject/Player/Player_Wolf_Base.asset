@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Player_Wolf_Base
   m_EditorClassIdentifier: 
   Mass: 100
-  GroundedMaxVelocity: 15
-  GroundedDecceleration: 50
-  AerialMaxXVelocity: 10
+  GroundedMaxVelocity: 25
+  GroundedDecceleration: 100
+  AerialMaxXVelocity: 20
   AerialXDecceleration: 100
   AerialMaxRisingVelocity: 25
   AerialRisingDecceleration: 100

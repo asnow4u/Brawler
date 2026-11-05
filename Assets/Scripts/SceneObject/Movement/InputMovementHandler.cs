@@ -63,10 +63,18 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
                                           actionState.CurActionState <= ActionState.Attacking;
 
     private bool wallSlideAllowed => curMovementData.WallSlideValid &&
-                                     rb.linearVelocity.y < 0 &&
-                                     ((IsAgainstRightWall() && horizontalInfluence >= 0) || (IsAgainstLeftWall() && horizontalInfluence <= 0)) && //Prevent wall sliding when moving away from wall
+                                     (rb.linearVelocity.y < 0 ? wallSlideFallingContact : wallSlideRisingContact) &&
                                      verticalInfluence >= 0 && //Prevent wall sliding when fast falling
                                      actionState.CurActionState <= ActionState.Moving;
+
+    // Falling: against a wall while holding toward it or neutral.
+    private bool wallSlideFallingContact => (IsAgainstRightWall() && horizontalInfluence >= 0) || 
+                                            (IsAgainstLeftWall() && horizontalInfluence <= 0);
+
+    // Rising: against a wall while holding toward it, outside the wall jump detach window.
+    private bool wallSlideRisingContact => Time.time >= lastWallJumpTime + wallJumpDetachDuration &&
+                                           ((IsAgainstRightWall() && horizontalInfluence > 0) || 
+                                            (IsAgainstLeftWall() && horizontalInfluence < 0));
 
     private bool ledgeClimbAllowed => curMovementData.LedgeClimbValid &&
                                       ((horizontalInfluence > 0 && IsAgainstRightLedge()) || (horizontalInfluence < 0 && IsAgainstLeftLedge())) &&
@@ -441,7 +449,7 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
             case MovementState.Null:
                 if (IsGuarding)
                     UpdateGuardWalk();
-                else if (actionState.CurActionState == ActionState.Attacking && horizontalInfluence != 0)
+                else if (actionState.CurActionState == ActionState.Attacking)
                     DeccelerateGroundedAttackSlide();
                 else
                     DeccelerateGroundedMovement();
@@ -694,7 +702,7 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
 
     private void DeccelerateWallSlide()
     {
-        if (Mathf.Abs(rb.linearVelocity.y) > curMovementData.MaxWallSlideVelocity)
+        if (rb.linearVelocity.y < -curMovementData.MaxWallSlideVelocity)
         {
             float decceleratedYValue = rb.linearVelocity.y + curMovementData.WallSlideDeceleration * Time.fixedDeltaTime;
 

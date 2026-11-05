@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: WolfIdleAnimations
   m_EditorClassIdentifier: StatData::BaseAnimationCollection
   GroundIdleAnimation:
-    Animation: {fileID: 7400000, guid: ffe9ec0531148d84fa8f5dc004ef8df6, type: 2}
+    Animation: {fileID: -623603649343465320, guid: 62f9027e98993fd40b823cf4eb034ea4, type: 3}
     AnimationSpeed: 1
   AirIdleAnimation:
-    Animation: {fileID: 7400000, guid: 7bd9a70577785434ea415043f9129fca, type: 2}
+    Animation: {fileID: -623603649343465320, guid: 69d97e50ee4220f4eab6f8e593892598, type: 3}
     AnimationSpeed: 1
   HitStunAnimation:
-    Animation: {fileID: 7400000, guid: 7bd9a70577785434ea415043f9129fca, type: 2}
+    Animation: {fileID: -623603649343465320, guid: 69d97e50ee4220f4eab6f8e593892598, type: 3}
     AnimationSpeed: 1
   StaggerAnimation:
     Animation: {fileID: 0}

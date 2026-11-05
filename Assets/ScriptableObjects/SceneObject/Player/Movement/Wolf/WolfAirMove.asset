@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: WolfAirMove
   m_EditorClassIdentifier: StatData::AirMoveData
   AnimationData:
-    Animation: {fileID: 7400000, guid: 7bd9a70577785434ea415043f9129fca, type: 2}
+    Animation: {fileID: -623603649343465320, guid: 69d97e50ee4220f4eab6f8e593892598, type: 3}
     AnimationSpeed: 1
   AerialXAcceleration: 25
   FastFallVelocity: 20

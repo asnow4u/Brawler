@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: WolfWallJump
   m_EditorClassIdentifier: StatData::WallJumpData
   AnimationData:
-    Animation: {fileID: 7400000, guid: 3dfe538906fd3374da9fb3cc5513ead8, type: 2}
+    Animation: {fileID: -623603649343465320, guid: e88d04005ece76442bf5cb62425153a7, type: 3}
     AnimationSpeed: 0.5
   JumpVelocity: 15
   JumpAngle: 70

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: WolfWallSlide
   m_EditorClassIdentifier: StatData::WallSlideData
   AnimationData:
-    Animation: {fileID: 7400000, guid: c1260dd44f9e9a64b8cf65b7894d73ef, type: 2}
+    Animation: {fileID: -623603649343465320, guid: d44220c7803771d4fbd8e4628f66c711, type: 3}
     AnimationSpeed: 1
   SlideVelocity: 5
   SlideDecceleration: 60

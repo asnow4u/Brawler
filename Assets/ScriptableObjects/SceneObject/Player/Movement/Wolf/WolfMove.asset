@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: WolfMove
   m_EditorClassIdentifier: StatData::MoveData
   AnimationData:
-    Animation: {fileID: 7400000, guid: e6d85a1c4c5fd88459908d6d46473078, type: 2}
+    Animation: {fileID: -623603649343465320, guid: 5918e77edc536964898f7cfa92265633, type: 3}
     AnimationSpeed: 0.6
   GroundedXAcceleration: 100
   GroundedAttackDecceleration: 15

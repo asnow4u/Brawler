@@ -13,8 +13,7 @@ MonoBehaviour:
   m_Name: WolfGroundedJump
   m_EditorClassIdentifier: StatData::GroundedJumpData
   AnimationData:
-    Animation: {fileID: 7400000, guid: 65524812bd2907d4f80f37d740116a91, type: 2}
+    Animation: {fileID: -623603649343465320, guid: c77602f0e3f902a488ad18c75e4ddda4, type: 3}
     AnimationSpeed: 1
   JumpVelocity: 12
   ShortHopVelocity: 8
-  JumpSquatDuration: 0.066

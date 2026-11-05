@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: WolfAirJump
   m_EditorClassIdentifier: StatData::AirJumpData
   AnimationData:
-    Animation: {fileID: 7400000, guid: fa0cd52a6c24fdc4d93965f28c9602c0, type: 2}
+    Animation: {fileID: -623603649343465320, guid: 245e252e2fdc2ce4d9eb5b1a4ae27c20, type: 3}
     AnimationSpeed: 1
   JumpVelocity: 15
   AdditionalJumpsAvailable: 1
