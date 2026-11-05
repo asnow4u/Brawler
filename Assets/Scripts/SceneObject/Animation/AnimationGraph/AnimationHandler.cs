@@ -24,8 +24,14 @@ public class AnimationHandler : MonoBehaviour, IAnimation
     IRootMotion rootMotionReceiver;
 
     private Animator animator;
-    private RootMotionRelay rootMotionRelay;
+
     private AnimationGraph animationGraph;
+
+    [Tooltip("Bone whose animated translation is used as root motion. It is held at its rest position after each evaluation. Leave empty for no root motion.")]
+    [SerializeField] private Transform rootMotionBone;
+    private Vector3 rootMotionBoneRest;
+    private Vector3 lastRootMotionSample;
+    private bool hasRootMotionSample = false;
 
     [SerializeField] RuntimeAnimatorController idleController;
     [SerializeField] RuntimeAnimatorController movementController;
@@ -53,10 +59,10 @@ public class AnimationHandler : MonoBehaviour, IAnimation
         if (animator == null)
             Debug.LogError("AnimationHandler Animator is null", gameObject);        
         animator.runtimeAnimatorController = null; //Ensure animator controller is null to avoid conflicts with playable graph
-        animator.applyRootMotion = true;
+        animator.applyRootMotion = false;
 
-        if (!animator.TryGetComponent(out rootMotionRelay))
-            rootMotionRelay = animator.gameObject.AddComponent<RootMotionRelay>();
+        if (rootMotionBone != null)
+            rootMotionBoneRest = rootMotionBone.localPosition;
 
         // eventHandler = animator.GetComponentInChildren<AnimationEventHandler>();
         // if (eventHandler == null)
@@ -98,7 +104,6 @@ public class AnimationHandler : MonoBehaviour, IAnimation
         actionState.IdleStateChangedEvent += OnIdleStateChanged;
         hurtBoxHandler.HitStunStateChangedEvent += OnHitStunStateChanged;
         hurtBoxHandler.StaggerStateChangedEvent += OnStaggerStateChanged;
-        rootMotionRelay.RootMotionEvaluatedEvent += OnRootMotionEvaluated;
 
         if (movementHandler != null)
             movementHandler.MovementStateChangedEvent += OnMovementStateChanged;
@@ -133,7 +138,6 @@ public class AnimationHandler : MonoBehaviour, IAnimation
         
         hurtBoxHandler.HitStunStateChangedEvent -= OnHitStunStateChanged;
         hurtBoxHandler.StaggerStateChangedEvent -= OnStaggerStateChanged;
-        rootMotionRelay.RootMotionEvaluatedEvent -= OnRootMotionEvaluated;
 
         if (movementHandler != null)
             movementHandler.MovementStateChangedEvent -= OnMovementStateChanged;
@@ -164,19 +168,31 @@ public class AnimationHandler : MonoBehaviour, IAnimation
     private void OnActionStateChanged(ActionState actionState)
     {
         animationGraph.OnActionStateChanged(actionState);
+        hasRootMotionSample = false;
         rootMotionReceiver?.SetRootMotion(Vector3.zero, false);
     }
 
-    /// <summary>Forwards root motion to the receiver. Reports zero while the graph is blending between action states.</summary>
-    private void OnRootMotionEvaluated(Vector3 velocity)
+    /// <summary>Converts the root motion bone's change since the last evaluation into a world velocity, forwards it, then returns the bone to its rest position. Reports zero while blending between action states.</summary>
+    private void ForwardRootMotion(float deltaTime)
     {
-        if (rootMotionReceiver == null)
+        if (rootMotionBone == null)
             return;
 
-        if (animationGraph.IsBlending)
-            velocity = Vector3.zero;
+        Vector3 sample = rootMotionBone.localPosition;
+        Vector3 velocity = Vector3.zero;
 
-        rootMotionReceiver.SetRootMotion(velocity, animationGraph.IsPaused);
+        if (deltaTime > 0f)
+        {
+            if (hasRootMotionSample && !animationGraph.IsBlending)
+                velocity = rootMotionBone.parent.TransformVector(sample - lastRootMotionSample) / deltaTime;
+
+            lastRootMotionSample = sample;
+            hasRootMotionSample = true;
+        }
+
+        rootMotionBone.localPosition = rootMotionBoneRest;
+
+        rootMotionReceiver?.SetRootMotion(velocity, animationGraph.IsPaused);
     }
 
     private void OnIdleStateChanged(IdleState idleState)
@@ -237,6 +253,10 @@ public class AnimationHandler : MonoBehaviour, IAnimation
 
     private void Update()
     {
+        float deltaTime = Time.deltaTime;
+
         animationGraph.Update();
+        animationGraph.Evaluate(deltaTime);
+        ForwardRootMotion(deltaTime);
     }
 }

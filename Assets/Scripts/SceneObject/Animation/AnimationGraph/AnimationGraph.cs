@@ -63,7 +63,14 @@ internal class AnimationGraph : IDisposable
         SetupControllerLayer(4, staggerControllerAsset);
         SetupControllerLayer(5, hitstunControllerAsset);
 
+        graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
         graph.Play();
+    }
+
+    /// <summary>Advances and evaluates the graph by the given time. The graph only moves when this is called.</summary>
+    public void Evaluate(float deltaTime)
+    {
+        graph.Evaluate(deltaTime);
     }
 
     private void SetupControllerLayer(int index, RuntimeAnimatorController asset)
