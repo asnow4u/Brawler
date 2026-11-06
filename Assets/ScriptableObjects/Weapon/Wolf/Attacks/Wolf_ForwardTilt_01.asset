@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Wolf_ForwardTilt_01
   m_EditorClassIdentifier: StatData::AttackData
   AnimationData:
-    Animation: {fileID: 7400000, guid: d0cebc53ac3024a42804de4b1df704e5, type: 2}
+    Animation: {fileID: -623603649343465320, guid: 20ecc643594300b4abe7a4f21d855f98, type: 3}
     AnimationSpeed: 1
   BaseForce: 800
   Influence: 0.15

@@ -52,6 +52,32 @@ AnimatorState:
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
+--- !u!1102 &-22383847908088614
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Wolf_ForwardTilt_Lunge
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions: []
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: -623603649343465320, guid: 20ecc643594300b4abe7a4f21d855f98, type: 3}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
 --- !u!91 &9100000
 AnimatorController:
   m_ObjectHideFlags: 0
@@ -152,14 +178,14 @@ AnimatorState:
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
---- !u!1102 &4014135683838378136
+--- !u!1102 &3631010931994904172
 AnimatorState:
   serializedVersion: 6
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Wolf_ForwardTilt
+  m_Name: Wolf_DownTilt
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -172,7 +198,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: -623603649343465320, guid: fc6afa17de7641e4682d271a5ee96b6d, type: 3}
+  m_Motion: {fileID: -623603649343465320, guid: da2a30dff1ec88d478abd8f993f4d41e, type: 3}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -230,7 +256,7 @@ AnimatorStateMachine:
     m_Position: {x: 520, y: 360, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 7216713673754374785}
-    m_Position: {x: 760, y: 180, z: 0}
+    m_Position: {x: 1000, y: 120, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 2708984350707340217}
     m_Position: {x: 300, y: 180, z: 0}
@@ -238,11 +264,17 @@ AnimatorStateMachine:
     m_State: {fileID: 8474640439657683449}
     m_Position: {x: 300, y: 120, z: 0}
   - serializedVersion: 1
-    m_State: {fileID: 4014135683838378136}
+    m_State: {fileID: 2697429899838445111}
+    m_Position: {x: 1480, y: 120, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: -22383847908088614}
     m_Position: {x: 760, y: 120, z: 0}
   - serializedVersion: 1
-    m_State: {fileID: 2697429899838445111}
-    m_Position: {x: 1000, y: 120, z: 0}
+    m_State: {fileID: 3631010931994904172}
+    m_Position: {x: 1240, y: 120, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: 7818921519772320408}
+    m_Position: {x: 1720, y: 120, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions: []
   m_EntryTransitions: []
@@ -253,6 +285,32 @@ AnimatorStateMachine:
   m_ExitPosition: {x: 50, y: 70, z: 0}
   m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
   m_DefaultState: {fileID: 8474640439657683449}
+--- !u!1102 &7818921519772320408
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Wolf_DownAir
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions: []
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: -623603649343465320, guid: db7f9d7095dcfd645a653428b37847fc, type: 3}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
 --- !u!1102 &8143986316694304521
 AnimatorState:
   serializedVersion: 6
