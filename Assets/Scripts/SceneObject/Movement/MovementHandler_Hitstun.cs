@@ -19,7 +19,6 @@ public partial class MovementHandler
     [Tooltip("Physics material applied to the physical collider while in hitstun.")]
     [SerializeField] private PhysicsMaterial hitStunPhysicsMaterial;
     private PhysicsMaterial defaultPhysicsMaterial;
-    private LayerMask sceneObjectLayerMask;
     private LayerMask environmentLayerMask;
     private float currentHitInfluence = 0f;
 
@@ -40,7 +39,6 @@ public partial class MovementHandler
     private void InitHitStunCollision()
     {
         defaultPhysicsMaterial = col.sharedMaterial;
-        sceneObjectLayerMask = LayerMask.GetMask("SceneObject");
         environmentLayerMask = LayerMask.GetMask("Environment");
     }
 
@@ -85,7 +83,6 @@ public partial class MovementHandler
 
     private void ApplyHitStunCollisionState(bool inHitStun)
     {
-        col.excludeLayers = inHitStun ? sceneObjectLayerMask : 0;
         col.sharedMaterial = inHitStun ? hitStunPhysicsMaterial : defaultPhysicsMaterial;
 
         //Passive objects sleep at rest by design. A sleeping body generates no collision

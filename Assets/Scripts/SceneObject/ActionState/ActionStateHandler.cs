@@ -46,16 +46,7 @@ public class ActionStateHandler : MonoBehaviour, IActionState
         GroundedState groundedState = curGroundedState;
         
         bool surfaceCollision = sceneObject.TryDetectCollision(Direction.Down, 0.01f, LayerMask.GetMask("Environment"), out _);
-        
-        // Check standing on an object sceneObject
-        if (!surfaceCollision && sceneObject.TryDetectCollision(Direction.Down, 0.01f, LayerMask.GetMask("SceneObject"), out Collider hitCollider))
-        {
-            if (hitCollider.TryGetComponent(out ISceneObject hitSceneObject) && hitCollider.TryGetComponent(out ActionStateHandler hitActionStateHandler))
-            {
-                if (hitSceneObject.ObjectType == SceneObjectType.Object && hitActionStateHandler.CurGroundedState == GroundedState.Grounded)
-                    surfaceCollision = true;
-            }
-        }
+
         groundedState = surfaceCollision ? GroundedState.Grounded : GroundedState.Airborn;
         sceneObject.SetColliderGroundLock(surfaceCollision);
 
