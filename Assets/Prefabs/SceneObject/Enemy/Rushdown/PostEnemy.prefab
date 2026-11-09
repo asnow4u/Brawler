@@ -302,6 +302,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5c7f17dd716bd7489abdda9a04acf61, type: 3}
   m_Name: 
   m_EditorClassIdentifier: SceneObject.Animation::AnimationHandler
+  rootMotionBone: {fileID: 0}
   idleController: {fileID: 9100000, guid: 659c75eada4e061488073716691dedce, type: 2}
   movementController: {fileID: 9100000, guid: c37058b508664c5468b03ccc5cc7966d, type: 2}
   guardController: {fileID: 0}
@@ -328,6 +329,7 @@ MonoBehaviour:
   minBounceVelocity: 0.9
   splatVelocityThreshold: 15
   splatHoldDuration: 0.1
+  rootMotionThreshold: 0.05
   curMovementState: 0
   ledgeClimbDuration: 0.2
   maxDIAngle: 15
@@ -360,6 +362,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c462c562e2277824d8a2ca6a038752b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: SceneObject.HitBox::AttackHitBoxHandler
+  reachStretch: 0
 --- !u!114 &2624566802764144558
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -384,7 +387,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a22141f69fc7ddc4a8dd9b9ef3771688, type: 3}
   m_Name: 
   m_EditorClassIdentifier: SceneObject.Effect::EffectsHandler
-  effects: {fileID: 11400000, guid: 16e261847e3eb0f419973f2a9ca50c33, type: 2}
+  effects: {fileID: 11400000, guid: d2b41be0956e92349ba27af3e902d846, type: 2}
   velocityScale: 1
   minRate: 50
   maxRate: 200
@@ -900,19 +903,27 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6964566456888421796, guid: c64fa6e6aedc9f64eb9f2cf7cd6851bc, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.0011727689
+      value: 0.9903868
       objectReference: {fileID: 0}
     - target: {fileID: 6964566456888421796, guid: c64fa6e6aedc9f64eb9f2cf7cd6851bc, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.9903864
+      value: 0.00030418113
       objectReference: {fileID: 0}
     - target: {fileID: 6964566456888421796, guid: c64fa6e6aedc9f64eb9f2cf7cd6851bc, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.0020563588
+      value: -0.13830842
       objectReference: {fileID: 0}
     - target: {fileID: 6964566456888421796, guid: c64fa6e6aedc9f64eb9f2cf7cd6851bc, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.13830817
+      value: -0.0021781535
+      objectReference: {fileID: 0}
+    - target: {fileID: 6964566456888421796, guid: c64fa6e6aedc9f64eb9f2cf7cd6851bc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -15.899994
+      objectReference: {fileID: 0}
+    - target: {fileID: 6964566456888421796, guid: c64fa6e6aedc9f64eb9f2cf7cd6851bc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: -0.25201416
       objectReference: {fileID: 0}
     - target: {fileID: 7036213049465896255, guid: c64fa6e6aedc9f64eb9f2cf7cd6851bc, type: 3}
       propertyPath: m_Layer

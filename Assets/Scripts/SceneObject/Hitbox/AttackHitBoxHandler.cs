@@ -21,6 +21,9 @@ public class AttackHitBoxHandler : HitBoxHandler, IAttackHitBoxHandler
 
     private Transform weaponRoot;
 
+    public IReadOnlyList<IHitBox> HitBoxs => hitboxs ?? Array.Empty<IHitBox>();
+    public event Action HitBoxsChangedEvent;
+
     protected override void Awake()
     {
         sceneObject = GetComponent<ISceneObject>();
@@ -96,6 +99,7 @@ public class AttackHitBoxHandler : HitBoxHandler, IAttackHitBoxHandler
         {
             hitboxs = null;
             weaponRoot = null;
+            HitBoxsChangedEvent?.Invoke();
             return;
         }
 
@@ -105,6 +109,7 @@ public class AttackHitBoxHandler : HitBoxHandler, IAttackHitBoxHandler
             hitbox.SetOwner(sceneObject.UniqueID);
 
         ApplyReachStretch();
+        HitBoxsChangedEvent?.Invoke();
     }
 
     /// <summary>Lengthens each weapon hitbox outward along the weapon's Y axis by reachStretch weapon lengths. Weapon length is the tip-to-tip span of all base hitboxes.</summary>

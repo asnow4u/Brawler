@@ -3,6 +3,8 @@ using UnityEngine;
 
 public interface IHitBox
 {
+    bool IsActive { get; }
+
     void ActivateHitBox();
     void DeactivateHitBox();
     void SetOwner(Guid ownerID);
@@ -15,6 +17,9 @@ public interface IHitBox
 
     /// <summary>Restores the base hitbox size and center.</summary>
     void ResetStretch();
+
+    /// <summary>Returns the current hitbox shape as a world-space segment from its weapon -Y end to its +Y end, and its widest cross-section. False until the length axis has been measured.</summary>
+    bool TryGetLengthSegment(out Vector3 start, out Vector3 end, out float width);
 
     event Action<IHitBox, IHurtBox, Vector3> OnCollisionEntered;
 }

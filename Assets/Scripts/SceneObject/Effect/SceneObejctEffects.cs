@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,4 +12,16 @@ public class SceneObjectEffects : ScriptableObject
     [Header("Launch")]
     public ParticleSystem LaunchEffect;
 
+    [Header("Weapon Trails")]
+    public WeaponTrailSettings WeaponTrails = new WeaponTrailSettings();
+
+#if UNITY_EDITOR
+    /// <summary>Raised when the asset is edited in the inspector.</summary>
+    public event Action OnChangedEvent;
+
+    private void OnValidate()
+    {
+        OnChangedEvent?.Invoke();
+    }
+#endif
 }

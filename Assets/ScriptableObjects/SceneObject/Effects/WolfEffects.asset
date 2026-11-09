@@ -1,0 +1,260 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a941ef70fd666745bcd613f88b669d8, type: 3}
+  m_Name: WolfEffects
+  m_EditorClassIdentifier: SceneObject.Effect::HurtEffectSO
+  HitEffects:
+  - {fileID: 3771155000303958427, guid: 070c45dc450f8284e96f10b4cbc416cb, type: 3}
+  - {fileID: 3771155000303958427, guid: ddfaea3cfff9b3f41829bc0b6a557a91, type: 3}
+  - {fileID: 3771155000303958427, guid: 7272deab4e6c41a48a63006e8e4a48d6, type: 3}
+  - {fileID: 3771155000303958427, guid: b3c461b8fb745e34fba12dd5be102c00, type: 3}
+  LaunchEffect: {fileID: 2245441720413828719, guid: 902ef544b7b5cf94c83491003d623a91, type: 3}
+  WeaponTrails:
+    Enabled: 1
+    MinSpeed: 4
+    FullSpeed: 22
+    Intensity: 1
+    PointsPerMeter: 10
+    MaxPointsPerFrame: 16
+    Fire:
+      Enabled: 1
+      MinRateFraction: 0.35
+      AdditiveBlend: 0
+      SpikeSpacing: 0.12
+      SpikeJitter: 0.3
+      SpikeWidth: {x: 0.12, y: 0.22}
+      SpikeLength: {x: 0.04, y: 0.08}
+      SpikeFlicker: 0.25
+      SpikeInset: 0.05
+      SpikeTaper:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.5
+          value: 0.55
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      SpikeGlow: 1
+      SpikeColor:
+        serializedVersion: 2
+        key0: {r: 0.8000001, g: 0.4784314, b: 0.121568635, a: 1}
+        key1: {r: 1, g: 0.9490196, b: 0.69803923, a: 0.85}
+        key2: {r: 0.95, g: 0.3, b: 0.08, a: 0}
+        key3: {r: 0, g: 0, b: 0, a: 0}
+        key4: {r: 0, g: 0, b: 0, a: 0}
+        key5: {r: 0, g: 0, b: 0, a: 0}
+        key6: {r: 0, g: 0, b: 0, a: 0}
+        key7: {r: 0, g: 0, b: 0, a: 0}
+        ctime0: 0
+        ctime1: 35081
+        ctime2: 65535
+        ctime3: 0
+        ctime4: 0
+        ctime5: 0
+        ctime6: 0
+        ctime7: 0
+        atime0: 0
+        atime1: 39321
+        atime2: 65535
+        atime3: 0
+        atime4: 0
+        atime5: 0
+        atime6: 0
+        atime7: 0
+        m_Mode: 0
+        m_ColorSpace: -1
+        m_NumColorKeys: 3
+        m_NumAlphaKeys: 3
+      EdgeLineEnabled: 1
+      EdgeLineWidth: 0.06
+      EdgeLinePoints: 12
+      EdgeLineGlow: 1
+      EdgeLineColor: {r: 0.9339623, g: 0.48584118, b: 0.066082224, a: 1}
+      WispRate: 70
+      WispTipBias: 0.5
+      WispInset: 0.5
+      WispLifetime: {x: 0.12, y: 0.25}
+      WispWidth: {x: 0.03, y: 0.08}
+      WispFollow: {x: 0.3, y: 0.6}
+      WispTrailLength: 0.6
+      WispRise: 0.5
+      WispNoiseStrength: 1.2
+      WispNoiseFrequency: 3
+      WispGlow: 2
+      WispColor:
+        serializedVersion: 2
+        key0: {r: 1, g: 0.95, b: 0.6, a: 1}
+        key1: {r: 1, g: 0.6, b: 0.15, a: 0.7}
+        key2: {r: 0.8, g: 0.15, b: 0.05, a: 0}
+        key3: {r: 0, g: 0, b: 0, a: 0}
+        key4: {r: 0, g: 0, b: 0, a: 0}
+        key5: {r: 0, g: 0, b: 0, a: 0}
+        key6: {r: 0, g: 0, b: 0, a: 0}
+        key7: {r: 0, g: 0, b: 0, a: 0}
+        ctime0: 0
+        ctime1: 26214
+        ctime2: 65535
+        ctime3: 0
+        ctime4: 0
+        ctime5: 0
+        ctime6: 0
+        ctime7: 0
+        atime0: 0
+        atime1: 32768
+        atime2: 65535
+        atime3: 0
+        atime4: 0
+        atime5: 0
+        atime6: 0
+        atime7: 0
+        m_Mode: 0
+        m_ColorSpace: -1
+        m_NumColorKeys: 3
+        m_NumAlphaKeys: 3
+      SpikeMaterialOverride: {fileID: 0}
+      EdgeLineMaterialOverride: {fileID: 0}
+      WispMaterialOverride: {fileID: 0}
+    SpiritArc:
+      Enabled: 1
+      LanesPerHitBox: 5
+      Focus: 0.55
+      FocusSharpness: 2.5
+      MinLaneStrength: 0.2
+      LaneShift: 1
+      Lifetime: 0.45
+      Width: 0.3
+      WidthOverLifetime:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      NoiseStrength: 0.25
+      NoiseFrequency: 1.5
+      Glow: 2
+      Color:
+        serializedVersion: 2
+        key0: {r: 0.75, g: 0.85, b: 1, a: 0.9}
+        key1: {r: 0.3, g: 0.5, b: 1, a: 0.6}
+        key2: {r: 0.55, g: 0.3, b: 1, a: 0}
+        key3: {r: 0.6, g: 0.15, b: 0.8, a: 0}
+        key4: {r: 0, g: 0, b: 0, a: 0}
+        key5: {r: 0, g: 0, b: 0, a: 0}
+        key6: {r: 0, g: 0, b: 0, a: 0}
+        key7: {r: 0, g: 0, b: 0, a: 0}
+        ctime0: 0
+        ctime1: 16384
+        ctime2: 39321
+        ctime3: 65535
+        ctime4: 0
+        ctime5: 0
+        ctime6: 0
+        ctime7: 0
+        atime0: 0
+        atime1: 39321
+        atime2: 65535
+        atime3: 0
+        atime4: 0
+        atime5: 0
+        atime6: 0
+        atime7: 0
+        m_Mode: 0
+        m_ColorSpace: -1
+        m_NumColorKeys: 4
+        m_NumAlphaKeys: 3
+      TextureOverride: {fileID: 0}
+      MaterialOverride: {fileID: 0}
+    Sparks:
+      Enabled: 1
+      Threshold: 0.6
+      Rate: 60
+      InheritVelocity: {x: 0.2, y: 0.6}
+      SpraySpeed: {x: 2, y: 6}
+      Lifetime: {x: 0.15, y: 0.35}
+      Size: {x: 0.03, y: 0.07}
+      Gravity: 1
+      Stretch: 0.08
+      Glow: 3
+      Color:
+        serializedVersion: 2
+        key0: {r: 1, g: 1, b: 1, a: 1}
+        key1: {r: 1, g: 0.85, b: 0.4, a: 0}
+        key2: {r: 1, g: 0.5, b: 0.1, a: 0}
+        key3: {r: 0, g: 0, b: 0, a: 0}
+        key4: {r: 0, g: 0, b: 0, a: 0}
+        key5: {r: 0, g: 0, b: 0, a: 0}
+        key6: {r: 0, g: 0, b: 0, a: 0}
+        key7: {r: 0, g: 0, b: 0, a: 0}
+        ctime0: 0
+        ctime1: 26214
+        ctime2: 65535
+        ctime3: 0
+        ctime4: 0
+        ctime5: 0
+        ctime6: 0
+        ctime7: 0
+        atime0: 39321
+        atime1: 65535
+        atime2: 0
+        atime3: 0
+        atime4: 0
+        atime5: 0
+        atime6: 0
+        atime7: 0
+        m_Mode: 0
+        m_ColorSpace: -1
+        m_NumColorKeys: 3
+        m_NumAlphaKeys: 2
+      MaterialOverride: {fileID: 0}

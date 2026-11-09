@@ -3,7 +3,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(HurtBoxHandler))]
 [RequireComponent(typeof(Rigidbody))]
-public class EffectsHandler : MonoBehaviour, IEffects
+public partial class EffectsHandler : MonoBehaviour, IEffects
 {
     IHurtBoxHandler hurtBoxHandler;
     private new Rigidbody rigidbody;
@@ -32,7 +32,10 @@ public class EffectsHandler : MonoBehaviour, IEffects
         if (effects == null)
             Debug.LogError("Effects not setup for sceneObject", gameObject);
         else
+        {
             SetupParticleEffects();
+            InitializeWeaponTrails();
+        }
 
         RegisterToEvents();
     }
@@ -43,12 +46,15 @@ public class EffectsHandler : MonoBehaviour, IEffects
 
         if (hurtBoxHandler is ISOHurtBoxHandler soHurtBoxHandler)
             soHurtBoxHandler.HitStunStateChangedEvent += OnHitStunStateChanged;
+
+        RegisterToWeaponTrailEvents();
     }
 
     private void OnDestroy()
     {
         UnregisterFromEvents();
         CleanUpParticles();
+        CleanUpWeaponTrails();
     }
 
     private void UnregisterFromEvents()
@@ -57,6 +63,8 @@ public class EffectsHandler : MonoBehaviour, IEffects
 
         if (hurtBoxHandler is ISOHurtBoxHandler soHurtBoxHandler)
             soHurtBoxHandler.HitStunStateChangedEvent -= OnHitStunStateChanged;
+
+        UnregisterFromWeaponTrailEvents();
     }
 
 

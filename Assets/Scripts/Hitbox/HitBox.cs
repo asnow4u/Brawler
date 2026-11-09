@@ -29,6 +29,12 @@ internal class HitBox : MonoBehaviour, IHitBox
     private Vector3 baseSize;
     private float baseHeight;
 
+    private bool hasLengthAxis;
+    private int lengthAxis;
+    private float lengthSign;
+
+    public bool IsActive => Col.enabled;
+
     public event Action<IHitBox, IHurtBox, Vector3> OnCollisionEntered;
 
 
@@ -217,12 +223,76 @@ internal class HitBox : MonoBehaviour, IHitBox
                 axisIndex = i;
                 sign = Mathf.Sign(alignment);
                 unitLength = length;
+
+                hasLengthAxis = true;
+                lengthAxis = axisIndex;
+                lengthSign = sign;
                 return true;
             }
         }
 
         WarnStretchOnce($"HitBox: {name} has no length axis parallel to the weapon's Y axis and cannot be stretched.");
         return false;
+    }
+
+    public bool TryGetLengthSegment(out Vector3 start, out Vector3 end, out float width)
+    {
+        start = Vector3.zero;
+        end = Vector3.zero;
+        width = 0f;
+
+        if (!hasLengthAxis)
+            return false;
+
+        Vector3 center;
+        float length;
+        Vector3 crossA;
+        Vector3 crossB;
+        int sideA = (lengthAxis + 1) % 3;
+        int sideB = (lengthAxis + 2) % 3;
+
+        switch (Col)
+        {
+            case BoxCollider box:
+                center = box.center;
+                length = box.size[lengthAxis];
+                crossA = transform.TransformVector(AxisVector(sideA) * box.size[sideA]);
+                crossB = transform.TransformVector(AxisVector(sideB) * box.size[sideB]);
+                break;
+            case CapsuleCollider capsule:
+                center = capsule.center;
+                length = capsule.height;
+                crossA = transform.TransformVector(AxisVector(sideA) * capsule.radius * 2f);
+                crossB = transform.TransformVector(AxisVector(sideB) * capsule.radius * 2f);
+                break;
+            default:
+                return false;
+        }
+
+        Vector3 half = AxisVector(lengthAxis) * (length * 0.5f * lengthSign);
+        start = transform.TransformPoint(center - half);
+        end = transform.TransformPoint(center + half);
+
+        // Width is the hitbox thickness seen from the side camera, across the length in the XY plane.
+        Vector3 side = Vector3.Cross(end - start, Vector3.forward);
+        if (side.sqrMagnitude > 1e-8f)
+        {
+            side.Normalize();
+            width = Mathf.Abs(Vector3.Dot(crossA, side)) + Mathf.Abs(Vector3.Dot(crossB, side));
+        }
+        else
+        {
+            width = Mathf.Max(crossA.magnitude, crossB.magnitude);
+        }
+
+        return true;
+    }
+
+    private static Vector3 AxisVector(int axis)
+    {
+        Vector3 v = Vector3.zero;
+        v[axis] = 1f;
+        return v;
     }
 
     private void WarnStretchOnce(string message)
