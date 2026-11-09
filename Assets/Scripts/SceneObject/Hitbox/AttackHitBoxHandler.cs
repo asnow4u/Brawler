@@ -15,6 +15,12 @@ public class AttackHitBoxHandler : HitBoxHandler, IAttackHitBoxHandler
 
     private readonly HashSet<Guid> ignoredThisAttack = new HashSet<Guid>();
 
+    [Tooltip("How far the weapon hitboxes stretch past the weapon tip, in weapon lengths. 0 keeps the base hitboxes.")]
+    [Min(0f)]
+    [SerializeField] private float reachStretch = 0f;
+
+    private Transform weaponRoot;
+
     protected override void Awake()
     {
         sceneObject = GetComponent<ISceneObject>();
@@ -80,16 +86,61 @@ public class AttackHitBoxHandler : HitBoxHandler, IAttackHitBoxHandler
         ClearHitRecord();
         ignoredThisAttack.Clear();
 
+        if (hitboxs != null)
+        {
+            foreach (IHitBox hitbox in hitboxs)
+                hitbox.ResetStretch();
+        }
+
         if (weapon == null)
         {
             hitboxs = null;
+            weaponRoot = null;
             return;
         }
 
+        weaponRoot = weapon.transform;
         hitboxs = weapon.GetComponentsInChildren<IHitBox>(true);
         foreach (IHitBox hitbox in hitboxs)
             hitbox.SetOwner(sceneObject.UniqueID);
+
+        ApplyReachStretch();
     }
+
+    /// <summary>Lengthens each weapon hitbox outward along the weapon's Y axis by reachStretch weapon lengths. Weapon length is the tip-to-tip span of all base hitboxes.</summary>
+    private void ApplyReachStretch()
+    {
+        if (hitboxs == null || hitboxs.Length == 0 || weaponRoot == null)
+            return;
+
+        float spanStart = float.MaxValue;
+        float spanEnd = float.MinValue;
+        bool hasSpan = false;
+        foreach (IHitBox hitbox in hitboxs)
+        {
+            if (hitbox.TryGetBaseSpan(weaponRoot, out float min, out float max))
+            {
+                spanStart = Mathf.Min(spanStart, min);
+                spanEnd = Mathf.Max(spanEnd, max);
+                hasSpan = true;
+            }
+        }
+
+        if (!hasSpan)
+            return;
+
+        float extension = (spanEnd - spanStart) * reachStretch;
+        foreach (IHitBox hitbox in hitboxs)
+            hitbox.ApplyStretch(weaponRoot, extension);
+    }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (Application.isPlaying)
+            ApplyReachStretch();
+    }
+#endif
 
     public void SetAttackHitData(HitData hitData, AttackHitSenderData attackHitBoxConnectedData)
     {

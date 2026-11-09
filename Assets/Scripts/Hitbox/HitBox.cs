@@ -22,6 +22,13 @@ internal class HitBox : MonoBehaviour, IHitBox
     private Vector3 prevPosition;
     private bool hasPrevPosition;
 
+    private const float AxisAlignmentThreshold = 0.999f;
+    private bool hasBaseShape;
+    private bool hasWarnedStretch;
+    private Vector3 baseCenter;
+    private Vector3 baseSize;
+    private float baseHeight;
+
     public event Action<IHitBox, IHurtBox, Vector3> OnCollisionEntered;
 
 
@@ -33,6 +40,7 @@ internal class HitBox : MonoBehaviour, IHitBox
         col = GetComponent<Collider>();
         col.isTrigger = true;
 
+        CacheBaseShape();
         DeactivateHitBox();
     }
 
@@ -76,6 +84,158 @@ internal class HitBox : MonoBehaviour, IHitBox
         hasPrevPosition = true;
     }
     
+
+    #region Stretch
+
+    private Collider Col => col != null ? col : (col = GetComponent<Collider>());
+
+    private void CacheBaseShape()
+    {
+        if (hasBaseShape)
+            return;
+
+        switch (Col)
+        {
+            case BoxCollider box:
+                baseCenter = box.center;
+                baseSize = box.size;
+                break;
+            case CapsuleCollider capsule:
+                baseCenter = capsule.center;
+                baseHeight = capsule.height;
+                break;
+        }
+
+        hasBaseShape = true;
+    }
+
+    public bool TryGetBaseSpan(Transform weaponRoot, out float min, out float max)
+    {
+        min = 0f;
+        max = 0f;
+
+        CacheBaseShape();
+        if (!TryGetLengthAxis(weaponRoot, out int axis, out _, out float unitLength))
+            return false;
+
+        float centerY = weaponRoot.InverseTransformPoint(transform.TransformPoint(baseCenter)).y;
+        float halfLength = GetBaseLength(axis) * 0.5f * unitLength;
+
+        min = centerY - halfLength;
+        max = centerY + halfLength;
+        return true;
+    }
+
+    public void ApplyStretch(Transform weaponRoot, float extension)
+    {
+        CacheBaseShape();
+        ResetStretch();
+
+        if (!TryGetLengthAxis(weaponRoot, out int axis, out float sign, out float unitLength))
+            return;
+
+        float localExtension = extension / unitLength;
+
+        Vector3 center = baseCenter;
+        center[axis] += localExtension * 0.5f * sign;
+
+        switch (Col)
+        {
+            case BoxCollider box:
+            {
+                Vector3 size = baseSize;
+                size[axis] += localExtension;
+                box.size = size;
+                box.center = center;
+                break;
+            }
+            case CapsuleCollider capsule:
+                capsule.height = baseHeight + localExtension;
+                capsule.center = center;
+                break;
+        }
+    }
+
+    public void ResetStretch()
+    {
+        if (!hasBaseShape)
+            return;
+
+        switch (Col)
+        {
+            case BoxCollider box:
+                box.center = baseCenter;
+                box.size = baseSize;
+                break;
+            case CapsuleCollider capsule:
+                capsule.center = baseCenter;
+                capsule.height = baseHeight;
+                break;
+        }
+    }
+
+    private float GetBaseLength(int axis) => Col is CapsuleCollider ? baseHeight : baseSize[axis];
+
+    // Finds the collider's local axis that runs parallel to the weapon root's Y axis.
+    // Outputs the axis index, its direction relative to weapon Y, and the weapon-space length of one local unit along it.
+    private bool TryGetLengthAxis(Transform weaponRoot, out int axisIndex, out float sign, out float unitLength)
+    {
+        axisIndex = -1;
+        sign = 1f;
+        unitLength = 0f;
+
+        int first;
+        int last;
+        switch (Col)
+        {
+            case BoxCollider _:
+                first = 0;
+                last = 2;
+                break;
+            case CapsuleCollider capsule:
+                first = capsule.direction;
+                last = capsule.direction;
+                break;
+            default:
+                WarnStretchOnce($"HitBox: {name} uses a {Col.GetType().Name}. Only Box and Capsule hitboxes can be stretched.");
+                return false;
+        }
+
+        for (int i = first; i <= last; i++)
+        {
+            Vector3 localAxis = Vector3.zero;
+            localAxis[i] = 1f;
+
+            Vector3 weaponAxis = weaponRoot.InverseTransformVector(transform.TransformVector(localAxis));
+            float length = weaponAxis.magnitude;
+            if (length < 1e-6f)
+                continue;
+
+            float alignment = weaponAxis.y / length;
+            if (Mathf.Abs(alignment) >= AxisAlignmentThreshold)
+            {
+                axisIndex = i;
+                sign = Mathf.Sign(alignment);
+                unitLength = length;
+                return true;
+            }
+        }
+
+        WarnStretchOnce($"HitBox: {name} has no length axis parallel to the weapon's Y axis and cannot be stretched.");
+        return false;
+    }
+
+    private void WarnStretchOnce(string message)
+    {
+        if (hasWarnedStretch)
+            return;
+
+        hasWarnedStretch = true;
+        Debug.LogWarning(message, this);
+    }
+
+    #endregion
+
 
     #region Detection
 
