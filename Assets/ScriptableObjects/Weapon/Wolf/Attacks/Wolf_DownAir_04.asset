@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: Wolf_DownAir_04
   m_EditorClassIdentifier: StatData::AttackData
   AnimationData:
-    Animation: {fileID: -623603649343465320, guid: 519e94e68db95cb4383803662ccd6fb7, type: 3}
-    AnimationSpeed: 1
-  BaseForce: 1200
-  Influence: 0.5
-  Damage: 0
-  LaunchAngle: 0
-  HitPauseTime: 0.1
-  HitStunTime: 0.1
+    Animation: {fileID: -623603649343465320, guid: 503daf942adece84a9215da3b47c69f1, type: 3}
+    AnimationSpeed: 2
+  BaseForce: 1000
+  Influence: 0.3
+  Damage: 8
+  LaunchAngle: -60
+  HitPauseTime: 0.08
+  HitStunTime: 0.14

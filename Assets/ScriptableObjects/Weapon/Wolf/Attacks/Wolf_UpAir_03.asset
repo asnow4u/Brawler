@@ -17,7 +17,7 @@ MonoBehaviour:
     AnimationSpeed: 1
   BaseForce: 1200
   Influence: 0.5
-  Damage: 0
-  LaunchAngle: 0
+  Damage: 9
+  LaunchAngle: 70
   HitPauseTime: 0.1
-  HitStunTime: 0.1
+  HitStunTime: 0.14
