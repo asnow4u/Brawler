@@ -88,9 +88,12 @@ public abstract class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxH
             return;
 
         //Damage and Knockback
+        ApplyDamageLock();
         damageTaken += hitData.Damage;
 
         knockBackVelocity = CalculateKnockbackVelocity(hitData.Influence, damageTaken, hitData.LaunchAngle, rb.mass, hitData.BaseForce);
+
+        ApplyDamageLock();
 
         OnHitEvent?.Invoke(new KnockBackHitData(knockBackVelocity, hitData));
     }
@@ -116,6 +119,10 @@ public abstract class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxH
     [SerializeField, HideInInspector] private float debugLaunchAngle = 45f;
     [SerializeField, HideInInspector] private float debugDamage = 10f;
     [SerializeField, HideInInspector] private float debugDelaySeconds = 0f;
+    [SerializeField, HideInInspector] private bool debugLockDamage;
+    [SerializeField, HideInInspector] private float debugLockedDamage = 0f;
+
+    private bool IsDamageLocked => debugMode && debugLockDamage;
 
     public bool DebugMode => debugMode;
     public float DebugBaseForce => debugBaseForce;
@@ -123,10 +130,32 @@ public abstract class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxH
     public float DebugLaunchAngle => debugLaunchAngle;
     public float DebugDamage => debugDamage;
     public float DebugDelaySeconds => debugDelaySeconds;
+    public bool DebugLockDamage => debugLockDamage;
+    public float DebugLockedDamage => debugLockedDamage;
 
     public void SetDebugMode(bool value)
     {
         debugMode = value;
+        ApplyDamageLock();
+    }
+
+    public void SetDebugLockDamage(bool value)
+    {
+        debugLockDamage = value;
+        ApplyDamageLock();
+    }
+
+    public void SetDebugLockedDamage(float value)
+    {
+        debugLockedDamage = Mathf.Max(0f, value);
+        ApplyDamageLock();
+    }
+
+    /// <summary>Sets damage taken to the locked damage while the lock is active.</summary>
+    private void ApplyDamageLock()
+    {
+        if (IsDamageLocked)
+            damageTaken = debugLockedDamage;
     }
 
     public void SetDebugBaseForce(float value)

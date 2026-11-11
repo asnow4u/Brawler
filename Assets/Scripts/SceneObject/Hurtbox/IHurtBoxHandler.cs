@@ -42,6 +42,8 @@ public interface IHurtBoxHandlerEditor
     public float DebugLaunchAngle { get; }
     public float DebugDamage { get; }
     public float DebugDelaySeconds { get; }
+    public bool DebugLockDamage { get; }
+    public float DebugLockedDamage { get; }
 
     public void SetDebugMode(bool value);
     public void SetDebugBaseForce(float value);
@@ -49,6 +51,8 @@ public interface IHurtBoxHandlerEditor
     public void SetDebugLaunchAngle(float value);
     public void SetDebugDamage(float value);
     public void SetDebugDelaySeconds(float value);
+    public void SetDebugLockDamage(bool value);
+    public void SetDebugLockedDamage(float value);
 
     public void ApplyDebugDamage();
 }

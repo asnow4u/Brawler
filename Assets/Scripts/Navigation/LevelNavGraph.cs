@@ -74,6 +74,15 @@ public class LevelNavGraph : MonoBehaviour
     public LevelNavigator Navigator => navigator;
     public bool IsBaked => grid != null;
 
+    /// <summary>Whether a world position is inside the level bounds on X and Y.</summary>
+    public bool Contains(Vector3 worldPosition)
+    {
+        Vector3 min = transform.position;
+
+        return worldPosition.x >= min.x && worldPosition.x <= min.x + levelSize.x
+            && worldPosition.y >= min.y && worldPosition.y <= min.y + levelSize.y;
+    }
+
 
     #region Initialize
 

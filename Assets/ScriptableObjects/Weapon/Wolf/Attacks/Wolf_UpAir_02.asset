@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: StatData::AttackData
   AnimationData:
     Animation: {fileID: -623603649343465320, guid: ef969b6e1c04c9a4187a828b04ee9f56, type: 3}
-    AnimationSpeed: 1
+    AnimationSpeed: 1.5
   BaseForce: 1700
   Influence: 0.8
   Damage: 13
   LaunchAngle: 85
-  HitPauseTime: 0.15
+  HitPauseTime: 0.2
   HitStunTime: 0.12

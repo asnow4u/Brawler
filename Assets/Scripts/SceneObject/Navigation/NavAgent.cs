@@ -9,6 +9,7 @@ using UnityEngine;
 public class NavAgent : MonoBehaviour
 {
     [Header("Graph")]
+    [Tooltip("Found on Start from the LevelNavGraph containing the agent when empty.")]
     [SerializeField] private LevelNavGraph navGraph;
 
     [Header("Arrival")]
@@ -211,15 +212,30 @@ public class NavAgent : MonoBehaviour
         ownCollider = GetComponent<Collider>();
         body = GetComponent<Rigidbody>();
 
-        if (navGraph == null)
-            Debug.LogError("NavAgent has no LevelNavGraph assigned.", this);
-
         RegisterToEvents();
     }
 
     private void Start()
     {
+        if (navGraph == null)
+            navGraph = FindContainingGraph();
+
+        if (navGraph == null)
+            Debug.LogError("NavAgent has no LevelNavGraph assigned and is not inside one.", this);
+
         ResetProgress();
+    }
+
+    /// <summary>The LevelNavGraph whose bounds contain the agent, or null.</summary>
+    private LevelNavGraph FindContainingGraph()
+    {
+        foreach (LevelNavGraph graph in FindObjectsByType<LevelNavGraph>(FindObjectsSortMode.None))
+        {
+            if (graph.Contains(transform.position))
+                return graph;
+        }
+
+        return null;
     }
 
     private void OnDestroy()

@@ -3,7 +3,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(Collider))]
 [RequireComponent(typeof(Rigidbody))]
-public abstract class SceneObject : MonoBehaviour, ISceneObject
+public abstract class SceneObject : MonoBehaviour, ISceneObject, IKillable
 {
     [Header("SceneObject")]
     private Guid uniqueID;
@@ -27,6 +27,7 @@ public abstract class SceneObject : MonoBehaviour, ISceneObject
     private float lastColliderFitTime = -1f;
 
     private bool beingDestroyed = false;
+    private bool killed = false;
 
     #region Getters        
     
@@ -69,11 +70,29 @@ public abstract class SceneObject : MonoBehaviour, ISceneObject
             if (fittedCapsule == null && fittedBox == null)
                 Debug.LogError("Collider points require a CapsuleCollider or BoxCollider on the SceneObject root.", this);
         }
+
+        KillableRegistry.Register(this);
     }    
 
     protected virtual void OnDestroy()
     {
         beingDestroyed = true;
+        KillableRegistry.Unregister(this);
+    }
+
+    #endregion
+
+
+    #region Kill
+
+    /// <summary>Destroys the sceneObject once.</summary>
+    public virtual void Kill(KillZoneSide side)
+    {
+        if (killed)
+            return;
+
+        killed = true;
+        Destroy(gameObject);
     }
 
     #endregion

@@ -19,5 +19,5 @@ MonoBehaviour:
   Influence: 0.5
   Damage: 9
   LaunchAngle: 70
-  HitPauseTime: 0.1
+  HitPauseTime: 0.2
   HitStunTime: 0.14

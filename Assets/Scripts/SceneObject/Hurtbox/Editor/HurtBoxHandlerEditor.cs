@@ -27,6 +27,7 @@ internal sealed class HurtBoxHandlerEditor : Editor
 
         DrawDebugFields(unityObject, handler);
         DrawApplyDamage(handler);
+        DrawDamageLock(unityObject, handler);
 
         if (target is ISOHurtBoxHandlerEditor staggerHandler)
             DrawStagger(unityObject, staggerHandler);
@@ -104,6 +105,28 @@ internal sealed class HurtBoxHandlerEditor : Editor
         {
             Undo.RecordObject(unityObject, "Change Hurtbox Delay");
             handler.SetDebugDelaySeconds(newDelaySeconds);
+            EditorUtility.SetDirty(unityObject);
+        }
+    }
+
+    private static void DrawDamageLock(Object unityObject, IHurtBoxHandlerEditor handler)
+    {
+        EditorGUILayout.Space(8);
+
+        bool newLock = EditorGUILayout.Toggle("Lock Damage", handler.DebugLockDamage);
+        if (newLock != handler.DebugLockDamage)
+        {
+            Undo.RecordObject(unityObject, "Toggle Hurtbox Damage Lock");
+            handler.SetDebugLockDamage(newLock);
+            EditorUtility.SetDirty(unityObject);
+        }
+
+        float newLockedDamage = EditorGUILayout.FloatField("Locked Damage", handler.DebugLockedDamage);
+        newLockedDamage = Mathf.Max(0f, newLockedDamage);
+        if (!Mathf.Approximately(newLockedDamage, handler.DebugLockedDamage))
+        {
+            Undo.RecordObject(unityObject, "Change Hurtbox Locked Damage");
+            handler.SetDebugLockedDamage(newLockedDamage);
             EditorUtility.SetDirty(unityObject);
         }
     }

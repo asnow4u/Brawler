@@ -15,9 +15,9 @@ MonoBehaviour:
   AnimationData:
     Animation: {fileID: -623603649343465320, guid: 66b2a05af3c63324cad185f6f3cb41ab, type: 3}
     AnimationSpeed: 1
-  BaseForce: 1600
+  BaseForce: 1800
   Influence: 0.75
   Damage: 13
   LaunchAngle: 25
-  HitPauseTime: 0.14
+  HitPauseTime: 0.2
   HitStunTime: 0.12

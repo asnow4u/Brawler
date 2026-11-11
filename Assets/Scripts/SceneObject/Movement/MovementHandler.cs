@@ -40,6 +40,7 @@ public partial class MovementHandler : MonoBehaviour
         col = GetComponent<Collider>();
 
         InitHitStunCollision();
+        InitSoftPush();
 
         RegisterToEvents();
     }
@@ -84,6 +85,7 @@ public partial class MovementHandler : MonoBehaviour
         {
             UpdateMovement();
             ApplyRootMotion();
+            ApplySoftPush();
         }
 
         preSolveVelocity = rb.linearVelocity;
