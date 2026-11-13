@@ -11,7 +11,7 @@ public class MovementDataCollection : ScriptableObject
     public AirJumpData AirJumpData;
     public WallJumpData WallJumpData;
     public LedgeClimbData LedgeClimbData;
-    public WallSlideData WallSlideData;
+    public WallRunData WallRunData;
 
     #region Editor Updating
 

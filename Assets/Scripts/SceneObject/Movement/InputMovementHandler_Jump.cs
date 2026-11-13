@@ -30,6 +30,9 @@ public partial class InputMovementHandler
     private bool jumpInputAvailable = true;  
     private int airJumpsPerformed = 0;
 
+    // Wall Run
+    private float wallRunLaunchVelocity = 0f;
+
 
     #region Movement Conditions
 
@@ -57,9 +60,16 @@ public partial class InputMovementHandler
                                     actionState.CurActionState <= ActionState.Moving &&
                                     Time.time >= lastWallJumpTime + wallJumpDetachDuration;
 
+    private bool wallRunAllowed => curMovementData.WallRunValid &&
+                                   ((horizontalInfluence > 0 && IsAgainstRightWall()) || (horizontalInfluence < 0 && IsAgainstLeftWall())) &&
+                                   rb.linearVelocity.x * Mathf.Sign(horizontalInfluence) >= curMovementData.WallRunMinTriggerSpeed &&
+                                   !ledgeClimbAllowed &&
+                                   actionState.CurActionState <= ActionState.Moving;
+
     private static bool IsJumpState(MovementState moveState) => moveState == MovementState.GroundJump ||
                                                                 moveState == MovementState.AirJump ||
-                                                                moveState == MovementState.WallJump;
+                                                                moveState == MovementState.WallJump ||
+                                                                moveState == MovementState.WallRun;
 
     #endregion
 
@@ -80,6 +90,13 @@ public partial class InputMovementHandler
 
         if (curMovementState == MovementState.GroundJump)
         {
+            BeginJumpSquat();
+            return;
+        }
+
+        if (curMovementState == MovementState.WallRun)
+        {
+            wallRunLaunchVelocity = CalculateWallRunLaunchVelocity();
             BeginJumpSquat();
             return;
         }
@@ -195,12 +212,30 @@ public partial class InputMovementHandler
 
     private void LaunchFromSquat()
     {
-        bool jumpHeld = jumpInfluence > 0;
-        float launchVelocity = jumpHeld ? curMovementData.JumpVelocity : curMovementData.ShortHopVelocity;
+        float launchVelocity;
+
+        if (curMovementState == MovementState.WallRun)
+            launchVelocity = wallRunLaunchVelocity;
+        else
+            launchVelocity = jumpInfluence > 0 ? curMovementData.JumpVelocity : curMovementData.ShortHopVelocity;
+
         rb.linearVelocity = new Vector3(rb.linearVelocity.x, launchVelocity, 0);
         isJumpSquatPending = false;
         isLaunchPending = false;
         hasJumped = true;
+    }
+
+    #endregion
+
+
+    #region Wall Run
+
+    /// <summary>Lerps between WallRunMinJumpVelocity and WallRunJumpVelocity by speed toward the wall, from WallRunMinTriggerSpeed to MaxGroundedVelocity.</summary>
+    private float CalculateWallRunLaunchVelocity()
+    {
+        float speed = Mathf.Abs(rb.linearVelocity.x);
+        float t = Mathf.InverseLerp(curMovementData.WallRunMinTriggerSpeed, curMovementData.MaxGroundedVelocity, speed);
+        return Mathf.Lerp(curMovementData.WallRunMinJumpVelocity, curMovementData.WallRunJumpVelocity, t);
     }
 
     #endregion

@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: d44220c7803771d4fbd8e4628f66c711
+guid: 4f05c35c7dadf8f4dba7fb2551da77ce
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
@@ -31,11 +31,11 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Wolf_WallSlide
+      name: Wolf_HitStun
       takeName: Scene
       internalID: -623603649343465320
       firstFrame: 1
-      lastFrame: 91
+      lastFrame: 73
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -121,7 +121,7 @@ ModelImporter:
     legStretch: 0.05
     feetSpacing: 0
     globalScale: 1
-    rootMotionBoneName: 
+    rootMotionBoneName: Root
     hasTranslationDoF: 0
     hasExtraRoot: 0
     skeletonHasParents: 1

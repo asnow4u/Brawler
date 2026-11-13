@@ -10,27 +10,33 @@ public class GuardData : ScriptableObject
     [Header("Timing")]
     [Tooltip("Seconds from raising guard until hits are blocked.")]
     public float RaiseTime = 0.06f;
-    [Tooltip("Seconds from dropping guard until the object can act.")]
-    public float DropTime = 0.1f;
+    [Tooltip("Seconds the guard stays up while held. When it runs out the object returns to idle.")]
+    public float GuardDuration = 1.5f;
+    [Tooltip("Seconds after the guard ends before it can be raised again.")]
+    public float Cooldown = 5f;
+    [Tooltip("Seconds from releasing guard until the object can act. Jump and attack skip it.")]
+    public float DropTime = 0.05f;
     [Tooltip("Seconds the guard is locked after blocking a hit.")]
     public float BlockstunTime = 0.15f;
 
-    [Header("Stagger Bar")]
-    [Tooltip("Blocked damage needed to break the guard.")]
-    public float StaggerBarMax = 50f;
-    [Tooltip("Bar drained per second while not guarding.")]
-    public float BarDecayRate = 10f;
-    [Tooltip("Bar filled per second while the guard is up.")]
-    public float HoldFillRate = 3f;
-    [Tooltip("Bar drained per second during a guard break. The break lasts until the bar is empty.")]
-    public float BreakDrainRate = 50f;
-
-    [Header("Movement")]
+    [Header("Ground Movement")]
     [Tooltip("Max horizontal speed while walking with guard up.")]
     public float GuardWalkSpeed = 2f;
-    [Tooltip("Velocity pushing the guarding object away from a blocked hit, before damage is added.")]
+
+    [Header("Air Movement")]
+    [Tooltip("Max horizontal speed while drifting with guard up in the air.")]
+    public float AirDriftSpeed = 2f;
+    [Tooltip("Multiplier on gravity while guarding in the air.")]
+    public float AirGravityScale = 0.35f;
+    [Tooltip("Fall speed the guard slows toward in the air.")]
+    public float AirMaxFallSpeed = 3f;
+    [Tooltip("Velocity removed per second while above the air drift speed, above the air fall speed, or rising.")]
+    public float AirSlowdownRate = 15f;
+
+    [Header("Pushback")]
+    [Tooltip("Speed pushing the guarding object along the blocked attack's launch angle, before damage is added. Horizontal only on the ground.")]
     public float PushbackBase = 2f;
-    [Tooltip("Pushback velocity added per point of blocked damage.")]
+    [Tooltip("Pushback speed added per point of blocked damage.")]
     public float PushbackPerDamage = 0.2f;
 
     [Header("Attacker")]
@@ -40,7 +46,7 @@ public class GuardData : ScriptableObject
     [Header("Counter")]
     [Tooltip("Seconds after the latest blocked hit in which releasing guard performs the counter.")]
     public float CounterWindow = 0.2f;
-    [Tooltip("Seconds the counter lasts. The object cannot be hit during the counter.")]
+    [Tooltip("Seconds the counter lasts. The object is held in place and cannot be hit during the counter.")]
     public float CounterDuration = 0.25f;
 
     [Header("Counter Blast")]

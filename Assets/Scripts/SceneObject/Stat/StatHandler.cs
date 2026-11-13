@@ -142,11 +142,6 @@ public class StatHandler : MonoBehaviour, IStats
             else
                 movementAnimations.Add(1, null);            
 
-            if (movementData.WallSlideData != null)
-                movementAnimations.Add(4, new AnimationStatData.AnimationData(movementData.WallSlideData.AnimationData.Animation, movementData.WallSlideData.AnimationData.AnimationSpeed));
-            else
-                movementAnimations.Add(4, null);
-
             if (movementData.LedgeClimbData != null)
                 movementAnimations.Add(5, new AnimationStatData.AnimationData(movementData.LedgeClimbData.AnimationData.Animation, movementData.LedgeClimbData.AnimationData.AnimationSpeed));
             else
@@ -166,6 +161,11 @@ public class StatHandler : MonoBehaviour, IStats
                 movementAnimations.Add(8, new AnimationStatData.AnimationData(movementData.WallJumpData.AnimationData.Animation, movementData.WallJumpData.AnimationData.AnimationSpeed));
             else
                 movementAnimations.Add(8, null);
+
+            if (movementData.WallRunData != null)
+                movementAnimations.Add(9, new AnimationStatData.AnimationData(movementData.WallRunData.AnimationData.Animation, movementData.WallRunData.AnimationData.AnimationSpeed));
+            else
+                movementAnimations.Add(9, null);
 
             if (movementData.DashData != null)
                 movementAnimations.Add(10, new AnimationStatData.AnimationData(movementData.DashData.AnimationData.Animation, movementData.DashData.AnimationData.AnimationSpeed));
@@ -303,14 +303,15 @@ public class StatHandler : MonoBehaviour, IStats
         else
             Debug.LogWarning(gameObject.name + "'s MovementData.LedgeClimbData is null or invalid", gameObject);
 
-        if (data.WallSlideData != null && data.WallSlideData.IsValid())
+        if (data.WallRunData != null && data.WallRunData.IsValid() && data.WallRunData.HasJumpSquatEnd())
         {
-            statData.MaxWallSlideVelocity = data.WallSlideData.SlideVelocity;
-            statData.WallSlideDeceleration = data.WallSlideData.SlideDecceleration;
-            statData.WallSlideValid = true;
+            statData.WallRunMinTriggerSpeed = data.WallRunData.MinTriggerSpeed;
+            statData.WallRunMinJumpVelocity = data.WallRunData.MinJumpVelocity;
+            statData.WallRunJumpVelocity = data.WallRunData.JumpVelocity;
+            statData.WallRunValid = true;
         }
         else
-            Debug.LogWarning(gameObject.name + "'s MovementData.WallSlideData is null or invalid", gameObject);
+            Debug.LogWarning(gameObject.name + "'s MovementData.WallRunData is null or invalid", gameObject);
 
         return statData;
     }
@@ -412,7 +413,7 @@ public class StatHandler : MonoBehaviour, IStats
         if (movementData.AirJumpData != null)    movementData.AirJumpData.OnChangedEvent    += OnDataChanged;
         if (movementData.WallJumpData != null)   movementData.WallJumpData.OnChangedEvent   += OnDataChanged;
         if (movementData.LedgeClimbData != null) movementData.LedgeClimbData.OnChangedEvent += OnDataChanged;
-        if (movementData.WallSlideData != null)  movementData.WallSlideData.OnChangedEvent  += OnDataChanged;
+        if (movementData.WallRunData != null)    movementData.WallRunData.OnChangedEvent    += OnDataChanged;
         #endif
     }
 
@@ -428,7 +429,7 @@ public class StatHandler : MonoBehaviour, IStats
         if (movementData.AirJumpData != null)    movementData.AirJumpData.OnChangedEvent    -= OnDataChanged;
         if (movementData.WallJumpData != null)   movementData.WallJumpData.OnChangedEvent   -= OnDataChanged;
         if (movementData.LedgeClimbData != null) movementData.LedgeClimbData.OnChangedEvent -= OnDataChanged;
-        if (movementData.WallSlideData != null)  movementData.WallSlideData.OnChangedEvent  -= OnDataChanged;
+        if (movementData.WallRunData != null)    movementData.WallRunData.OnChangedEvent    -= OnDataChanged;
         #endif
     }
 

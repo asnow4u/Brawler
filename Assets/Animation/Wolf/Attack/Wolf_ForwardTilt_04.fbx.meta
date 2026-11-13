@@ -62,14 +62,14 @@ ModelImporter:
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.2054186
+      - time: 0.33345392
         functionName: EnableHitbox
         data: 
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.3646122
+      - time: 0.47940248
         functionName: DisableHitbox
         data: 
         objectReferenceParameter: {instanceID: 0}

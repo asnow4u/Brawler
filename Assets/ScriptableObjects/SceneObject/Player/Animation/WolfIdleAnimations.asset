@@ -19,7 +19,7 @@ MonoBehaviour:
     Animation: {fileID: -623603649343465320, guid: 69d97e50ee4220f4eab6f8e593892598, type: 3}
     AnimationSpeed: 1
   HitStunAnimation:
-    Animation: {fileID: -623603649343465320, guid: 69d97e50ee4220f4eab6f8e593892598, type: 3}
+    Animation: {fileID: -623603649343465320, guid: 4f05c35c7dadf8f4dba7fb2551da77ce, type: 3}
     AnimationSpeed: 1
   StaggerAnimation:
     Animation: {fileID: 0}

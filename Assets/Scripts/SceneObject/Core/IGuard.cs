@@ -15,6 +15,10 @@ public interface IGuard
 {
     public GuardState CurGuardState { get; }
     public float GuardWalkSpeed { get; }
+    public float AirDriftSpeed { get; }
+    public float AirGravityScale { get; }
+    public float AirMaxFallSpeed { get; }
+    public float AirSlowdownRate { get; }
 
     public AnimationClip GuardAnimation { get; }
     public float GuardAnimationSpeed { get; }

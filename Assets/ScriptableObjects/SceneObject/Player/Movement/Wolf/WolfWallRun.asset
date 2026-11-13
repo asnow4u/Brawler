@@ -9,9 +9,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7cdcbee89c40a004da54ccdd77f82514, type: 3}
-  m_Name: PlayerWallLean
-  m_EditorClassIdentifier: StatData::WallLeanData
+  m_Script: {fileID: 11500000, guid: 0ee701f8fa6f510488b271548f231a3f, type: 3}
+  m_Name: WolfWallRun
+  m_EditorClassIdentifier: StatData::WallRunData
   AnimationData:
-    Animation: {fileID: 7400000, guid: 824ed37bbf716394194853ed735c7a28, type: 2}
+    Animation: {fileID: -623603649343465320, guid: 57d374d391396394a9e431fe19ad0d87, type: 3}
     AnimationSpeed: 1
+  JumpVelocity: 12
+  MinTriggerSpeed: 5
+  MinJumpVelocity: 8

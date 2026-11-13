@@ -1268,7 +1268,7 @@ MonoBehaviour:
   splatHoldDuration: 0.1
   rootMotionThreshold: 0.05
   curMovementState: 0
-  ledgeClimbDuration: 0.2
+  ledgeClimbDuration: 0.23333333
   maxDIAngle: 15
   maxDriftSpeed: 2.5
   driftAccel: 8

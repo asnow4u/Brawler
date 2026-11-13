@@ -176,6 +176,9 @@ public partial class MovementHandler
         }
 
         rb.linearVelocity = bounceVelocity;
+
+        if (bounceVelocity != Vector3.zero)
+            hurtBoxHandler.RedirectLaunch(bounceVelocity);
     }
 
     private bool TryGetAverageContactNormal(Collision collision, out Vector3 averageNormal)
@@ -231,7 +234,9 @@ public partial class MovementHandler
     {
         if (Time.time >= splatHoldEndTime)
         {
+            Vector3 releasedVelocity = splatHeldVelocity;
             EndBounceSplat();
+            hurtBoxHandler.RedirectLaunch(releasedVelocity);
             return;
         }
 

@@ -18,5 +18,5 @@ MonoBehaviour:
   GroundedJumpData: {fileID: 11400000, guid: a3d3b68c290a12242bab5a6844d58d54, type: 2}
   AirJumpData: {fileID: 11400000, guid: b7aa55972b3b3994092775d3f3f9ed9d, type: 2}
   WallJumpData: {fileID: 11400000, guid: d3f26a4b17226b54aabdb3eeefa1d3be, type: 2}
-  LedgeClimbData: {fileID: 0}
-  WallSlideData: {fileID: 11400000, guid: 9e2684da5ba8d4a469a6fd6e2976ec48, type: 2}
+  LedgeClimbData: {fileID: 11400000, guid: 508a0d880c2737343a568e9d4f10d082, type: 2}
+  WallRunData: {fileID: 11400000, guid: 56ddca35389d9f34fb83d6a9ea82242b, type: 2}

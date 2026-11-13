@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Wolf_AxeAttackCollection
   m_EditorClassIdentifier: StatData::AttackDataCollection
   UpTiltData: {fileID: 11400000, guid: 7db89ea0eda8cfe43bd83d3f05eba900, type: 2}
-  UpAirData: {fileID: 11400000, guid: 0852400aec81c5843b7f368b3931dffa, type: 2}
-  DownTiltData: {fileID: 11400000, guid: b9479514003c9d24f8ac05844c558fd5, type: 2}
+  UpAirData: {fileID: 11400000, guid: f07b8a929fcc601489adbd9ec11c8a53, type: 2}
+  DownTiltData: {fileID: 11400000, guid: f95133cf4e9eb8144bb78a73b54d7dca, type: 2}
   DownAirData: {fileID: 11400000, guid: 7ed66979ef75bfe4db9fea1269b2ac11, type: 2}
-  ForwardTiltData: {fileID: 11400000, guid: 11dc846001a620f408db2519108859cf, type: 2}
-  ForwardAirData: {fileID: 11400000, guid: 24bdd350bbc292b4a99860b66c26e59c, type: 2}
+  ForwardTiltData: {fileID: 11400000, guid: 58cdf5d919196344fbf53a696e8e9b3b, type: 2}
+  ForwardAirData: {fileID: 11400000, guid: c75a8855952386a4bab5e267d3b28824, type: 2}

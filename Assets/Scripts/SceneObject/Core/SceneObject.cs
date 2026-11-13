@@ -278,6 +278,11 @@ public abstract class SceneObject : MonoBehaviour, ISceneObject, IKillable
     /// <summary>Locks the bottom of the fitted collider to the root's Y.</summary>
     public void SetColliderGroundLock(bool locked)
     {
+        // Refit on the next Bounds read when the lock changes (otherwise a fit from earlier in the same physics step
+        // keeps the old bottom, and a ground probe in that step misses).
+        if (locked != isColliderGroundLocked)
+            lastColliderFitTime = -1f;
+
         isColliderGroundLocked = locked;
     }
 

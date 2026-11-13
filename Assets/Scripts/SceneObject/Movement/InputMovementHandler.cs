@@ -62,20 +62,6 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
                                           (horizontalInfluence != 0 || verticalInfluence != 0) &&
                                           actionState.CurActionState <= ActionState.Attacking;
 
-    private bool wallSlideAllowed => curMovementData.WallSlideValid &&
-                                     (rb.linearVelocity.y < 0 ? wallSlideFallingContact : wallSlideRisingContact) &&
-                                     verticalInfluence >= 0 && //Prevent wall sliding when fast falling
-                                     actionState.CurActionState <= ActionState.Moving;
-
-    // Falling: against a wall while holding toward it or neutral.
-    private bool wallSlideFallingContact => (IsAgainstRightWall() && horizontalInfluence >= 0) || 
-                                            (IsAgainstLeftWall() && horizontalInfluence <= 0);
-
-    // Rising: against a wall while holding toward it, outside the wall jump detach window.
-    private bool wallSlideRisingContact => Time.time >= lastWallJumpTime + wallJumpDetachDuration &&
-                                           ((IsAgainstRightWall() && horizontalInfluence > 0) || 
-                                            (IsAgainstLeftWall() && horizontalInfluence < 0));
-
     private bool ledgeClimbAllowed => curMovementData.LedgeClimbValid &&
                                       ((horizontalInfluence > 0 && IsAgainstRightLedge()) || (horizontalInfluence < 0 && IsAgainstLeftLedge())) &&
                                       actionState.CurActionState <= ActionState.Moving;
@@ -83,6 +69,8 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
     private bool IsAttackPermittedMovementState(MovementState moveState) => moveState == MovementState.AirMove;
 
     private bool IsGuarding => guard != null && guard.CurGuardState != GuardState.Null;
+
+    private bool IsCountering => guard != null && guard.CurGuardState == GuardState.Counter;
 
     #endregion
     
@@ -246,12 +234,17 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
             float centerToPositionOffset = transform.position.y - sceneObject.Bounds.center.y;
             ledgeClimbStartPosition.y = ledgeTopY + centerToPositionOffset;
 
-            float footOffset = transform.position.y - sceneObject.Bounds.min.y;
+            // Root (transform) heights, not the fitted collider's bottom: when the climb starts airborne (jump, wall run)
+            // the collider is sized to lifted paws, which made footOffset negative and stood the wolf below the top.
+            float footOffset = 0f;
             ledgeClimbPullUpPosition = ledgeClimbStartPosition;
             ledgeClimbPullUpPosition.y = ledgeTopY + footOffset + 0.05f;
 
             ledgeClimbStandPosition = ledgeClimbPullUpPosition;
             ledgeClimbStandPosition.x += dirX * (sceneObject.Bounds.extents.x + 0.5f);
+            // Stand flush on the ledge top: the 0.05 clearance is only for the forward slide (it eases out over the
+            // second half). Ending 0.05 up left the wolf airborne for a few frames (air idle) after the climb.
+            ledgeClimbStandPosition.y = ledgeTopY + footOffset;
         }
 
         return canClimb;
@@ -296,7 +289,7 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
             return;
         }
 
-        // NOTE: Dash locked until it ends or with a jump cancel.
+        // NOTE: Dash locked until it ends, a jump cancel, or a wall run.
         if (isDashing)
         {
             if (groundedJumpMovementAllowed)
@@ -305,6 +298,13 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
                 SetCurrentMoveState(MovementState.GroundJump);
                 StartJump();
             }
+            else if (wallRunAllowed)
+            {
+                EndDash();
+                SetCurrentMoveState(MovementState.WallRun);
+                if (curMovementState == MovementState.WallRun)
+                    StartJump();
+            }
         }
 
         //Jump
@@ -312,6 +312,14 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
         {
             SetCurrentMoveState(MovementState.GroundJump);
             StartJump();
+        }
+
+        //Wall Run
+        else if (wallRunAllowed)
+        {
+            SetCurrentMoveState(MovementState.WallRun);
+            if (curMovementState == MovementState.WallRun)
+                StartJump();
         }
 
         //Horizontal Movement
@@ -342,6 +350,12 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
     {
         if (isJumpMovementStateLocked || isLedgeClimbing)
             return;
+
+        if (IsGuarding)
+        {
+            SetCurrentMoveState(MovementState.Null);
+            return;
+        }
 
         if (isDashing)
         {
@@ -388,12 +402,6 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
                 BeginLedgeClimb();
         }
 
-        //Wall Slide
-        else if (wallSlideAllowed)
-        {
-            SetCurrentMoveState(MovementState.WallSlide);
-        }
-
         //Jump animation holds the jump state
         else if (isJumpAnimationActive)
             return;
@@ -418,10 +426,20 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
 
     protected override void ApplyGravity()
     {
-        if (isLedgeClimbing || isDashing)
+        if (isLedgeClimbing || isDashing || IsCountering)
             return;
 
         base.ApplyGravity();        
+    }
+
+    protected override float CalculateGravityForce()
+    {
+        float gravityForce = base.CalculateGravityForce();
+
+        if (IsGuarding && actionState.CurGroundedState == GroundedState.Airborn)
+            gravityForce *= guard.AirGravityScale;
+
+        return gravityForce;
     }
 
     #endregion
@@ -470,6 +488,9 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
             case MovementState.GroundJump:
                 UpdateGroundedAcceleration();
                 break;
+
+            case MovementState.WallRun:
+                break;
         }
     }    
 
@@ -500,9 +521,15 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
         }
     }
 
-    /// <summary>Walks at guard speed without turning. Only Hold accepts input; faster speeds decelerate.</summary>
+    /// <summary>Walks at guard speed. Only Hold accepts input; faster speeds decelerate. Held in place during the counter.</summary>
     private void UpdateGuardWalk()
     {
+        if (IsCountering)
+        {
+            rb.linearVelocity = Vector3.zero;
+            return;
+        }
+
         float walkSpeed = guard.GuardWalkSpeed;
         bool canWalk = guard.CurGuardState == GuardState.Hold && horizontalInfluence != 0;
 
@@ -515,6 +542,53 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
         float targetX = horizontalInfluence * walkSpeed;
         float x = Mathf.MoveTowards(rb.linearVelocity.x, targetX, curMovementData.GroundedAcceleration * Time.fixedDeltaTime);
         rb.linearVelocity = new Vector3(x, rb.linearVelocity.y, 0);
+
+        TurnTowardGuardInput();
+    }
+
+    /// <summary>Drifts at air guard speed. Faster horizontal speed, rising, and falling past the air guard fall speed slow down at the air slowdown rate. Only Hold accepts input. Held in place during the counter.</summary>
+    private void UpdateGuardAirMovement()
+    {
+        if (IsCountering)
+        {
+            rb.linearVelocity = Vector3.zero;
+            return;
+        }
+
+        float slowdown = guard.AirSlowdownRate * Time.fixedDeltaTime;
+        float driftSpeed = guard.AirDriftSpeed;
+        float maxFallSpeed = guard.AirMaxFallSpeed;
+        bool canDrift = guard.CurGuardState == GuardState.Hold && horizontalInfluence != 0;
+
+        Vector3 velocity = rb.linearVelocity;
+
+        if (Mathf.Abs(velocity.x) > driftSpeed)
+            velocity.x = Mathf.MoveTowards(velocity.x, Mathf.Sign(velocity.x) * driftSpeed, slowdown);
+        else
+        {
+            float targetX = canDrift ? horizontalInfluence * driftSpeed : 0f;
+            velocity.x = Mathf.MoveTowards(velocity.x, targetX, curMovementData.AerialXAcceleration * Time.fixedDeltaTime);
+        }
+
+        if (velocity.y > 0f)
+            velocity.y = Mathf.MoveTowards(velocity.y, 0f, slowdown);
+        else if (velocity.y < -maxFallSpeed)
+            velocity.y = Mathf.MoveTowards(velocity.y, -maxFallSpeed, slowdown);
+
+        velocity.z = 0f;
+        rb.linearVelocity = velocity;
+
+        if (canDrift)
+            TurnTowardGuardInput();
+    }
+
+    private void TurnTowardGuardInput()
+    {
+        if (horizontalInfluence > 0 && !sceneObject.IsFacingRightDirection ||
+            horizontalInfluence < 0 && sceneObject.IsFacingRightDirection)
+        {
+            sceneObject.TurnAround();
+        }
     }
 
     private void DeccelerateGroundedAttackSlide()
@@ -561,8 +635,13 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
                 break;
 
             case MovementState.Null:
-                DeccelerateAerialXMovement();
-                DeccelerateAerialYRisingMovement();
+                if (IsGuarding)
+                    UpdateGuardAirMovement();
+                else
+                {
+                    DeccelerateAerialXMovement();
+                    DeccelerateAerialYRisingMovement();
+                }
                 break;
 
             case MovementState.AirMove:
@@ -580,20 +659,13 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
             case MovementState.GroundJump:
             case MovementState.AirJump:
             case MovementState.WallJump:
+            case MovementState.WallRun:
 
                 //Horizontal Movement
                 if (horizontalInfluence != 0)
                     AccelerateAerialXMovement();
                 else
                     DeccelerateAerialXMovement();
-                break;
-
-            case MovementState.WallSlide:
-
-                if (IsAgainstRightWall() && !sceneObject.IsFacingRightDirection || IsAgainstLeftWall() && sceneObject.IsFacingRightDirection)
-                    sceneObject.TurnAround();
-
-                DeccelerateWallSlide();
                 break;
         }
     }
@@ -698,24 +770,6 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
     #endregion
 
 
-    #region Wall Slide
-
-    private void DeccelerateWallSlide()
-    {
-        if (rb.linearVelocity.y < -curMovementData.MaxWallSlideVelocity)
-        {
-            float decceleratedYValue = rb.linearVelocity.y + curMovementData.WallSlideDeceleration * Time.fixedDeltaTime;
-
-            if (decceleratedYValue > 0)
-                decceleratedYValue = 0;
-
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, decceleratedYValue, 0);
-        }
-    }
-
-    #endregion
-
-
     #region Ledge Climb
 
     private void BeginLedgeClimb()
@@ -744,7 +798,12 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
             transform.position = ledgeClimbStandPosition;
             rb.linearVelocity = new Vector3(storedLedgeClimbXVelocity, 0, 0);
             isLedgeClimbing = false;
-            SetCurrentMoveState(MovementState.Null);
+            // The fitted collider is unlocked through the climb (airborne) and sized to the pose's paws; the climb's
+            // last pose has the paws in the air (run reach), so lock its bottom to the Root, which now stands flush on
+            // the ledge top: the ground probe hits right away instead of the wolf dropping onto its paws and bobbing back up.
+            sceneObject.SetColliderGroundLock(true);
+            // Hand straight to the grounded state (no idle / air idle in between): run on if input is held.
+            SetCurrentMoveState(groundedMovementAllowed ? MovementState.GroundMove : MovementState.Null);
             return;
         }
 

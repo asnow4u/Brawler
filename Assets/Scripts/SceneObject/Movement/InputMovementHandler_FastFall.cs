@@ -13,9 +13,9 @@ public partial class InputMovementHandler
     private bool fastFallSustainAllowed => curMovementData.AerialMovementValid &&
                                            actionState.CurGroundedState == GroundedState.Airborn &&
                                            actionState.CurActionState != ActionState.HitStun &&
+                                           !IsGuarding &&
                                            !isLedgeClimbing &&
-                                           !isDashing &&
-                                           curMovementState != MovementState.WallSlide;
+                                           !isDashing;
 
     // Shared requirements for any fast fall, cancelled or not.
     private bool fastFallAllowed => fastFallSustainAllowed &&

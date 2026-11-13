@@ -9,7 +9,7 @@ public class MovementStatData
     public bool AerialJumpValid = false;
     public bool WallJumpValid = false;
     public bool LedgeClimbValid = false;
-    public bool WallSlideValid = false;
+    public bool WallRunValid = false;
 
     //Grounded Movement
     public float MaxGroundedVelocity;
@@ -52,7 +52,8 @@ public class MovementStatData
     public float WallJumpVelocity;
     public float WallJumpAngle;
 
-    //Wall Slide
-    public float MaxWallSlideVelocity;
-    public float WallSlideDeceleration;
+    //Wall Run
+    public float WallRunMinTriggerSpeed;
+    public float WallRunMinJumpVelocity;
+    public float WallRunJumpVelocity;
 }

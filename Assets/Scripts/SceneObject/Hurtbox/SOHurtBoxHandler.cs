@@ -28,9 +28,14 @@ public class SOHurtBoxHandler : HurtBoxHandler, ISOHurtBoxHandler, ISOHurtBoxHan
     [Header("Recovery")]
     [Tooltip("Recovery duration in seconds - the follow-up window before the defender regains control")]
     [SerializeField] private float recoveryDuration = 0.25f;
+    public float RecoveryDuration => recoveryDuration;
     private float hitStunTime = 0;
     private float hitStunDuration = 0;
     private Coroutine hitStunTimerCoroutine;
+
+    [Header("Facing")]
+    [Tooltip("Minimum horizontal knockback speed that turns the hit object to face against its launch.")]
+    [SerializeField] private float faceLaunchMinXVelocity = 0.01f;
 
     [Header("Stagger")]
     [SerializeField] private StaggerState curStaggerState = StaggerState.Null;
@@ -44,6 +49,7 @@ public class SOHurtBoxHandler : HurtBoxHandler, ISOHurtBoxHandler, ISOHurtBoxHan
 
     public event Action<HitStunState> HitStunStateChangedEvent;
     public event Action<StaggerState> StaggerStateChangedEvent;
+    public event Action<Vector3> LaunchRedirectedEvent;
 
     protected override void Awake()
     {
@@ -82,12 +88,48 @@ public class SOHurtBoxHandler : HurtBoxHandler, ISOHurtBoxHandler, ISOHurtBoxHan
         if (hitData is SceneObjectHitData sceneObjectHitData)
             lastHitBy.Add(sceneObjectHitData.SceneObjectAttackerID);
 
+        FaceAgainstLaunch(knockBackVelocity);
+
         //Compute per-phase durations from the knockback and current gravity
         float launchDuration = CalculateLaunchDuration(knockBackVelocity.magnitude);
         float travelDuration = CalculateTravelDuration(knockBackVelocity.y);
 
         //Hitstun
         ApplyHitStun(hitData.StunTime, launchDuration, travelDuration, recoveryDuration);
+    }
+
+    public void RedirectLaunch(Vector3 launchVelocity)
+    {
+        FaceAgainstLaunch(launchVelocity);
+        LaunchRedirectedEvent?.Invoke(launchVelocity);
+    }
+
+    public bool TryEndRecovery()
+    {
+        if (curHitStunState != HitStunState.Recovery)
+            return false;
+
+        if (hitStunTimerCoroutine != null)
+        {
+            StopCoroutine(hitStunTimerCoroutine);
+            hitStunTimerCoroutine = null;
+        }
+
+        hitStunDuration = 0;
+        ChangeHitStunState(HitStunState.Null);
+        return true;
+    }
+
+    /// <summary>Turns the sceneObject to face opposite the horizontal launch direction.</summary>
+    private void FaceAgainstLaunch(Vector3 launchVelocity)
+    {
+        if (Mathf.Abs(launchVelocity.x) < faceLaunchMinXVelocity)
+            return;
+
+        bool shouldFaceRight = launchVelocity.x < 0f;
+
+        if (sceneObject.IsFacingRightDirection != shouldFaceRight)
+            sceneObject.TurnAround();
     }
 
     private float CalculateLaunchDuration(float knockbackMagnitude)

@@ -25,7 +25,15 @@ public interface IHurtBoxHandler
 public interface ISOHurtBoxHandler : IHurtBoxHandler
 {    
     public HitStunState CurHitStunState { get; }   
+    public float RecoveryDuration { get; }
     public event Action<HitStunState> HitStunStateChangedEvent;
+    public event Action<Vector3> LaunchRedirectedEvent;
+
+    /// <summary>Faces against the new launch velocity and reports it.</summary>
+    public void RedirectLaunch(Vector3 launchVelocity);
+
+    /// <summary>Ends hitstun when it is in Recovery. Returns true when hitstun was ended.</summary>
+    public bool TryEndRecovery();
 
     public StaggerState CurStaggerState { get; }
     public event Action<StaggerState> StaggerStateChangedEvent;

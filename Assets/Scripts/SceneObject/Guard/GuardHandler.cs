@@ -20,10 +20,10 @@ public class GuardHandler : HitBoxHandler, IGuard, IHitInterceptor
     public GuardState CurGuardState => curGuardState;
     private float stateTimer = 0f;
 
-    [Header("Stagger Bar")]
-    [SerializeField] private float staggerBar = 0f;
-    public float StaggerBar => staggerBar;
-    private bool isBroken = false;
+    [Header("Timers")]
+    [SerializeField] private float guardTimer = 0f;
+    [SerializeField] private float cooldownTimer = 0f;
+    private bool needsRelease = false;
 
     [Header("Counter")]
     [Tooltip("Root of the counter blast. Holds the blast HitBox and any visuals. Scaled to the blast radius while active.")]
@@ -33,6 +33,10 @@ public class GuardHandler : HitBoxHandler, IGuard, IHitInterceptor
     private bool isBlastActive = false;
 
     public float GuardWalkSpeed => guardData != null ? guardData.GuardWalkSpeed : 0f;
+    public float AirDriftSpeed => guardData != null ? guardData.AirDriftSpeed : 0f;
+    public float AirGravityScale => guardData != null ? guardData.AirGravityScale : 1f;
+    public float AirMaxFallSpeed => guardData != null ? guardData.AirMaxFallSpeed : 0f;
+    public float AirSlowdownRate => guardData != null ? guardData.AirSlowdownRate : 0f;
     public AnimationClip GuardAnimation => guardData != null && guardData.GuardAnimation != null ? guardData.GuardAnimation.Animation : null;
     public float GuardAnimationSpeed => guardData != null && guardData.GuardAnimation != null ? guardData.GuardAnimation.AnimationSpeed : 1f;
     public AnimationClip CounterAnimation => guardData != null && guardData.CounterAnimation != null ? guardData.CounterAnimation.Animation : null;
@@ -43,17 +47,27 @@ public class GuardHandler : HitBoxHandler, IGuard, IHitInterceptor
     private bool IsGrounded => actionState.CurGroundedState == GroundedState.Grounded;
     private bool IsGuardHeld => guardInput != null && guardInput.GuardHeld;
     private bool IsCounterWindowOpen => counterWindowTimer > 0f;
+    private bool IsOnCooldown => cooldownTimer > 0f;
+    private bool IsGuardUp => curGuardState == GuardState.Raise ||
+                              curGuardState == GuardState.Hold ||
+                              curGuardState == GuardState.Blockstun;
 
     // True while an attack or jump press is buffered.
     private bool IsActionRequested => inputBuffer != null &&
                                       (inputBuffer.Peek(BufferedInput.Attack) || inputBuffer.Peek(BufferedInput.Jump));
 
+    // Idle, moving, or in the Recovery phase of hitstun.
+    private bool IsAbleToGuard => actionState.CurActionState <= ActionState.Moving ||
+                                  (actionState.CurActionState == ActionState.HitStun &&
+                                   hurtBoxHandler != null &&
+                                   hurtBoxHandler.CurHitStunState == HitStunState.Recovery);
+
     private bool CanRaise => guardData != null &&
-                             !isBroken &&
                              IsGuardHeld &&
-                             IsGrounded &&
+                             !needsRelease &&
+                             !IsOnCooldown &&
                              !IsActionRequested &&
-                             actionState.CurActionState <= ActionState.Moving;
+                             IsAbleToGuard;
 
 
     #region Initialize
@@ -106,9 +120,6 @@ public class GuardHandler : HitBoxHandler, IGuard, IHitInterceptor
     {
         actionState.ActionStateChangedEvent += OnActionStateChanged;
 
-        if (hurtBoxHandler != null)
-            hurtBoxHandler.StaggerStateChangedEvent += OnStaggerStateChanged;
-
         foreach (IAttackCancel cancelSource in attackCancelSources)
             cancelSource.PerformedAttackCancel += OnPerformedAttackCancel;
     }
@@ -116,9 +127,6 @@ public class GuardHandler : HitBoxHandler, IGuard, IHitInterceptor
     protected override void UnregisterFromEvents()
     {
         actionState.ActionStateChangedEvent -= OnActionStateChanged;
-
-        if (hurtBoxHandler != null)
-            hurtBoxHandler.StaggerStateChangedEvent -= OnStaggerStateChanged;
 
         foreach (IAttackCancel cancelSource in attackCancelSources)
             cancelSource.PerformedAttackCancel -= OnPerformedAttackCancel;
@@ -133,15 +141,6 @@ public class GuardHandler : HitBoxHandler, IGuard, IHitInterceptor
     {
         if (state != ActionState.Guarding && curGuardState != GuardState.Null)
             ChangeGuardState(GuardState.Null);
-    }
-
-    private void OnStaggerStateChanged(StaggerState state)
-    {
-        if (state == StaggerState.Null && isBroken)
-        {
-            isBroken = false;
-            staggerBar = 0f;
-        }
     }
 
     private void OnPerformedAttackCancel(BufferedInput input)
@@ -161,14 +160,36 @@ public class GuardHandler : HitBoxHandler, IGuard, IHitInterceptor
         float deltaTime = Time.fixedDeltaTime;
 
         counterWindowTimer = Mathf.Max(0f, counterWindowTimer - deltaTime);
+        cooldownTimer = Mathf.Max(0f, cooldownTimer - deltaTime);
 
-        UpdateStaggerBar(deltaTime);
+        UpdateRelease();
+        UpdateGuardTimer(deltaTime);
         UpdateGuardState(deltaTime);
         UpdateBlast(deltaTime);
     }
 
 
     #region Guard State
+
+    /// <summary>A press held while on cooldown is ignored until released.</summary>
+    private void UpdateRelease()
+    {
+        if (!IsGuardHeld)
+            needsRelease = false;
+        else if (IsOnCooldown && curGuardState == GuardState.Null)
+            needsRelease = true;
+    }
+
+    private void UpdateGuardTimer(float deltaTime)
+    {
+        if (!IsGuardUp)
+            return;
+
+        guardTimer += deltaTime;
+
+        if (guardTimer >= guardData.GuardDuration)
+            CancelGuard();
+    }
 
     private void UpdateGuardState(float deltaTime)
     {
@@ -180,7 +201,7 @@ public class GuardHandler : HitBoxHandler, IGuard, IHitInterceptor
                 break;
 
             case GuardState.Raise:
-                if (!IsGrounded)
+                if (IsActionRequested)
                 {
                     CancelGuard();
                     break;
@@ -192,12 +213,12 @@ public class GuardHandler : HitBoxHandler, IGuard, IHitInterceptor
                 break;
 
             case GuardState.Hold:
-                if (!IsGrounded)
-                    CancelGuard();
-                else if (!IsGuardHeld && IsCounterWindowOpen)
+                if (!IsGuardHeld && IsCounterWindowOpen)
                     BeginCounter();
-                else if (!IsGuardHeld || IsActionRequested)
+                else if (!IsGuardHeld)
                     BeginDrop();
+                else if (IsActionRequested)
+                    CancelGuard();
                 break;
 
             case GuardState.Blockstun:
@@ -211,16 +232,18 @@ public class GuardHandler : HitBoxHandler, IGuard, IHitInterceptor
                 if (stateTimer > 0f)
                     break;
 
-                if (IsGuardHeld && !IsActionRequested)
-                    ChangeGuardState(GuardState.Hold);
-                else
+                if (!IsGuardHeld)
                     BeginDrop();
+                else if (IsActionRequested)
+                    CancelGuard();
+                else
+                    ChangeGuardState(GuardState.Hold);
                 break;
 
             case GuardState.Counter:
                 stateTimer -= deltaTime;
                 if (stateTimer <= 0f)
-                    BeginDrop();
+                    CancelGuard();
                 break;
 
             case GuardState.Drop:
@@ -233,9 +256,14 @@ public class GuardHandler : HitBoxHandler, IGuard, IHitInterceptor
 
     private void BeginRaise()
     {
+        if (actionState.CurActionState == ActionState.HitStun && !hurtBoxHandler.TryEndRecovery())
+            return;
+
         if (!actionState.TryChangeState(ActionState.Guarding))
             return;
 
+        guardTimer = 0f;
+        needsRelease = true;
         stateTimer = guardData.RaiseTime;
         ChangeGuardState(GuardState.Raise);
     }
@@ -255,6 +283,7 @@ public class GuardHandler : HitBoxHandler, IGuard, IHitInterceptor
             actionState.ChangeState(ActionState.Idle);
     }
 
+    /// <summary>Changes the guard state. Entering Null from any other state starts the cooldown.</summary>
     private void ChangeGuardState(GuardState newState)
     {
         if (newState == curGuardState)
@@ -263,39 +292,16 @@ public class GuardHandler : HitBoxHandler, IGuard, IHitInterceptor
         if (curGuardState == GuardState.Counter)
             EndBlast();
 
+        if (newState == GuardState.Null)
+        {
+            cooldownTimer = guardData != null ? guardData.Cooldown : 0f;
+            counterWindowTimer = 0f;
+            guardTimer = 0f;
+        }
+
         curGuardState = newState;
         sceneObject.Log("Guard State: " + curGuardState);
         GuardStateChangedEvent?.Invoke(curGuardState);
-    }
-
-    #endregion
-
-
-    #region Stagger Bar
-
-    private void UpdateStaggerBar(float deltaTime)
-    {
-        if (isBroken)
-            staggerBar = Mathf.Max(0f, staggerBar - guardData.BreakDrainRate * deltaTime);
-        else if (curGuardState == GuardState.Null)
-            staggerBar = Mathf.Max(0f, staggerBar - guardData.BarDecayRate * deltaTime);
-        else if (curGuardState == GuardState.Hold || curGuardState == GuardState.Blockstun)
-        {
-            staggerBar += guardData.HoldFillRate * deltaTime;
-
-            if (staggerBar >= guardData.StaggerBarMax)
-                BreakGuard();
-        }
-    }
-
-    private void BreakGuard()
-    {
-        staggerBar = guardData.StaggerBarMax;
-        isBroken = true;
-        counterWindowTimer = 0f;
-
-        float breakDuration = guardData.BreakDrainRate > 0f ? guardData.StaggerBarMax / guardData.BreakDrainRate : 0f;
-        hurtBoxHandler.Stagger(breakDuration);
     }
 
     #endregion
@@ -316,19 +322,10 @@ public class GuardHandler : HitBoxHandler, IGuard, IHitInterceptor
         if (curGuardState != GuardState.Hold && curGuardState != GuardState.Blockstun)
             return false;
 
-        if (hitData.Unblockable || !IsFacingSource(hitData.SourcePosition))
+        if (hitData.Unblockable)
             return false;
 
-        staggerBar += hitData.Damage;
-
-        if (staggerBar >= guardData.StaggerBarMax)
-        {
-            BreakGuard();
-            response = HitResponse.Blocked(0f);
-            return true;
-        }
-
-        ApplyPushback(hitData.Damage);
+        ApplyPushback(hitData);
 
         stateTimer = guardData.BlockstunTime;
         counterWindowTimer = guardData.CounterWindow;
@@ -338,20 +335,17 @@ public class GuardHandler : HitBoxHandler, IGuard, IHitInterceptor
         return true;
     }
 
-    private bool IsFacingSource(Vector3 sourcePosition)
+    /// <summary>Pushes the object along the hit's launch angle. On the ground only the horizontal part applies.</summary>
+    private void ApplyPushback(HitData hitData)
     {
-        float sourceOffsetX = sourcePosition.x - sceneObject.Bounds.center.x;
-        return sceneObject.IsFacingRightDirection ? sourceOffsetX >= 0f : sourceOffsetX <= 0f;
-    }
+        float speed = guardData.PushbackBase + guardData.PushbackPerDamage * hitData.Damage;
+        float angleRad = hitData.LaunchAngle * Mathf.Deg2Rad;
+        Vector3 pushback = new Vector3(Mathf.Cos(angleRad), Mathf.Sin(angleRad), 0f) * speed;
 
-    private void ApplyPushback(float damage)
-    {
-        float direction = sceneObject.IsFacingRightDirection ? -1f : 1f;
-        float speed = guardData.PushbackBase + guardData.PushbackPerDamage * damage;
-
-        Vector3 velocity = rb.linearVelocity;
-        velocity.x = direction * speed;
-        rb.linearVelocity = velocity;
+        if (IsGrounded)
+            rb.linearVelocity = new Vector3(pushback.x, rb.linearVelocity.y, 0f);
+        else
+            rb.linearVelocity = pushback;
     }
 
     #endregion

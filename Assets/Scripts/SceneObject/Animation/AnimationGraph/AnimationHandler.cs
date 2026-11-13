@@ -27,6 +27,15 @@ public class AnimationHandler : MonoBehaviour, IAnimation
 
     private AnimationGraph animationGraph;
 
+    private ISceneObject sceneObject;
+    private Transform model;
+    private Quaternion modelRestRotation;
+    private bool rotatesOnHitStun;
+    private float hitStunAngle;
+    private float recoveryStartAngle;
+    private float recoveryElapsed;
+    private bool isEasingUpright;
+
     [Tooltip("Bone whose animated translation is used as root motion. It is held at its rest position after each evaluation. Leave empty for no root motion.")]
     [SerializeField] private Transform rootMotionBone;
     private Vector3 rootMotionBoneRest;
@@ -60,6 +69,11 @@ public class AnimationHandler : MonoBehaviour, IAnimation
             Debug.LogError("AnimationHandler Animator is null", gameObject);        
         animator.runtimeAnimatorController = null; //Ensure animator controller is null to avoid conflicts with playable graph
         animator.applyRootMotion = false;
+
+        sceneObject = GetComponent<ISceneObject>();
+        model = animator.transform;
+        modelRestRotation = model.localRotation;
+        rotatesOnHitStun = sceneObject.ObjectType == SceneObjectType.Player || sceneObject.ObjectType == SceneObjectType.Enemy;
 
         if (rootMotionBone != null)
             rootMotionBoneRest = rootMotionBone.localPosition;
@@ -102,6 +116,8 @@ public class AnimationHandler : MonoBehaviour, IAnimation
 
         actionState.ActionStateChangedEvent += OnActionStateChanged;
         actionState.IdleStateChangedEvent += OnIdleStateChanged;
+        hurtBoxHandler.OnHitEvent += OnHitReceived;
+        hurtBoxHandler.LaunchRedirectedEvent += OnLaunchRedirected;
         hurtBoxHandler.HitStunStateChangedEvent += OnHitStunStateChanged;
         hurtBoxHandler.StaggerStateChangedEvent += OnStaggerStateChanged;
 
@@ -136,6 +152,8 @@ public class AnimationHandler : MonoBehaviour, IAnimation
         actionState.IdleStateChangedEvent -= OnIdleStateChanged;
         
         
+        hurtBoxHandler.OnHitEvent -= OnHitReceived;
+        hurtBoxHandler.LaunchRedirectedEvent -= OnLaunchRedirected;
         hurtBoxHandler.HitStunStateChangedEvent -= OnHitStunStateChanged;
         hurtBoxHandler.StaggerStateChangedEvent -= OnStaggerStateChanged;
 
@@ -228,6 +246,9 @@ public class AnimationHandler : MonoBehaviour, IAnimation
 
     private void OnHitStunStateChanged(HitStunState hitStunState)
     {
+        if (rotatesOnHitStun)
+            UpdateHitStunRotationState(hitStunState);
+
         if (hitStunState == HitStunState.Null)
             return;
 
@@ -237,6 +258,10 @@ public class AnimationHandler : MonoBehaviour, IAnimation
     private void OnGuardStateChanged(GuardState guardState)
     {
         if (guardState == GuardState.Null)
+            return;
+
+        // NOTE: An airborne counter keeps playing the guard clip.
+        if (guardState == GuardState.Counter && actionState.CurGroundedState == GroundedState.Airborn)
             return;
 
         animationGraph.ChangeGuardStateInput(guardState);
@@ -258,6 +283,76 @@ public class AnimationHandler : MonoBehaviour, IAnimation
     #endregion
 
 
+    #region Hit Stun Rotation
+
+    /// <summary>Rotates the model about its Z axis so its back (model up) faces the launch direction.</summary>
+    private void OnHitReceived(KnockBackHitData hitData)
+    {
+        if (!rotatesOnHitStun)
+            return;
+
+        isEasingUpright = false;
+        SetHitStunAngle(CalculateHitStunAngle(hitData.KnockBackVelocity));
+    }
+
+    /// <summary>Rotates the model to the redirected launch direction. During recovery the ease continues from the new angle.</summary>
+    private void OnLaunchRedirected(Vector3 launchVelocity)
+    {
+        if (!rotatesOnHitStun)
+            return;
+
+        float angle = CalculateHitStunAngle(launchVelocity);
+
+        if (isEasingUpright)
+            recoveryStartAngle = angle;
+
+        SetHitStunAngle(angle);
+    }
+
+    /// <summary>Returns the model Z angle that points the model's up along the launch, in facing-local space.</summary>
+    private float CalculateHitStunAngle(Vector3 launchVelocity)
+    {
+        return Mathf.Atan2(Mathf.Abs(launchVelocity.x), launchVelocity.y) * Mathf.Rad2Deg;
+    }
+
+    private void UpdateHitStunRotationState(HitStunState hitStunState)
+    {
+        if (hitStunState == HitStunState.Recovery)
+        {
+            recoveryStartAngle = hitStunAngle;
+            recoveryElapsed = 0f;
+            isEasingUpright = true;
+        }
+        else if (hitStunState == HitStunState.Null)
+        {
+            isEasingUpright = false;
+            SetHitStunAngle(0f);
+        }
+    }
+
+    /// <summary>Eases the model's hitstun tilt back to upright over the recovery duration.</summary>
+    private void EaseUpright(float deltaTime)
+    {
+        recoveryElapsed += deltaTime;
+
+        float duration = hurtBoxHandler.RecoveryDuration;
+        float t = duration > 0f ? Mathf.Clamp01(recoveryElapsed / duration) : 1f;
+
+        SetHitStunAngle(Mathf.SmoothStep(recoveryStartAngle, 0f, t));
+
+        if (t >= 1f)
+            isEasingUpright = false;
+    }
+
+    private void SetHitStunAngle(float angle)
+    {
+        hitStunAngle = angle;
+        model.localRotation = Quaternion.Euler(0f, 0f, angle) * modelRestRotation;
+    }
+
+    #endregion
+
+
     private void Update()
     {
         float deltaTime = Time.deltaTime;
@@ -265,5 +360,8 @@ public class AnimationHandler : MonoBehaviour, IAnimation
         animationGraph.Update();
         animationGraph.Evaluate(deltaTime);
         ForwardRootMotion(deltaTime);
+
+        if (isEasingUpright)
+            EaseUpright(deltaTime);
     }
 }

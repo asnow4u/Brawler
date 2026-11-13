@@ -7,7 +7,7 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public abstract class HurtBoxHandler : MonoBehaviour, IHurtBoxHandler, IHurtBoxHandlerEditor
 {
-    private ISceneObject sceneObject;
+    protected ISceneObject sceneObject;
     protected Rigidbody rb;
 
     //Hurt boxs

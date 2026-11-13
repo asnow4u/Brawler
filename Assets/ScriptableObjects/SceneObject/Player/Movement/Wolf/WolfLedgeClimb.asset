@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: WolfLedgeClimb
   m_EditorClassIdentifier: StatData::LedgeClimbData
   AnimationData:
-    Animation: {fileID: 0}
+    Animation: {fileID: -623603649343465320, guid: 8877c80dd8a546744ac8ca8668ab7755, type: 3}
     AnimationSpeed: 1
