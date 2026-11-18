@@ -21,3 +21,6 @@ MonoBehaviour:
   HitStunAnimation:
     Animation: {fileID: 7400000, guid: e96d183b2cd76fe4db9028a0e6209e8b, type: 2}
     AnimationSpeed: 1
+  StaggerAnimation:
+    Animation: {fileID: 7400000, guid: e96d183b2cd76fe4db9028a0e6209e8b, type: 2}
+    AnimationSpeed: 1

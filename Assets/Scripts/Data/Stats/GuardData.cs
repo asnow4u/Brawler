@@ -1,11 +1,15 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [CreateAssetMenu(fileName = "GuardData", menuName = "ScriptableObjects/SceneObject/Guard")]
 public class GuardData : ScriptableObject
 {
     [Header("Animation")]
-    public AnimationData GuardAnimation;
-    public AnimationData CounterAnimation;
+    [Tooltip("Guard clip used while grounded. Also plays during a grounded counter.")]
+    [FormerlySerializedAs("GuardAnimation")]
+    public AnimationData GroundGuardAnimation;
+    [Tooltip("Guard clip used while airborne. Also plays during an airborne counter. Falls back to the ground clip when empty.")]
+    public AnimationData AirGuardAnimation;
 
     [Header("Timing")]
     [Tooltip("Seconds from raising guard until hits are blocked.")]
@@ -19,18 +23,12 @@ public class GuardData : ScriptableObject
     [Tooltip("Seconds the guard is locked after blocking a hit.")]
     public float BlockstunTime = 0.15f;
 
-    [Header("Ground Movement")]
-    [Tooltip("Max horizontal speed while walking with guard up.")]
-    public float GuardWalkSpeed = 2f;
-
     [Header("Air Movement")]
-    [Tooltip("Max horizontal speed while drifting with guard up in the air.")]
-    public float AirDriftSpeed = 2f;
     [Tooltip("Multiplier on gravity while guarding in the air.")]
     public float AirGravityScale = 0.35f;
     [Tooltip("Fall speed the guard slows toward in the air.")]
     public float AirMaxFallSpeed = 3f;
-    [Tooltip("Velocity removed per second while above the air drift speed, above the air fall speed, or rising.")]
+    [Tooltip("Velocity removed per second from horizontal speed, rising speed, and fall speed above the air fall speed.")]
     public float AirSlowdownRate = 15f;
 
     [Header("Pushback")]
@@ -40,8 +38,8 @@ public class GuardData : ScriptableObject
     public float PushbackPerDamage = 0.2f;
 
     [Header("Attacker")]
-    [Tooltip("Seconds of stagger applied to the attacker per point of blocked damage.")]
-    public float AttackerStaggerPerDamage = 0.03f;
+    [Tooltip("Seconds of stagger applied to an attacker whose hit is blocked.")]
+    public float AttackerStaggerTime = 0.3f;
 
     [Header("Counter")]
     [Tooltip("Seconds after the latest blocked hit in which releasing guard performs the counter.")]

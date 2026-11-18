@@ -26,21 +26,28 @@ public class GuardHandler : HitBoxHandler, IGuard, IHitInterceptor
     private bool needsRelease = false;
 
     [Header("Counter")]
-    [Tooltip("Root of the counter blast. Holds the blast HitBox and any visuals. Scaled to the blast radius while active.")]
+    [Tooltip("Root of the counter blast. Holds the blast HitBox. Scaled to the blast radius while active.")]
     [SerializeField] private Transform counterBlastRoot;
     private float counterWindowTimer = 0f;
     private float blastTimer = 0f;
     private bool isBlastActive = false;
+    private float blastColliderRadius = 0.5f;
+    private SphereCollider blastSphere;
 
-    public float GuardWalkSpeed => guardData != null ? guardData.GuardWalkSpeed : 0f;
-    public float AirDriftSpeed => guardData != null ? guardData.AirDriftSpeed : 0f;
     public float AirGravityScale => guardData != null ? guardData.AirGravityScale : 1f;
     public float AirMaxFallSpeed => guardData != null ? guardData.AirMaxFallSpeed : 0f;
     public float AirSlowdownRate => guardData != null ? guardData.AirSlowdownRate : 0f;
-    public AnimationClip GuardAnimation => guardData != null && guardData.GuardAnimation != null ? guardData.GuardAnimation.Animation : null;
-    public float GuardAnimationSpeed => guardData != null && guardData.GuardAnimation != null ? guardData.GuardAnimation.AnimationSpeed : 1f;
-    public AnimationClip CounterAnimation => guardData != null && guardData.CounterAnimation != null ? guardData.CounterAnimation.Animation : null;
-    public float CounterAnimationSpeed => guardData != null && guardData.CounterAnimation != null ? guardData.CounterAnimation.AnimationSpeed : 1f;
+    public AnimationClip GroundGuardAnimation => guardData != null && guardData.GroundGuardAnimation != null ? guardData.GroundGuardAnimation.Animation : null;
+    public float GroundGuardAnimationSpeed => guardData != null && guardData.GroundGuardAnimation != null ? guardData.GroundGuardAnimation.AnimationSpeed : 1f;
+    public AnimationClip AirGuardAnimation => guardData != null && guardData.AirGuardAnimation != null ? guardData.AirGuardAnimation.Animation : null;
+    public float AirGuardAnimationSpeed => guardData != null && guardData.AirGuardAnimation != null ? guardData.AirGuardAnimation.AnimationSpeed : 1f;
+
+    public float GuardTimer => guardTimer;
+    public float GuardDuration => guardData != null ? guardData.GuardDuration : 0f;
+    public bool IsCounterBlastActive => isBlastActive;
+    public float CounterBlastProgress => guardData != null ? Mathf.Clamp01(blastTimer / Mathf.Max(guardData.BlastExpandTime, Mathf.Epsilon)) : 0f;
+    public float CounterBlastRadius => blastSphere != null ? blastSphere.radius * blastSphere.transform.lossyScale.x : 0f;
+    public Vector3 CounterBlastCenter => blastSphere != null ? blastSphere.transform.TransformPoint(blastSphere.center) : transform.position;
 
     public event Action<GuardState> GuardStateChangedEvent;
 
@@ -112,6 +119,12 @@ public class GuardHandler : HitBoxHandler, IGuard, IHitInterceptor
             foreach (IHitBox hitbox in hitboxs)
                 hitbox.SetOwner(sceneObject.UniqueID);
         }
+
+        blastSphere = counterBlastRoot != null ? counterBlastRoot.GetComponentInChildren<SphereCollider>(true) : null;
+        if (blastSphere != null && blastSphere.radius > 0f)
+            blastColliderRadius = blastSphere.radius;
+        else
+            Debug.LogError($"GuardHandler counter blast root on {gameObject.name} needs a SphereCollider with a radius above 0.", gameObject);
 
         SetBlastRadius(0f);
     }
@@ -331,7 +344,7 @@ public class GuardHandler : HitBoxHandler, IGuard, IHitInterceptor
         counterWindowTimer = guardData.CounterWindow;
         ChangeGuardState(GuardState.Blockstun);
 
-        response = HitResponse.Blocked(hitData.Damage * guardData.AttackerStaggerPerDamage);
+        response = HitResponse.Blocked(guardData.AttackerStaggerTime);
         return true;
     }
 
@@ -371,14 +384,22 @@ public class GuardHandler : HitBoxHandler, IGuard, IHitInterceptor
         if (!isBlastActive)
             return;
 
-        blastTimer += deltaTime;
-
-        float expandTime = Mathf.Max(guardData.BlastExpandTime, Mathf.Epsilon);
-        float t = Mathf.Clamp01(blastTimer / expandTime);
-        SetBlastRadius(Mathf.Lerp(0f, guardData.BlastRadius, t));
-
-        if (t >= 1f)
+        // NOTE: Ends one tick after reaching full radius so the hitbox checks at full size.
+        if (blastTimer >= guardData.BlastExpandTime)
+        {
             EndBlast();
+            return;
+        }
+
+        blastTimer += deltaTime;
+        SetBlastRadius(GetBlastRadius(blastTimer));
+    }
+
+    /// <summary>Blast radius after the given seconds of expansion.</summary>
+    private float GetBlastRadius(float time)
+    {
+        float expandTime = Mathf.Max(guardData.BlastExpandTime, Mathf.Epsilon);
+        return Mathf.Lerp(0f, guardData.BlastRadius, Mathf.Clamp01(time / expandTime));
     }
 
     private void EndBlast()
@@ -391,11 +412,11 @@ public class GuardHandler : HitBoxHandler, IGuard, IHitInterceptor
         SetBlastRadius(0f);
     }
 
-    /// <summary>Scales the blast root so a unit-diameter sphere spans the given radius.</summary>
+    /// <summary>Scales the blast root so its sphere collider spans the given radius.</summary>
     private void SetBlastRadius(float radius)
     {
         if (counterBlastRoot != null)
-            counterBlastRoot.localScale = Vector3.one * Mathf.Max(radius * 2f, 0.001f);
+            counterBlastRoot.localScale = Vector3.one * Mathf.Max(radius / blastColliderRadius, 0.001f);
     }
 
     protected override void OnHit(IHitBox hitBox, IHurtBox hurtBox, Vector3 hitPoint)

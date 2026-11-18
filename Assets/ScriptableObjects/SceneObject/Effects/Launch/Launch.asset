@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a2c26f2989ea154fb3bb95de60fdb8d, type: 3}
+  m_Name: Launch
+  m_EditorClassIdentifier: EffectData::LaunchEffectData
+  Prefab: {fileID: 2245441720413828719, guid: 902ef544b7b5cf94c83491003d623a91, type: 3}
+  VelocityScale: 1
+  MinRate: 50
+  MaxRate: 200
+  MinLifetimeStart: 0.15
+  MaxLifetimeStart: 0.5
+  MaxLaunchSpeed: 20
+  MinTrailVelocity: 15

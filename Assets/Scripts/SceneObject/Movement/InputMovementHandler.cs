@@ -521,7 +521,7 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
         }
     }
 
-    /// <summary>Walks at guard speed. Only Hold accepts input; faster speeds decelerate. Held in place during the counter.</summary>
+    /// <summary>Decelerates while guarding. Input only turns the object, during Hold. Held in place during the counter.</summary>
     private void UpdateGuardWalk()
     {
         if (IsCountering)
@@ -530,23 +530,11 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
             return;
         }
 
-        float walkSpeed = guard.GuardWalkSpeed;
-        bool canWalk = guard.CurGuardState == GuardState.Hold && horizontalInfluence != 0;
-
-        if (!canWalk || Mathf.Abs(rb.linearVelocity.x) > walkSpeed)
-        {
-            DeccelerateGroundedMovement();
-            return;
-        }
-
-        float targetX = horizontalInfluence * walkSpeed;
-        float x = Mathf.MoveTowards(rb.linearVelocity.x, targetX, curMovementData.GroundedAcceleration * Time.fixedDeltaTime);
-        rb.linearVelocity = new Vector3(x, rb.linearVelocity.y, 0);
-
+        DeccelerateGroundedMovement();
         TurnTowardGuardInput();
     }
 
-    /// <summary>Drifts at air guard speed. Faster horizontal speed, rising, and falling past the air guard fall speed slow down at the air slowdown rate. Only Hold accepts input. Held in place during the counter.</summary>
+    /// <summary>Horizontal speed, rising, and falling past the air guard fall speed slow down at the air slowdown rate. Input only turns the object, during Hold. Held in place during the counter.</summary>
     private void UpdateGuardAirMovement()
     {
         if (IsCountering)
@@ -556,19 +544,11 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
         }
 
         float slowdown = guard.AirSlowdownRate * Time.fixedDeltaTime;
-        float driftSpeed = guard.AirDriftSpeed;
         float maxFallSpeed = guard.AirMaxFallSpeed;
-        bool canDrift = guard.CurGuardState == GuardState.Hold && horizontalInfluence != 0;
 
         Vector3 velocity = rb.linearVelocity;
 
-        if (Mathf.Abs(velocity.x) > driftSpeed)
-            velocity.x = Mathf.MoveTowards(velocity.x, Mathf.Sign(velocity.x) * driftSpeed, slowdown);
-        else
-        {
-            float targetX = canDrift ? horizontalInfluence * driftSpeed : 0f;
-            velocity.x = Mathf.MoveTowards(velocity.x, targetX, curMovementData.AerialXAcceleration * Time.fixedDeltaTime);
-        }
+        velocity.x = Mathf.MoveTowards(velocity.x, 0f, slowdown);
 
         if (velocity.y > 0f)
             velocity.y = Mathf.MoveTowards(velocity.y, 0f, slowdown);
@@ -578,12 +558,15 @@ public partial class InputMovementHandler : MovementHandler, IMovementAction, IA
         velocity.z = 0f;
         rb.linearVelocity = velocity;
 
-        if (canDrift)
-            TurnTowardGuardInput();
+        TurnTowardGuardInput();
     }
 
+    /// <summary>Turns to face the held horizontal input during Hold.</summary>
     private void TurnTowardGuardInput()
     {
+        if (guard.CurGuardState != GuardState.Hold)
+            return;
+
         if (horizontalInfluence > 0 && !sceneObject.IsFacingRightDirection ||
             horizontalInfluence < 0 && sceneObject.IsFacingRightDirection)
         {

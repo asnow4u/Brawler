@@ -27,7 +27,7 @@ public abstract class HitBoxHandler : MonoBehaviour, IHitBoxHandler
     protected virtual void RegisterToEvents()
     { }
 
-    private void OnDestroy()
+    protected virtual void OnDestroy()
     {
         UnregisterFromEvents();
     }

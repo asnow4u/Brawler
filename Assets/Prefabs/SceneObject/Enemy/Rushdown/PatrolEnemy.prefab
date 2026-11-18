@@ -315,6 +315,11 @@ MonoBehaviour:
   splatVelocityThreshold: 15
   splatHoldDuration: 0.1
   rootMotionThreshold: 0.05
+  softPushSpeed: 3
+  softPushMinSpeed: 0.5
+  softPushFullDepth: 0.5
+  softPushLedgeCheckDepth: 0.3
+  softPushWallCheckDistance: 0.05
   curMovementState: 0
   ledgeClimbDuration: 0.2
   maxDIAngle: 15
@@ -372,14 +377,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a22141f69fc7ddc4a8dd9b9ef3771688, type: 3}
   m_Name: 
   m_EditorClassIdentifier: SceneObject.Effect::EffectsHandler
-  effects: {fileID: 11400000, guid: d2b41be0956e92349ba27af3e902d846, type: 2}
-  velocityScale: 1
-  minRate: 50
-  maxRate: 200
-  minLifeTimeStart: 0.15
-  maxLifeTimeStart: 0.5
-  maxLaunchSpeed: 20
-  minTrailVelocity: 15
+  effectsData: {fileID: 11400000, guid: 57e0f99ee6264e9438e353c7033856a7, type: 2}
 --- !u!114 &211902645310765321
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -422,6 +420,8 @@ MonoBehaviour:
   debugLaunchAngle: 45
   debugDamage: 10
   debugDelaySeconds: 0
+  debugLockDamage: 0
+  debugLockedDamage: 0
   curHitStunState: 0
   baseLaunchDuration: 0.05
   launchKnockbackScale: 0.005
@@ -429,6 +429,7 @@ MonoBehaviour:
   apexApproach: 0.9
   minTravelDuration: 0.05
   recoveryDuration: 0.25
+  faceLaunchMinXVelocity: 0.01
   curStaggerState: -1
   debugStaggerDuration: 0.5
 --- !u!1 &5855919757624317731

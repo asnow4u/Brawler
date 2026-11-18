@@ -36,6 +36,10 @@ public class AnimationHandler : MonoBehaviour, IAnimation
     private float recoveryElapsed;
     private bool isEasingUpright;
 
+    private AnimationStatData.AnimationData groundGuardAnimation;
+    private AnimationStatData.AnimationData airGuardAnimation;
+    private bool isAirGuardApplied;
+
     [Tooltip("Bone whose animated translation is used as root motion. It is held at its rest position after each evaluation. Leave empty for no root motion.")]
     [SerializeField] private Transform rootMotionBone;
     private Vector3 rootMotionBoneRest;
@@ -103,11 +107,40 @@ public class AnimationHandler : MonoBehaviour, IAnimation
         if (guardHandler == null)
             return;
 
-        if (guardHandler.GuardAnimation != null)
-            animationGraph.SetGuardAnimation(new AnimationStatData.AnimationData(guardHandler.GuardAnimation, guardHandler.GuardAnimationSpeed));
+        if (guardHandler.GroundGuardAnimation != null)
+            groundGuardAnimation = new AnimationStatData.AnimationData(guardHandler.GroundGuardAnimation, guardHandler.GroundGuardAnimationSpeed);
 
-        if (guardHandler.CounterAnimation != null)
-            animationGraph.SetCounterAnimation(new AnimationStatData.AnimationData(guardHandler.CounterAnimation, guardHandler.CounterAnimationSpeed));
+        if (guardHandler.AirGuardAnimation != null)
+            airGuardAnimation = new AnimationStatData.AnimationData(guardHandler.AirGuardAnimation, guardHandler.AirGuardAnimationSpeed);
+
+        isAirGuardApplied = actionState.CurGroundedState == GroundedState.Airborn;
+        animationGraph.SetGuardAnimation(GetGuardAnimation(isAirGuardApplied));
+    }
+
+    /// <summary>Returns the air guard clip when airborne, otherwise the ground guard clip. The air clip falls back to the ground clip when empty.</summary>
+    private AnimationStatData.AnimationData GetGuardAnimation(bool airborne)
+    {
+        if (airborne && airGuardAnimation != null)
+            return airGuardAnimation;
+
+        return groundGuardAnimation;
+    }
+
+    /// <summary>Swaps the guard clip to match the grounded state. Restarts the current guard state on the new clip while guarding.</summary>
+    private void OnGroundedStateChanged(GroundedState groundedState)
+    {
+        if (guardHandler == null)
+            return;
+
+        bool airborne = groundedState == GroundedState.Airborn;
+        if (airborne == isAirGuardApplied)
+            return;
+
+        isAirGuardApplied = airborne;
+        animationGraph.SetGuardAnimation(GetGuardAnimation(airborne));
+
+        if (guardHandler.CurGuardState != GuardState.Null)
+            animationGraph.ChangeGuardStateInput(guardHandler.CurGuardState);
     }
 
     public void RegisterToEvents()
@@ -116,6 +149,7 @@ public class AnimationHandler : MonoBehaviour, IAnimation
 
         actionState.ActionStateChangedEvent += OnActionStateChanged;
         actionState.IdleStateChangedEvent += OnIdleStateChanged;
+        actionState.GroundedStateChangedEvent += OnGroundedStateChanged;
         hurtBoxHandler.OnHitEvent += OnHitReceived;
         hurtBoxHandler.LaunchRedirectedEvent += OnLaunchRedirected;
         hurtBoxHandler.HitStunStateChangedEvent += OnHitStunStateChanged;
@@ -150,6 +184,7 @@ public class AnimationHandler : MonoBehaviour, IAnimation
         
         actionState.ActionStateChangedEvent -= OnActionStateChanged;
         actionState.IdleStateChangedEvent -= OnIdleStateChanged;
+        actionState.GroundedStateChangedEvent -= OnGroundedStateChanged;
         
         
         hurtBoxHandler.OnHitEvent -= OnHitReceived;
@@ -255,13 +290,10 @@ public class AnimationHandler : MonoBehaviour, IAnimation
         animationGraph.ChangeHitStunStateInput(hitStunState);
     }
 
+    /// <summary>Starts the guard clip on Raise. Later guard states keep it playing.</summary>
     private void OnGuardStateChanged(GuardState guardState)
     {
-        if (guardState == GuardState.Null)
-            return;
-
-        // NOTE: An airborne counter keeps playing the guard clip.
-        if (guardState == GuardState.Counter && actionState.CurGroundedState == GroundedState.Airborn)
+        if (guardState != GuardState.Raise)
             return;
 
         animationGraph.ChangeGuardStateInput(guardState);

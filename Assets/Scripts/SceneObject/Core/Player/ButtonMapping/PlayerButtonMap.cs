@@ -369,7 +369,7 @@ public partial class @PlayerButtonMap: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""8a567e30-a962-4382-8947-bd164ee2195a"",
-                    ""path"": ""<Keyboard>/leftShift"",
+                    ""path"": ""<Keyboard>/ctrl"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",

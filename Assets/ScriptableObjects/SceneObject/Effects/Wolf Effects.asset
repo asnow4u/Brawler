@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f22abed6715dc2547a5826e4d7f95d85, type: 3}
+  m_Name: Wolf Effects
+  m_EditorClassIdentifier: EffectData::EffectsDataCollection
+  GuardShield: {fileID: 11400000, guid: b3c0d3963d70957429d70559d44e14ee, type: 2}
+  CounterBlast: {fileID: 11400000, guid: 0611aeb0bbc1b624ebe82baec689518b, type: 2}
+  WeaponTrail: {fileID: 11400000, guid: 9ba0d86ad3076bf4e8ce603601518945, type: 2}
+  Hit: {fileID: 11400000, guid: cbf503efafe176840bc187f3d912520d, type: 2}
+  Launch: {fileID: 11400000, guid: fd7d57bebfa6e0447829e0490a7442f0, type: 2}

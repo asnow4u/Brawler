@@ -237,6 +237,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: SceneObject.Core::Box
   uniqueIDString: 
   objectType: 3
+  colliderPoints: []
+  colliderPadding: 0.05
+  minColliderSize: 0.2
 --- !u!65 &7036181565732152795
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -326,14 +329,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: SceneObject.Hurtbox::SOHurtBoxHandler
   damageTaken: 0
-  baseForce: 1200
   exGrowth: 2
   damageForceScale: 0.2
   debugMode: 0
+  debugBaseForce: 1200
   debugInfluence: 1
   debugLaunchAngle: 45
   debugDamage: 10
   debugDelaySeconds: 0
+  debugLockDamage: 0
+  debugLockedDamage: 0
   curHitStunState: 0
   baseLaunchDuration: 0.05
   launchKnockbackScale: 0.005
@@ -341,6 +346,9 @@ MonoBehaviour:
   apexApproach: 0.9
   minTravelDuration: 0.05
   recoveryDuration: 0.25
+  faceLaunchMinXVelocity: 0.01
+  curStaggerState: -1
+  debugStaggerDuration: 0.5
 --- !u!114 &3622580609105661727
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -353,9 +361,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5c7f17dd716bd7489abdda9a04acf61, type: 3}
   m_Name: 
   m_EditorClassIdentifier: SceneObject.Animation::AnimationHandler
+  rootMotionBone: {fileID: 0}
   idleController: {fileID: 9100000, guid: 659c75eada4e061488073716691dedce, type: 2}
   movementController: {fileID: 0}
+  guardController: {fileID: 0}
   attackController: {fileID: 0}
+  staggerController: {fileID: 0}
   hitStunController: {fileID: 9100000, guid: 2d61c65002fdada44b08d4fe16eb871a, type: 2}
 --- !u!114 &1286575091381896554
 MonoBehaviour:
@@ -390,14 +401,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a22141f69fc7ddc4a8dd9b9ef3771688, type: 3}
   m_Name: 
   m_EditorClassIdentifier: SceneObject.Effect::EffectsHandler
-  effects: {fileID: 11400000, guid: 16e261847e3eb0f419973f2a9ca50c33, type: 2}
-  velocityScale: 1
-  minRate: 50
-  maxRate: 200
-  minLifeTimeStart: 0.15
-  maxLifeTimeStart: 0.5
-  maxLaunchSpeed: 20
-  minTrailVelocity: 15
+  effectsData: {fileID: 11400000, guid: 5be8e45a5e67c16418fffcf2db34c960, type: 2}
 --- !u!114 &1757336557130019849
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -418,6 +422,12 @@ MonoBehaviour:
   minBounceVelocity: 0.9
   splatVelocityThreshold: 15
   splatHoldDuration: 0.1
+  rootMotionThreshold: 0.05
+  softPushSpeed: 3
+  softPushMinSpeed: 0.5
+  softPushFullDepth: 0.5
+  softPushLedgeCheckDepth: 0.3
+  softPushWallCheckDistance: 0.05
 --- !u!1 &6498380575745685673
 GameObject:
   m_ObjectHideFlags: 0

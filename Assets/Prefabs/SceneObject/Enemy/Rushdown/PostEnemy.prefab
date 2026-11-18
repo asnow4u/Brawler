@@ -392,14 +392,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a22141f69fc7ddc4a8dd9b9ef3771688, type: 3}
   m_Name: 
   m_EditorClassIdentifier: SceneObject.Effect::EffectsHandler
-  effects: {fileID: 11400000, guid: d2b41be0956e92349ba27af3e902d846, type: 2}
-  velocityScale: 1
-  minRate: 50
-  maxRate: 200
-  minLifeTimeStart: 0.15
-  maxLifeTimeStart: 0.5
-  maxLaunchSpeed: 20
-  minTrailVelocity: 15
+  effectsData: {fileID: 11400000, guid: 57e0f99ee6264e9438e353c7033856a7, type: 2}
 --- !u!114 &211902645310765321
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -451,6 +444,7 @@ MonoBehaviour:
   apexApproach: 0.9
   minTravelDuration: 0.05
   recoveryDuration: 0.25
+  faceLaunchMinXVelocity: 0.01
   curStaggerState: -1
   debugStaggerDuration: 0.5
 --- !u!1 &6726734943523650567

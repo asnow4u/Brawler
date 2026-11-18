@@ -362,19 +362,14 @@ internal class AnimationGraph : IDisposable
         ApplyOverride(5, HitStunState.Launch, hitStunAnimation);
     }
 
-    /// <summary>Applies one clip to every guard state except Counter.</summary>
+    /// <summary>Applies one clip to every guard state.</summary>
     public void SetGuardAnimation(AnimationStatData.AnimationData guardAnimation)
     {
         foreach (GuardState state in Enum.GetValues(typeof(GuardState)))
         {
-            if (state != GuardState.Null && state != GuardState.Counter)
+            if (state != GuardState.Null)
                 ApplyOverride(2, state, guardAnimation);
         }
-    }
-
-    public void SetCounterAnimation(AnimationStatData.AnimationData counterAnimation)
-    {
-        ApplyOverride(2, GuardState.Counter, counterAnimation);
     }
 
     public void SetStaggerAnimation(AnimationStatData.AnimationData staggerAnimation)
